@@ -1,0 +1,99 @@
+# V5 M9c S0 voyage fingerprint (byte-exact single-player gate; see plan/v5/phase-09c-multiship/PLAN.md)
+# Case (b): seed 4242, shipped playtest switches, real level-up cards (card 0), wander pilot at fixed frame time;
+# jumps: elites 15 s, powerup 30 s, chest Take 45 s, ram 60-75 s (damage on), Beacon boss 80 s, overtime jump 100 s,
+# damage on 20 s into overtime, forced sinking 60 s into overtime if still afloat. Ends sunk.
+case: b-events-4242
+view.aspect: 1.77777779
+seed: 4242
+frameSeconds: 0.0199999921
+chest.placed: index=5 price=20
+enemies@60: t=60.0011826 count=9 elites=1 bosses=0 sha256=1e3bf862b9fba3c1714c5a809927019ce6142aa32375cfeb0be5ef2def1808be
+ship@60: position=21.207407 -83.2446442 hull=100 islandImpacts=1 islandDamage=1
+beacon.placed: 0
+enemies@100: t=100.015228 count=6 elites=1 bosses=1 sha256=88d48c03f175095ff3ada9cce644e59ce79a720a8f173c325e7efc843ad3c93d
+ship@100: position=32.7998543 -120.112144 hull=59.1895523 islandImpacts=2 islandDamage=2
+enemies@before-overtime-jump: t=100.015228 count=6 elites=1 bosses=1 sha256=88d48c03f175095ff3ada9cce644e59ce79a720a8f173c325e7efc843ad3c93d
+ship@before-overtime-jump: position=32.7998543 -120.112144 hull=59.1895523 islandImpacts=2 islandDamage=2
+overtime.jump: from=100.015228 to=901
+enemies@overtime+5: t=906.0049 count=15 elites=1 bosses=1 sha256=7829574f7d0166b2c9a9266bfa638c15fa499cf7f40767f6d01c930a2136c326
+ship@overtime+5: position=6.73145771 -87.01607 hull=59.1895523 islandImpacts=4 islandDamage=3
+enemies@overtime+10: t=911.009766 count=25 elites=1 bosses=1 sha256=14a9e4a166c78b0de4b037ce3adddf3d93f29ff3acdfbd5624582f7f2458358d
+ship@overtime+10: position=35.40945 -98.1414261 hull=59.1895523 islandImpacts=5 islandDamage=4
+enemies@overtime+15: t=916.014648 count=35 elites=1 bosses=1 sha256=91d63ad5ab9670753e061e58f407df7571138117b12d7b3c0b958aa52a0f1955
+ship@overtime+15: position=59.0461655 -107.605682 hull=59.1895523 islandImpacts=5 islandDamage=4
+enemies@overtime+20: t=921.019531 count=39 elites=1 bosses=1 sha256=87b158fbea6328d8ca4c925d847c44fda7e14be8d105d6787e00b980911d2b17
+ship@overtime+20: position=60.23785 -61.3950424 hull=59.1895523 islandImpacts=5 islandDamage=4
+enemies@end: t=928.7671 count=47 elites=1 bosses=1 sha256=8b47331099c1f130d292a87b779d1b6b9c3c3f6d8b40ac747669716a1ee44f71
+ship@end: position=58.960907 -54.82127 hull=0 islandImpacts=6 islandDamage=5
+cards.picks: WeaponUpgrade:swivel_guns@64.4612 NewWeapon:siren_bell@67.94061 Logbook:ironclad@71.89995 WeaponUpgrade:swivel_guns@80.23855 NewWeapon:lightning_mast@80.3785248 NewWeapon:harpoon_gun@99.135376 NewWeapon:chainshot@917.5161
+powerups.collected: BattleSignal@30.0004959
+chests: take@45.02084 gold=20
+ram.hits: 26
+sinking: sea@928.7671
+runlog.minutes.sha256: b1041f1221ef704db36f5956b11534bdeffa0997f8d11c3e104d62b511b8024f
+runlog.00: "weapons":["swivel_guns","siren_bell","lightning_mast","harpoon_gun","chainshot"],"minutes":[
+runlog.01: {"m":0,"spawns":42,"kills":35,"eliteKills":0,"bossKills":0,"gold":20,"xp":0,"level":1,"taken":0,"dealt":183.3,"healed":0,"pickups":14,"chests":1,"pois":0,"alive":15,"hull":100,"maxHull":100,"wk":[35,0,0,0,0]}
+runlog.02: {"m":1,"spawns":20,"kills":29,"eliteKills":0,"bossKills":0,"gold":19,"xp":28,"level":6,"taken":40.8,"dealt":1551,"healed":0,"pickups":325,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[12,6,11,0,0]}
+runlog.03: {"m":2,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.04: {"m":3,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.05: {"m":4,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.06: {"m":5,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.07: {"m":6,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.08: {"m":7,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.09: {"m":8,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.10: {"m":9,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.11: {"m":10,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.12: {"m":11,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.13: {"m":12,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.14: {"m":13,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.15: {"m":14,"spawns":0,"kills":0,"eliteKills":0,"bossKills":0,"gold":0,"xp":0,"level":6,"taken":0,"dealt":0,"healed":0,"pickups":0,"chests":0,"pois":0,"alive":6,"hull":59.2,"maxHull":100,"wk":[0,0,0,0,0]}
+runlog.16: {"m":15,"spawns":61,"kills":20,"eliteKills":0,"bossKills":0,"gold":6,"xp":16,"level":7,"taken":58.2,"dealt":2359.5,"healed":0,"pickups":157,"chests":0,"pois":0,"alive":47,"hull":0,"maxHull":100,"wk":[3,5,11,0,1]}]
+ship[0].run.time: 928.7671
+ship[0].run.state: RunComplete
+ship[0].run.overtime: True
+ship[0].gold: 25
+ship[0].grossGold: 45
+ship[0].grossGoldSpent: 20
+ship[0].kills: 84
+ship[0].bossKills: 0
+ship[0].objectiveSecured: False
+ship[0].stat.Hull: 100
+ship[0].stat.HullRegen: 0
+ship[0].stat.Shield: 0
+ship[0].stat.Armor: 3
+ship[0].stat.Evasion: 0
+ship[0].stat.Damage: 1
+ship[0].stat.AttackSpeed: 1
+ship[0].stat.CritChance: 0.05
+ship[0].stat.CritDamage: 1.5
+ship[0].stat.Quantity: 0
+ship[0].stat.Size: 1
+ship[0].stat.Duration: 1
+ship[0].stat.ProjectileSpeed: 1
+ship[0].stat.Knockback: 1
+ship[0].stat.PickupRadius: 6
+ship[0].stat.Luck: 0
+ship[0].stat.XPGain: 1
+ship[0].stat.GoldGain: 1
+ship[0].stat.DoubloonGain: 1
+ship[0].stat.EliteDamage: 1
+ship[0].stat.MoveSpeed: 6.2
+ship[0].hull: 0
+ship[0].maxHull: 100
+ship[0].position: 58.960907 0 -54.82127
+ship[0].islandImpacts: 6
+ship[0].islandDamage: 5
+ship[0].level: 7
+ship[0].xp: 9
+ship[0].xpToNext: 12
+ship[0].pendingLevelUps: 0
+ship[0].captain: rook
+ship[0].weapons: 5
+ship[0].weapon[0]: swivel_guns level=5 evolution=- damage=1.1 quantity=2 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].weapon[1]: siren_bell level=1 evolution=- damage=1.1 quantity=0 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].weapon[2]: lightning_mast level=1 evolution=- damage=1.1 quantity=0 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].weapon[3]: harpoon_gun level=1 evolution=- damage=1.1 quantity=0 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].weapon[4]: chainshot level=1 evolution=- damage=1.1 quantity=0 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].logbooks: ironclad:1
+ship[0].items: skeleton_keyx1
+ship[0].stage: bossSummoned=True bossDefeated=False paidChests=1

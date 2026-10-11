@@ -184,7 +184,7 @@ namespace RoguePirates.V4.Ports
         public Vector2 SteerThrottle => Ship != null ? Ship.LastSteerThrottle : Vector2.zero;
         /// <summary>A point on the ship at its simulated pose (V5 M9b close: was the interpolated transform's).</summary>
         public Vector3 TransformPoint(Vector3 local) =>
-            Matrix4x4.TRS(Ship.SimPosition, Ship.SimRotation, Ship.transform.lossyScale).MultiplyPoint3x4(local);
+            Matrix4x4.TRS(Ship.SimPosition, Ship.SimRotation, Ship.SimScale).MultiplyPoint3x4(local); // V5 M9c S0: not lossyScale
 
         public float ContactRadius => Ship != null ? Ship.IslandCollisionRadius : 1.15f;
         public bool HasDamageReceiver => Ship != null && Ship.Damage != null;

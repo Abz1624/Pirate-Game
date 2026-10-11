@@ -1,0 +1,10 @@
+{
+  "scenario": "fingerprint_plain_8282 (case a), run time 10-60 s, Editor",
+  "frames": 2501,
+  "meanBytes": 28624.2,
+  "p50Bytes": 28113,
+  "p95Bytes": 34377,
+  "p99Bytes": 35241,
+  "maxBytes": 65773,
+  "zeroFrames": 0.000
+}

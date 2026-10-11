@@ -1,0 +1,35 @@
+{
+  "step": "V5 M9c S0 baseline (before any M9c refactor)",
+  "date": "2026-10-11",
+  "head": "b31139ce (tag v5-m9b) plus the S0 determinism fixes (DamageReceiver, PlayerShipController, SharedPorts) and the S0 tests",
+  "editor": "6000.3.11f1, in-Editor runs on the owner's PC",
+  "suites": {
+    "editMode": { "total": 619, "passed": 619, "failed": 0, "seconds": 67.2, "evidence": "editmode-full.json" },
+    "playMode": {
+      "total": 129, "passed": 129, "failed": 0,
+      "note": "125 at b31139ce plus the 4 new S0 tests (cases a, b, c and the allocation measurement). playmode-full-2.json (session C, 1261 s) has 126/129 because the goldens were not frozen yet: the 3 fingerprint tests failed only on 'No golden' and their actual fingerprints equal the frozen goldens; the frozen goldens then pass (playmode-fingerprints-ab-frozen.json 3/3, playmode-fingerprint-c-frozen.json 1/1). playmode-full.json (session B) is an earlier run (128/129, case c's unpinned quality tier, fixed since).",
+      "evidence": ["playmode-full-2.json", "playmode-fingerprints-ab-frozen.json", "playmode-fingerprint-c-frozen.json", "playmode-full.json"]
+    },
+    "headAtM9bClose": { "editMode": 619, "playMode": 125, "server": 163, "source": "commit b31139ce message" }
+  },
+  "perf": {
+    "V5PerfPlayModeTests": { "tests": 3, "passed": 3, "note": "pass/fail checks (fog rebuild over frames, one health-bar canvas); they record no allocation figures" },
+    "allocationsPerFrame": {
+      "how": "V5VoyageFingerprintPlayModeTests.Baseline_AllocationsPerFrame_Measured: case (a)'s voyage, run time 10-60 s, profiler counter 'GC Allocated In Frame', Editor (includes Editor and presentation allocations; compare like with like)",
+      "frames": 2501, "meanBytes": 28624.2, "p50Bytes": 28113, "p95Bytes": 34377, "p99Bytes": 35241, "maxBytes": 65773,
+      "evidence": "alloc-per-frame.json"
+    },
+    "serverTick_net_voyage_busy": {
+      "how": "V5NetPlayModeTests.Measure_BusyVoyageAt10Minutes: in-process server + 1 client, net_voyage_busy (10:00, ambient spawning, no weapons), 15 s window, Editor (Mono)",
+      "runs": [
+        { "evidence": "net-voyage-busy-inprocess.json", "tickMsP50": 2.774, "tickMsP95": 3.425, "tickMsMax": 3.828, "tickMsMean": 2.735, "ticks": 450, "snapshotEnemiesMax": 33, "wireDownBytesPerSecond": 6173, "wireUpBytesPerSecond": 1260 },
+        { "evidence": "net-voyage-busy-inprocess-2.json", "tickMsP50": 2.811, "tickMsP95": 3.432, "tickMsMax": 3.712, "tickMsMean": 2.749, "ticks": 450, "snapshotEnemiesMax": 33, "wireDownBytesPerSecond": 6185 }
+      ]
+    }
+  },
+  "fingerprint": {
+    "goldens": ["plan/v5/goldens/voyage-fingerprint-a-plain-8282.txt", "plan/v5/goldens/voyage-fingerprint-b-events-4242.txt", "plan/v5/goldens/voyage-fingerprint-c-server-8282.txt"],
+    "stability": "stability/: a and b identical alone in Editor sessions B and C and inside the full suite (session C); c identical alone in sessions A, B (first run) and C, and inside the full suite (session C); c variant Y seen twice in session B only (unexplained, see stability/c.variant-Y.txt)",
+    "runtimes": { "a": "about 50 s", "b": "about 36 s", "c": "about 220 s (frames padded to 40 ms wall time)" }
+  }
+}

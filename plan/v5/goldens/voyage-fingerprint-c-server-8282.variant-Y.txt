@@ -1,0 +1,65 @@
+# V5 M9c S0 voyage fingerprint, case (c): KNOWN VARIANT Y (unexplained). Seen 2 of 13 runs, both in one Editor session (B) after a full suite.
+# Accepted by V5NetVoyageFingerprintPlayModeTests until M9c S1 finds the cause and removes this file (evidence: plan/v5/phase-09c-multiship/s0).
+# Recorded before the hold-state and run-log header lines were added: only the fields below are compared.
+case: c-server-8282
+view.aspect: 1.77777779
+seed: 8282
+heldAt: 0.100000009
+enemies@60: t=60.03276 count=8 elites=0 bosses=0 sha256=26dccc543305829fb3802b5ccc70392bafcaa43ac0672d2041a0402246f1ba18
+ship@60: position=26.2357254 -79.98354 hull=95 islandImpacts=1 islandDamage=1
+enemies@120: t=120.031845 count=12 elites=0 bosses=0 sha256=9482db57ccd2aef70e88d93c705ffc76a16b3d47b5c48921ceb2519c727e2848
+ship@120: position=26.2357254 -79.98354 hull=38.6936073 islandImpacts=1 islandDamage=1
+end: sunk
+server.worldTick: 4606
+server.stepsApplied: 4604
+server.chestChoicesSkipped: 0
+runlog.minutes.sha256: 3ae455c2eb028e6b6e1c38e2c3afcd5dd961a0595b5ffb810444a9dc4a918092
+runlog.00: "weapons":["swivel_guns"],"minutes":[
+runlog.01: {"m":0,"spawns":36,"kills":28,"eliteKills":0,"bossKills":0,"gold":3,"xp":0,"level":1,"taken":5,"dealt":137.8,"healed":0,"pickups":27,"chests":0,"pois":0,"alive":8,"hull":95,"maxHull":100,"wk":[28]}
+runlog.02: {"m":1,"spawns":52,"kills":48,"eliteKills":0,"bossKills":0,"gold":0,"xp":3,"level":2,"taken":56.3,"dealt":237.2,"healed":0,"pickups":21,"chests":0,"pois":0,"alive":12,"hull":38.7,"maxHull":100,"wk":[48]}
+runlog.03: {"m":2,"spawns":29,"kills":26,"eliteKills":1,"bossKills":0,"gold":1,"xp":0,"level":2,"taken":38.4,"dealt":149.1,"healed":0,"pickups":7,"chests":0,"pois":0,"alive":15,"hull":0,"maxHull":100,"wk":[26]}]
+ship[0].run.time: 153.53717
+ship[0].run.state: RunComplete
+ship[0].run.overtime: False
+ship[0].gold: 4
+ship[0].grossGold: 4
+ship[0].grossGoldSpent: 0
+ship[0].kills: 102
+ship[0].bossKills: 0
+ship[0].objectiveSecured: False
+ship[0].stat.Hull: 100
+ship[0].stat.HullRegen: 0
+ship[0].stat.Shield: 0
+ship[0].stat.Armor: 0
+ship[0].stat.Evasion: 0
+ship[0].stat.Damage: 1
+ship[0].stat.AttackSpeed: 1
+ship[0].stat.CritChance: 0.05
+ship[0].stat.CritDamage: 1.5
+ship[0].stat.Quantity: 0
+ship[0].stat.Size: 1
+ship[0].stat.Duration: 1
+ship[0].stat.ProjectileSpeed: 1
+ship[0].stat.Knockback: 1
+ship[0].stat.PickupRadius: 6
+ship[0].stat.Luck: 0
+ship[0].stat.XPGain: 1
+ship[0].stat.GoldGain: 1
+ship[0].stat.DoubloonGain: 1
+ship[0].stat.EliteDamage: 1
+ship[0].stat.MoveSpeed: 6.2
+ship[0].hull: 0
+ship[0].maxHull: 100
+ship[0].position: 26.2357254 0 -79.98354
+ship[0].islandImpacts: 1
+ship[0].islandDamage: 1
+ship[0].level: 2
+ship[0].xp: 0
+ship[0].xpToNext: 2
+ship[0].pendingLevelUps: 0
+ship[0].captain: rook
+ship[0].weapons: 1
+ship[0].weapon[0]: swivel_guns level=1 evolution=- damage=1.1 quantity=0 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].logbooks: -
+ship[0].items: -
+ship[0].stage: bossSummoned=False bossDefeated=False paidChests=0

@@ -1,0 +1,34 @@
+{
+  "status": "completed",
+  "duration": 111.78,
+  "summary": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5VoyageFingerprintPlayModeTests.Baseline_AllocationsPerFrame_Measured",
+      "Status": "Passed",
+      "Duration": 18.052254,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5VoyageFingerprintPlayModeTests.EventfulVoyage_Seed4242_MatchesItsGolden",
+      "Status": "Passed",
+      "Duration": 33.8587701,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5VoyageFingerprintPlayModeTests.PlainVoyage_Seed8282_MatchesItsGolden",
+      "Status": "Passed",
+      "Duration": 59.8292277,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

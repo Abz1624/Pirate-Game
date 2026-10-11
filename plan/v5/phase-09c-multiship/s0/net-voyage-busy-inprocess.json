@@ -1,0 +1,47 @@
+{
+  "report": "busy-10min-clean",
+  "utc": "2026-10-11T04:37:54.9564742Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "scenario": "net_voyage_busy",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 15.001,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 5812.613, "bytesUpPerSecond": 899.919, "wireDownPerSecondEstimate": 6173.381, "wireUpPerSecondEstimate": 1259.887, "messagesDown": 451, "messagesUp": 450}
+      ],
+      "tickMs": {"count": 450, "mean": 2.735, "p50": 2.774, "p95": 3.425, "max": 3.828},
+      "ticksMeasured": 450,
+      "tickMsMaxVoyage": 3.828,
+      "snapshotBytes": {"count": 225, "mean": 387.48, "p50": 405, "p95": 450, "max": 459},
+      "snapshotEnemies": {"count": 225, "mean": 25.053, "p50": 27, "p95": 32, "max": 33},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 15.002,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 5812.542, "bytesUpPerSecond": 899.908, "wireDownPerSecondEstimate": 6173.305, "wireUpPerSecondEstimate": 1259.872, "messagesDown": 451, "messagesUp": 450}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "ticksMeasured": 0,
+      "tickMsMaxVoyage": 0,
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 225, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 225, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 225, "mean": 33.333, "p50": 33.333, "p95": 33.333, "max": 33.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

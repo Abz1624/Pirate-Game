@@ -105,6 +105,9 @@ namespace RoguePirates.V4.Foundation.Player
         public Vector3 SimPosition => _body != null ? _body.position : transform.position;
         /// <summary>V5 M9b close: the simulated rotation (the body's), the gameplay twin of the drawn transform's.</summary>
         public Quaternion SimRotation => _body != null ? _body.rotation : transform.rotation;
+        /// <summary>V5 M9c S0 (determinism): the ship's scale from its hierarchy's local scales (lossyScale comes from the
+        /// drawn world matrix and changes in its last bits with the interpolated rotation).</summary>
+        public Vector3 SimScale => RestScale(transform);
         /// <summary>V5 M9b close: where the ship is drawn this frame (the interpolated transform): presentation only.</summary>
         public Vector3 DrawnPosition => transform.position;
         public Vector3 Velocity => _velocity + _knockback;
@@ -237,7 +240,7 @@ namespace RoguePirates.V4.Foundation.Player
             _knockback = Vector3.zero;
             _keptImpactAt = _nextIslandImpactAt;
             _keptDamageAt = _nextIslandDamageAt;
-            _nextIslandImpactAt = _nextIslandDamageAt = float.NegativeInfinity;
+            _nextIslandImpactAt = _nextIslandDamageAt = double.NegativeInfinity;
             var flat = new Vector3(velocity.x, 0f, velocity.z);
             if (flat.sqrMagnitude > 1e-4f)
             {
@@ -247,14 +250,16 @@ namespace RoguePirates.V4.Foundation.Player
             }
         }
 
-        float _nextIslandImpactAt = float.NegativeInfinity, _nextIslandDamageAt = float.NegativeInfinity;
-        float _keptImpactAt = float.NegativeInfinity, _keptDamageAt = float.NegativeInfinity;
+        // V5 M9c S0 (determinism): double, so the voyage's frame clock (Time.timeAsDouble) meets a cooldown on the same
+        // frame in every play (a float Time.time far into a session rounds the boundary either way).
+        double _nextIslandImpactAt = double.NegativeInfinity, _nextIslandDamageAt = double.NegativeInfinity;
+        double _keptImpactAt = double.NegativeInfinity, _keptDamageAt = double.NegativeInfinity;
 
         /// <summary>Tests: undo the cooldown reset of the last <see cref="PlaceForTest"/> (a stick held into a shore).</summary>
         public void KeepIslandCooldownsForTest()
         {
-            _nextIslandImpactAt = Mathf.Max(_nextIslandImpactAt, _keptImpactAt);
-            _nextIslandDamageAt = Mathf.Max(_nextIslandDamageAt, _keptDamageAt);
+            _nextIslandImpactAt = System.Math.Max(_nextIslandImpactAt, _keptImpactAt);
+            _nextIslandDamageAt = System.Math.Max(_nextIslandDamageAt, _keptDamageAt);
         }
         Vector3 _knockback;
         float _knockbackDecay;
@@ -273,7 +278,7 @@ namespace RoguePirates.V4.Foundation.Player
             var s = IslandImpact;
             if (!s.Enabled || normal == Vector3.zero || inwardSpeed < Mathf.Max(0.01f, s.MinSpeed)) return;
             if (IslandClock < _nextIslandImpactAt) return;
-            _nextIslandImpactAt = IslandClock + Mathf.Max(0f, s.Cooldown);
+            _nextIslandImpactAt = IslandCooldownEnd(s.Cooldown);
             // The resolver already took the inward speed out; push back off the shore (a fading push, see FixedUpdate).
             var push = inwardSpeed * s.Restitution + s.PushSpeed;
             _knockback = normal * push;
@@ -281,7 +286,7 @@ namespace RoguePirates.V4.Foundation.Player
             IslandImpactCount++;
             IslandImpacted?.Invoke(inwardSpeed);
             if (s.Damage <= 0f || IslandClock < _nextIslandDamageAt) return;
-            _nextIslandDamageAt = IslandClock + Mathf.Max(0f, s.DamageCooldown);
+            _nextIslandDamageAt = IslandCooldownEnd(s.DamageCooldown);
             IslandDamageCount++;
             var contact = at - normal * GetHullWorldRadius();
             if (IslandImpactDamage != null) IslandImpactDamage(contact, s.Damage);
@@ -569,7 +574,7 @@ namespace RoguePirates.V4.Foundation.Player
             {
                 if (_directStep == value) return;
                 _directStep = value;
-                _nextIslandImpactAt = _nextIslandDamageAt = float.NegativeInfinity; // the cooldowns change clocks
+                _nextIslandImpactAt = _nextIslandDamageAt = double.NegativeInfinity; // the cooldowns change clocks
             }
         }
         bool _directStep;
@@ -577,7 +582,12 @@ namespace RoguePirates.V4.Foundation.Player
         float _stepTime;
         /// <summary>The island cooldowns' clock: the frame clock in the voyage; with <see cref="DirectStep"/> the ship's own
         /// step clock (part of <see cref="MotionState"/>), so a replayed step meets the same cooldowns as the server's.</summary>
-        float IslandClock => DirectStep ? _stepTime : Time.time;
+        double IslandClock => DirectStep ? _stepTime : Time.timeAsDouble;
+
+        /// <summary>When a cooldown started now ends: on the step clock in float, as the net state carries it (the server and the
+        /// prediction must agree to the bit); on the voyage's frame clock in double (V5 M9c S0).</summary>
+        double IslandCooldownEnd(float seconds) =>
+            DirectStep ? (double)(_stepTime + Mathf.Max(0f, seconds)) : Time.timeAsDouble + Mathf.Max(0f, seconds);
 
         void MoveBody(Vector3 position)
         {
@@ -628,8 +638,8 @@ namespace RoguePirates.V4.Foundation.Player
             runSpeedMultiplier = RunSpeedMultiplier,
             targetRoll = _targetRoll,
             stepTime = _stepTime,
-            nextIslandImpactAt = _nextIslandImpactAt,
-            nextIslandDamageAt = _nextIslandDamageAt,
+            nextIslandImpactAt = (float)_nextIslandImpactAt,
+            nextIslandDamageAt = (float)_nextIslandDamageAt,
             movementEnabled = _movementEnabled,
         };
 
@@ -839,16 +849,31 @@ namespace RoguePirates.V4.Foundation.Player
 
         Mesh FindHullMesh() => FindPrimaryHullMeshFilter()?.sharedMesh;
 
+        /// <summary>
+        /// V5 M9c S0 (determinism): a transform's scale in the world from the local scales up its hierarchy, not
+        /// <see cref="Transform.lossyScale"/>, which Unity derives from the world matrix and so changes in its last bits with
+        /// the drawn (Rigidbody-interpolated) rotation. The hull's footprint read lossyScale, so the enemies' contact radius
+        /// with the ship wobbled from frame to frame and between two plays of one seed (the voyage fingerprint caught it).
+        /// Equal to lossyScale wherever the ancestors' scales are uniform, as the ship's are.
+        /// </summary>
+        static Vector3 RestScale(Transform t)
+        {
+            var s = Vector3.one;
+            for (; t != null; t = t.parent) s = Vector3.Scale(s, t.localScale);
+            return s;
+        }
+
         float GetHullWorldRadius()
         {
-            var scale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
+            var rootScale = RestScale(transform);
+            var scale = Mathf.Max(Mathf.Abs(rootScale.x), Mathf.Abs(rootScale.z));
             var baseline = hullRadius * scale;
             var filter = FindPrimaryHullMeshFilter();
             if (filter == null || filter.sharedMesh == null)
                 return baseline;
 
             var ext = filter.sharedMesh.bounds.extents;
-            var meshScale = filter.transform.lossyScale;
+            var meshScale = RestScale(filter.transform);
             var horizontal = Mathf.Max(
                 ext.x * Mathf.Abs(meshScale.x),
                 ext.z * Mathf.Abs(meshScale.z));
@@ -862,11 +887,11 @@ namespace RoguePirates.V4.Foundation.Player
             if (filter != null && filter.sharedMesh != null)
             {
                 var ext = filter.sharedMesh.bounds.extents;
-                var height = ext.y * 2f * Mathf.Abs(filter.transform.lossyScale.y);
+                var height = ext.y * 2f * Mathf.Abs(RestScale(filter.transform).y);
                 return Mathf.Clamp(height, 1.5f, hullHeight * 1.35f);
             }
 
-            return hullHeight * Mathf.Abs(transform.lossyScale.y);
+            return hullHeight * Mathf.Abs(RestScale(transform).y);
         }
 
         Transform EnsureVisualPivot()

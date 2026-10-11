@@ -111,3 +111,8 @@ Full plan: `plan/v5/phase-09c-multiship/PLAN.md` ("Product decisions"). The ones
   voyage, about 20 h) or a supervisor running several server processes in one container (about 5 h, more memory)? My
   default: in-process, as M13b needs it cheap.
 - **Q (M9c-12):** accept the M9c-1 / M9c-2 split, with your solo playtest at M9c-1? My default: yes.
+- M9c S0 (11 Oct): three single-player fingerprints frozen (plain voyage, an eventful voyage that ends sunk in
+  overtime, a solo server voyage). Three tiny determinism fixes in shipped code (the ship's collision size read in a way
+  that wobbled with its drawn rotation; two hit-immunity timers rounding differently late in a session); no change you
+  would feel. Open: the solo server fingerprint gave a second, repeatable result in 2 of 13 runs; until S1 finds the
+  cause, that test accepts the golden or that one known variant and logs which.
