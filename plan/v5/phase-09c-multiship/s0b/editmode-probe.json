@@ -1,0 +1,34 @@
+{
+  "status": "completed",
+  "duration": 0.46,
+  "summary": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetLoadProbeEditModeTests.EnemyDelta_MovingEnemyAgainstA270msBaseline_CostsAboutFourToSixBytes",
+      "Status": "Passed",
+      "Duration": 0.0134406,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetLoadProbeEditModeTests.EnemyDelta_RoundTrips_LaggedBaselines_Starvation_RemovalsAndReturns",
+      "Status": "Passed",
+      "Duration": 0.0289317,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetLoadProbeEditModeTests.TestPresets_RefusedWithoutTheAllowSwitch",
+      "Status": "Passed",
+      "Duration": 0.0038265,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

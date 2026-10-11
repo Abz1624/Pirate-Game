@@ -95,6 +95,9 @@ def main():
     ap.add_argument("--out", default="")
     ap.add_argument("--base-port", type=int, default=17777)
     ap.add_argument("--api-port", type=int, default=18080)
+    ap.add_argument("--server-env", action="append", default=[], metavar="NAME=VALUE",
+                    help="extra environment for the match servers (V5 M9c S0b: RP_ALLOW_TEST_PRESETS=1 RP_TEST_PRESET=load200)")
+    ap.add_argument("--skip-extra-checks", action="store_true", help="skip the refused second player and replayed ticket (a load probe)")
     a = ap.parse_args()
 
     os.environ["PATH"] = DOCKER_BIN + os.pathsep + DOTNET_BIN + os.pathsep + os.environ["PATH"]
@@ -146,7 +149,7 @@ def main():
             docker("rm", "-f", name, check=False)
             t0 = time.time()
             docker("run", "-d", "--name", name, "-p", f"{port}:7777", "-e", "RP_MATCH_TICKET_SECRET", "-e", f"RP_MATCH_ID={match_id}",
-                   "-e", "RP_METRICS_DIR=/metrics", "-v", f"{d}:/metrics", a.image, env=env)
+                   "-e", "RP_METRICS_DIR=/metrics", *[x for kv in a.server_env for x in ("-e", kv)], "-v", f"{d}:/metrics", a.image, env=env)
             containers.append(name)
             servers.append({"i": i, "name": name, "port": port, "dir": d, "t0": t0})
         for s in servers:
@@ -188,7 +191,7 @@ def main():
                 raise RuntimeError("client 1 never joined:\n" + logs("rp-match-client-1")[-2000:])
             time.sleep(0.25)
         time.sleep(10)
-        for key, tk in (("secondPlayer", ticket(new_player("Intruder"))["ticket"]), ("replayedTicket", first_ticket)):
+        for key, tk in (() if a.skip_extra_checks else (("secondPlayer", ticket(new_player("Intruder"))["ticket"]), ("replayedTicket", first_ticket))):
             r = docker("run", "--rm", "-e", "RP_JOIN_TICKET", a.image, "-rpClient", f"ws://host.docker.internal:{a.base_port}/",
                        "-rpSeconds", "1", "-rpDropAt", "0", "-rpWaitEnd", "1", "-rpOut", "/tmp/c.json",
                        env=dict(env, RP_JOIN_TICKET=tk), check=False, timeout=180)

@@ -79,6 +79,9 @@ namespace RoguePirates.V5.Net
             return t;
         }
 
+        /// <summary>V5 M9c S0b: every client's traffic so far (the load probe's report).</summary>
+        public IEnumerable<KeyValuePair<ulong, Traffic>> ClientsForReport() => _clients;
+
         public void Down(ulong clientId, int bytes) { var t = For(clientId); t.bytesDown += bytes; t.messagesDown++; }
         public void Up(ulong clientId, int bytes) { var t = For(clientId); t.bytesUp += bytes; t.messagesUp++; }
 

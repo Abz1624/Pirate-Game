@@ -72,6 +72,11 @@ namespace RoguePirates.V5.Net
 
         public V4Game Game { get; private set; }
         public ShipMotionPort Ship { get; private set; }
+        /// <summary>V5 M9c S0b: a test-only measurement hook (the load probe), called at the end of every tick, inside the
+        /// tick time; null on every real server.</summary>
+        public INetServerProbe Probe { get; set; }
+        /// <summary>V5 M9c S0b: the payload of the newest ship snapshot sent (the probe's own-snapshot size).</summary>
+        public int LastShipSnapshotBytes { get; private set; }
         IEnemyWorldView _enemies;
         RoguePirates.V4.Stage.IStageContent _stage;
 
@@ -594,8 +599,10 @@ namespace RoguePirates.V5.Net
                 SendEnd(Ship.Alive ? NetProtocol.EndReason.RunEnded : NetProtocol.EndReason.Sunk);
 
             // The world moved on this tick (the run is not paused for cards, held for an away player or for the first inputs).
-            if (run != null && !run.IsPaused && Time.timeScale > 0f && !away) WorldTick++;
+            var worldMoved = run != null && !run.IsPaused && Time.timeScale > 0f && !away;
+            if (worldMoved) WorldTick++;
             if (ServerTick % NetProtocol.SnapshotEveryTicks == 0 && s != null && s.connected && !away) SendSnapshot(s);
+            Probe?.OnServerTick(this, worldMoved);
         }
 
         /// <summary>V5 M9b owner re-test fixes: a chest choice paused the run (the player sailed into a chest's range with the
@@ -729,6 +736,7 @@ namespace RoguePirates.V5.Net
             var bytes = 0;
             _writer.Clear();
             NetCodec.WriteShip(_writer, BuildShip(s));
+            LastShipSnapshotBytes = _writer.Length;
             s.leastMargin = int.MaxValue; // the next snapshot reports the ticks applied after this one
             bytes += Send(NetProtocol.Snapshot, s.clientId, NetworkDelivery.Unreliable);
             var enemyCount = 0;

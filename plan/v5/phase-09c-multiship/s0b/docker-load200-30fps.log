@@ -1,0 +1,6 @@
+[12:58:42] building the API into C:\Users\shara\AppData\Local\Temp\rp-match-test-api
+[12:58:45] API up
+[12:58:51] rp-match-test-1 READY on :17777 after 1.95 s (process 0.83 s)
+[12:58:51] ticket from the API: matchServerUrl=ws://localhost:17777/ matchId=local-c1f7cc38 lifetime=60 s
+[13:04:16] voyage done; docker stop on the servers
+[13:04:20] summary: C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v5\phase-09c-multiship\s0b\docker-load200-30fps\summary.json

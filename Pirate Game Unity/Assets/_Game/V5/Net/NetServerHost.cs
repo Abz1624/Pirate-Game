@@ -132,6 +132,7 @@ namespace RoguePirates.V5.Net
             Debug.Log("[V5 Net] closing: " + reason);
             yield return _server.CloseGracefully();
             WriteReport("final");
+            if (_server.Probe is NetLoadProbe probe && probe.Measuring) probe.WriteReport("final");
             Debug.Log("[V5 Net] final " + StatsLine());
             Debug.Log("[V5 Net] EXIT " + reason);
             TryDelete(ReadyFile);

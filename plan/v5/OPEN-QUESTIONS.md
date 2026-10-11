@@ -116,3 +116,11 @@ Full plan: `plan/v5/phase-09c-multiship/PLAN.md` ("Product decisions"). The ones
   that wobbled with its drawn rotation; two hit-immunity timers rounding differently late in a session); no change you
   would feel. Open: the solo server fingerprint gave a second, repeatable result in 2 of 13 runs; until S1 finds the
   cause, that test accepts the golden or that one known variant and logs which.
+- M9c S0b (11 Oct): early 4-ship probe on the M9b server: **GO with conditions** (`phase-09c-multiship/s0b/PROBE.md`).
+  Bandwidth about 12 KB/s p50, 13-15 KB/s p95 per player (target 20), but only with a new delta encoding and the 108
+  cap per view (today's protocol would send 27-29 KB/s). Server tick about 9 ms p95 locally with one real ship; estimated
+  10.6-14 ms on Railway at 4 ships against 16: the tight part. Conditions: S1 steps the enemy world once per 30 Hz tick
+  (target <= 7 ms p95 locally), S3 re-runs the probe with real ships (<= 12 ms locally).
+- The Unity Editor hung on a Package Manager dialog during S0b; I stopped it and restarted it. Its scene-recovery
+  backup (one small file, most likely the test runner's temporary scene) is kept in
+  `Documents/RoguePirates-scene-backups/20261011-1318` rather than recovered or discarded. Delete it if you don't need it.

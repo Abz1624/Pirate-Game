@@ -84,6 +84,8 @@ namespace RoguePirates.V5.Net
             _status = $"server on ws port {port}";
             if (role == Role.Server)
             {
+                // V5 M9c S0b: a test preset (load200) only with RP_ALLOW_TEST_PRESETS=1 in the environment.
+                NetLoadProbe.StartFromEnvironment(Server, game);
                 gameObject.AddComponent<NetServerHost>().Begin(Server, port);
                 yield break;
             }
