@@ -68,3 +68,13 @@ Decisions I took to keep going (say if you want any changed); questions marked *
 - **Q:** the Unity Transport fix is a local patch to Unity's package (Unity's licence says Unity owns the modified copy,
   which is fine for us). Should I report the bug to Unity publicly (a forum post or bug report under your account)?
   My default: no public post until you say so; the patch file makes re-applying it easy.
+- M9b determinism fix (11 Oct, `4c050833`): the same seed gave different spawns because gameplay read the ship's
+  drawn (visually smoothed) position and the drawn camera; gameplay now reads the simulated position and a hidden
+  simulation camera. What you see is unchanged.
+- **Q:** sharks and treasure raiders now recover and flee on the game's own 1.2 s timer whatever the frame rate. Before,
+  on 120-144 Hz screens those phases lasted 2-2.4 times longer (and half as long at 30 fps), so on fast screens sharks
+  now come back sooner. My default: keep the fixed timer (it is what the config says, and the server matches it).
+- **Q:** is replaying a run log only at a fixed frame time enough, or must it replay identically at any frame rate (only
+  needed if the server ever re-simulates runs)? My default: fixed frame time is enough for now.
+- **Q:** after a page hitch (e.g. a 1 s freeze) the server may guess your inputs for up to about 2 s before the client
+  catches up. My default: accept (it only affects that second or two).
