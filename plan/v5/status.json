@@ -1,6 +1,6 @@
 {
  "updated": "9 Oct 2026",
- "statusLine": "M9b closed (GO). M9c building: S0 single-player fingerprint first. Owner away; questions logged in OPEN-QUESTIONS.md.",
+ "statusLine": "Paused for the hackathon demo: M9c stopped after S1 (tag v5-m9c-s1); S1b parked on wip/m9c-s1b. Waiting for the owner's demo priorities.",
  "statusOk": false,
  "facts": [
   [
@@ -87,7 +87,7 @@
   },
   "M9c": {
    "state": "building",
-   "chip": "S0, S0b, S1 done · S1b running"
+   "chip": "paused after S1 · hackathon demo first"
   }
  },
  "log": [
@@ -580,6 +580,11 @@
    "when": "11 Oct",
    "commit": "7397668a",
    "what": "<strong>M9c S1 done</strong> (tag v5-m9c-s1): the match server steps each voyage on its own clock (no more freezing Unity's global time; several voyages per server need this). Single player unchanged (fingerprints identical); the solo server voyage's occasional second outcome came from a 0.2 s hit immunity reading the process clock, now gone. Suites green (EditMode 626/626, PlayMode 132 passed). Open: server tick at 200 enemies best 8.0 ms p95 (target 7), and enemies lost the ship in 4 of 6 load runs; S1b fixes that next."
+  },
+  {
+   "when": "11 Oct",
+   "commit": "",
+   "what": "<strong>V5 paused for the hackathon demo</strong> (owner, 11 Oct). M9c stops after S1 (tag v5-m9c-s1); the unfinished S1b investigation is parked on branch <code>wip/m9c-s1b</code>. Demo priorities come next from the owner; the rest of M9c resumes after the submission."
   }
  ],
  "todos": {
