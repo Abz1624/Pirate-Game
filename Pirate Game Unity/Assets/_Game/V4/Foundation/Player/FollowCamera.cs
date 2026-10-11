@@ -1,3 +1,4 @@
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -165,7 +166,7 @@ namespace RoguePirates.V4.Foundation.Player
             LateUpdateView();
             // V5 M9b close 2: once the run steps the simulation view on its ticks (StepSimulationViewOf), only the run moves
             // it; before that (a scene without a run), the frame does.
-            if (!_simSteppedByRun) UpdateSimulationView(Time.deltaTime);
+            if (!_simSteppedByRun) UpdateSimulationView(Clock.DeltaTime);
         }
 
         void LateUpdateView()
@@ -264,6 +265,20 @@ namespace RoguePirates.V4.Foundation.Player
         public Camera SimulationView => _simulationView;
 
         bool _simSteppedByRun;
+
+        SessionClock _clock;
+        /// <summary>V5 M9c S1: the run's session clock for the simulation view (the run sets it, <see cref="UseClockOf"/>);
+        /// a camera without a run is on Unity's frame. The drawn camera's own smoothing stays on Unity's frame (presentation).</summary>
+        public SessionClock Clock { get => _clock ??= new SessionClock(); set => _clock = value; }
+
+        /// <summary>V5 M9c S1: <paramref name="camera"/>'s simulation view runs on <paramref name="clock"/> (no-op for a camera
+        /// without a follow camera).</summary>
+        public static void UseClockOf(Camera camera, SessionClock clock)
+        {
+            if (camera == null) return;
+            var follow = camera.GetComponent<FollowCamera>();
+            if (follow != null) follow.Clock = clock;
+        }
 
         /// <summary>V5 M9b close 2: the run steps <paramref name="camera"/>'s simulation view once per simulation tick, by the
         /// tick's dt, before the tick's modules ask it what is on screen, so the view (and its follow smoothing) is the same

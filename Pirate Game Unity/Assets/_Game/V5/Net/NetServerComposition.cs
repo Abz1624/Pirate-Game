@@ -10,9 +10,10 @@ namespace RoguePirates.V5.Net
 {
     /// <summary>
     /// V5 M9b (I9b.1): the server composition. It is the shipped run (V4Game in V4SaltwindRun: the same modules, ports and
-    /// config) with two switches set before the run starts: no presenters or console (<see cref="RunRequest.Headless"/>)
-    /// and the run's module clock at the net tick, 30 Hz (a <c>run.tickRate</c> preset, applied before anything reads
-    /// config). Nothing of the gameplay is forked: <see cref="NetServer.Attach"/> reads the run through its context and
+    /// config) with switches set before the run starts: no presenters or console (<see cref="RunRequest.Headless"/>),
+    /// the run's module clock at the net tick, 30 Hz (a <c>run.tickRate</c> preset, applied before anything reads config),
+    /// and (V5 M9c S1) a Driven session clock (<see cref="RunRequest.DrivenClock"/>): the run moves only when the server
+    /// steps it, once per net tick (<see cref="NetServer"/>), never on Unity's frame. Nothing of the gameplay is forked: <see cref="NetServer.Attach"/> reads the run through its context and
     /// ports and steps its ship through <see cref="RoguePirates.V4.Ports.ShipMotionPort"/>.
     /// </summary>
     public static class NetServerComposition
@@ -33,6 +34,7 @@ namespace RoguePirates.V5.Net
         public static void PrepareHeadlessRun()
         {
             RunRequest.Headless = true;
+            RunRequest.DrivenClock = true; // V5 M9c S1
             RunRequest.RequestPreset(ThirtyHertzPreset());
         }
 
@@ -40,6 +42,7 @@ namespace RoguePirates.V5.Net
         public static void EndHeadlessRun()
         {
             RunRequest.Headless = false;
+            RunRequest.DrivenClock = false;
             RunRequest.ClearActivePreset();
         }
 

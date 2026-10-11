@@ -1,0 +1,47 @@
+{
+  "report": "V5 match server (Linux, Docker)",
+  "utc": "2026-10-11T10:14:21.5369080Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "kind": "final",
+  "port": "7777",
+  "matchId": "local-cbcc5f19",
+  "serverTick": "6678",
+  "stepsApplied": "6606",
+  "worldTick": "6606",
+  "worldSteps": "6605",
+  "worldStepsPerTick": "1",
+  "killsPerMinute": "124.5",
+  "rejectedJoins": "0",
+  "lastRejectReason": "",
+  "endSent": "ServerClosing",
+  "closeReason": "SIGTERM (stop file)",
+  "processSeconds": "252.09",
+  "joinedAtProcessSeconds": "3.47",
+  "rssMB": "226.3",
+  "monoHeapMB": "50.2",
+  "unityReservedMB": "156.6",
+  "platform": "LinuxServer",
+  "scriptingBackend": "Mono",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 242.95,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 10125.824, "bytesUpPerSecond": 886.59, "wireDownPerSecondEstimate": 10530.648, "wireUpPerSecondEstimate": 1241.923, "messagesDown": 8196, "messagesUp": 7194}
+      ],
+      "tickMs": {"count": 6440, "mean": 6.134, "p50": 4.498, "p95": 18.193, "max": 366.708},
+      "ticksMeasured": 6440,
+      "tickMsMaxVoyage": 366.708,
+      "snapshotBytes": {"count": 3220, "mean": 763.994, "p50": 193, "p95": 2149, "max": 2170},
+      "snapshotEnemies": {"count": 3220, "mean": 60.256, "p50": 3, "p95": 200, "max": 200},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 419,
+      "lateInputs": 63,
+      "catchUpSteps": 1152
+    }
+  ]
+}

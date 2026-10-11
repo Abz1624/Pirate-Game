@@ -1,0 +1,226 @@
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=4194304"
+    "memorysetup-bucket-allocator-block-count=1"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=4194304"
+    "memorysetup-profiler-bucket-allocator-block-count=1"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=4194304"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Processor: 13th Gen Intel(R) Core(TM) i5-13450HX, 16 core(s) @ 2611 MHz 
+Available Memory: 7783 MB 
+Linux Kernel and distribution: Linux 6.18 Debian GNU/Linux 12 64bit
+System Language: en
+Keyboard Layout: default
+Mono path[0] = '/app/RoguePirates_Data/Managed'
+Mono config path = '/app/RoguePirates_Data/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+PlayerPrefs - Creating folder: /home/rp/.config/unity3d/DefaultCompany
+PlayerPrefs - Creating folder: /home/rp/.config/unity3d/DefaultCompany/Rogue Pirates
+Unable to load player prefs
+Initialize engine version: 6000.3.11f1 (3000ef702840)
+[Subsystems] Discovering subsystems at path /app/RoguePirates_Data/UnitySubsystems
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.290 seconds
+- Finished resetting the current domain, in  0.002 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+UnloadTime: 1.234705 ms
+OnGUI function detected on MonoBehaviour, but not called, because IMGUI module is stripped.
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock1_low001
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock3_low001
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock2_low001
+No mesh data available for mesh helix on particle system Trail2. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.555203 ms
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+No mesh data available for mesh Circle_Half_03 on particle system trail_smoke_outer. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Circle_Half_01 on particle system trail_bright. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Round_01 on particle system smoke_mesh. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Circle_Half_03 on particle system trail_smoke_outer_bright. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Round_01 on particle system smoke_mesh_floor. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh WaterCircle on particle system WaterSplash_Ring. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+No mesh data available for mesh Cylinder on particle system fire1 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Smoke_14. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_04_2_GREEN. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_05 _2 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_05 _2. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system fire1 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Smoke_14. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+StageBuilder: spawned 40 islands (seed=9200, evenSpread=True, target 40, supplemental +0).
+V4Game: run seed=9200 (random), POI rng=9604.
+Unloading 1099 unused Assets to reduce memory usage. Loaded Objects now: 9138.
+Total: 4.367131 ms (FindLiveObjects: 0.331741 ms CreateObjectMapping: 0.170533 ms MarkObjects: 3.572645 ms  DeleteObjects: 0.291713 ms)
+
+[V5 NetTest] 0.97s stage loaded (seed 9200)
+[V5 NetTest] 1.31s welcomed in 0.331 s
+[V5 Net] large correction 1.14 m: tick 761 ack 760 from 761 historyStart 1 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 1.14
+[V5 Net] resync (inputs late): ack 764, margin -3, tick 761 -> 767 (lead 3)
+[V5 Net] large correction 3.22 m: tick 1070 ack 1070 from 1071 historyStart 765 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 3.22
+[V5 Net] resync (inputs late): ack 1080, margin -9, tick 1072 -> 1084 (lead 4)
+[V5 Net] large correction 7.56 m: tick 1392 ack 1390 from 1391 historyStart 1081 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 7.57
+[V5 Net] resync (inputs late): ack 1398, margin -6, tick 1394 -> 1403 (lead 5)
+[V5 Net] resync (inputs late): ack 1406, margin -12, tick 1405 -> 1420 (lead 14)
+[V5 Net] large correction 1.82 m: tick 1422 ack 1416 from 1417 historyStart 1407 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.97
+[V5 Net] large correction 7.84 m: tick 1712 ack 1711 from 1712 historyStart 1407 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 7.86
+[V5 Net] resync (inputs late): ack 1719, margin -7, tick 1714 -> 1724 (lead 5)
+[V5 Net] resync (inputs late): ack 1727, margin -13, tick 1726 -> 1742 (lead 15)
+[V5 Net] large correction 1.79 m: tick 1743 ack 1735 from 1736 historyStart 1728 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.79
+[V5 Net] large correction 8.77 m: tick 2039 ack 2039 from 2040 historyStart 1728 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 8.77
+[V5 Net] resync (inputs late): ack 2047, margin -8, tick 2041 -> 2077 (lead 30)
+[V5 Net] large correction 1.57 m: tick 2079 ack 2055 from 2056 historyStart 2048 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.15
+[V5 Net] large correction 2.63 m: tick 2081 ack 2063 from 2064 historyStart 2048 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.79
+[V5 Net] large correction 1.62 m: tick 2083 ack 2069 from 2070 historyStart 2048 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.48
+[V5 Net] large correction 2.22 m: tick 2084 ack 2079 from 2080 historyStart 2048 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 1.73
+[V5 Net] large correction 9.95 m: tick 2376 ack 2375 from 2376 historyStart 2048 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 9.96
+[V5 Net] resync (inputs late): ack 2383, margin -7, tick 2378 -> 2417 (lead 34)
+[V5 Net] large correction 3.73 m: tick 2422 ack 2399 from 2400 historyStart 2384 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.81
+[V5 Net] large correction 2.44 m: tick 2424 ack 2407 from 2408 historyStart 2384 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.78
+[V5 Net] large correction 2.80 m: tick 2425 ack 2419 from 2420 historyStart 2384 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 2.10
+[V5 Net] large correction 11.22 m: tick 2716 ack 2715 from 2716 historyStart 2384 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 11.22
+[V5 Net] resync (inputs late): ack 2723, margin -7, tick 2718 -> 2762 (lead 39)
+[V5 Net] large correction 4.15 m: tick 2767 ack 2739 from 2740 historyStart 2724 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.80
+[V5 Net] large correction 2.69 m: tick 2769 ack 2747 from 2748 historyStart 2724 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.78
+[V5 Net] large correction 2.33 m: tick 2771 ack 2755 from 2756 historyStart 2724 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 0.78
+[V5 Net] large correction 2.47 m: tick 2772 ack 2767 from 2768 historyStart 2724 pause 0-0 confirmed False paused False alive True welcomes 1 predictionError 1.93
+[V5 Net] resync (behind the server's ack): ack 3064, margin -1, tick 3063 -> 3066 (lead 2)
+[V5 Net] resync (behind the server's ack): ack 3372, margin -2, tick 3370 -> 3374 (lead 2)
+[V5 Net] resync (inputs late): ack 3679, margin -2, tick 3678 -> 3731 (lead 52)
+[V5 Net] resync (behind the server's ack): ack 4031, margin -2, tick 4030 -> 4087 (lead 56)
+[V5 Net] resync (behind the server's ack): ack 4380, margin -2, tick 4378 -> 4431 (lead 51)
+[V5 Net] resync (behind the server's ack): ack 4728, margin -1, tick 4727 -> 4777 (lead 49)
+[V5 Net] resync (inputs late): ack 5076, margin -2, tick 5075 -> 5080 (lead 4)
+[V5 Net] resync (behind the server's ack): ack 5377, margin -2, tick 5376 -> 5381 (lead 4)
+[V5 Net] resync (inputs late): ack 5681, margin -1, tick 5680 -> 5684 (lead 3)
+[V5 Net] resync (behind the server's ack): ack 5987, margin -1, tick 5986 -> 6038 (lead 51)
+[V5 Net] resync (behind the server's ack): ack 6341, margin -2, tick 6339 -> 6343 (lead 2)
+[V5 NetTest] 241.32s VOYAGE-DONE snapshots=3297 hull=100/100 kills=409 level=12
+[V5 NetTest] 242.29s end ServerClosing received
+[V5 NetTest] 242.30s lobby (end ServerClosing) 0.012 s after the server's end showed, at 2026-10-11T10:23:49.8482940Z
+[V5 NetTest] report /out/client.json
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-11T10:23:49.8635850Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "joinSeconds": "0.331",
+  "resumeSeconds": "-1.000",
+  "endedByServer": "true",
+  "endReason": "ServerClosing",
+  "lobbyUtc": "2026-10-11T10:23:49.8482940Z",
+  "secondsFromServerEndToLobby": "0.013",
+  "snapshots": "3312",
+  "welcomes": "1",
+  "resyncs": "24",
+  "finalHull": "100",
+  "kills": "409",
+  "level": "12",
+  "cardSets": "0",
+  "cardsPicked": "0",
+  "holdsSent": "0",
+  "snapshotsSkippedForHoldOrPick": "0",
+  "droppedDuringCards": "false",
+  "resumeDuringCardsSeconds": "-1.000",
+  "cardsBackAfterResume": "false",
+  "awayDuringCardsSeconds": "0.0",
+  "awayWelcomeSeconds": "-1.000",
+  "cardsBackAfterAway": "false",
+  "hiddenDuringCardsSeconds": "0.0",
+  "hiddenCardsResolution": "",
+  "hiddenControlBackSeconds": "-1.000",
+  "hideAfterPickSeconds": "0.0",
+  "hideAfterPickWelcomeSeconds": "-1.000",
+  "hideAfterPickControlSeconds": "-1.000",
+  "hideAfterPickResyncs": "-1",
+  "lateResyncs": "15",
+  "awaysSent": "0",
+  "enemyJumpsMarked": "2681",
+  "url": "ws://host.docker.internal:17777/",
+  "outcome": "end ServerClosing",
+  "ok": "true",
+  "events": "0.97s stage loaded (seed 9200) | 1.31s welcomed in 0.331 s | 241.32s VOYAGE-DONE snapshots=3297 hull=100/100 kills=409 level=12 | 242.29s end ServerClosing received | 242.30s lobby (end ServerClosing) 0.012 s after the server's end showed, at 2026-10-11T10:23:49.8482940Z",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 241.333,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 9959.251, "bytesUpPerSecond": 890.192, "wireDownPerSecondEstimate": 10369.124, "wireUpPerSecondEstimate": 1246.96, "messagesDown": 8243, "messagesUp": 7175}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "ticksMeasured": 0,
+      "tickMsMaxVoyage": 0,
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 3153, "mean": 0.121, "p50": 0, "p95": 0.001, "max": 18.876},
+      "correctionMetres": {"count": 3154, "mean": 0.154, "p50": 0, "p95": 0.045, "max": 18.876},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 3153, "mean": 148.906, "p50": 66.667, "p95": 200, "max": 1866.667},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}
+[V5 NetTest] EXIT ok: end ServerClosing
+Session recorded: /home/rp/.config/unity3d/DefaultCompany/Rogue Pirates/sessions/session-20261011-102350-rook.json
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[entrypoint] match server exited with 0

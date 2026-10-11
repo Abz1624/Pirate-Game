@@ -43,6 +43,14 @@ namespace RoguePirates.V4
         /// </summary>
         public static bool RemoteSimulation { get; set; }
 
+        /// <summary>
+        /// V5 M9c S1: the runs of this session get a Driven <see cref="RoguePirates.V4.Foundation.Core.SessionClock"/>: they
+        /// move only when their owner steps them (<see cref="V4Game.StepFrame"/>; a match server, once per net tick), never on
+        /// Unity's frame, and a hold is the session not being stepped (no <c>Time.timeScale</c>). Set by RoguePirates.V5.Net
+        /// only (the server composition).
+        /// </summary>
+        public static bool DrivenClock { get; set; }
+
         public static void RequestSeed(int seed)
         {
             Seed = seed;

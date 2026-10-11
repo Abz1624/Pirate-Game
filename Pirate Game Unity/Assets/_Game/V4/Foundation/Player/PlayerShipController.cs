@@ -378,9 +378,32 @@ namespace RoguePirates.V4.Foundation.Player
 
         Vector3 ClampPlayPosition(Vector3 position, float hullRadius) => position;
 
+        SessionClock _clock;
+        /// <summary>
+        /// V5 M9c S1: the run's session clock (the run injects it, and it reaches the ship's damage receiver and boost). A ship
+        /// outside a run (a test's, a net client's prediction copy) keeps its own clock on Unity's frame.
+        /// </summary>
+        public SessionClock Clock
+        {
+            get => _clock ??= new SessionClock();
+            set
+            {
+                _clock = value;
+                if (_damage == null) _damage = GetComponent<DamageReceiver>();
+                if (_damage != null) _damage.Clock = value;
+            }
+        }
+
         void FixedUpdate()
         {
-            if (NetStepped && !_netStepping) return; // V5 M9b part 2b: only the net tick steps it (TickMovement)
+            if (NetStepped) return; // V5 M9b part 2b: only the net tick steps it (TickMovement)
+            if (Clock.IsDriven) return; // V5 M9c S1: a Driven session's owner steps its ships (TickMovement), not the physics step
+            StepMovement(Clock.FixedDeltaTime);
+        }
+
+        /// <summary>One movement step of <paramref name="dt"/> seconds (the physics step in a voyage; the net tick when stepped).</summary>
+        void StepMovement(float dt)
+        {
             if (!_movementEnabled) return;
             if (_damage != null && !_damage.IsAlive) return;
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
@@ -390,20 +413,19 @@ namespace RoguePirates.V4.Foundation.Player
 
             if (_slowTimer > 0f)
             {
-                _slowTimer -= Time.fixedDeltaTime;
+                _slowTimer -= dt;
                 if (_slowTimer <= 0f)
                     _slowMultiplier = 1f;
             }
 
             if (_moveEffectTimer > 0f)
             {
-                _moveEffectTimer -= Time.fixedDeltaTime;
+                _moveEffectTimer -= dt;
                 if (_moveEffectTimer <= 0f)
                     _moveEffectMultiplier = 1f;
             }
 
             var moveMult = _slowMultiplier * _moveEffectMultiplier;
-            var dt = Time.fixedDeltaTime;
             _stepTime += dt;
             var input = ReadShipInput();
             LastSteerThrottle = new Vector2(input.steer, input.throttle);
@@ -557,7 +579,7 @@ namespace RoguePirates.V4.Foundation.Player
         {
             if (visualModel == null) return;
 
-            _currentRoll = Mathf.Lerp(_currentRoll, _targetRoll, 1f - Mathf.Exp(-maxRollDegreesPerSecond * Time.deltaTime));
+            _currentRoll = Mathf.Lerp(_currentRoll, _targetRoll, 1f - Mathf.Exp(-maxRollDegreesPerSecond * Clock.DeltaTime));
             var rollAxis = modelForwardIsNegativeZ ? Vector3.back : Vector3.forward;
             visualModel.localRotation = _visualBaseLocalRotation * Quaternion.AngleAxis(_currentRoll, rollAxis);
         }
@@ -580,14 +602,15 @@ namespace RoguePirates.V4.Foundation.Player
         bool _directStep;
 
         float _stepTime;
-        /// <summary>The island cooldowns' clock: the frame clock in the voyage; with <see cref="DirectStep"/> the ship's own
-        /// step clock (part of <see cref="MotionState"/>), so a replayed step meets the same cooldowns as the server's.</summary>
-        double IslandClock => DirectStep ? _stepTime : Time.timeAsDouble;
+        /// <summary>The island cooldowns' clock: the session clock in the voyage (V5 M9c S1; was Unity's frame clock, which it
+        /// still is in a voyage); with <see cref="DirectStep"/> the ship's own step clock (part of <see cref="MotionState"/>),
+        /// so a replayed step meets the same cooldowns as the server's.</summary>
+        double IslandClock => DirectStep ? _stepTime : Clock.Time;
 
         /// <summary>When a cooldown started now ends: on the step clock in float, as the net state carries it (the server and the
         /// prediction must agree to the bit); on the voyage's frame clock in double (V5 M9c S0).</summary>
         double IslandCooldownEnd(float seconds) =>
-            DirectStep ? (double)(_stepTime + Mathf.Max(0f, seconds)) : Time.timeAsDouble + Mathf.Max(0f, seconds);
+            DirectStep ? (double)(_stepTime + Mathf.Max(0f, seconds)) : Clock.Time + Mathf.Max(0f, seconds);
 
         void MoveBody(Vector3 position)
         {
@@ -672,19 +695,18 @@ namespace RoguePirates.V4.Foundation.Player
             _movementEnabled = s.movementEnabled;
         }
 
+        /// <summary>One step of <paramref name="dt"/> seconds by the net layer (V5 M9c S1: the step's dt is passed in; Unity's
+        /// fixed step is no longer written for it).</summary>
         public void TickMovement(float dt)
         {
-            var wasFixed = Time.fixedDeltaTime;
             try
             {
-                Time.fixedDeltaTime = dt;
                 _netStepping = true;
-                FixedUpdate();
+                StepMovement(dt);
             }
             finally
             {
                 _netStepping = false;
-                Time.fixedDeltaTime = wasFixed;
             }
         }
 

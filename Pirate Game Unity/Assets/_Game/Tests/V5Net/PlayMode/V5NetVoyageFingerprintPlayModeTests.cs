@@ -20,14 +20,14 @@ namespace RoguePirates.V5.Net.Tests
     /// <summary>
     /// V5 M9c S0, case (c): the solo server voyage golden. The headless server run (the shipped run at 30 Hz, no
     /// presenters) and a <see cref="NetClient"/> over loopback WebSockets in one Editor, the client sailing a fixed input
-    /// track (a constant steer and throttle, so an input the server has to guess is the same input). Made deterministic
-    /// without touching the server: the frame time and the physics step are fixed at the net tick (1/30 s); the world is held
-    /// (<c>Time.timeScale = 0</c>, as NetServerHost holds a run until its player's inputs come) until the server has the
-    /// client's first two inputs; the server's own wall-clock tick loop is switched off and the test runs exactly one
-    /// server tick a frame, after the world's frame step; frames are padded to at least 40 ms of wall time so the client
-    /// (which ticks on the wall clock) always has its input there before the server needs it. Fingerprint: the server's
-    /// per-minute run log, enemies at 60/120/180 s and the ship's final state, against
-    /// plan/v5/goldens/voyage-fingerprint-c-server-8282.txt. This guards M9c S1's clock change on the server path.
+    /// track (a constant steer and throttle, so an input the server has to guess is the same input). V5 M9c S1: the run is
+    /// a Driven session: it moves only in the server's tick (two world steps of 1/60 s, then the ship's input), never on
+    /// Unity's frame, so the test sets no frame time, physics step or time scale. The server holds the session until it has
+    /// the client's first two inputs (<see cref="NetServer.HoldForJoin"/>, as NetServerHost); its own wall-clock tick loop is
+    /// switched off and the test runs exactly one server tick a frame; frames are padded to at least 40 ms of wall time so
+    /// the client (which ticks on the wall clock) always has its input there before the server needs it. Fingerprint: the
+    /// server's per-minute run log, enemies at 60/120/180 s and the ship's final state, against
+    /// plan/v5/goldens/voyage-fingerprint-c-server-8282.txt (re-frozen in S1: see the golden's header).
     /// </summary>
     [Category("V5")]
     public sealed class V5NetVoyageFingerprintPlayModeTests
@@ -43,7 +43,7 @@ namespace RoguePirates.V5.Net.Tests
         byte[] _key;
         ushort _port;
         VoyageFingerprint.PinnedDevice _device;
-        float _captureDeltaTime, _timeScale, _fixedDeltaTime;
+        float _timeScale;
 
         sealed class ConstantInput : IShipSteerInput
         {
@@ -55,9 +55,7 @@ namespace RoguePirates.V5.Net.Tests
         {
             _isolation = new NetSaveIsolation();
             _device = new VoyageFingerprint.PinnedDevice();
-            _captureDeltaTime = Time.captureDeltaTime;
             _timeScale = Time.timeScale;
-            _fixedDeltaTime = Time.fixedDeltaTime;
             NetServerComposition.PrepareHeadlessRun();
             _port = (ushort)Random.Range(20000, 40000);
             var raw = new byte[32];
@@ -69,9 +67,6 @@ namespace RoguePirates.V5.Net.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
-            Time.captureDeltaTime = _captureDeltaTime;
-            Time.timeScale = _timeScale;
-            Time.fixedDeltaTime = _fixedDeltaTime;
             if (_client != null) _client.Stop();
             if (_server != null) _server.Stop();
             yield return null;
@@ -111,23 +106,24 @@ namespace RoguePirates.V5.Net.Tests
         public IEnumerator SoloServerVoyage_Seed8282_MatchesItsGolden()
         {
             Assert.IsNotNull(ServerTick, "NetServer.Tick (the server's one tick)");
-            Time.captureDeltaTime = NetProtocol.TickSeconds;
-            // One physics step a frame (the project's 0.02 s step against 1/30 s frames gives one or two steps a frame,
-            // and which frames get two depended on how many frames the scene load took: two variants of this voyage).
-            Time.fixedDeltaTime = NetProtocol.TickSeconds;
             var loadFrames = Time.frameCount;
             yield return Scenario.Load(ServerVoyage());
-            Time.timeScale = 0f;
-            loadFrames = Time.frameCount - loadFrames; // the world holds until the player's inputs are in (as NetServerHost)
+            loadFrames = Time.frameCount - loadFrames;
             Assert.IsNotNull(Scenario.Current, "the scenario loaded");
             CollectionAssert.IsEmpty(Scenario.Current.Errors);
             var game = Scenario.Current.Game;
+            Assert.IsTrue(game.SessionClock.IsDriven, "the server's run is a Driven session");
+            Assert.AreEqual(0L, game.SessionClock.Steps, "nothing stepped it while the scene loaded");
             Assert.AreEqual(30f, game.Config.Single<RoguePirates.V4.Config.RunConfig>().tickRate, "the server's run ticks at 30 Hz");
             Assert.IsNull(GameObject.Find("V4Presentation"), "the server's run has no presenters");
 
             _server = NetServer.Create(_port, new JoinTicketVerifier(_key), "127.0.0.1");
             _server.enabled = false; // no wall-clock ticks: the test ticks it once a frame
             _server.Attach(game);
+            Assert.AreEqual(2, _server.WorldStepsPerTick, "the server's default: two world steps of 1/60 s per net tick (M9c S1)");
+            // The world holds until the player's inputs are in (as NetServerHost): the session is not stepped.
+            _server.HoldForJoin = true;
+            _server.SessionStarted += () => _server.HoldForJoin = false;
             Assert.IsTrue(_server.StartListening(), "the server listens");
             var serverShip = game.Shell.Player;
             var ticket = new JoinTicketIssuer(_key).Issue("player-1", null, JoinTicket.UnixNow());
@@ -143,7 +139,8 @@ namespace RoguePirates.V5.Net.Tests
             var fp = new VoyageFingerprint("c-server-8282",
                 "Case (c): solo server voyage, seed 8282, shipped playtest switches, ambient waves and scripted phases as the game,\n" +
                 "damage on, no cards; headless server run at 30 Hz with an in-process NetClient sailing a constant input (steer 0.35,\n" +
-                "throttle 1) over loopback WebSockets; one server tick a frame after the world's step, frame time 1/30 s, until 180 s or the sinking (154 s).");
+                "throttle 1) over loopback WebSockets; the run a Driven session (M9c S1): one server tick a frame, each two world steps\n" +
+                "of 1/60 s then the ship's input; held (not stepped) until the client's first two inputs; until 180 s or the sinking.");
             fp.Line("seed", 8282);
             fp.Line("heldAt", held);
             fp.Enemies("hold", game);
@@ -154,8 +151,7 @@ namespace RoguePirates.V5.Net.Tests
             var run = RunManager.Instance;
             var deadline = Time.realtimeSinceStartup + 900f;
             var clock = System.Diagnostics.Stopwatch.StartNew();
-            Time.timeScale = 1f;
-            ServerTick.Invoke(_server, null); // the first tick, then from the next frame: world step, then one tick
+            ServerTick.Invoke(_server, null); // the first tick (the session starts: the ship's first step), then one tick a frame
             while (!run.IsRunEnded && samples.Count > 0 && Time.realtimeSinceStartup < deadline)
             {
                 var left = MinFrameSeconds - clock.Elapsed.TotalSeconds;
@@ -179,14 +175,14 @@ namespace RoguePirates.V5.Net.Tests
             fp.Line("server.stepsApplied", _server.StepsApplied);
             fp.Line("server.chestChoicesSkipped", _server.ChestChoicesSkipped);
             fp.RunLog(recorder.Log);
+            fp.Line("server.worldSteps", _server.WorldSteps);
+            fp.Line("session.steps", game.SessionClock.Steps);
+            fp.Line("session.time", game.SessionClock.Time);
             fp.Ship(0, game, serverShip);
             Assert.Greater(run.KillCount, 0, "the waves were fought");
-            // V5 M9c S0: this voyage has one known, unexplained variant (Y: seen 2 of 13 runs, both in one Editor session after
-            // a full suite; evidence and what was ruled out in plan/v5/phase-09c-multiship/s0, stability/c.variant-Y.txt). It
-            // is accepted (byte-exact on the fields it records) and reported; anything else fails. M9c S1 must find the cause,
-            // make this voyage single-valued and delete voyage-fingerprint-c-server-8282.variant-Y.txt with this fallback.
-            var matched = fp.AssertMatchesGoldenOrVariant("variant-Y");
-            TestContext.WriteLine($"[V5 M9c S0] case (c) matched: {matched}");
+            Assert.AreEqual(_timeScale, Time.timeScale, "the server never wrote Unity's time scale");
+            // V5 M9c S1: single-valued (the S0 fallback to a known variant Y is gone with its cause; see the golden's header).
+            fp.AssertMatchesGolden();
         }
 
         static bool HasFirstInputs(NetServer.Session s)

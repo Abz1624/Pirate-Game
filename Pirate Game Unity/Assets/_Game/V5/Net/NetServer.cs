@@ -43,7 +43,8 @@ namespace RoguePirates.V5.Net
         /// <summary>
         /// V5 M9b owner re-test fixes (10 Oct, protocol 5): the server's world tick, the enemy batches' clock. It counts the
         /// server ticks on which the run's world moves (not paused for the level-up cards, not held while the player is
-        /// away or before the first inputs), so it stands still while the enemies do. The client's enemy clock stops with
+        /// away or before the first inputs), so it stands still while the enemies do. V5 M9c S1: exactly the ticks on which
+        /// the server stepped the run's session (<see cref="StepWorld"/>). The client's enemy clock stops with
         /// its own level-up hold and, after the pick, runs on from where it stopped: the enemies move again on the client
         /// the moment its ship does, instead of after the pick's round trip plus the render delay standing still.
         /// </summary>
@@ -71,6 +72,20 @@ namespace RoguePirates.V5.Net
         public bool EndSent { get; private set; }
 
         public V4Game Game { get; private set; }
+        /// <summary>V5 M9c S1: the server's stepping knobs (the server scene's asset; the defaults without one).</summary>
+        public NetConfig Config { get; private set; }
+        /// <summary>V5 M9c S1: the run's frame steps per net tick (the config's; tests may set it).</summary>
+        public int WorldStepsPerTick { get; set; } = 2;
+        /// <summary>
+        /// V5 M9c S1: the host holds the voyage until its player's first inputs (NetServerHost; was <c>Time.timeScale</c> 0):
+        /// the session is not stepped.
+        /// </summary>
+        public bool HoldForJoin { get; set; }
+        /// <summary>V5 M9c S1: the run's session was held (not stepped) on the last tick, and why (tests, the stats line).</summary>
+        public bool WorldHeld { get; private set; }
+        public string WorldHeldBecause { get; private set; } = "";
+        /// <summary>V5 M9c S1: world steps run so far (each a V4Game.StepFrame of 1/(30 x steps per tick) s).</summary>
+        public long WorldSteps { get; private set; }
         public ShipMotionPort Ship { get; private set; }
         /// <summary>V5 M9c S0b: a test-only measurement hook (the load probe), called at the end of every tick, inside the
         /// tick time; null on every real server.</summary>
@@ -144,7 +159,7 @@ namespace RoguePirates.V5.Net
         double _pendingWorkMs;
 
         /// <summary>A server object (kept across scene loads) listening on plain WebSockets at <paramref name="port"/>.</summary>
-        public static NetServer Create(ushort port, JoinTicketVerifier tickets, string listenAddress = "0.0.0.0", string name = "V5NetServer")
+        public static NetServer Create(ushort port, JoinTicketVerifier tickets, string listenAddress = "0.0.0.0", string name = "V5NetServer", NetConfig config = null)
         {
             var go = new GameObject(name);
             DontDestroyOnLoad(go);
@@ -163,13 +178,18 @@ namespace RoguePirates.V5.Net
             server.Manager = manager;
             server.Transport = transport;
             server.Tickets = tickets;
+            server.Config = config != null ? config : NetConfig.Default();
+            server.WorldStepsPerTick = server.Config.WorldStepsPerTick;
             return server;
         }
 
-        /// <summary>Takes the run over: its ship is stepped by the net tick from now on.</summary>
+        /// <summary>Takes the run over: its ship is stepped by the net tick from now on; V5 M9c S1: and its whole session (the run
+        /// is Driven: <see cref="NetServerComposition"/>), once per tick in <see cref="StepWorld"/>.</summary>
         public void Attach(V4Game game)
         {
             Game = game;
+            if (game != null && game.SessionClock != null && !game.SessionClock.IsDriven)
+                Debug.LogWarning("[V5 Net] the attached run is not Driven (NetServerComposition.PrepareHeadlessRun was not called before its scene loaded): Unity's frame steps its world");
             Ship = ShipMotionPort.Of(game);
             if (Ship == null) throw new InvalidOperationException("the run has no ship");
             Ship.TakeControl();
@@ -393,8 +413,9 @@ namespace RoguePirates.V5.Net
         public float AwayMaxSeconds = NetProtocol.AwayMaxSeconds;
         public int AwaysReceived { get; private set; }
         public int BacksReceived { get; private set; }
-        public bool AwayHolding => _timeScaleBeforeAway >= 0f;
-        float _timeScaleBeforeAway = -1f;
+        /// <summary>The voyage holds for an away player (V5 M9c S1: the session is not stepped; was <c>Time.timeScale</c> 0).</summary>
+        public bool AwayHolding => _awayHold;
+        bool _awayHold;
 
         void OnPresence(ulong sender, FastBufferReader reader)
         {
@@ -410,11 +431,12 @@ namespace RoguePirates.V5.Net
         }
 
         /// <summary>
-        /// A solo voyage holds while its player's page is hidden, as the normal game stops in a hidden tab: the run's clock
-        /// stops (time scale 0: spawns, enemies, timers; the ship is not stepped), the card timeout waits, no snapshots go
-        /// out, and a dropped socket is kept until the player is back. Back (<paramref name="resync"/>): the ship and the
+        /// A solo voyage holds while its player's page is hidden, as the normal game stops in a hidden tab: the run's session
+        /// is not stepped (V5 M9c S1; was time scale 0): spawns, enemies and timers stand still, the ship is not stepped, the
+        /// card timeout waits, no snapshots go out, and a dropped socket is kept until the player is back. Back (<paramref name="resync"/>): the ship and the
         /// cards still up come again in a welcome, and the ship waits for the client's next input, as after a resume.
-        /// A shared run (M9c) cannot hold for one player: it would need a per-session clock and no pause (recorded in the plan).
+        /// A shared run (M9c S4) cannot hold for one player: it plays on without a pause (with the session clock that is a
+        /// per-session choice, not a process-wide one).
         /// </summary>
         void SetAway(Session s, bool away, bool resync)
         {
@@ -423,7 +445,7 @@ namespace RoguePirates.V5.Net
             {
                 AwaysReceived++;
                 s.awaySince = Time.realtimeSinceStartup;
-                if (_timeScaleBeforeAway < 0f) { _timeScaleBeforeAway = Time.timeScale; Time.timeScale = 0f; }
+                _awayHold = true;
                 LevelUps?.PauseClock(true);
                 Debug.Log("[V5 Net] player away (page hidden): the voyage holds");
                 return;
@@ -439,12 +461,7 @@ namespace RoguePirates.V5.Net
             SendWelcome(s);
         }
 
-        void ReleaseAwayHold()
-        {
-            if (_timeScaleBeforeAway < 0f) return;
-            Time.timeScale = _timeScaleBeforeAway;
-            _timeScaleBeforeAway = -1f;
-        }
+        void ReleaseAwayHold() => _awayHold = false;
 
         /// <summary>The away player did not come back within <see cref="AwayMaxSeconds"/>: the voyage ends (Abandoned).</summary>
         void Abandon(Session s)
@@ -579,11 +596,15 @@ namespace RoguePirates.V5.Net
             var s = Current;
             var run = RunManager.Instance;
             if (run != null && run.PauseReason == PauseReason.POIChoice) SkipChestChoice(run);
-            var playing = run != null && !run.IsRunEnded && Ship.Alive;
             var away = s != null && s.away && !s.expired;
             // M9b playtest fixes: an away player's voyage holds (no input applied, no coasting, no snapshots) until it is back
             // or the away limit ends it.
             if (away && Time.realtimeSinceStartup - s.awaySince > AwayMaxSeconds) { Abandon(s); away = false; }
+            // V5 M9c S1: the world's step for this tick (the run's session, on its Driven clock), then the ship's input: the
+            // order the M9c S0 golden ran in (the world's frame, then the server tick).
+            var worldMoved = StepWorld(run, away);
+            if (run != null && run.PauseReason == PauseReason.POIChoice) SkipChestChoice(run); // a chest the step opened
+            var playing = run != null && !run.IsRunEnded && Ship.Alive;
             if (!away)
             {
                 if (s != null && !s.expired && s.connected && playing) ApplyInputs(s);
@@ -599,10 +620,35 @@ namespace RoguePirates.V5.Net
                 SendEnd(Ship.Alive ? NetProtocol.EndReason.RunEnded : NetProtocol.EndReason.Sunk);
 
             // The world moved on this tick (the run is not paused for cards, held for an away player or for the first inputs).
-            var worldMoved = run != null && !run.IsPaused && Time.timeScale > 0f && !away;
             if (worldMoved) WorldTick++;
             if (ServerTick % NetProtocol.SnapshotEveryTicks == 0 && s != null && s.connected && !away) SendSnapshot(s);
             Probe?.OnServerTick(this, worldMoved);
+        }
+
+        /// <summary>
+        /// V5 M9c S1: steps the run's session for this tick: <see cref="WorldStepsPerTick"/> frames of the tick's time
+        /// (V4Game.StepFrame: the enemy world, the run's modules and clock, the frame steps), unless it holds: before the
+        /// player's first inputs (<see cref="HoldForJoin"/>), while the player is away, while the run is paused (the level-up
+        /// cards). A held session is simply not stepped: its clock, enemies, spawns and timers stand still, and Unity's time
+        /// scale is never touched. True when the world moved.
+        /// </summary>
+        bool StepWorld(RunManager run, bool away)
+        {
+            var clock = Game != null ? Game.SessionClock : null;
+            var why = HoldForJoin ? "waiting for the first inputs" : away ? "player away" : run == null ? "no run" : run.IsPaused ? "run paused (" + run.PauseReason + ")" : null;
+            WorldHeld = why != null;
+            WorldHeldBecause = why ?? "";
+            if (clock == null || !clock.IsDriven) return why == null; // (a run not made Driven: Unity's frame steps it, as before S1)
+            clock.SetHeld(why != null);
+            if (why != null) return false;
+            var steps = Mathf.Clamp(WorldStepsPerTick, 1, 4);
+            var dt = NetProtocol.TickSeconds / steps;
+            for (var i = 0; i < steps; i++)
+            {
+                Game.StepFrame(dt);
+                WorldSteps++;
+            }
+            return true;
         }
 
         /// <summary>V5 M9b owner re-test fixes: a chest choice paused the run (the player sailed into a chest's range with the

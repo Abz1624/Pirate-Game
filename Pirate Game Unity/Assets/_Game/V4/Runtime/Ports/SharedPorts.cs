@@ -136,6 +136,9 @@ namespace RoguePirates.V4.Ports
         PlayerShipController _ship;
         ShipBoostController _boost;
         int _nextLookupFrame;
+        SessionClock _clock;
+        /// <summary>V5 M9c S1: the run's session clock (the scene search's frame count); Unity's frame without one.</summary>
+        public SessionClock Clock { get => _clock ??= new SessionClock(); set => _clock = value; }
 
         public ShipPort(PlayerShipController ship) { _ship = ship; }
         /// <summary>The run's ship, looked up when first needed (the bootstrap finds it); falls back to a scene search at most
@@ -148,10 +151,10 @@ namespace RoguePirates.V4.Ports
             {
                 if (_ship != null) return _ship;
                 _ship = _find?.Invoke();
-                if (_ship == null && _find != null && Time.frameCount >= _nextLookupFrame)
+                if (_ship == null && _find != null && Clock.FrameCount >= _nextLookupFrame)
                 {
                     _ship = Object.FindFirstObjectByType<PlayerShipController>();
-                    if (_ship == null) _nextLookupFrame = Time.frameCount + 30;
+                    if (_ship == null) _nextLookupFrame = Clock.FrameCount + 30;
                 }
                 return _ship;
             }
@@ -292,10 +295,24 @@ namespace RoguePirates.V4.Ports
     public sealed class SimulationViewPort
     {
         Camera _camera;
+        SessionClock _clock;
+
+        /// <summary>V5 M9c S1: the follow camera's simulation view runs on the run's session clock (before the run's first
+        /// tick steps it, its own LateUpdate moves it by that clock's delta time: none between a Driven session's steps).</summary>
+        public void Bind(SessionClock clock)
+        {
+            _clock = clock;
+            if (_camera == null || !_camera.isActiveAndEnabled) _camera = Camera.main;
+            FollowCamera.UseClockOf(_camera, clock);
+        }
 
         public void Step(float dt)
         {
-            if (_camera == null || !_camera.isActiveAndEnabled) _camera = Camera.main;
+            if (_camera == null || !_camera.isActiveAndEnabled)
+            {
+                _camera = Camera.main;
+                if (_clock != null) FollowCamera.UseClockOf(_camera, _clock);
+            }
             FollowCamera.StepSimulationViewOf(_camera, dt);
         }
     }

@@ -1,0 +1,8 @@
+[14:58:59] building the API into C:\Users\shara\AppData\Local\Temp\rp-match-test-api
+[14:59:10] API up
+[14:59:12] rp-match-test-1 READY on :17777 after 2.16 s (process 0.8 s)
+[14:59:13] ticket from the API: matchServerUrl=ws://localhost:17777/ matchId=local-0ce08c48 lifetime=60 s
+[14:59:27] secondPlayer: [V5 NetTest] EXIT failed: join failed: voyage taken
+[14:59:28] replayedTicket: [V5 NetTest] EXIT failed: join failed: ticket Replayed
+[15:00:46] voyage done; docker stop on the servers
+[15:00:48] summary: C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v5\phase-09c-multiship\s1\docker-voyage-90s-1step\summary.json

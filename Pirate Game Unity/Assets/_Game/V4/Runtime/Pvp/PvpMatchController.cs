@@ -103,6 +103,10 @@ namespace RoguePirates.V4.Pvp
     /// </summary>
     public sealed class PvpMatchController : MonoBehaviour, IPvpMatchView
     {
+        RoguePirates.V4.Foundation.Core.SessionClock _clock;
+        /// <summary>V5 M9c S1: the run's session clock (V4Game sets it; Unity's frame without one).</summary>
+        public RoguePirates.V4.Foundation.Core.SessionClock Clock { get => _clock ??= new RoguePirates.V4.Foundation.Core.SessionClock(); set => _clock = value; }
+
         PvpSession _session;
         MatchStartMsg _match;
         ShipPort _ship;
@@ -270,7 +274,7 @@ namespace RoguePirates.V4.Pvp
         void Update()
         {
             if (!_began) return;
-            var dt = Time.deltaTime;
+            var dt = Clock.DeltaTime;
             var now = ServerNowMs;
             if (!_started && now >= _match.startsAt)
             {
@@ -288,15 +292,15 @@ namespace RoguePirates.V4.Pvp
             TickBarrels(now);
             // V5 M8z (6 Oct, audit): the position goes out before the hits, so after a stall (a background tab, a hitch)
             // the server reads the hits against where the ship is now
-            if (Time.time >= _stateAt)
+            if (Clock.TimeSingle >= _stateAt)
             {
-                _stateAt = Time.time + 1f / PvpRules.StateHz;
+                _stateAt = Clock.TimeSingle + 1f / PvpRules.StateHz;
                 if (!_ended) SendMyState(false);
                 if (_bot != null && !_ended) SendBotState();
             }
             FlushHits();
             FlushFx();
-            for (var i = _shots.Count - 1; i >= 0; i--) if (Time.time > _shots[i].End + 0.3f) _shots.RemoveAt(i);
+            for (var i = _shots.Count - 1; i >= 0; i--) if (Clock.TimeSingle > _shots[i].End + 0.3f) _shots.RemoveAt(i);
         }
 
         void TickOpponent(float dt, long now)
@@ -314,8 +318,8 @@ namespace RoguePirates.V4.Pvp
                 _oppKnown = true;
                 if (_started && !_ended && _bot.TryFire(dt, _ship.Position, _ship.Velocity, _ship.IsAlive && !_sunk, out var aim, out var flight))
                 {
-                    _botVolleys.Add((aim, Time.time + flight, _bot.VolleyDamage));
-                    _shots.Add(new PvpShot { From = _bot.Position, To = aim, Start = Time.time, End = Time.time + flight, Color = new Color(0.12f, 0.12f, 0.12f), Arc = 5f });
+                    _botVolleys.Add((aim, Clock.TimeSingle + flight, _bot.VolleyDamage));
+                    _shots.Add(new PvpShot { From = _bot.Position, To = aim, Start = Clock.TimeSingle, End = Clock.TimeSingle + flight, Color = new Color(0.12f, 0.12f, 0.12f), Arc = 5f });
                     // Playtest (3 Oct, owner, round 7): the bot's volley shows a muzzle flash too
                     var vfx = _vfx?.Invoke();
                     if (vfx is UnityEngine.Object unityObject && unityObject == null) vfx = null;
@@ -325,14 +329,14 @@ namespace RoguePirates.V4.Pvp
                 }
                 for (var i = _botVolleys.Count - 1; i >= 0; i--)
                 {
-                    if (Time.time < _botVolleys[i].lands) continue;
+                    if (Clock.TimeSingle < _botVolleys[i].lands) continue;
                     var v = _botVolleys[i];
                     _botVolleys.RemoveAt(i);
                     if (!_ended && _bot.Alive && PvpBot.Lands(v.aim, _ship.Position))
                         _session.Send(new HitMsg { dmg = PvpRules.ClampHit(v.damage, HitLimit), weaponId = PvpBot.WeaponId, asBot = true });
                 }
             }
-            else if (_interp.Sample(Time.time, out var p, out var yaw))
+            else if (_interp.Sample(Clock.TimeSingle, out var p, out var yaw))
             {
                 _oppPosition = p;
                 _oppRotation = Quaternion.LookRotation(PvpRules.Forward(yaw));
@@ -375,16 +379,16 @@ namespace RoguePirates.V4.Pvp
                 if (now > b.ExpiresAt + 1000) { (gone ??= new List<int>()).Add(b.Id); continue; }
                 if (!_started || _ended) continue;
                 var reach = (_match.barrels != null && _match.barrels.claimRadius > 0f ? _match.barrels.claimRadius : 6f) - 0.75f;
-                if (Time.time < b.NextClaimAt) continue;
+                if (Clock.TimeSingle < b.NextClaimAt) continue;
                 if (!_sunk && _ship.IsAlive && Flat(_ship.Position - b.World) <= reach)
                 {
-                    b.NextClaimAt = Time.time + 0.5f;
+                    b.NextClaimAt = Clock.TimeSingle + 0.5f;
                     SendMyState(false); // the claim is checked against the last reported position
                     _session.Send(new PickupMsg { id = b.Id });
                 }
                 else if (_bot != null && _bot.Alive && Flat(_bot.Position - b.World) <= reach)
                 {
-                    b.NextClaimAt = Time.time + 0.5f;
+                    b.NextClaimAt = Clock.TimeSingle + 0.5f;
                     SendBotState();
                     _session.Send(new PickupMsg { id = b.Id, asBot = true });
                 }
@@ -397,7 +401,7 @@ namespace RoguePirates.V4.Pvp
 
         void FlushHits()
         {
-            if (_batch <= 0f || Time.time < _batchAt) return;
+            if (_batch <= 0f || Clock.TimeSingle < _batchAt) return;
             var weapon = PvpRules.GenericHitTag;
             var best = 0f;
             foreach (var kv in _batchByWeapon) if (kv.Value > best) { best = kv.Value; weapon = kv.Key; }
@@ -413,14 +417,14 @@ namespace RoguePirates.V4.Pvp
             {
                 _batch = rest;
                 _batchByWeapon[weapon] = rest;
-                _batchAt = Time.time + PvpRules.HitBatchSeconds;
+                _batchAt = Clock.TimeSingle + PvpRules.HitBatchSeconds;
             }
         }
 
         void OnRemoteDamaged(int slot, float damage, string weaponId)
         {
             if (slot != _oppSlot || !_started || _ended || _sunk || !_oppAlive || damage <= 0f) return;
-            if (_batch <= 0f) _batchAt = Time.time + PvpRules.HitBatchSeconds;
+            if (_batch <= 0f) _batchAt = Clock.TimeSingle + PvpRules.HitBatchSeconds;
             _batch += damage;
             // V5 M8z (6 Oct, audit): only drafted weapon ids or "weapon" reach the server (it refuses anything else)
             var key = PvpRules.HitTag(weaponId, _draftWeapons, EvolutionBase);
@@ -503,8 +507,8 @@ namespace RoguePirates.V4.Pvp
             {
                 // a burst fires many shots in a frame (an aura pulses often): one mirrored per weapon per gap
                 var key = (weaponId ?? string.Empty) + kind;
-                if (_fxLastByWeapon.TryGetValue(key, out var last) && Time.time - last < FiredGapSeconds) return;
-                _fxLastByWeapon[key] = Time.time;
+                if (_fxLastByWeapon.TryGetValue(key, out var last) && Clock.TimeSingle - last < FiredGapSeconds) return;
+                _fxLastByWeapon[key] = Clock.TimeSingle;
             }
             var fx = new PvpFx { k = kind.ToString(), w = weaponId != null && weaponId.Length > 40 ? weaponId.Substring(0, 40) : weaponId, r = Round(radius) };
             if (kind == 'f' || kind == 's' || kind == 'b')
@@ -529,14 +533,14 @@ namespace RoguePirates.V4.Pvp
         /// the loadout.</summary>
         void FlushFx()
         {
-            if (Time.time < _fxAt || _session == null || IsBotMatch) return;
-            var loadout = Time.time >= _loadoutAt && _build != null;
+            if (Clock.TimeSingle < _fxAt || _session == null || IsBotMatch) return;
+            var loadout = Clock.TimeSingle >= _loadoutAt && _build != null;
             if (_fxOut.Count == 0 && !loadout) return;
-            _fxAt = Time.time + FxSeconds;
+            _fxAt = Clock.TimeSingle + FxSeconds;
             var msg = new FxMsg { from = _myId };
             if (loadout)
             {
-                _loadoutAt = Time.time + LoadoutSeconds;
+                _loadoutAt = Clock.TimeSingle + LoadoutSeconds;
                 var weapons = _build.Progression.Loadout.Weapons;
                 msg.lo = new string[weapons.Count];
                 msg.lv = new int[weapons.Count];
@@ -616,7 +620,7 @@ namespace RoguePirates.V4.Pvp
         {
             if (_shots.Count >= 48) return;
             var flight = Mathf.Clamp(Flat(to - from) / 45f, 0.12f, 0.8f);
-            _shots.Add(new PvpShot { From = from, To = to, Start = Time.time, End = Time.time + flight, Color = color, Arc = arc });
+            _shots.Add(new PvpShot { From = from, To = to, Start = Clock.TimeSingle, End = Clock.TimeSingle + flight, Color = color, Arc = arc });
         }
 
         WeaponConfig WeaponConfigOf(string id)
@@ -679,7 +683,7 @@ namespace RoguePirates.V4.Pvp
                 {
                     var s = JsonUtility.FromJson<StateMsg>(json);
                     if (s == null || s.from != _oppId || _bot != null) return;
-                    _interp.Add(new PvpSnapshot { Time = Time.time, Position = PvpRules.ToWorld(_centre, s.x, s.z), Velocity = new Vector3(s.vx, 0f, s.vz), Yaw = s.yaw });
+                    _interp.Add(new PvpSnapshot { Time = Clock.TimeSingle, Position = PvpRules.ToWorld(_centre, s.x, s.z), Velocity = new Vector3(s.vx, 0f, s.vz), Yaw = s.yaw });
                     _oppHp = s.hp;
                     _oppMaxHp = Mathf.Max(1f, s.maxHp);
                     _oppLevel = Mathf.Max(1, s.level);
@@ -781,7 +785,7 @@ namespace RoguePirates.V4.Pvp
         void TakeHit(float raw)
         {
             if (_sunk || _ended || !_ship.IsAlive) return;
-            ApplyToMe(_hits.Hit(Time.time, raw, _build.IncomingDamageMultiplier(), _ship.MaxHp));
+            ApplyToMe(_hits.Hit(Clock.TimeSingle, raw, _build.IncomingDamageMultiplier(), _ship.MaxHp));
         }
 
         void ApplyToMe(float amount)
@@ -794,7 +798,7 @@ namespace RoguePirates.V4.Pvp
         void BotTakesHit(float raw)
         {
             if (!_bot.Alive) return;
-            ApplyToBot(_bot.Hits.Hit(Time.time, raw, 1f, _bot.MaxHp));
+            ApplyToBot(_bot.Hits.Hit(Clock.TimeSingle, raw, 1f, _bot.MaxHp));
         }
 
         void ApplyToBot(float amount)
@@ -808,8 +812,8 @@ namespace RoguePirates.V4.Pvp
         void TickPooledHits()
         {
             if (_ended) return;
-            ApplyToMe(_hits.Tick(Time.time, _ship.MaxHp));
-            if (_bot != null) ApplyToBot(_bot.Hits.Tick(Time.time, _bot.MaxHp));
+            ApplyToMe(_hits.Tick(Clock.TimeSingle, _ship.MaxHp));
+            if (_bot != null) ApplyToBot(_bot.Hits.Tick(Clock.TimeSingle, _bot.MaxHp));
         }
 
         void TakeBarrel(bool xp)

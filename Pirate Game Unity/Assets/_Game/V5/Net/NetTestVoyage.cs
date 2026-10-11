@@ -78,7 +78,8 @@ namespace RoguePirates.V5.Net
             if (stage == null) { Finish(output, "the stage did not load", false); yield break; }
             var template = stage.Shell.Player;
             ShipMotionPort.Of(stage).TakeControl();
-            Time.timeScale = 0f; // the stage holds still: only its islands matter to the prediction ship
+            // The stage holds still (only its islands matter to the prediction ship): V5 M9c S1, it is a Driven session nobody
+            // steps (LoadRun's server composition), so Unity's time scale is left alone (was 0).
             Log("stage loaded (seed " + seed + ")");
 
             Current = State.Joining;

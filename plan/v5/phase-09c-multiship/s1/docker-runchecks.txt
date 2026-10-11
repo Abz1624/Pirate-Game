@@ -1,0 +1,7 @@
+rules v7 83779c995b73c5dd4fb492586c12bd7e8ff68fc6f8d66db226644d98c5eba527 :: docker-voyage-90s-1step: full=outdated_client: config_not_in_rules [PR-CONFIG] minute -1: 0 > 0 | bounds=pass 
+ docker-voyage-90s-2steps: full=outdated_client: config_not_in_rules [PR-CONFIG] minute -1: 0 > 0 | bounds=pass 
+ docker-voyage-60s-2steps-1: full=outdated_client: config_not_in_rules [PR-CONFIG] minute -1: 0 > 0 | bounds=pass 
+ docker-voyage-60s-2steps-2: full=outdated_client: config_not_in_rules [PR-CONFIG] minute -1: 0 > 0 | bounds=pass 
+ docker-voyage-60s-2steps-3: full=outdated_client: config_not_in_rules [PR-CONFIG] minute -1: 0 > 0 | bounds=pass 
+ docker-voyage-90s-final: full=outdated_client: config_not_in_rules [PR-CONFIG] minute -1: 0 > 0 | bounds=pass 
+ 

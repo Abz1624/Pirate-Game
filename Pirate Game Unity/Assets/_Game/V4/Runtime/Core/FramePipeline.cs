@@ -104,11 +104,15 @@ namespace RoguePirates.V4
     public sealed class V4FrameDriver : MonoBehaviour
     {
         public FramePipeline Pipeline;
+        /// <summary>V5 M9c S1: the run's session clock (set by V4Game; a driver without one is on Unity's frame).</summary>
+        public RoguePirates.V4.Foundation.Core.SessionClock Clock;
 
         void Update()
         {
             if (RunRequest.RemoteSimulation) return; // V5 M9b part 2b: a net client's stage; the server runs the frame steps
-            Pipeline?.Run(Time.deltaTime, Time.time, Time.frameCount);
+            Clock ??= new RoguePirates.V4.Foundation.Core.SessionClock();
+            if (Clock.IsDriven) return; // V5 M9c S1: a Driven session runs its frame steps in V4Game.StepFrame
+            Pipeline?.Run(Clock.DeltaTime, Clock.TimeSingle, Clock.FrameCount);
         }
     }
 }

@@ -1,0 +1,148 @@
+{
+  "utc": "2026-10-11T10:14:44.447617+00:00",
+  "image": "rogue-pirates-match:local",
+  "imageId": "sha256:82b5f86e0e8b37717cb9c60bc9df5ce4ec350fb52f51a2a204e8504fa8f94a8b",
+  "seconds": 240,
+  "dropAt": 0,
+  "servers": 1,
+  "docker": "29.8.2",
+  "extraChecks": {},
+  "results": [
+    {
+      "server": "rp-match-test-1",
+      "port": 17777,
+      "coldStartSeconds": 3.2,
+      "processStartToListeningSeconds": 1.13,
+      "serverExitCode": "137",
+      "clientExitCode": "0",
+      "dockerStopSeconds": 20.14,
+      "secondsFromDockerStopToClientLobby": 2.922,
+      "serverCloseReason": "SIGTERM (stop file)",
+      "serverReportKind": "final",
+      "serverBackend": "Mono",
+      "serverRssMB": "226.3",
+      "tickMs": {
+        "count": 6440,
+        "mean": 6.134,
+        "p50": 4.498,
+        "p95": 18.193,
+        "max": 366.708
+      },
+      "serverTraffic": [
+        {
+          "clientId": 1,
+          "bytesDownPerSecond": 10125.824,
+          "bytesUpPerSecond": 886.59,
+          "wireDownPerSecondEstimate": 10530.648,
+          "wireUpPerSecondEstimate": 1241.923,
+          "messagesDown": 8196,
+          "messagesUp": 7194
+        }
+      ],
+      "serverSeconds": 242.95,
+      "serverBytesPerSecondAllSockets": {
+        "bytesDownPerSecond": 10125.8,
+        "bytesUpPerSecond": 886.6,
+        "wireDownPerSecondEstimate": 10530.6,
+        "wireUpPerSecondEstimate": 1241.9
+      },
+      "snapshotBytes": {
+        "count": 3220,
+        "mean": 763.994,
+        "p50": 193,
+        "p95": 2149,
+        "max": 2170
+      },
+      "snapshotEnemies": {
+        "count": 3220,
+        "mean": 60.256,
+        "p50": 3,
+        "p95": 200,
+        "max": 200
+      },
+      "guessedInputs": 419,
+      "serverResumeSeconds": {
+        "count": 0,
+        "mean": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "dockerMemMB": {
+        "max": 196.4,
+        "mean": 182.1,
+        "samples": 66
+      },
+      "dockerCpuPercent": {
+        "max": 100.2,
+        "mean": 40.7,
+        "samples": 66
+      },
+      "client": {
+        "ok": "true",
+        "outcome": "end ServerClosing",
+        "joinSeconds": "0.289",
+        "resumeSeconds": "-1.000",
+        "endedByServer": "true",
+        "endReason": "ServerClosing",
+        "lobbyUtc": "2026-10-11T10:14:20.3092190Z",
+        "snapshots": "3294",
+        "kills": "457",
+        "level": "12",
+        "finalHull": "100",
+        "cardSets": "0",
+        "cardsPicked": "0",
+        "droppedDuringCards": "false",
+        "resumeDuringCardsSeconds": "-1.000",
+        "cardsBackAfterResume": "false",
+        "awayDuringCardsSeconds": "0.0",
+        "awayWelcomeSeconds": "-1.000",
+        "cardsBackAfterAway": "false",
+        "hiddenDuringCardsSeconds": "0.0",
+        "hiddenCardsResolution": "",
+        "hiddenControlBackSeconds": "-1.000",
+        "hideAfterPickSeconds": "0.0",
+        "hideAfterPickWelcomeSeconds": "-1.000",
+        "hideAfterPickControlSeconds": "-1.000",
+        "hideAfterPickResyncs": "-1",
+        "lateResyncs": "10",
+        "awaysSent": "0",
+        "resyncs": "24",
+        "enemyJumpsMarked": "3583",
+        "events": "0.70s stage loaded (seed 9200) | 1.00s welcomed in 0.289 s | 241.13s VOYAGE-DONE snapshots=3191 hull=100/100 kills=457 level=12 | 248.23s end ServerClosing received | 248.51s lobby (end ServerClosing) 0.351 s after the server's end showed, at 2026-10-11T10:14:20.3092190Z",
+        "traffic": [
+          {
+            "clientId": 0,
+            "bytesDownPerSecond": 10543.674,
+            "bytesUpPerSecond": 887.538,
+            "wireDownPerSecondEstimate": 10954.22,
+            "wireUpPerSecondEstimate": 1243.37,
+            "messagesDown": 8494,
+            "messagesUp": 7362
+          }
+        ],
+        "predictionErrorMetres": {
+          "count": 3138,
+          "mean": 0.089,
+          "p50": 0,
+          "p95": 0,
+          "max": 21.856
+        },
+        "correctionMetres": {
+          "count": 3140,
+          "mean": 0.11,
+          "p50": 0,
+          "p95": 0,
+          "max": 21.821
+        },
+        "inputLagMs": {
+          "count": 3138,
+          "mean": 126.662,
+          "p50": 66.667,
+          "p95": 200,
+          "max": 2666.667
+        }
+      }
+    }
+  ]
+}

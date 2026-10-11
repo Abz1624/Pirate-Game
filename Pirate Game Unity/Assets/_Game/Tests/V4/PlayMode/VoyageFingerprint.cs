@@ -235,34 +235,6 @@ namespace RoguePirates.V4.Tests
             Debug.Log($"[V5 M9c S0] fingerprint {CaseId} matched the golden {goldenPath}");
         }
 
-        /// <summary>
-        /// The golden, or else one known variant (a file next to it; only the fields the variant records are compared, as
-        /// it may predate newer fields). Logs which one matched and returns its name; fails with both diffs otherwise.
-        /// </summary>
-        public string AssertMatchesGoldenOrVariant(string variantName)
-        {
-            var actualPath = WriteActual();
-            var goldenPath = GoldenPath(CaseId);
-            if (!File.Exists(goldenPath))
-                Assert.Fail($"No golden for {CaseId} at {goldenPath}. The actual fingerprint is at {actualPath}.");
-            var diff = Diff(File.ReadAllText(goldenPath), Text);
-            if (diff == null)
-            {
-                Debug.Log($"[V5 M9c S0] fingerprint {CaseId} matched the golden {goldenPath}");
-                return "golden";
-            }
-            var variantPath = Path.ChangeExtension(goldenPath, null) + "." + variantName + ".txt";
-            var variantDiff = File.Exists(variantPath) ? Diff(File.ReadAllText(variantPath), Text, onlyExpectedKeys: true) : "no variant file";
-            if (variantDiff == null)
-            {
-                Debug.LogWarning($"[V5 M9c S0] fingerprint {CaseId} matched the known variant {variantName} ({variantPath}), not the golden");
-                return variantName;
-            }
-            Assert.Fail($"Voyage fingerprint {CaseId} matches neither {goldenPath} nor its known variant {variantPath} (actual: {actualPath}).\n" +
-                        $"Against the golden:\n{diff}\nAgainst variant {variantName}:\n{variantDiff}");
-            return null;
-        }
-
         /// <summary>Writes the text so far to Temp/V5Fingerprint (before coverage checks, so a failing run leaves it).</summary>
         public string WriteActual()
         {
@@ -274,7 +246,7 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>A field-by-field diff (null when equal): keys missing, added or changed, comments ignored.</summary>
-        public static string Diff(string expected, string actual, bool onlyExpectedKeys = false)
+        public static string Diff(string expected, string actual)
         {
             var e = Parse(expected);
             var a = Parse(actual);
@@ -287,9 +259,8 @@ namespace RoguePirates.V4.Tests
                 sb.Append("  ~ ").Append(kv.Key).Append("\n      expected: ").Append(kv.Value).Append("\n      actual:   ").Append(av).Append('\n');
                 n++;
             }
-            if (!onlyExpectedKeys)
-                foreach (var kv in a)
-                    if (!e.ContainsKey(kv.Key)) { sb.Append("  + ").Append(kv.Key).Append(": ").Append(kv.Value).Append("   (new)\n"); n++; }
+            foreach (var kv in a)
+                if (!e.ContainsKey(kv.Key)) { sb.Append("  + ").Append(kv.Key).Append(": ").Append(kv.Value).Append("   (new)\n"); n++; }
             return n == 0 ? null : n + " field(s) differ:\n" + sb;
         }
 

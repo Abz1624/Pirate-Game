@@ -1,0 +1,75 @@
+# V5 M9c S0 voyage fingerprint (byte-exact single-player gate; see plan/v5/phase-09c-multiship/PLAN.md)
+# Case (c): solo server voyage, seed 8282, shipped playtest switches, ambient waves and scripted phases as the game,
+# damage on, no cards; headless server run at 30 Hz with an in-process NetClient sailing a constant input (steer 0.35,
+# throttle 1) over loopback WebSockets; the run a Driven session (M9c S1): one server tick a frame, each one world step
+# of 1/30 s then the ship's input; held (not stepped) until the client's first two inputs; until 180 s or the sinking.
+case: c-server-8282
+view.aspect: 1.77777779
+seed: 8282
+heldAt: 0
+enemies@hold: t=0 count=0 elites=0 bosses=0 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+ship@hold: position=8.216415 -100.678986 hull=100 islandImpacts=0 islandDamage=0
+simView@hold: 8.216415 -120.678986 fov=50 aspect=1.77777779
+enemies@60: t=60.03276 count=8 elites=0 bosses=0 sha256=40f6a2f58d3173e1de4f1baee3d36aa95afb9f302ae1a4231809840d8bad6d6a
+ship@60: position=26.2357235 -79.98354 hull=95 islandImpacts=1 islandDamage=1
+enemies@120: t=120.031845 count=19 elites=0 bosses=0 sha256=4e224958092e3efdf2a2e094efc5ee9db57fe1d886f3a71b0052c906c98469d6
+ship@120: position=26.2357235 -79.98354 hull=23.2494926 islandImpacts=1 islandDamage=1
+end: sunk
+server.worldTick: 3846
+server.stepsApplied: 3845
+server.chestChoicesSkipped: 0
+runlog.header: seed=8282 seedSource=requested configHash=a49c415aecfeb0df2d9af7019f9eff5f6019935ce253b376d556d79ba1a51b3d balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
+runlog.end: sunk
+runlog.minutes.sha256: c4e1b43a567afa51f1d97c2d17255dc1bbcccb37338ed51cb6bd6347645ee52c
+runlog.00: "weapons":["swivel_guns"],"minutes":[
+runlog.01: {"m":0,"spawns":35,"kills":27,"eliteKills":0,"bossKills":0,"gold":0,"xp":2,"level":1,"taken":5,"dealt":135.7,"healed":0,"pickups":18,"chests":0,"pois":0,"alive":8,"hull":95,"maxHull":100,"wk":[27]}
+runlog.02: {"m":1,"spawns":50,"kills":39,"eliteKills":0,"bossKills":0,"gold":0,"xp":4,"level":3,"taken":71.8,"dealt":193.7,"healed":0,"pickups":39,"chests":0,"pois":0,"alive":19,"hull":23.2,"maxHull":100,"wk":[39]}
+runlog.03: {"m":2,"spawns":5,"kills":5,"eliteKills":0,"bossKills":0,"gold":0,"xp":2,"level":3,"taken":22.4,"dealt":25,"healed":0,"pickups":25,"chests":0,"pois":0,"alive":19,"hull":0,"maxHull":100,"wk":[5]}]
+server.worldSteps: 3845
+session.steps: 3845
+session.time: 128.16667335107923
+ship[0].run.time: 128.131744
+ship[0].run.state: RunComplete
+ship[0].run.overtime: False
+ship[0].gold: 0
+ship[0].grossGold: 0
+ship[0].grossGoldSpent: 0
+ship[0].kills: 71
+ship[0].bossKills: 0
+ship[0].objectiveSecured: False
+ship[0].stat.Hull: 100
+ship[0].stat.HullRegen: 0
+ship[0].stat.Shield: 0
+ship[0].stat.Armor: 0
+ship[0].stat.Evasion: 0
+ship[0].stat.Damage: 1
+ship[0].stat.AttackSpeed: 1
+ship[0].stat.CritChance: 0.05
+ship[0].stat.CritDamage: 1.5
+ship[0].stat.Quantity: 0
+ship[0].stat.Size: 1
+ship[0].stat.Duration: 1
+ship[0].stat.ProjectileSpeed: 1
+ship[0].stat.Knockback: 1
+ship[0].stat.PickupRadius: 6
+ship[0].stat.Luck: 0
+ship[0].stat.XPGain: 1
+ship[0].stat.GoldGain: 1
+ship[0].stat.DoubloonGain: 1
+ship[0].stat.EliteDamage: 1
+ship[0].stat.MoveSpeed: 6.2
+ship[0].hull: 0
+ship[0].maxHull: 100
+ship[0].position: 26.2357235 0 -79.98354
+ship[0].islandImpacts: 1
+ship[0].islandDamage: 1
+ship[0].level: 3
+ship[0].xp: 3
+ship[0].xpToNext: 5
+ship[0].pendingLevelUps: 0
+ship[0].captain: rook
+ship[0].weapons: 1
+ship[0].weapon[0]: swivel_guns level=1 evolution=- damage=1.1 quantity=0 cooldown=1 speed=1 size=1 duration=1 knockback=1 slow=0
+ship[0].logbooks: -
+ship[0].items: -
+ship[0].stage: bossSummoned=False bossDefeated=False paidChests=0

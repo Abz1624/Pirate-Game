@@ -759,7 +759,10 @@ namespace RoguePirates.V5.Net.Tests
             yield return Scenario.Load("net_voyage_open_water");
             var game = Scenario.Current.Game;
             Assert.IsNotNull(game.RunLog, "the next voyage records its run log");
-            yield return Seconds(1f);
+            // V5 M9c S1: this test's runs are the server composition (Driven): its owner steps it (no server here, so the test).
+            Assert.IsTrue(game.SessionClock.IsDriven);
+            for (var i = 0; i < 30; i++) { game.StepFrame(NetProtocol.TickSeconds); yield return null; }
+            Assert.AreEqual(30L, game.SessionClock.Steps, "stepped (RemoteSimulation off)");
             Assert.IsTrue(FrameStepsRan(game), "and its frame steps tick");
         }
 
@@ -1134,7 +1137,8 @@ namespace RoguePirates.V5.Net.Tests
             away = true;
             yield return Until(() => _server.Current.away, 2f);
             Assert.IsTrue(_server.Current.away, "the server heard the page is hidden");
-            Assert.AreEqual(0f, Time.timeScale, "the solo run holds");
+            Assert.IsTrue(_server.AwayHolding, "the solo run holds");
+            Assert.AreEqual(1f, Time.timeScale, "V5 M9c S1: without Unity's time scale (the session is not stepped)");
             yield return Seconds(0.5f);
             var runTime = RunManager.Instance.ElapsedSeconds;
             var serverAt = _server.Ship.Position;
@@ -1155,7 +1159,8 @@ namespace RoguePirates.V5.Net.Tests
             var resync = Time.realtimeSinceStartup - backAt;
             Assert.Greater(client.Welcomes, welcomes, "back: a welcome resynced the ship");
             Assert.IsFalse(_server.Current.away);
-            Assert.AreEqual(1f, Time.timeScale, "the run plays again");
+            Assert.IsFalse(_server.AwayHolding, "the run plays again");
+            Assert.AreEqual(1f, Time.timeScale, "V5 M9c S1: Unity's time scale untouched");
             Assert.IsNotNull(client.PendingOffer, "the cards came back");
             Assert.AreEqual(seq, client.PendingOffer.seq);
             Assert.Less(resync, 1f, "within a round trip and a frame or two");
@@ -1209,7 +1214,126 @@ namespace RoguePirates.V5.Net.Tests
             Assert.IsTrue(client.Ended, "away past the limit ends the voyage");
             Assert.AreEqual(NetProtocol.EndReason.Abandoned, client.EndReason);
             Assert.IsTrue(_server.Current.expired);
-            Assert.AreEqual(1f, Time.timeScale, "the hold is released");
+            Assert.IsFalse(_server.AwayHolding, "the hold is released");
+            Assert.AreEqual(1f, Time.timeScale, "V5 M9c S1: Unity's time scale untouched");
+        }
+
+        // ---- M9c S1: the session clock ------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// V5 M9c S1: the server's holds are its session not being stepped, never Unity's time scale. Before the first inputs
+        /// (<see cref="NetServer.HoldForJoin"/>, as NetServerHost) and while the level-up cards pause the run, the session's
+        /// clock, run time and steps stand still; once it plays, it moves exactly one world step per net tick (or the
+        /// configured steps), on the server's tick and not on Unity's frame. <c>Time.timeScale</c> stays 1 throughout.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ServerHold_NeverTouchesTimeScale()
+        {
+            Assert.AreEqual(1f, Time.timeScale);
+            yield return StartVoyage("net_voyage_levelup");
+            var clock = _game.SessionClock;
+            Assert.IsTrue(clock.IsDriven, "the server's run is a Driven session");
+            _server.HoldForJoin = true;
+            _server.SessionStarted += () => _server.HoldForJoin = false;
+            var run = RunManager.Instance;
+            var steps = clock.Steps;
+            var runTime = run.ElapsedSeconds;
+            yield return Seconds(1f);
+            Assert.Greater(_server.ServerTick, 20u, "the server ticks");
+            Assert.AreEqual(steps, clock.Steps, "held before the first inputs: the session is not stepped");
+            Assert.IsTrue(clock.Held && _server.WorldHeld, "held: " + _server.WorldHeldBecause);
+            Assert.AreEqual(runTime, run.ElapsedSeconds, "the run's clock stands still");
+            Assert.AreEqual(1f, Time.timeScale, "without Unity's time scale");
+
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(client);
+            yield return Until(() => !_server.HoldForJoin, 5f);
+            Assert.IsFalse(_server.HoldForJoin, "the first inputs released the hold");
+            var tick0 = _server.WorldTick;
+            var steps0 = clock.Steps;
+            var time0 = run.ElapsedSeconds;
+            yield return Seconds(1.5f);
+            Assert.IsFalse(clock.Held);
+            var ticks = _server.WorldTick - tick0;
+            Assert.Greater(ticks, 30u, "the world moved on the net tick");
+            Assert.AreEqual((long)ticks * _server.WorldStepsPerTick, clock.Steps - steps0, "one world step per net tick (x the configured steps)");
+            Assert.AreEqual(ticks * NetProtocol.TickSeconds, run.ElapsedSeconds - time0, 1e-3f, "the run's clock moved by the ticks' time, not Unity's");
+            Assert.AreEqual(clock.Steps, _server.WorldSteps);
+            Assert.AreEqual(1f, Time.timeScale);
+
+            // The level-up cards pause the run: the session is held (not stepped) until the pick.
+            _server.LevelUps.TimeoutSeconds = 30f;
+            _game.Build.Progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer, "the cards are up");
+            yield return Seconds(0.3f);
+            var heldSteps = clock.Steps;
+            var heldTime = run.ElapsedSeconds;
+            var heldTick = _server.WorldTick;
+            yield return Seconds(1f);
+            Assert.AreEqual(heldSteps, clock.Steps, "the cards' pause: not stepped");
+            Assert.AreEqual(heldTime, run.ElapsedSeconds, "the run's clock stands still");
+            Assert.AreEqual(heldTick, _server.WorldTick, "the world tick (the enemies' clock) stands still");
+            StringAssert.Contains("paused", _server.WorldHeldBecause);
+            Assert.AreEqual(1f, Time.timeScale);
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            yield return Until(() => !run.IsPaused, 3f);
+            yield return Seconds(0.5f);
+            Assert.Greater(clock.Steps, heldSteps + 5, "stepped again after the pick");
+            Assert.AreEqual(1f, Time.timeScale, "Unity's time scale was never written");
+        }
+
+        /// <summary>
+        /// V5 M9c S1: an away player's solo voyage holds without Unity's time scale: the session is not stepped (its clock,
+        /// run time, enemies and ship stand still) and comes back on the next tick after the player is back.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Away_HoldsWithoutTimeScale()
+        {
+            yield return StartVoyage("net_voyage_open_water");
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0.3f, 1f) };
+            var away = false;
+            client.AwaySource = () => away;
+            yield return Join(client);
+            yield return Seconds(1f);
+            var clock = _game.SessionClock;
+            var run = RunManager.Instance;
+            Assert.Greater(clock.Steps, 15L, "the voyage plays");
+            away = true;
+            yield return Until(() => _server.Current.away, 2f);
+            Assert.IsTrue(_server.AwayHolding, "the server holds for the away player");
+            yield return Seconds(0.2f);
+            var steps = clock.Steps;
+            var runTime = run.ElapsedSeconds;
+            var worldTick = _server.WorldTick;
+            var at = _server.Ship.Position;
+            var enemies = EnemyPositions();
+            yield return Seconds(2f);
+            Assert.IsTrue(clock.Held, "the session is held");
+            StringAssert.Contains("away", _server.WorldHeldBecause);
+            Assert.AreEqual(steps, clock.Steps, "not stepped while away");
+            Assert.AreEqual(runTime, run.ElapsedSeconds, "the run's clock stood still");
+            Assert.AreEqual(worldTick, _server.WorldTick, "the world tick stood still");
+            Assert.Less(Flat(_server.Ship.Position, at), 0.001f, "the ship held");
+            CollectionAssert.AreEqual(enemies, EnemyPositions(), "the enemies held");
+            Assert.AreEqual(1f, Time.timeScale, "Unity's time scale untouched while away");
+            away = false;
+            yield return Until(() => !_server.Current.away, 3f);
+            yield return Seconds(1f);
+            Assert.IsFalse(_server.AwayHolding);
+            Assert.Greater(clock.Steps, steps + 15, "stepped again once back");
+            Assert.Greater(run.ElapsedSeconds, runTime + 0.5f);
+            Assert.AreEqual(1f, Time.timeScale, "Unity's time scale untouched");
+        }
+
+        List<Vector3> EnemyPositions()
+        {
+            var list = new List<Vector3>();
+            if (!_game.Context.TryGet<RoguePirates.V4.Enemies.IEnemyWorldView>(out var view) || !view.Exists) return list;
+            for (var i = 0; i < view.Capacity; i++) if (view.TryGet(i, out var e)) list.Add(e.position);
+            return list;
         }
 
         // ---- M9b owner re-test fixes (10 Oct) -------------------------------------------------------------------------------

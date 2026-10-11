@@ -153,6 +153,7 @@ MonoBehaviour:
   localPort: 7777
   sendDelayMs: 0
   sendDropPercent: 0
+  netConfig: {fileID: 11400000, guid: 2bdb635da41766e46b9aa83e09154e9e, type: 2}
 --- !u!4 &166283755
 Transform:
   m_ObjectHideFlags: 0

@@ -74,11 +74,23 @@ namespace RoguePirates.V4.Foundation.Core
             SetPause(PauseReason.None);
         }
 
+        SessionClock _clock;
+        /// <summary>V5 M9c S1: the run's session clock (the run injects it; a run manager without one is on Unity's frame).</summary>
+        public SessionClock Clock { get => _clock ??= new SessionClock(); set => _clock = value; }
+
         void Update()
+        {
+            // V5 M9c S1: a Driven session's run clock moves in its owner's step (V4Game.StepFrame), never on Unity's frame.
+            if (Clock.IsDriven) return;
+            Tick(Clock.DeltaTime);
+        }
+
+        /// <summary>V5 M9c S1: the run clock moves on by <paramref name="dt"/> while the run plays (not paused).</summary>
+        public void Tick(float dt)
         {
             if (State != RunState.Playing && State != RunState.BossFight) return;
             if (IsPaused) return;
-            ElapsedSeconds += Time.deltaTime;
+            ElapsedSeconds += dt;
         }
 
         public void EnterPlaying()

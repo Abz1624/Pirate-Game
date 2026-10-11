@@ -1,0 +1,157 @@
+{
+  "utc": "2026-10-11T09:57:36.006807+00:00",
+  "image": "rogue-pirates-match:local",
+  "imageId": "sha256:82b5f86e0e8b37717cb9c60bc9df5ce4ec350fb52f51a2a204e8504fa8f94a8b",
+  "seconds": 60,
+  "dropAt": 30,
+  "servers": 1,
+  "docker": "29.8.2",
+  "extraChecks": {},
+  "results": [
+    {
+      "server": "rp-match-test-1",
+      "port": 17777,
+      "coldStartSeconds": 16.92,
+      "processStartToListeningSeconds": 3.65,
+      "serverExitCode": "0",
+      "clientExitCode": "0",
+      "dockerStopSeconds": 10.27,
+      "secondsFromDockerStopToClientLobby": null,
+      "serverCloseReason": "SIGTERM (stop file)",
+      "serverReportKind": "final",
+      "serverBackend": "Mono",
+      "serverRssMB": "178.2",
+      "tickMs": {
+        "count": 1637,
+        "mean": 2.399,
+        "p50": 0.702,
+        "p95": 5.758,
+        "max": 319.714
+      },
+      "serverTraffic": [
+        {
+          "clientId": 1,
+          "bytesDownPerSecond": 1603.503,
+          "bytesUpPerSecond": 482.368,
+          "wireDownPerSecondEstimate": 1802.454,
+          "wireUpPerSecondEstimate": 676.55,
+          "messagesDown": 918,
+          "messagesUp": 896
+        },
+        {
+          "clientId": 2,
+          "bytesDownPerSecond": 1368.758,
+          "bytesUpPerSecond": 329.091,
+          "wireDownPerSecondEstimate": 1511.577,
+          "wireUpPerSecondEstimate": 461.942,
+          "messagesDown": 659,
+          "messagesUp": 613
+        }
+      ],
+      "serverSeconds": 55.371,
+      "serverBytesPerSecondAllSockets": {
+        "bytesDownPerSecond": 2972.3,
+        "bytesUpPerSecond": 811.5,
+        "wireDownPerSecondEstimate": 3314.0,
+        "wireUpPerSecondEstimate": 1138.5
+      },
+      "snapshotBytes": {
+        "count": 782,
+        "mean": 209.497,
+        "p50": 216,
+        "p95": 243,
+        "max": 252
+      },
+      "snapshotEnemies": {
+        "count": 782,
+        "mean": 5.277,
+        "p50": 6,
+        "p95": 9,
+        "max": 10
+      },
+      "guessedInputs": 74,
+      "serverResumeSeconds": {
+        "count": 1,
+        "mean": 1.116,
+        "p50": 1.116,
+        "p95": 1.116,
+        "max": 1.116
+      },
+      "dockerMemMB": {
+        "max": 146.5,
+        "mean": 144.6,
+        "samples": 8
+      },
+      "dockerCpuPercent": {
+        "max": 46.3,
+        "mean": 21.7,
+        "samples": 8
+      },
+      "client": {
+        "ok": "true",
+        "outcome": "end Sunk",
+        "joinSeconds": "1.208",
+        "resumeSeconds": "1.348",
+        "endedByServer": "true",
+        "endReason": "Sunk",
+        "lobbyUtc": "2026-10-11T09:57:22.1588650Z",
+        "snapshots": "751",
+        "kills": "29",
+        "level": "4",
+        "finalHull": "0",
+        "cardSets": "4",
+        "cardsPicked": "4",
+        "droppedDuringCards": "false",
+        "resumeDuringCardsSeconds": "-1.000",
+        "cardsBackAfterResume": "false",
+        "awayDuringCardsSeconds": "0.0",
+        "awayWelcomeSeconds": "-1.000",
+        "cardsBackAfterAway": "false",
+        "hiddenDuringCardsSeconds": "0.0",
+        "hiddenCardsResolution": "",
+        "hiddenControlBackSeconds": "-1.000",
+        "hideAfterPickSeconds": "0.0",
+        "hideAfterPickWelcomeSeconds": "-1.000",
+        "hideAfterPickControlSeconds": "-1.000",
+        "hideAfterPickResyncs": "-1",
+        "lateResyncs": "6",
+        "awaysSent": "0",
+        "resyncs": "6",
+        "enemyJumpsMarked": "22",
+        "events": "3.97s stage loaded (seed 9200) | 5.21s welcomed in 1.208 s | 24.82s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 27.19s level-up card picked (Logbook admiral, set 2) | 35.25s socket dropped (client side) | 36.56s resumed in 1.348 s | 40.51s level-up card picked (WeaponUpgrade swivel_guns, set 3) | 47.35s level-up card picked (Logbook lookouts_glass, set 4) | 57.06s VOYAGE-DONE snapshots=751 hull=0/100 kills=29 level=4 | 57.22s end Sunk received | 57.61s lobby (end Sunk) 0.546 s after the server's end showed, at 2026-10-11T09:57:22.1588650Z",
+        "traffic": [
+          {
+            "clientId": 0,
+            "bytesDownPerSecond": 2953.685,
+            "bytesUpPerSecond": 837.485,
+            "wireDownPerSecondEstimate": 3294.337,
+            "wireUpPerSecondEstimate": 1175.006,
+            "messagesDown": 1523,
+            "messagesUp": 1509
+          }
+        ],
+        "predictionErrorMetres": {
+          "count": 685,
+          "mean": 0.015,
+          "p50": 0,
+          "p95": 0,
+          "max": 2.269
+        },
+        "correctionMetres": {
+          "count": 688,
+          "mean": 0.016,
+          "p50": 0,
+          "p95": 0,
+          "max": 2.268
+        },
+        "inputLagMs": {
+          "count": 685,
+          "mean": 129.538,
+          "p50": 100,
+          "p95": 233.333,
+          "max": 500
+        }
+      }
+    }
+  ]
+}

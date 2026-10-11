@@ -10,8 +10,8 @@ namespace RoguePirates.V5.Net
     /// V5 M9b part 2a: the match server process around a <see cref="NetServer"/> (the Linux Dedicated Server build in
     /// Docker, later the Railway test service). One voyage per process:
     /// <list type="bullet">
-    /// <item>the run is held (time scale 0) until the first player joins, so an idle server's voyage does not start
-    /// without its player;</item>
+    /// <item>the run is held (V5 M9c S1: its session is not stepped; was time scale 0) until the first player's inputs, so an
+    /// idle server's voyage does not start without its player;</item>
     /// <item>once listening it writes the ready file (<see cref="ReadyFile"/>, the image's health check) and a READY log
     /// line (cold start is measured from <c>docker run</c> to that line);</item>
     /// <item>every <see cref="ReportEverySeconds"/> it logs a stats line and, when <c>RP_METRICS_DIR</c> is set, writes
@@ -86,7 +86,7 @@ namespace RoguePirates.V5.Net
         void Hold(bool hold)
         {
             _held = hold;
-            Time.timeScale = hold ? 0f : 1f;
+            _server.HoldForJoin = hold; // V5 M9c S1: the session is not stepped (Unity's time scale is never written)
         }
 
         void Update()
@@ -132,6 +132,7 @@ namespace RoguePirates.V5.Net
             Debug.Log("[V5 Net] closing: " + reason);
             yield return _server.CloseGracefully();
             WriteReport("final");
+            WriteRunLog();
             if (_server.Probe is NetLoadProbe probe && probe.Measuring) probe.WriteReport("final");
             Debug.Log("[V5 Net] final " + StatsLine());
             Debug.Log("[V5 Net] EXIT " + reason);
@@ -153,7 +154,8 @@ namespace RoguePirates.V5.Net
             return $"tick={_server.ServerTick} session={(s == null ? "none" : s.connected ? "connected" : "detached")} ticksMeasured={m.TicksMeasured} window={m.TickMs.Count} " +
                    $"tickMs p50={NetMetrics.Percentile(m.TickMs, 50f):0.000} p95={NetMetrics.Percentile(m.TickMs, 95f):0.000} max={m.TickMsMax:0.000} " +
                    $"rssMB={RssMegabytes():0.0} monoHeapMB={UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576f:0.0} " +
-                   $"unityReservedMB={UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576f:0.0} fps={1f / Mathf.Max(1e-4f, Time.unscaledDeltaTime):0}";
+                   $"unityReservedMB={UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576f:0.0} fps={1f / Mathf.Max(1e-4f, Time.unscaledDeltaTime):0} " +
+                   $"worldSteps={_server.WorldSteps} stepsPerTick={_server.WorldStepsPerTick} held={(_server.WorldHeld ? _server.WorldHeldBecause : "no")}";
         }
 
         void WriteReport(string kind)
@@ -169,6 +171,10 @@ namespace RoguePirates.V5.Net
                     ["matchId"] = _matchId,
                     ["serverTick"] = _server.ServerTick.ToString(),
                     ["stepsApplied"] = _server.StepsApplied.ToString(),
+                    ["worldTick"] = _server.WorldTick.ToString(),
+                    ["worldSteps"] = _server.WorldSteps.ToString(),
+                    ["worldStepsPerTick"] = _server.WorldStepsPerTick.ToString(),
+                    ["killsPerMinute"] = KillsPerMinute(),
                     ["rejectedJoins"] = _server.RejectedJoins.ToString(),
                     ["lastRejectReason"] = _server.LastRejectReason ?? "",
                     ["endSent"] = _server.EndSent ? _server.LastEndReason.ToString() : "",
@@ -183,6 +189,29 @@ namespace RoguePirates.V5.Net
                 }, m);
             }
             catch (Exception e) { Debug.LogWarning("[V5 Net] report not written: " + e.Message); }
+        }
+
+        /// <summary>V5 M9c S1: the run's kills per minute of run time (the scripted voyage's band check).</summary>
+        string KillsPerMinute()
+        {
+            var run = RoguePirates.V4.Foundation.Core.RunManager.Instance;
+            if (run == null || run.ElapsedSeconds < 1f) return "";
+            return (run.KillCount * 60f / run.ElapsedSeconds).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>V5 M9c S1: the server run's log (runlog.json beside server.json), so the scripted voyage can be checked against
+        /// the run checks offline (nothing is uploaded).</summary>
+        void WriteRunLog()
+        {
+            if (string.IsNullOrEmpty(_metricsDir) || _server.Game == null || _server.Game.RunLog == null) return;
+            try
+            {
+                var log = _server.Game.RunLog.Closed ?? _server.Game.RunLog.Close();
+                if (log == null || string.IsNullOrEmpty(log.Json)) return;
+                File.WriteAllText(Path.Combine(_metricsDir, "runlog.json"), log.Json);
+                Debug.Log($"[V5 Net] run log written: {log.Kills} kills in {log.Seconds:0.0} s, level {log.Level}, {log.Bytes} bytes");
+            }
+            catch (Exception e) { Debug.LogWarning("[V5 Net] run log not written: " + e.Message); }
         }
 
         static string ScriptingBackend()

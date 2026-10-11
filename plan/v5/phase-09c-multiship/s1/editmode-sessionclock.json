@@ -1,0 +1,41 @@
+{
+  "status": "completed",
+  "duration": 0.68,
+  "summary": {
+    "total": 4,
+    "passed": 3,
+    "failed": 1,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5SessionClockTests.SessionClock_DrivenHoldsWhenNotStepped",
+      "Status": "Passed",
+      "Duration": 0.0178548,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5SessionClockTests.SessionClock_UnityFrameMatchesTime",
+      "Status": "Passed",
+      "Duration": 0.0031358,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5SessionClockTests.Structure_NoFrameTimeInGameplay_FoundationAndRuntime",
+      "Status": "Failed",
+      "Duration": 0.2182057,
+      "Message": "  V4/Foundation/Core/SessionClock.cs: 6 frame-time reads, the allow-list has 7 (the session clock itself: its UnityFrame mode is Unity's frame); route new ones through the SessionClock or update the list with a reason:\n    V4/Foundation/Core/SessionClock.cs:47: Time.deltaTime\n    V4/Foundation/Core/SessionClock.cs:50: Time.timeAsDouble\n    V4/Foundation/Core/SessionClock.cs:53: Time.time\n    V4/Foundation/Core/SessionClock.cs:56: Time.fixedDeltaTime\n    V4/Foundation/Core/SessionClock.cs:59: Time.frameCount\n    V4/Foundation/Core/SessionClock.cs:71: Time.timeScale\r\n  Expected: <empty>\r\n  But was:  < \"V4/Foundation/Core/SessionClock.cs: 6 frame-time reads, the allow-list has 7 (the session clock itself: its UnityFrame mode is Unity's frame); route new ones through the SessionClock or update the list with a reason:\n    V4/Foundation/Core/SessionClock.cs:47: Time.deltaTime\n    V4/Foundation/Core/SessionClock.cs:50: Time.timeAsDouble\n    V4/Foundation/Core/SessionClock.cs:53: Time.time\n    V4/Foundation/Core/SessionClock.cs:56: Time.fixedDeltaTime\n    V4/Foundation/Core/SessionClock.cs:59: Time.frameCount\n    V4/Foundation/Core/SessionClock.cs:71: Time.timeScale\" >\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5SessionClockTests.Structure_NoFrameTimeInGameplay_FoundationAndRuntime () [0x0018b] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5SessionClockTests.cs:163\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5SessionClockTests.Structure_TheServerNeverWritesTimeScale",
+      "Status": "Passed",
+      "Duration": 0.1095625,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

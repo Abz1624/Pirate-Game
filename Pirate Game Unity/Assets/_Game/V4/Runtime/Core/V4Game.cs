@@ -42,6 +42,7 @@ namespace RoguePirates.V4
         ConfigSetRuntime _config;
         Weapons.WeaponKillGold _killGold;
         RunClock _clock;
+        SessionClock _sessionClock;
         CombatEvents _events;
         RunContext _context;
         ModuleRegistry _modules;
@@ -75,6 +76,12 @@ namespace RoguePirates.V4
         bool _objectiveSecured;
 
         public RunContext Context => _context;
+        /// <summary>
+        /// V5 M9c S1: the run's session clock, injected into everything of the run that reads time. UnityFrame in a voyage
+        /// (Unity's frame, as before); Driven on a match server (<see cref="RunRequest.DrivenClock"/>), where the run moves only
+        /// in <see cref="StepFrame"/> and a hold is the session not being stepped.
+        /// </summary>
+        public SessionClock SessionClock => _sessionClock;
         public ConfigSetRuntime Config => _config;
         public ModuleRegistry Modules => _modules;
         public CombatEvents Events => _events;
@@ -109,6 +116,7 @@ namespace RoguePirates.V4
             if (_config != null) RoguePirates.V4.Composition.MenuServices.RegisterContentAliases(_config); // V5 M8z (8 Oct, close)
             var run = _config?.Single<RunConfig>();
             _clock = run != null ? new RunClock(run.tickRate, run.maxStepsPerFrame) : new RunClock();
+            _sessionClock = RunRequest.DrivenClock ? new SessionClock(SessionClock.ClockMode.Driven, _clock.TickDuration) : new SessionClock();
             _events = new CombatEvents();
             _context = new RunContext(_clock, _events, _config);
             if (_config != null) _config.ConfigChanged += OnConfigChanged;
@@ -150,7 +158,7 @@ namespace RoguePirates.V4
                 Timeline = () => _config?.Single<WaveTimelineConfig>(),
                 EndedByDeathSource = () => _rewards != null && _rewards.EndedByDeath,
             };
-            var ship = new ShipPort(() => _shell != null && _shell.Player != null ? _shell.Player : player);
+            var ship = new ShipPort(() => _shell != null && _shell.Player != null ? _shell.Player : player) { Clock = _sessionClock };
             // M14: the run's telemetry (port of V3's static RunCombatTelemetry + WeaponDamageLedger, same export) and the
             // run lifecycle (start tracking, damage record, death flow; was LegacyRunLifecycle).
             var experiment = _config?.Single<ExperimentConfig>();
@@ -183,7 +191,7 @@ namespace RoguePirates.V4
             var playBounds = new PlayBoundsPort();
             _context.Register<IStormArena>(playBounds);
             _context.Register<Views.IWorldView>(playBounds);
-            var damageSink = new PlayerDamageService(ship); // M14.14 (was LegacyPlayerDamageSink)
+            var damageSink = new PlayerDamageService(ship, () => runState.ElapsedSeconds); // M14.14 (was LegacyPlayerDamageSink); V5 M9c S1: the run clock, passed in
             _damageSink = damageSink;
             // V5: island impacts cost hull through the build's incoming multiplier.
             if (player != null) player.IslandImpactDamage += (at, amount) => damageSink.Impact(amount, at);
@@ -194,8 +202,9 @@ namespace RoguePirates.V4
             var driver = GetComponent<V4FrameDriver>();
             if (driver == null) driver = gameObject.AddComponent<V4FrameDriver>();
             driver.Pipeline = _frame;
+            driver.Clock = _sessionClock;
             _enemies.Frame = _frame;
-            _shell = new RunBootstrapSequence(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, _frame, _spawn, encounters);
+            _shell = new RunBootstrapSequence(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, _frame, _spawn, encounters, _sessionClock);
             // M14: spawn profiles built from the spawner configs alone (were per-run clones of V3's schedule profiles).
             _spawnerProfiles = new SpawnerProfiles(_config);
             _spawnerProfiles.Build();
@@ -418,6 +427,7 @@ namespace RoguePirates.V4
             _seed = seed;
 
             _modules.InitializeAll(_context);
+            _simulationView.Bind(_sessionClock); // V5 M9c S1: the follow camera's simulation view runs on the session clock
             // Playtest (4 Oct, review): a 1v1 run without its match goes back to the menu instead of hanging.
             if (IsPvp && !PreparePvp()) { Debug.LogWarning("V4Game: no 1v1 match to start; back to the menu."); GoToMenu(); return; }
             // Playtest (4 Oct): a voyage started while still seated in a 1v1 lobby leaves it (a match starting there could
@@ -446,16 +456,44 @@ namespace RoguePirates.V4
 
         void Update()
         {
+            // V5 M9c S1: in a voyage (UnityFrame) Unity's frame steps the run; a Driven session is stepped by its owner only.
+            if (!_sessionClock.IsDriven) StepFrame(_sessionClock.DeltaTime);
+        }
+
+        /// <summary>
+        /// V5 M9c S1: one frame of the run, <paramref name="dt"/> seconds. UnityFrame (a voyage): <see cref="Update"/> calls it
+        /// with the frame's delta time, and the run manager's clock (execution order 0) and the frame steps (V4FrameDriver,
+        /// order 10) keep their own Update slots, so a voyage runs exactly as before. Driven (a match server's session): the
+        /// session's owner calls it; it is the whole frame in that same order (this, then the run clock, then the frame
+        /// steps), on the session clock; a held session (<see cref="SessionClock.Held"/>) does not move.
+        /// </summary>
+        public void StepFrame(float dt)
+        {
             if (!_running) return;
             if (RunRequest.RemoteSimulation) return; // V5 M9b part 2b: a net client's stage; the server runs the simulation
+            if (!_sessionClock.IsDriven) { StepRun(dt); return; }
+            if (_sessionClock.Held || _sessionClock.Stepping || !(dt > 0f)) return;
+            _sessionClock.BeginStep(dt);
+            try
+            {
+                StepRun(dt);
+                var manager = RunManager.Instance;
+                if (manager != null) manager.Tick(dt);
+                _frame.Run(dt, _sessionClock.TimeSingle, _sessionClock.FrameCount);
+            }
+            finally { _sessionClock.EndStep(); }
+        }
+
+        void StepRun(float dt)
+        {
             // Legacy systems tick exactly like V3RunBootstrap.Update (variable dt) until their modules replace them.
-            _shell.Tick(Time.deltaTime);
+            _shell.Tick(dt);
 
             var run = RunManager.Instance;
             SyncPause(run);
             if (run != null && !run.IsRunEnded)
             {
-                var steps = _clock.Advance(Time.deltaTime);
+                var steps = _clock.Advance(dt);
                 for (var i = 0; i < steps; i++)
                 {
                     // V5 M9b close 2: the camera gameplay asks what is on screen moves on the tick's dt (not the frame's).
@@ -518,6 +556,7 @@ namespace RoguePirates.V4
         bool PreparePvp()
         {
             _pvp = gameObject.AddComponent<RoguePirates.V4.Pvp.PvpMatchController>();
+            _pvp.Clock = _sessionClock; // V5 M9c S1
             if (!_pvp.Prepare(Online.PvpSession.Instance)) return false;
             var draft = _pvp.MyDraft;
             _build.PvpWeapons = draft?.weapons ?? System.Array.Empty<string>();

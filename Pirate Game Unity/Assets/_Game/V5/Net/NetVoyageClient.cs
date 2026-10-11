@@ -171,6 +171,7 @@ namespace RoguePirates.V5.Net
                 var loadStart = Time.realtimeSinceStartup;
                 AppRoot.EnsureInitialized();
                 RunRequest.Headless = false;
+                RunRequest.DrivenClock = false; // V5 M9c S1: a client's stage is never a server's session
                 RunRequest.RemoteSimulation = true;
                 RunRequest.ClearPvp();
                 RunRequest.RequestSeed(Client.FirstWelcome.seed);

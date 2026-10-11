@@ -33,15 +33,20 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
 
         public void Bind(PlayerShipController ship) => _ship = ship;
 
+        SessionClock _ownClock;
+        /// <summary>V5 M9c S1: the ship's session clock (the run's); a boost without a ship keeps its own on Unity's frame.</summary>
+        SessionClock Clock => _ship != null ? _ship.Clock : _ownClock ??= new SessionClock();
+
         void Update()
         {
+            if (_ship != null && Clock.IsDriven) return; // V5 M9c S1: a Driven session steps its boosts with its ships (TickNet)
             if (_ship == null || RunManager.Instance == null || RunManager.Instance.IsPaused)
             {
                 RoguePirates.V4.Foundation.Platform.TouchActionButton.Consume(RoguePirates.V4.Foundation.Platform.TouchAction.Boost); // V5 M7: a tap while paused does not fire later
                 return;
             }
 
-            Advance(Time.deltaTime);
+            Advance(Clock.DeltaTime);
 
             var boostPressed = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
             if (Gamepad.current != null && Gamepad.current.buttonSouth.isPressed)

@@ -24,6 +24,8 @@ namespace RoguePirates.V4.Composition
         readonly RoguePirates.V4.Spawning.SpawnController _spawn;
         readonly RoguePirates.V4.Spawning.SpawnRateModifiers _encounters;
         readonly WorldPort _world;
+        /// <summary>V5 M9c S1: the run's session clock (the ship, its damage receiver and boost, and the run manager read it).</summary>
+        readonly SessionClock _clock;
         readonly StageProfilePort _stageProfile;
         readonly V4RuntimeDatabase _runtimeDatabase;
         GameDatabase _runDatabase;
@@ -63,8 +65,9 @@ namespace RoguePirates.V4.Composition
         public RunBootstrapSequence(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
             ConfigSetRuntime config, FramePipeline frame, RoguePirates.V4.Spawning.SpawnController spawn,
-            RoguePirates.V4.Spawning.SpawnRateModifiers encounters)
+            RoguePirates.V4.Spawning.SpawnRateModifiers encounters, SessionClock clock = null)
         {
+            _clock = clock ?? new SessionClock();
             _frame = frame;
             _spawn = spawn;
             _encounters = encounters;
@@ -72,6 +75,7 @@ namespace RoguePirates.V4.Composition
             var runConfig = config != null ? config.Single<RunConfig>() : null;
             if (player != null)
             {
+                player.Clock = _clock;
                 player.RunSpeedMultiplier = runConfig != null && runConfig.shipSpeedMultiplier > 0f ? runConfig.shipSpeedMultiplier : 1f;
                 player.IslandImpact = runConfig == null ? default : new PlayerShipController.IslandImpactSettings
                 {
@@ -116,6 +120,7 @@ namespace RoguePirates.V4.Composition
             }
 
             if (RunManager.Instance == null) _host.gameObject.AddComponent<RunManager>();
+            RunManager.Instance.Clock = _clock;
             _world.ConfigureStageBuilder();
             WorldPort.MarkRunContextActive();
             WireRunSystemsOnce();
@@ -128,6 +133,7 @@ namespace RoguePirates.V4.Composition
             _wired = true;
             if (_player == null) _player = Object.FindFirstObjectByType<PlayerShipController>();
             if (_player == null) return;
+            _player.Clock = _clock;
             _player.Damage.Died += OnPlayerDied;
             _player.Damage.Damaged += OnPlayerDamaged;
         }
@@ -181,6 +187,7 @@ namespace RoguePirates.V4.Composition
             Enemies?.ResetAndDefine(_runDatabase);
 
             if (_player == null) _player = Object.FindFirstObjectByType<PlayerShipController>();
+            if (_player != null) _player.Clock = _clock;
             if (_player != null && _layout != null)
             {
                 if (PlaceShip != null) PlaceShip(_player); // Playtest (3 Oct, owner): the 1v1 seat's spawn

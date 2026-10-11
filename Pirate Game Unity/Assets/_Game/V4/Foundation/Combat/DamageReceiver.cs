@@ -21,9 +21,13 @@ namespace RoguePirates.V4.Foundation.Combat
         [SerializeField] bool isElite;
 
         float _currentHP;
-        // V5 M9c S0 (determinism): the hit immunity on Time.timeAsDouble (a float Time.time far into a session rounds the
-        // boundary of a 0.2 s immunity either way, so two plays of one seed took a hit a frame apart).
+        // V5 M9c S0 (determinism): the hit immunity in double (a float Time.time far into a session rounds the boundary of a
+        // 0.2 s immunity either way, so two plays of one seed took a hit a frame apart). V5 M9c S1: on the session clock
+        // (Unity's frame in a voyage; the server's steps on a match server, from 0, not the process's age).
         double _iframeUntil;
+        SessionClock _clock;
+        /// <summary>V5 M9c S1: the run's session clock (the ship passes it on; a receiver outside a run is on Unity's frame).</summary>
+        public SessionClock Clock { get => _clock ??= new SessionClock(); set => _clock = value; }
         bool _playtestInvulnerable;
 
         public bool IsAlive => _currentHP > 0f;
@@ -46,7 +50,7 @@ namespace RoguePirates.V4.Foundation.Combat
             if (_currentHP > 0f) return false;
             if (PreventDeath == null || !PreventDeath(out var restore, out var immunity)) return true;
             _currentHP = Mathf.Max(1f, maxHP * restore);
-            _iframeUntil = Time.timeAsDouble + immunity;
+            _iframeUntil = Clock.Time + immunity;
             _rescuedUntil = _iframeUntil;
             return false;
         }
@@ -87,8 +91,8 @@ namespace RoguePirates.V4.Foundation.Combat
         {
             if (!IsAlive) return;
             if (_playtestInvulnerable) return;
-            if (Time.timeAsDouble < _iframeUntil) return;
-            _iframeUntil = Time.timeAsDouble + GameConstants.ContactIFrame;
+            if (Clock.Time < _iframeUntil) return;
+            _iframeUntil = Clock.Time + GameConstants.ContactIFrame;
             _currentHP = Mathf.Max(0f, _currentHP - amount);
             Damaged?.Invoke(amount, isCrit);
             if (Sinks()) Died?.Invoke();
@@ -102,7 +106,7 @@ namespace RoguePirates.V4.Foundation.Combat
         public void TakeImpact(float amount, Vector3 hitPoint)
         {
             if (!IsAlive || _playtestInvulnerable || amount <= 0f) return;
-            if (Time.timeAsDouble < _rescuedUntil) return; // V5 M5: the Last Rum's safety covers island knocks too
+            if (Clock.Time < _rescuedUntil) return; // V5 M5: the Last Rum's safety covers island knocks too
             _currentHP = Mathf.Max(0f, _currentHP - amount);
             Damaged?.Invoke(amount, false);
             if (Sinks()) Died?.Invoke();

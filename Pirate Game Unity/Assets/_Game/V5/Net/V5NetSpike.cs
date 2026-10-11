@@ -33,6 +33,8 @@ namespace RoguePirates.V5.Net
         [Tooltip("InProcess: simulated latency each way (ms) and loss (%), 0 for a clean link.")]
         [SerializeField] int sendDelayMs;
         [SerializeField] int sendDropPercent;
+        [Tooltip("V5 M9c S1: the server's stepping knobs (V5NetConfig.asset); the defaults without one.")]
+        [SerializeField] NetConfig netConfig;
 
         public NetServer Server { get; private set; }
         public NetClient Client { get; private set; }
@@ -76,7 +78,8 @@ namespace RoguePirates.V5.Net
             var port = role == Role.Server ? NetEndpoint.PortFromEnvironment(localPort) : localPort;
             var verifier = new JoinTicketVerifier(key);
             if (role == Role.Server) verifier.ExpectedMatchId = System.Environment.GetEnvironmentVariable(JoinTicketVerifier.MatchIdEnvironmentVariable);
-            Server = NetServer.Create(port, verifier, role == Role.Server ? "0.0.0.0" : "127.0.0.1");
+            Server = NetServer.Create(port, verifier, role == Role.Server ? "0.0.0.0" : "127.0.0.1", config: netConfig);
+            Debug.Log($"[V5 Net] the run's session is stepped {Server.WorldStepsPerTick}x per net tick (Driven clock: {game.SessionClock.IsDriven})");
             Server.Attach(game);
             if (role == Role.InProcess && (sendDelayMs > 0 || sendDropPercent > 0))
                 NetLinkSimulator.Configure(Server.Transport, new NetLinkSimulator.Link { sendDelayMs = sendDelayMs, sendDropPercent = sendDropPercent, seed = 1 });
