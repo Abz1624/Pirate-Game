@@ -99,3 +99,15 @@ Full plan: `plan/v5/phase-09c-multiship/PLAN.md` ("Product decisions"). The ones
 - Smaller, decided by default: seats fixed per match (no late join), start when all are in or 20 s after the first;
   several sessions per server process with separate physics scenes; ram jolt smoothed (not predicted); a hard per-player
   bandwidth cap; shared fog and Beacon discovery; Railway spend under $1; keep NGO 2.13.3 and the patched UTP 2.7.4.
+- M9c plan review (11 Oct): approved with changes; adopted in `PLAN.md` ("Changes from the plan review"). Notably: two
+  gated commits (M9c-1 after the single-player-neutral refactor, M9c-2 after shared voyages), an early bandwidth/CPU
+  probe before the big refactor, the hidden-tab default changed to "hold, still targetable", shared-voyage run checks
+  kept offline (no live API change), ram jolt smoothing now required.
+- **Q (M9c-9):** does each player's view keep the 108-enemy device cap in shared voyages (my default: yes; the server can
+  still simulate up to 200)?
+- **Q (M9c-10):** is co-op PvE meant to become a product mode, or is it only the test vehicle for real-time play? If only
+  a test vehicle, I'll keep its rules minimal.
+- **Q (M9c-11):** several voyages per server process: in-process (separate physics scenes, saves 150-200 MB per extra
+  voyage, about 20 h) or a supervisor running several server processes in one container (about 5 h, more memory)? My
+  default: in-process, as M13b needs it cheap.
+- **Q (M9c-12):** accept the M9c-1 / M9c-2 split, with your solo playtest at M9c-1? My default: yes.
