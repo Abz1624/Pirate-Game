@@ -87,7 +87,7 @@
   },
   "M9c": {
    "state": "building",
-   "chip": "S0 done · S0b probe running"
+   "chip": "S0, S0b done · S1 clock running"
   }
  },
  "log": [
@@ -570,6 +570,11 @@
    "when": "11 Oct",
    "commit": "b840ad80",
    "what": "<strong>M9c S0 done</strong> (tag v5-m9c-s0): three single-player fingerprints frozen (a plain voyage, an eventful voyage through cards, chest, powerup, elites, rams, boss and overtime to sinking, and a solo server voyage); every later M9c step must match them exactly. Three tiny determinism fixes, nothing you would feel. Open: the solo server fingerprint has one known variant (2 of 13 runs), to be explained in S1. Now: S0b, an early 4-ship bandwidth and CPU probe."
+  },
+  {
+   "when": "11 Oct",
+   "commit": "5626c799",
+   "what": "<strong>M9c S0b: early 4-ship probe, GO with conditions</strong>. About 12 KB/s typical and 13-15 KB/s at the 95th percentile per player (target 20), but only with a new delta encoding and the 108-enemy cap per view (today's protocol would need 27-29 KB/s). Server tick about 9 ms p95 locally; estimated 10.6-14 ms on Railway at 4 ships against 16, the tight part. Now: S1, the server's own game clock (stepping the world once per network tick)."
   }
  ],
  "todos": {
