@@ -78,3 +78,24 @@ Decisions I took to keep going (say if you want any changed); questions marked *
   needed if the server ever re-simulates runs)? My default: fixed frame time is enough for now.
 - **Q:** after a page hitch (e.g. a 1 s freeze) the server may guess your inputs for up to about 2 s before the client
   catches up. My default: accept (it only affects that second or two).
+
+### M9c design (11 Oct) — defaults I'm building with; please confirm or change
+
+Full plan: `plan/v5/phase-09c-multiship/PLAN.md` ("Product decisions"). The ones that most shape the game:
+
+- **Q (M9c-1):** shared voyage = co-op PvE (no friendly fire, ships pass through each other). PvP stays in M13b/M22.
+- **Q (M9c-2):** level-up cards in a shared voyage: the voyage never pauses; your ship keeps sailing and firing while a
+  compact card strip is up (pick with 1/2/3, click or tap; no timeout; sets queue). Solo server voyages keep the pause.
+- **Q (M9c-3):** hidden tab in a shared voyage: your ship is stowed (out of play, faint marker), returns with a 3 s
+  shield; removed after 10 minutes.
+- **Q (M9c-4):** difficulty per extra ship: about 75% more spawns (cap 200 enemies), elites +50% HP, boss +75% HP,
+  scheduled fights +50% count; normal enemy HP and enemy damage unchanged.
+- **Q (M9c-5, flagged):** XP, gold and health go to whoever collects them (a config switch can make XP shared instead).
+  Co-op games often share XP; which do you want?
+- **Q (M9c-6):** chests: everyone gets the prompt, no pause, first Take wins and the taker pays.
+- **Q (M9c-7):** sinking: you spectate the others; the voyage ends when everyone has sunk; no revives in M9c; anyone's
+  Beacon summons the boss.
+- **Q (M9c-8):** shared voyages get run-check verdicts per player but don't go on the weekly leaderboard.
+- Smaller, decided by default: seats fixed per match (no late join), start when all are in or 20 s after the first;
+  several sessions per server process with separate physics scenes; ram jolt smoothed (not predicted); a hard per-player
+  bandwidth cap; shared fog and Beacon discovery; Railway spend under $1; keep NGO 2.13.3 and the patched UTP 2.7.4.
