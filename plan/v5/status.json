@@ -87,7 +87,7 @@
   },
   "M9c": {
    "state": "building",
-   "chip": "started 11 Oct · S0 fingerprint"
+   "chip": "S0 done · S0b probe running"
   }
  },
  "log": [
@@ -565,6 +565,11 @@
    "when": "11 Oct",
    "commit": "",
    "what": "<strong>M9b closed</strong> (tag v5-m9b): a browser player plays a voyage run by a Netcode server on Railway; GO for M9c. Final suites EditMode 619/619, PlayMode 125/125, server 163/163. Late fixes: the same seed now always plays the same (gameplay had read the ship's drawn, smoothed position), sharks and raiders time their phases on the game clock at any frame rate. <strong>M9c started</strong>: plan reviewed and adopted (two checkpoints, M9c-1 then M9c-2); first step a single-player fingerprint. You are away: decisions and questions are logged in OPEN-QUESTIONS.md."
+  },
+  {
+   "when": "11 Oct",
+   "commit": "b840ad80",
+   "what": "<strong>M9c S0 done</strong> (tag v5-m9c-s0): three single-player fingerprints frozen (a plain voyage, an eventful voyage through cards, chest, powerup, elites, rams, boss and overtime to sinking, and a solo server voyage); every later M9c step must match them exactly. Three tiny determinism fixes, nothing you would feel. Open: the solo server fingerprint has one known variant (2 of 13 runs), to be explained in S1. Now: S0b, an early 4-ship bandwidth and CPU probe."
   }
  ],
  "todos": {
