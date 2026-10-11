@@ -233,7 +233,7 @@ namespace RoguePirates.V4.Composition
                 if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
                 if (player == null) player = Object.FindFirstObjectByType<PlayerShipController>();
                 if (player == null) return;
-                var heading = Mathf.Repeat(player.transform.eulerAngles.y, 360f);
+                var heading = Mathf.Repeat(player.SimRotation.eulerAngles.y, 360f); // V5 M9b close: the simulated pose
                 Telemetry?.TickMovement(player.Position, heading, dt);
                 Telemetry?.SamplePerformance(projectileCount != null ? projectileCount() : 0, Simulation.ActiveCount);
             });

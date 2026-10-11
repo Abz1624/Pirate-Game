@@ -5,10 +5,52 @@ using UnityEngine;
 
 namespace RoguePirates.V4.Foundation.Enemies
 {
+    /// <summary>
+    /// V5 M9b close (determinism): the ship as spawn placement reads it: its simulated position, yaw and movement forward.
+    /// The run passes <see cref="FromShip"/> (the physics body's pose); a Transform still converts (its drawn pose, which
+    /// Rigidbody interpolation moves between physics steps by the frame's render phase, so two plays of one seed differed).
+    /// </summary>
+    public readonly struct SpawnAnchor
+    {
+        public readonly bool Valid;
+        public readonly Vector3 position;
+        public readonly float yawDegrees;
+        readonly Vector3 _forward;
+
+        public SpawnAnchor(Vector3 position, float yawDegrees, Vector3 forward)
+        {
+            Valid = true;
+            this.position = position;
+            this.yawDegrees = yawDegrees;
+            forward.y = 0f;
+            _forward = forward.sqrMagnitude > 0.01f ? forward.normalized : Vector3.forward;
+        }
+
+        /// <summary>The flat forward placement uses (the ship's movement forward).</summary>
+        public Vector3 Forward => Valid ? _forward : Vector3.forward;
+
+        /// <summary>The ship's simulated pose (its body), not the interpolated transform.</summary>
+        public static SpawnAnchor FromShip(PlayerShipController ship) =>
+            ship == null ? default : new SpawnAnchor(ship.SimPosition, ship.SimRotation.eulerAngles.y, ship.MovementForward);
+
+        public static implicit operator SpawnAnchor(Transform player)
+        {
+            if (player == null) return default;
+            var ship = player.GetComponent<PlayerShipController>();
+            if (ship != null)
+            {
+                var movement = ship.MovementForward;
+                movement.y = 0f;
+                if (movement.sqrMagnitude > 0.01f) return new SpawnAnchor(player.position, player.eulerAngles.y, movement);
+            }
+            return new SpawnAnchor(player.position, player.eulerAngles.y, player.forward);
+        }
+    }
+
     public static class SpawnPlacementService
     {
         public static bool TryPickOffScreenPosition(
-            Transform player,
+            SpawnAnchor player,
             Camera camera,
             SpawnPlacementSettings settings,
             float spawnRadius,
@@ -16,7 +58,7 @@ namespace RoguePirates.V4.Foundation.Enemies
             out Vector3 position)
         {
             position = default;
-            if (player == null)
+            if (!player.Valid)
                 return false;
 
             var minDist = settings.distanceMin;
@@ -56,7 +98,7 @@ namespace RoguePirates.V4.Foundation.Enemies
 
         /// <summary>Off-screen first; optional ring around the player when encounters must not whiff (boss/cache).</summary>
         public static bool TryPickSpawnPosition(
-            Transform player,
+            SpawnAnchor player,
             Camera camera,
             SpawnPlacementSettings settings,
             float spawnRadius,
@@ -67,7 +109,7 @@ namespace RoguePirates.V4.Foundation.Enemies
             if (TryPickOffScreenPosition(player, camera, settings, spawnRadius, rng, out position))
                 return true;
 
-            if (!allowNearPlayerFallback || player == null)
+            if (!allowNearPlayerFallback || !player.Valid)
                 return false;
 
             var minDist = settings.distanceMin;
@@ -92,7 +134,7 @@ namespace RoguePirates.V4.Foundation.Enemies
             int index,
             int count,
             float spacing,
-            Transform player,
+            SpawnAnchor player,
             ref Vector3 basePosition)
         {
             if (count <= 1)
@@ -134,14 +176,14 @@ namespace RoguePirates.V4.Foundation.Enemies
             }
         }
 
-        static Vector3 SampleCandidate(Transform player, Camera camera, SpawnPlacementSettings settings, float minDist, float maxDist, RunRng rng)
+        static Vector3 SampleCandidate(SpawnAnchor player, Camera camera, SpawnPlacementSettings settings, float minDist, float maxDist, RunRng rng)
         {
             if (settings.requireOutsidePlayerFov && camera != null && rng.DirectorFloat() < 0.65f)
                 return PickAtScreenEdge(player, camera, settings, minDist, maxDist, rng);
             return PickInArc(player, settings, minDist, maxDist, rng);
         }
 
-        static Vector3 PickInArc(Transform player, SpawnPlacementSettings settings, float minDist, float maxDist, RunRng rng)
+        static Vector3 PickInArc(SpawnAnchor player, SpawnPlacementSettings settings, float minDist, float maxDist, RunRng rng)
         {
             var dist = Mathf.Lerp(minDist, maxDist, rng.DirectorFloat());
             var angle = rng.DirectorFloat() * Mathf.PI * 2f;
@@ -149,7 +191,7 @@ namespace RoguePirates.V4.Foundation.Enemies
             if (arc < 359f)
             {
                 var half = arc * 0.5f * Mathf.Deg2Rad;
-                var center = (player.eulerAngles.y + settings.arcYawOffset) * Mathf.Deg2Rad;
+                var center = (player.yawDegrees + settings.arcYawOffset) * Mathf.Deg2Rad;
                 angle = center + (rng.DirectorFloat() * 2f - 1f) * half;
             }
 
@@ -157,7 +199,7 @@ namespace RoguePirates.V4.Foundation.Enemies
             return player.position + offset;
         }
 
-        static Vector3 PickAtScreenEdge(Transform player, Camera camera, SpawnPlacementSettings settings, float minDist, float maxDist, RunRng rng)
+        static Vector3 PickAtScreenEdge(SpawnAnchor player, Camera camera, SpawnPlacementSettings settings, float minDist, float maxDist, RunRng rng)
         {
             var planeY = player.position.y;
             var margin = settings.viewportMargin;
@@ -197,7 +239,7 @@ namespace RoguePirates.V4.Foundation.Enemies
             return PickInArc(player, settings, minDist, maxDist, rng);
         }
 
-        static Vector3 EnforceSpawnDistance(Transform player, Vector3 point, float minDist, float maxDist, float planeY)
+        static Vector3 EnforceSpawnDistance(SpawnAnchor player, Vector3 point, float minDist, float maxDist, float planeY)
         {
             var offset = point - player.position;
             offset.y = 0f;
@@ -271,9 +313,9 @@ namespace RoguePirates.V4.Foundation.Enemies
                 && viewport.y <= 1f + viewportMargin;
         }
 
-        public static float GetMinSpawnDistanceBeyondView(Camera camera, Transform player, float viewportMargin)
+        public static float GetMinSpawnDistanceBeyondView(Camera camera, SpawnAnchor player, float viewportMargin)
         {
-            if (camera == null || player == null) return 10f;
+            if (camera == null || !player.Valid) return 10f;
             var planeY = player.position.y;
             var maxDist = 0f;
             for (var x = 0; x <= 1; x++)
@@ -291,22 +333,6 @@ namespace RoguePirates.V4.Foundation.Enemies
             return maxDist * (1f + viewportMargin);
         }
 
-        static Vector3 GetPlayerForward(Transform player)
-        {
-            if (player == null)
-                return Vector3.forward;
-            var ship = player.GetComponent<PlayerShipController>();
-            if (ship != null)
-            {
-                var movement = ship.MovementForward;
-                movement.y = 0f;
-                if (movement.sqrMagnitude > 0.01f)
-                    return movement.normalized;
-            }
-
-            var forward = player.forward;
-            forward.y = 0f;
-            return forward.sqrMagnitude > 0.01f ? forward.normalized : Vector3.forward;
-        }
+        static Vector3 GetPlayerForward(SpawnAnchor player) => player.Forward;
     }
 }

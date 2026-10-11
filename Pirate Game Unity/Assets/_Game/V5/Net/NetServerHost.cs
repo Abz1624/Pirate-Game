@@ -149,8 +149,8 @@ namespace RoguePirates.V5.Net
         {
             var m = _server.Metrics;
             var s = _server.Current;
-            return $"tick={_server.ServerTick} session={(s == null ? "none" : s.connected ? "connected" : "detached")} ticksMeasured={m.TickMs.Count} " +
-                   $"tickMs p50={NetMetrics.Percentile(m.TickMs, 50f):0.000} p95={NetMetrics.Percentile(m.TickMs, 95f):0.000} max={NetMetrics.Max(m.TickMs):0.000} " +
+            return $"tick={_server.ServerTick} session={(s == null ? "none" : s.connected ? "connected" : "detached")} ticksMeasured={m.TicksMeasured} window={m.TickMs.Count} " +
+                   $"tickMs p50={NetMetrics.Percentile(m.TickMs, 50f):0.000} p95={NetMetrics.Percentile(m.TickMs, 95f):0.000} max={m.TickMsMax:0.000} " +
                    $"rssMB={RssMegabytes():0.0} monoHeapMB={UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576f:0.0} " +
                    $"unityReservedMB={UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576f:0.0} fps={1f / Mathf.Max(1e-4f, Time.unscaledDeltaTime):0}";
         }

@@ -118,7 +118,8 @@ namespace RoguePirates.V5.Net
         public sbyte steer, throttle;
         public byte buttons;
 
-        public Vector2 SteerThrottle => new Vector2(steer / 127f, throttle / 127f);
+        /// <summary>The input in [-1, 1] (V5 M9b close, review: clamped, so a forged -128 cannot steer past full lock: -1.008).</summary>
+        public Vector2 SteerThrottle => new Vector2(Mathf.Max(-1f, steer / 127f), Mathf.Max(-1f, throttle / 127f));
         public bool Boost => (buttons & NetProtocol.ButtonBoost) != 0;
 
         public static NetInput From(Vector2 steerThrottle, bool boost) => new NetInput

@@ -880,5 +880,62 @@ namespace RoguePirates.V5.Net.Tests
             }
             finally { NetVoyageEntry.EditorEnabled = was; }
         }
+        /// <summary>V5 M9b close (review): a decoded input stays in [-1, 1]: a forged steer or throttle of -128 (one past the
+        /// quantizer's -127) reads as full lock, not -1.008.</summary>
+        [Test]
+        public void Input_DecodedSteerAndThrottle_StayWithinFullLock()
+        {
+            var forged = new NetInput { steer = sbyte.MinValue, throttle = sbyte.MinValue };
+            Assert.AreEqual(-1f, forged.SteerThrottle.x);
+            Assert.AreEqual(-1f, forged.SteerThrottle.y);
+            var max = new NetInput { steer = sbyte.MaxValue, throttle = sbyte.MaxValue };
+            Assert.AreEqual(1f, max.SteerThrottle.x);
+            Assert.AreEqual(1f, max.SteerThrottle.y);
+            for (var v = -1f; v <= 1f; v += 0.05f)
+            {
+                var st = NetInput.From(new Vector2(v, -v), false).SteerThrottle;
+                Assert.AreEqual(v, st.x, 0.5f / 127f + 1e-5f, "the quantizer's round trip is unchanged");
+                Assert.AreEqual(-v, st.y, 0.5f / 127f + 1e-5f);
+            }
+            // and through the wire: the server reads a forged -128 as -1
+            var w = new NetWriter();
+            NetCodec.WriteInputs(w, 7, new[] { forged }, 1);
+            var into = new NetInput[4];
+            Assert.IsTrue(NetCodec.ReadInputs(new NetReader(w.ToArray()), out _, into, out var count, out _));
+            Assert.AreEqual(1, count);
+            Assert.AreEqual(new Vector2(-1f, -1f), into[0].SteerThrottle);
+        }
+
+        /// <summary>
+        /// V5 M9b close: the server's tick and snapshot statistics keep a rolling window (an idle Railway server had kept
+        /// 1.72 million tick samples after 16 h): after 16 h of 30 Hz ticks the window holds at most
+        /// <see cref="NetMetrics.ServerWindowSamples"/> (about 5 to 10 minutes), the newest ones, while the voyage's tick
+        /// count and slowest tick cover every tick; Reset clears both.
+        /// </summary>
+        [Test]
+        public void ServerMetrics_KeepARollingWindow_AndVoyageTotals()
+        {
+            var m = new NetMetrics("server");
+            const int ticks = 16 * 3600 * 30; // 16 h at 30 Hz
+            for (var i = 0; i < ticks; i++)
+            {
+                m.AddTick(i == 1000 ? 9f : 0.25f + (i % 7) * 0.01f);
+                if (i % 2 == 0) m.AddSnapshot(300f, 20f);
+            }
+            Assert.AreEqual(ticks, m.TicksMeasured, "every tick counted");
+            Assert.AreEqual(9f, m.TickMsMax, "the slowest tick of the voyage, though it left the window");
+            Assert.LessOrEqual(m.TickMs.Count, NetMetrics.ServerWindowSamples);
+            Assert.GreaterOrEqual(m.TickMs.Count, NetMetrics.ServerWindowSamples / 2, "at least the newest half window");
+            Assert.LessOrEqual(m.SnapshotBytes.Count, NetMetrics.ServerWindowSamples);
+            Assert.LessOrEqual(m.SnapshotEnemies.Count, NetMetrics.ServerWindowSamples);
+            Assert.AreEqual(0.25f + ((ticks - 1) % 7) * 0.01f, m.TickMs[m.TickMs.Count - 1], 1e-6f, "the newest sample is kept");
+            Assert.Less(NetMetrics.Max(m.TickMs), 1f, "the old spike left the window");
+            Assert.AreEqual(0.28f, NetMetrics.Percentile(m.TickMs, 50f), 0.011f);
+            StringAssert.Contains("\"ticksMeasured\": " + ticks, m.ToJson());
+            m.Reset();
+            Assert.AreEqual(0, m.TicksMeasured);
+            Assert.AreEqual(0f, m.TickMsMax);
+            Assert.AreEqual(0, m.TickMs.Count);
+        }
     }
 }

@@ -267,6 +267,7 @@ namespace RoguePirates.V5.Net
             _lastRealtime = -1;
             _resyncNext = false;
             _lateSnapshots = 0;
+            _lateMask = 0;
             _behindGuard = Tick;
             // M9b playtest fixes (C): the enemies stay (a welcome after a resume or an away no longer clears them, which made
             // every enemy vanish and spawn again with its spawn effect); the next full snapshot drops the ones gone meanwhile.
@@ -577,7 +578,12 @@ namespace RoguePirates.V5.Net
             // tick catches that up with the lead measured on time.
             var steady = Time.unscaledDeltaTime <= SlowFrameSeconds && NetFrameClock.Now - _slowFrameAt > SlowFrameQuietSeconds;
             var late = ack != 0 && s.inputMargin < 0 && ack > _behindGuard && steady;
-            _lateSnapshots = late ? _lateSnapshots + 1 : 0;
+            // V5 M9b close: late snapshots counted over the last LateWindowSnapshots (were counted only in a row). A lead a
+            // tick short of the link leaves some ticks' inputs late and others not: snapshots alternating late and on time,
+            // never three in a row, and the server guessed every few ticks for up to 5 s (a hitch's resync, 11 Oct).
+            _lateMask = ((_lateMask << 1) | (late ? 1 : 0)) & ((1 << LateWindowSnapshots) - 1);
+            _lateSnapshots = 0;
+            for (var m = _lateMask; m != 0; m &= m - 1) _lateSnapshots++;
             var behind = late && (s.inputMargin <= -LateTicksToResync || _lateSnapshots >= LateSnapshotsToResync);
             var resync = ack != 0 && _resyncNext && !s.HoldPending;
             if (ack > Tick || behind || resync)
@@ -608,6 +614,7 @@ namespace RoguePirates.V5.Net
                               $"tick {resyncFromTick} -> {Tick} (lead {lead})");
                 _resyncNext = false;
                 _lateSnapshots = 0;
+                _lateMask = 0;
                 _behindGuard = Tick; // the snapshots on the way still show the old lateness
                 _lead = lead;
                 _accumulator = 0f; // the time owed is covered by the jump
@@ -675,9 +682,12 @@ namespace RoguePirates.V5.Net
         /// <summary>Ticks of lead given back because the inputs waited at the server longer than needed.</summary>
         public int LeadTrims { get; private set; }
 
-        /// <summary>Snapshots in a row showing this client's inputs late before it moves its tick ahead (or at once when
+        /// <summary>Snapshots (of the last <see cref="LateWindowSnapshots"/>) showing this client's inputs late before it moves its tick ahead (or at once when
         /// they were this many ticks late); the extra ticks of lead it then takes.</summary>
         const int LateSnapshotsToResync = 3, LateTicksToResync = 3, ResyncSlackTicks = 3;
+        /// <summary>V5 M9b close: the late snapshots are counted over this many (about half a second at 15 Hz).</summary>
+        const int LateWindowSnapshots = 8;
+        int _lateMask;
         /// <summary>A frame longer than this is this page running slowly (not the link); late inputs are not acted on until
         /// <see cref="SlowFrameQuietSeconds"/> after the last one.</summary>
         const float SlowFrameSeconds = 0.2f, SlowFrameQuietSeconds = 1f;

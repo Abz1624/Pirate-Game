@@ -93,10 +93,20 @@ namespace RoguePirates.V4.Foundation.Player
         IShipSteerInput _dedicatedSteerInput;
         bool _acceptHumanInput = true;
 
-        public Vector3 Position => transform.position;
+        /// <summary>
+        /// Where the ship is for the game (V5 M9b close, determinism: the simulated position, <see cref="SimPosition"/>; was
+        /// the transform's). The transform is interpolated between physics steps for drawing (Rigidbody interpolation), by
+        /// the frame's render phase (Time.time against Time.fixedTime), so gameplay reading it made two plays of one seed
+        /// with the same inputs diverge. What is drawn on the ship reads <see cref="DrawnPosition"/>.
+        /// </summary>
+        public Vector3 Position => SimPosition;
         /// <summary>V5 M9b part 2b: the simulated position (the body's; the transform is interpolated between physics steps
         /// for drawing, so it trails the body on a ship the net tick steps).</summary>
         public Vector3 SimPosition => _body != null ? _body.position : transform.position;
+        /// <summary>V5 M9b close: the simulated rotation (the body's), the gameplay twin of the drawn transform's.</summary>
+        public Quaternion SimRotation => _body != null ? _body.rotation : transform.rotation;
+        /// <summary>V5 M9b close: where the ship is drawn this frame (the interpolated transform): presentation only.</summary>
+        public Vector3 DrawnPosition => transform.position;
         public Vector3 Velocity => _velocity + _knockback;
         public DamageReceiver Damage => _damage;
         public Transform VisualModel => visualModel;

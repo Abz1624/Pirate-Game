@@ -1340,11 +1340,44 @@ namespace RoguePirates.V5.Net.Tests
             Assert.Greater(client.SnapshotsCoalesced - coalesced, 5, "C: the hitch's snapshots were handled in one frame");
 
             // Afterwards: the server applies the client's own inputs (none guessed) and answers its keys; in step.
-            yield return Seconds(1.5f);
-            var guessed = _server.Metrics.GuessedInputs;
-            resyncs = client.Resyncs;
-            client.Metrics.Reset();
-            yield return Seconds(1.5f);
+            // V5 M9b close (flake, found 11 Oct with a per-frame trace of the server's guesses and both tick lines): after
+            // the hitch the client resyncs on the newest snapshot of the ones handled in that frame, which may have waited
+            // in the queue, so its lead can come out a tick or two short. The server then guesses most of its inputs (they
+            // arrive under a tick late, which the snapshots' input margin, sampled every other tick, mostly does not show)
+            // until the late check, held for a quiet second after a slow frame, lines up three late snapshots: 1.4 to 2.6 s
+            // after the hitch in 13 traced runs, depending on how long that snapshot had waited. The old fixed 1.5 s wait
+            // then caught 0 to 21 of those guesses. Now the test waits until the inputs have been on time for a second
+            // (bounded: within 5 s of the hitch, the recovery reported), then measures 1.5 s, again if a frame in it or in
+            // the half second before it took over 100 ms (a hitch of the whole test process: the in-process server catches
+            // its ticks up at once while the client's inputs for them still cross the link).
+            var settleFrom = Time.realtimeSinceStartup;
+            var lastGuessAt = settleFrom;
+            var guessesSeen = _server.Metrics.GuessedInputs;
+            while (Time.realtimeSinceStartup - lastGuessAt < 1f && Time.realtimeSinceStartup - settleFrom < 5f)
+            {
+                if (_server.Metrics.GuessedInputs != guessesSeen) { guessesSeen = _server.Metrics.GuessedInputs; lastGuessAt = Time.realtimeSinceStartup; }
+                yield return null;
+            }
+            report["after_recoverySeconds"] = (lastGuessAt - settleFrom).ToString("0.00");
+            Assert.Less(Time.realtimeSinceStartup - lastGuessAt, 5f, "the inputs are on time again within 5 s of the hitch");
+            Assert.LessOrEqual(lastGuessAt - settleFrom, 4f, "the late inputs after the hitch are put right within 4 s");
+            var guessed = 0;
+            var windows = 0;
+            var worstFrame = 0f;
+            do
+            {
+                windows++;
+                worstFrame = 0f;
+                var preRoll = Time.realtimeSinceStartup + 0.5f;
+                while (Time.realtimeSinceStartup < preRoll) { worstFrame = Mathf.Max(worstFrame, Time.unscaledDeltaTime); yield return null; }
+                guessed = _server.Metrics.GuessedInputs;
+                resyncs = client.Resyncs;
+                client.Metrics.Reset();
+                var windowEnd = Time.realtimeSinceStartup + 1.5f;
+                while (Time.realtimeSinceStartup < windowEnd) { worstFrame = Mathf.Max(worstFrame, Time.unscaledDeltaTime); yield return null; }
+            } while (worstFrame > 0.1f && windows < 6);
+            report["after_windowsMeasured"] = windows.ToString();
+            report["after_worstFrameMs"] = (worstFrame * 1000f).ToString("0");
             report["after_guessedInputs"] = (_server.Metrics.GuessedInputs - guessed).ToString();
             report["after_resyncs"] = (client.Resyncs - resyncs).ToString();
             report["after_predictionErrorP95"] = NetMetrics.Percentile(client.Metrics.PredictionError, 95f).ToString("0.000");
@@ -1352,6 +1385,7 @@ namespace RoguePirates.V5.Net.Tests
             report["link"] = "135 ms each way, 15 ms jitter, 1% loss";
             var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "hidden-around-pick-270ms.json"));
             Debug.Log("[V5 Net] hidden around the pick: " + NetMetrics.WriteReport(path, "hidden-around-pick-270ms", report, _server.Metrics, client.Metrics));
+            Assert.LessOrEqual(worstFrame, 0.1f, $"a steady 1.5 s window to measure in ({windows} tried)");
             Assert.LessOrEqual(_server.Metrics.GuessedInputs - guessed, 2, "the client's inputs arrive in time");
             Assert.AreEqual(0, client.Resyncs - resyncs, "no resyncs while sailing on");
             Assert.Less(Mathf.Abs(_server.Ship.Capture().lastSteer - NetInput.From(input.Value, false).SteerThrottle.x), 0.01f, "the server's ship answers the keys");
@@ -1430,15 +1464,18 @@ namespace RoguePirates.V5.Net.Tests
                 var phase = 0; // 0 before the cards, 1 cards up, 2 after the pick
                 var pickAt = 0f;
                 var reference = new List<float>();
-                var after = new List<(float t, float speed)>();
+                var after = new List<(float t, int frame, float speed, float fastest)>();
+                var framesSincePick = 0;
                 var last = new Dictionary<int, Vector3>();
                 var probe = Probe(() =>
                 {
                     var dt = Time.unscaledDeltaTime;
+                    if (phase == 2) framesSincePick++;
                     var mirror = client.Enemies;
                     var render = mirror.RenderTick(NetFrameClock.Now, useHold && client.WorldHeld);
                     var ship = client.RenderPosition;
                     var sum = 0f;
+                    var fastest = 0f;
                     var n = 0;
                     foreach (var e in mirror.All)
                     {
@@ -1446,13 +1483,13 @@ namespace RoguePirates.V5.Net.Tests
                         if (OnScreen(ship, p) && last.TryGetValue(e.unitId, out var was) && dt > 1e-4f)
                         {
                             var v = Flat(p, was) / dt;
-                            if (v < NetEnemyMirror.MaxEnemySpeed) { sum += v; n++; }
+                            if (v < NetEnemyMirror.MaxEnemySpeed) { sum += v; n++; fastest = Mathf.Max(fastest, v); }
                         }
                         last[e.unitId] = p;
                     }
                     if (n == 0) return;
                     if (phase == 0) reference.Add(sum / n);
-                    else if (phase == 2) after.Add((Time.realtimeSinceStartup - pickAt, sum / n));
+                    else if (phase == 2) after.Add((Time.realtimeSinceStartup - pickAt, framesSincePick, sum / n, fastest));
                 });
                 var results = new Dictionary<string, string>();
                 foreach (var mode in new[] { "before", "after" })
@@ -1480,19 +1517,24 @@ namespace RoguePirates.V5.Net.Tests
                     results[mode + "_serverEnemyDriftWhilePausedMetres"] = drift.ToString("0.000");
                     Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
                     pickAt = Time.realtimeSinceStartup;
+                    framesSincePick = 0;
                     phase = 2;
                     yield return Seconds(1.5f);
                     phase = 3;
                     var refSpeed = NetSmoothness.Mean(reference);
                     var resume = -1f;
+                    var resumeFrame = -1;
                     var still = 0;
-                    foreach (var (t, speed) in after)
+                    // V5 M9b close (noise): judged on the fastest on-screen enemy (a paused clock freezes them all; the mean
+                    // also falls when the on-screen mix happens to be slow sailers).
+                    foreach (var (t, frame, speed, fastest) in after)
                     {
-                        if (resume < 0f && speed >= 0.5f * refSpeed) resume = t;
-                        if (resume < 0f && speed < 0.2f * refSpeed) still++;
+                        if (resume < 0f && fastest >= 0.5f * refSpeed) { resume = t; resumeFrame = frame; }
+                        if (resume < 0f && fastest < 0.2f * refSpeed) still++;
                     }
                     results[mode + "_referenceSpeedMps"] = refSpeed.ToString("0.00");
                     results[mode + "_resumeAfterPickMs"] = (resume * 1000f).ToString("0");
+                    results[mode + "_resumeAfterPickFrames"] = resumeFrame.ToString();
                     results[mode + "_framesStandingStillAfterPick"] = still.ToString();
                     results[mode + "_framesMeasured"] = after.Count.ToString();
                     results[mode + "_jumpsMarkedThroughThePause"] = (client.Enemies.Jumps - jumpsBefore).ToString();
@@ -1505,10 +1547,16 @@ namespace RoguePirates.V5.Net.Tests
                 results["link"] = "135 ms each way, 15 ms jitter, 1% loss";
                 var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "enemies-after-pick.json"));
                 Debug.Log("[V5 Net] enemies after a pick: " + NetMetrics.WriteReport(path, "enemies-after-pick", results, _server.Metrics, client.Metrics));
-                var resumeAfter = float.Parse(results["after_resumeAfterPickMs"]);
-                Assert.GreaterOrEqual(resumeAfter, 0f, "the enemies moved again after the pick");
-                Assert.LessOrEqual(resumeAfter, 50f, "at once (within three frames of the pick)");
+                // V5 M9b close (noise): counted in frames from the pick, not milliseconds (284 ms in a loaded suite run was
+                // a slow frame or two, not a pause: the frames standing still stayed 0), and against the old clock measured
+                // in the same voyage (its pause: about 25 frames, 435-450 ms, on 10 Oct).
+                var resumeFrames = int.Parse(results["after_resumeAfterPickFrames"]);
+                var oldResumeFrames = int.Parse(results["before_resumeAfterPickFrames"]);
+                Assert.GreaterOrEqual(resumeFrames, 0, "the enemies moved again after the pick");
+                Assert.LessOrEqual(resumeFrames, 3, "at once (within three frames of the pick)");
                 Assert.LessOrEqual(int.Parse(results["after_framesStandingStillAfterPick"]), 2, "no frames standing still after the pick");
+                Assert.Greater(int.Parse(results["before_framesStandingStillAfterPick"]), 10, "the old clock's pause is seen (the measurement can fail)");
+                Assert.IsTrue(oldResumeFrames < 0 || oldResumeFrames > resumeFrames + 10, "the old clock resumed later (frames: old " + oldResumeFrames + ", now " + resumeFrames + ")");
             }
             finally { RestoreFps(); }
         }
@@ -1577,7 +1625,7 @@ namespace RoguePirates.V5.Net.Tests
                     if (render > mirror.LastCompleteTick) past[key]++;
                     var cap = mode == "e01a2e87" ? NetEnemyMirror.ReTestExtrapolationTicks : NetEnemyMirror.MaxExtrapolationTicks;
                     var ship = client.RenderPosition;
-                    float sum = 0f;
+                    float sum = 0f, fastest = 0f;
                     var n = 0;
                     foreach (var e in mirror.All)
                     {
@@ -1587,14 +1635,17 @@ namespace RoguePirates.V5.Net.Tests
                         if (onScreen && last.TryGetValue(e.unitId, out var was) && dt > 1e-4f)
                         {
                             var v = Flat(p, was) / dt;
-                            if (v < NetEnemyMirror.MaxEnemySpeed) { sum += v; n++; }
+                            if (v < NetEnemyMirror.MaxEnemySpeed) { sum += v; n++; fastest = Mathf.Max(fastest, v); }
                         }
                         last[e.unitId] = p;
                     }
                     if (n > 0)
                     {
                         speeds[key].Add(sum / n);
-                        if (window == "pick" && baselineSpeed > 1f && sum / n < 0.2f * baselineSpeed) still[key]++;
+                        // V5 M9b close (noise): a frame stands still when every on-screen enemy (two or more) is under a fifth of the
+                        // baseline's mean speed (a paused clock freezes them all); the mean alone counted frames whose on-screen mix was
+                        // slow sailers (89 of 180 in an 11 Oct run of the fixed clock, its render never past the newest snapshot).
+                        if (window == "pick" && baselineSpeed > 1f && n >= 2 && fastest < 0.2f * baselineSpeed) still[key]++;
                     }
                 });
 
@@ -1657,20 +1708,33 @@ namespace RoguePirates.V5.Net.Tests
                     Assert.Greater(int.Parse(results[m + "_baseline_onScreenSamples"]), 500, m + ": enemies on screen before the picks");
                     Assert.Greater(int.Parse(results[m + "_after_onScreenSamples"]), 2000, m + ": and after them");
                 }
-                // The measurement catches the re-test clock's stutter.
+                // The measurement catches the re-test clock's stutter: its render time runs past the newest snapshot (41 to
+                // 52% of the frames after the picks, 91 to 97% in the second after each, across the 10 and 11 Oct runs).
+                // V5 M9b close (noise): that is the stutter's mechanism and the stable signal; e01a2e87's jitter and speed
+                // jumps vary from run to run with the enemy mix (jitter after the picks 0.26 to 3.2 m/s, speed jumps 0.7 to
+                // 24%), so they are reported, not compared (e01a2e87's "jitter up" assert passed at 0.257 against 0.204).
                 Assert.Greater(F("e01a2e87_after_renderPastNewestPercent"), 10f, "e01a2e87: drawn past the newest snapshot after the picks");
-                Assert.Greater(F("e01a2e87_after_jitterMeanMps"), 1.3f * F("e01a2e87_baseline_jitterMeanMps"), "e01a2e87: jitter up after the picks");
-                // The fixed clock: as smooth after the picks as before them.
+                Assert.Greater(F("e01a2e87_pick_renderPastNewestPercent"), 50f, "e01a2e87: and in the second after each pick");
+                // The fixed clock: never drawn past the newest snapshot, and as smooth after the picks as before them.
                 Assert.LessOrEqual(F("fixed_after_renderPastNewestPercent"), 1f, "fixed: not drawn past the newest snapshot after the picks");
+                Assert.LessOrEqual(F("fixed_pick_renderPastNewestPercent"), 5f, "fixed: at most a few frames in the second after each pick (0 to 0.6%; e01a2e87 over 90%)");
                 Assert.LessOrEqual(F("fixed_baseline_renderPastNewestPercent"), 1f, "fixed: nor before");
-                Assert.Less(F("fixed_after_jitterMeanMps"), 1.3f * F("fixed_baseline_jitterMeanMps") + 0.05f, "fixed: jitter after the picks as before them");
-                Assert.Less(F("fixed_after_jitterP95Mps"), 1.3f * F("fixed_baseline_jitterP95Mps") + 0.1f, "fixed: and its p95");
-                Assert.LessOrEqual(F("fixed_after_speedJumpPercent"), F("fixed_baseline_speedJumpPercent") + 0.1f, "fixed: no more speed jumps than before the picks");
-                Assert.Less(F("fixed_after_jitterMeanMps"), F("e01a2e87_after_jitterMeanMps"), "fixed: smoother than e01a2e87 after the picks");
+                // V5 M9b close (noise): the jitter is mostly the enemies' own turns, so it follows the voyage's enemy mix,
+                // which changes from one window to the next (the fixed clock's mean 0.10 to 0.24 m/s and p95 0.32 to 1.31 m/s
+                // after the picks, against 0.13 to 0.22 and 0.55 to 0.92 before them, 10 and 11 Oct): within twice the
+                // baseline plus a margin. Speed jumps are rare events (0 to 0.47% of a few thousand on-screen samples
+                // before and after the picks alike; the old 0.1 point margin was a handful of samples): an absolute 1% (or
+                // twice the baseline plus half a point, on a noisy baseline).
+                Assert.Less(F("fixed_after_jitterMeanMps"), 2f * F("fixed_baseline_jitterMeanMps") + 0.1f, "fixed: jitter after the picks as before them");
+                Assert.Less(F("fixed_after_jitterP95Mps"), 2f * F("fixed_baseline_jitterP95Mps") + 0.5f, "fixed: and its p95");
+                var jumpBound = Mathf.Max(1f, 2f * F("fixed_baseline_speedJumpPercent") + 0.5f);
+                Assert.LessOrEqual(F("fixed_after_speedJumpPercent"), jumpBound, "fixed: no more speed jumps after the picks than the noise before them");
                 // The pick fix stays: no frame standing still after a pick (e1f56626 stood still there).
                 // (A frame counts when the on-screen enemies' mean speed is under a fifth of the baseline's; with a few enemies
-                // on screen one slow turner can make one, so up to 3; e1f56626's pause gives dozens.)
-                Assert.LessOrEqual(int.Parse(results["fixed_pick_framesStandingStill"]), 3, "fixed: the enemies move on with the pick");
+                // on screen one slow turner can make one; e1f56626's pause gives dozens, 49 to 70. V5 M9b close (noise): 0 to 3
+                // in the fixed clock's runs, 3 on 11 Oct at the old bound: up to 6, and under a fifth of e1f56626's.)
+                Assert.LessOrEqual(int.Parse(results["fixed_pick_framesStandingStill"]), 6, "fixed: the enemies move on with the pick");
+                Assert.Less(int.Parse(results["fixed_pick_framesStandingStill"]) * 5, int.Parse(results["e1f56626_pick_framesStandingStill"]), "fixed: under a fifth of e1f56626's frames standing still");
                 Assert.Greater(int.Parse(results["e1f56626_pick_framesStandingStill"]), 20, "e1f56626: they stood still (the measurement sees a pause)");
             }
             finally { RestoreFps(); }

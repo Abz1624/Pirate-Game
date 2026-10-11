@@ -32,3 +32,5 @@ MonoBehaviour:
   leashViewMaxAspect: 2.4
   leashViewLagSeconds: 0.125
   leashViewLeadSeconds: 0.5
+  enemyLeashDistance: 45
+  enemyLeashHysteresis: 10

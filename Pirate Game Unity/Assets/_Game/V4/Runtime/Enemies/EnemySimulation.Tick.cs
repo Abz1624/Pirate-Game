@@ -30,6 +30,7 @@ namespace RoguePirates.V4.Enemies
 
         public void Tick(float dt, Vector3 playerPos, DamageReceiver playerDamage)
         {
+            _tickClock += dt; // V5 M9b close (review): the bounce hold's clock
             var playerVelocity = ResolvePlayerVelocity(playerDamage);
             TickLeash(dt, playerPos, playerVelocity);
             var frameContactRadius = GetPlayerContactRadius(playerDamage); // V5 M3e: once a frame (was once per enemy)
@@ -184,6 +185,9 @@ namespace RoguePirates.V4.Enemies
 
         int _seenIslandImpacts = -1;
         float _bounceUntil = float.NegativeInfinity;
+        /// <summary>V5 M9b close (review): the simulation's own clock (the sum of its steps) for the bounce hold; was the
+        /// frame clock, which runs on through pauses and differs between frame rates and the match server.</summary>
+        float _tickClock;
 
         Vector3 ResolvePlayerVelocity(DamageReceiver playerDamage)
         {
@@ -200,10 +204,10 @@ namespace RoguePirates.V4.Enemies
             if (impacts != _seenIslandImpacts)
             {
                 if (_seenIslandImpacts >= 0 && impacts > _seenIslandImpacts)
-                    _bounceUntil = Time.time + Mathf.Max(0.3f, ship.IslandImpact.BounceSeconds) + 0.25f;
+                    _bounceUntil = _tickClock + Mathf.Max(0.3f, ship.IslandImpact.BounceSeconds) + 0.25f;
                 _seenIslandImpacts = impacts;
             }
-            if (Time.time < _bounceUntil) return PlayerVelocityForEnemies; // the velocity from before the bounce
+            if (_tickClock < _bounceUntil) return PlayerVelocityForEnemies; // the velocity from before the bounce
             var velocity = ship.Velocity;
             velocity.y = 0f;
             return velocity;
@@ -871,10 +875,10 @@ namespace RoguePirates.V4.Enemies
         // (EnemyLeashShape: the view from RunConfig's camera data, swept from the camera's follow lag behind the ship to the
         // online client's lead ahead of it, and the margin; was 31 m ahead that day, a 26 m constant before, both
         // inside the view's top corners and sides), and an enemy that could be on screen is never moved.
-        const float LeashDistance = RoguePirates.V4.Config.RunConfig.EnemyLeashDistance, LeashCheckSeconds = 0.5f;
-        /// <summary>V5 (owner, 10 Oct): an enemy is leashed only this far beyond where the leash would put it back along its own
-        /// bearing (so one just put back, sailing in, is not moved again).</summary>
-        public const float LeashHysteresisMetres = 10f;
+        // V5 M9b close (review): the leash distance (45 m) and the hysteresis (10 m: an enemy is leashed only this far beyond
+        // where the leash would put it back along its own bearing, so one just put back, sailing in, is not moved again) are
+        // RunConfig's (were constants); a view with no footprint on the sea falls back to the pre-D28 26 m ahead.
+        const float LeashCheckSeconds = 0.5f;
         /// <summary>V5 (owner, 10 Oct): the run's config, read at each leash check (null: RunConfig's defaults).</summary>
         public System.Func<RoguePirates.V4.Config.RunConfig> LeashConfig;
         /// <summary>Leash relocations so far, and attempts refused because the play area's edge pulled the spot into view.</summary>
@@ -904,6 +908,8 @@ namespace RoguePirates.V4.Enemies
             var config = LeashConfig != null ? LeashConfig() : null;
             var view = _leashShape.Set(config, playerVelocity);
             var margin = config != null ? config.enemyLeashViewMargin : RoguePirates.V4.Config.RunConfig.EnemyLeashViewMarginDefault;
+            var leashDistance = config != null ? config.enemyLeashDistance : RoguePirates.V4.Config.RunConfig.EnemyLeashDistanceDefault;
+            var hysteresis = config != null ? config.enemyLeashHysteresis : RoguePirates.V4.Config.RunConfig.EnemyLeashHysteresisDefault;
             for (var i = 0; i < _agents.Length; i++)
             {
                 ref var e = ref _agents[i];
@@ -911,19 +917,23 @@ namespace RoguePirates.V4.Enemies
                 var def = _definitions[e.definitionIndex];
                 if (def == null || def.isMiniboss) continue;
                 var distance = HorizontalDistance(e.position, playerPos);
-                if (distance < LeashDistance) continue;
+                if (distance < leashDistance) continue;
                 var clearance = margin + e.radius;
                 var from = new Vector2(e.position.x - playerPos.x, e.position.z - playerPos.z);
                 // Never moved while it could be on screen (it would vanish), nor just outside where it would be put back.
-                if (distance < view.PlacementDistance(from, clearance) + LeashHysteresisMetres) continue;
+                if (view.Valid && distance < view.PlacementDistance(from, clearance) + hysteresis) continue;
                 for (var attempt = 0; attempt < 6; attempt++)
                 {
                     var angle = ((float)_leashRandom.NextDouble() * 2f - 1f) * 75f;
-                    var p = playerPos + view.Placement(heading, angle, clearance);
+                    // V5 M9b close (review): no view footprint (a misconfigured camera): the pre-D28 placement, 26 m ahead
+                    // (was the margin's few metres from the ship, then refused as in view).
+                    var p = playerPos + (view.Valid
+                        ? view.Placement(heading, angle, clearance)
+                        : Quaternion.Euler(0f, angle, 0f) * heading * RoguePirates.V4.Config.RunConfig.EnemyLeashFallbackReturnDistance);
                     p = PlayBounds.Clamp(p, e.radius + 1f);
                     p.y = def.visualHeightOffset;
                     // The play area's edge can pull the spot back into view: another bearing then.
-                    if (view.DistanceOutside(new Vector2(p.x - playerPos.x, p.z - playerPos.z)) < clearance - 0.01f) { LeashRefusedInView++; continue; }
+                    if (view.Valid && view.DistanceOutside(new Vector2(p.x - playerPos.x, p.z - playerPos.z)) < clearance - 0.01f) { LeashRefusedInView++; continue; }
                     if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(p, e.radius + 0.5f)) continue;
                     e.position = p;
                     LeashRelocations++;

@@ -207,7 +207,6 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Leash_PutsEnemiesBackJustOutsideTheView_AtEveryHeadingAndAspect()
         {
-            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
             var inv = System.Globalization.CultureInfo.InvariantCulture;
             // (1) The camera, from the run scene.
             var scene = System.IO.File.ReadAllText("Assets/_Game/Scenes/V4/V4SaltwindRun.unity");
@@ -339,7 +338,7 @@ namespace RoguePirates.V4.Tests
             Assert.GreaterOrEqual(dinghy, 0);
             w.ShipB.transform.position = Vector3.zero;
             var cornerOne = w.V4.Spawn(dinghy, new Vector3(-40f, 0f, 27f)); // 48 m away, in the 21:9 view's top left corner
-            Assert.Greater(new Vector2(-40f, 27f).magnitude, RunConfig.EnemyLeashDistance);
+            Assert.Greater(new Vector2(-40f, 27f).magnitude, RunConfig.EnemyLeashDistanceDefault);
             Assert.AreEqual(0f, Outside(real["21:9 3440x1440"], new Vector2(-40f, 27f)), "in view on an ultrawide");
             var slot = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -60f));
             var radiusOne = w.V4.Agents[slot].radius;
@@ -360,6 +359,17 @@ namespace RoguePirates.V4.Tests
             for (var i = 0; i < 40 && w.V4.Agents[far].position.z < -60f; i++) w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
             var r = w.V4.Agents[far].position; // right after the check that moved it
             Assert.AreEqual(8f, shape.DistanceOutside(new Vector2(r.x, r.z)) - w.V4.Agents[far].radius, 0.2f, "read from the config at each check");
+
+            // (5) V5 M9b close (review): a view with no footprint on the sea (it reaches the horizon) falls back to the pre-D28
+            // placement, 26 m ahead (was a spot the margin's few metres from the ship, refused as in view).
+            run.leashViewCameraBack = 200f;
+            run.leashViewFieldOfView = 100f;
+            Assert.IsFalse(EnemyLeashView.From(run).Valid, "the view reaches the horizon");
+            var lost = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -80f));
+            for (var i = 0; i < 40 && w.V4.Agents[lost].position.z < -60f; i++) w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
+            var l = w.V4.Agents[lost].position;
+            Assert.AreEqual(RunConfig.EnemyLeashFallbackReturnDistance, new Vector2(l.x, l.z).magnitude, 0.5f, "put back 26 m from the ship");
+            Assert.LessOrEqual(Vector2.Angle(Vector2.up, new Vector2(l.x, l.z)), 75.5f, "ahead of it");
         }
 
         /// <summary>How far <paramref name="p"/> is outside the convex view with these corners (clockwise; 0 inside).</summary>
@@ -651,5 +661,59 @@ namespace RoguePirates.V4.Tests
             hazards.ClearWarnings(7);
             Assert.AreEqual(0, Count(HazardKind.Warning));
         }
-}
+
+        /// <summary>
+        /// V5 M9b close (review): the shark's recovery and the treasure raider's flight time out on the simulation's step
+        /// (were the frame's Time.deltaTime, so they depended on the frame rate, and on the match server lasted about twice
+        /// as long): stepped at 30 Hz and at 60 Hz they last the same time, within one step.
+        /// </summary>
+        [Test]
+        public void SharkRecoverAndRaiderFlee_LastTheSame_At30And60Hz()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            using var profilePort = new RoguePirates.V4.Ports.StageProfilePort(config);
+            StageBalanceProfileContext.BeginRun(profilePort.Profile);
+            var probe = Make(config);
+            string shark = null, raider = null;
+            foreach (var d in probe.Defs)
+            {
+                if (d == null || !probe.Services.SpawnParams.TryGetCombatProfile(d.id, out var profile) || profile == null) continue;
+                if (shark == null && profile.archetype == SaltwindCombatArchetype.Shark) shark = d.id;
+                if (raider == null && profile.archetype == SaltwindCombatArchetype.TreasureRaider) raider = d.id;
+            }
+            Assert.IsNotNull(shark, "an enemy with the shark's combat archetype");
+            var cases = new List<(string id, EnemyCombatPhase phase)> { (shark, EnemyCombatPhase.Recover) };
+            if (raider != null) cases.Add((raider, EnemyCombatPhase.Flee));
+            foreach (var (id, phase) in cases)
+            {
+                var at30 = PhaseSeconds(config, id, phase, 1f / 30f);
+                var at60 = PhaseSeconds(config, id, phase, 1f / 60f);
+                Debug.Log($"[V5 M9b close] {id} {phase}: {at30:0.000} s at 30 Hz, {at60:0.000} s at 60 Hz");
+                Assert.AreEqual(1.2f, at60, 1f / 60f + 1e-4f, $"{id}: {phase} lasts its timer at 60 Hz");
+                Assert.AreEqual(at60, at30, 1f / 30f + 1e-4f, $"{id}: {phase} lasts the same at 30 Hz as at 60 Hz");
+            }
+        }
+
+        /// <summary>Puts one enemy far out in <paramref name="phase"/> with a 1.2 s timer and steps it at
+        /// <paramref name="dt"/> until the phase ends; the seconds it lasted.</summary>
+        float PhaseSeconds(ConfigSetRuntime config, string id, EnemyCombatPhase phase, float dt)
+        {
+            var w = Make(config);
+            var def = System.Array.FindIndex(w.Defs, d => d != null && d.id == id);
+            var slot = w.V4.Spawn(def, new Vector3(40f, 0f, 0f));
+            var state = w.Services.State(w.V4.Agents[slot].id, w.Defs[def]);
+            state.phase = phase;
+            state.phaseTimer = 1.2f;
+            var seconds = 0f;
+            for (var f = 0; f < 600 && state.phase == phase && w.V4.Agents[slot].active; f++)
+            {
+                w.ShipB.transform.position = Vector3.zero;
+                IFrameUntil.SetValue(w.ShipB.Damage, 1e9f);
+                w.V4.Tick(dt, w.ShipB.Position, w.ShipB.Damage);
+                seconds += dt;
+            }
+            Assert.AreNotEqual(phase, state.phase, $"{id}: {phase} ended within 600 steps");
+            return seconds;
+        }
+    }
 }

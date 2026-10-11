@@ -283,6 +283,10 @@ function readJson(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
  * today's export; generate() checks that the old export, with the renames applied, equals data.json in every field (meta
  * aside) and refuses to list the hash otherwise. Only the item pool's order can differ (keys are sorted by id), which
  * reorders the simulated chest draws per seed but not their odds: the same model, other samples.
+ * V5 M9b close (review): the guard compares the exported fields only (data.json, the simulator's input). A config change
+ * outside the export (the enemy leash, the spawn placement's camera, a behaviour's timer) changes the config hash but not
+ * what the guard sees; each entry's note says why such a change cannot raise any bounded output beyond the simulator's
+ * strongest-personality margin, and a change that can is a balance change: no entry, new bounds.
  */
 export const SAME_BOUNDS_CONFIGS = [
   { configHash: '9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38', export: '60922664',
@@ -292,6 +296,8 @@ export const SAME_BOUNDS_CONFIGS = [
     note: 'Owner, 10 Oct: the enemy leash puts enemies back 31 m ahead instead of 26 m (RunConfig.enemyLeashReturnDistance, new); the export (the simulator\'s input) is unchanged but for the config hash, so every bound is the same; the builds from D27 to then' },
   { configHash: '12ee9e816966e0154d35694ec4c2618f101816617024348348fbadc543724f16', export: 'e01a2e87', renames: [],
     note: 'Owner, 10 Oct (D28 extended): the enemy leash puts enemies back just outside the camera\'s view along their bearing (RunConfig\'s leash view fields and margin replace enemyLeashReturnDistance); the export (the simulator\'s input) is unchanged but for the config hash, so every bound is the same; the builds from e01a2e87 (protocol 5) to then' },
+  { configHash: '0a96e35a72d7c8660f37cb59c83baef8e5c9518ba29c9c3e0c0b43a7e44fd266', export: '1c84ad2f', renames: [],
+    note: 'V5 M9b close (11 Oct, review): the leash distance (45 m) and hysteresis (10 m) became RunConfig fields at the same values (were constants), with a 26 m fallback for a view with no footprint; in the same build the spawn placement asks a camera on the simulated ship (the drawn camera trailed it by the interpolation) and the recovery of the shark and the flight of the treasure raider time out on the simulation step (the same at 60 frames a second). None is exported or simulated: where enemies appear off screen and how long two phases last do not change any rate the simulator bounds, so every bound is the same; the builds from 1c84ad2f (D28 extended) to then' },
 ];
 
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'

@@ -132,6 +132,57 @@ namespace RoguePirates.V4.Tests
                                      "not UnityEngine.Random or System.Random:\n" + string.Join("\n", problems));
         }
 
+        /// <summary>
+        /// V5 M9b close (determinism): the simulation's modules read no frame clock and no drawn camera. A frame clock
+        /// (Time.deltaTime, Time.time, the unscaled and realtime clocks, Time.frameCount) makes a timer depend on the frame
+        /// rate (and on the match server, which steps at 30 Hz, run differently); the main camera follows the ship's
+        /// interpolated transform, so asking it what is on screen depends on the frame's render phase (the seed-8282
+        /// minute-0 spawns differed between two plays). They take the simulation's dt and run clock, and the follow
+        /// camera's simulation view (FollowCamera.SimulationViewOf).
+        /// </summary>
+        static readonly string[] SimulationRoots =
+        {
+            "V4/Runtime/Enemies", "V4/Runtime/Spawning", "V4/Runtime/Weapons", "V4/Runtime/Stage", "V4/Runtime/Progression",
+            "V4/Runtime/Difficulty", "V4/Runtime/Rewards",
+        };
+
+        static readonly Regex FrameClock = new Regex(@"\bTime\s*\.\s*(deltaTime|time|timeAsDouble|unscaledDeltaTime|unscaledTime|realtimeSinceStartup|realtimeSinceStartupAsDouble|frameCount|smoothDeltaTime)\b");
+        static readonly Regex DrawnCamera = new Regex(@"(?<!SimulationViewOf\(\s*)\bCamera\s*\.\s*main\b");
+
+        /// <summary>The frame clocks and drawn-camera reads in one file's code.</summary>
+        internal static List<string> RenderStateReads(string source)
+        {
+            var code = StripCommentsAndStrings(source);
+            var found = new List<string>();
+            foreach (Match m in FrameClock.Matches(code)) found.Add(m.Value);
+            foreach (Match m in DrawnCamera.Matches(code)) found.Add(m.Value);
+            return found;
+        }
+
+        [Test]
+        public void SimulationCode_ReadsNoFrameClockOrDrawnCamera()
+        {
+            var problems = new List<string>();
+            var scanned = 0;
+            foreach (var file in SimulationRoots.SelectMany(r => Directory.GetFiles(Path.Combine(GameRoot, r), "*.cs", SearchOption.AllDirectories)))
+            {
+                scanned++;
+                var v = RenderStateReads(File.ReadAllText(file));
+                if (v.Count > 0) problems.Add($"{Relative(file)}: {string.Join(", ", v.Distinct())}");
+            }
+            Assert.Greater(scanned, 60, "the scan reached the simulation code");
+            Assert.IsEmpty(problems, "The simulation must step on its own dt and run clock and ask the follow camera's simulation view, " +
+                                     "not the frame clock or the drawn camera:\n" + string.Join("\n", problems));
+
+            // The scanner finds each form and ignores comments and the simulation view.
+            Assert.IsNotEmpty(RenderStateReads("class A { void F() { t -= Time.deltaTime; } }"));
+            Assert.IsNotEmpty(RenderStateReads("class A { bool F() => UnityEngine.Time.time < _until; }"));
+            Assert.IsNotEmpty(RenderStateReads("class A { int F() => Time.frameCount; }"));
+            Assert.IsNotEmpty(RenderStateReads("class A { Camera F() => Camera.main; }"));
+            Assert.IsEmpty(RenderStateReads("class A { Camera F() => FollowCamera.SimulationViewOf(Camera.main); /* Time.time */ }"));
+            Assert.IsEmpty(RenderStateReads("class A { float F(float dt) => Sim.RunSeconds + dt; // was Time.deltaTime\n }"));
+        }
+
         [Test]
         public void Allowlist_NamesExistingFilesThatStillNeedIt_WithReasons()
         {

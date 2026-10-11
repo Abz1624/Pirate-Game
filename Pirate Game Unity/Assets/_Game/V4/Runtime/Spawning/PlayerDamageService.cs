@@ -39,7 +39,8 @@ namespace RoguePirates.V4.Spawning
         public PlayerDamageService(IPlayerHull hull, Func<float> time = null)
         {
             _hull = hull;
-            _time = time ?? (() => Time.time);
+            // V5 M9b close (determinism): the run clock by default (was the frame clock, Time.time)
+            _time = time ?? (Func<float>)(() => RoguePirates.V4.Foundation.Core.RunManager.Instance != null ? RoguePirates.V4.Foundation.Core.RunManager.Instance.ElapsedSeconds : 0f);
         }
 
         /// <summary>The build's incoming-damage multiplier (Brace!, Reinforced Keel).</summary>

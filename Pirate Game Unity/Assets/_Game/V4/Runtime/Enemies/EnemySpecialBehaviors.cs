@@ -276,7 +276,7 @@ namespace RoguePirates.V4.Enemies
                 RevealAmbush(ref agent, ref p);
             else if (trigger == TerrainAmbushTrigger.WhenOffScreenThenReveal)
             {
-                var cam = Camera.main;
+                var cam = FollowCamera.SimulationViewOf(Camera.main); // V5 M9b close: the view on the simulated ship
                 if (cam != null && SpawnPlacementService.IsWorldPositionVisible(agent.position, cam, 0.05f))
                     RevealAmbush(ref agent, ref p);
             }

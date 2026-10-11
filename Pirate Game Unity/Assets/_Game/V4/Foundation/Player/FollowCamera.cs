@@ -162,6 +162,12 @@ namespace RoguePirates.V4.Foundation.Player
 
         void LateUpdate()
         {
+            LateUpdateView();
+            UpdateSimulationView();
+        }
+
+        void LateUpdateView()
+        {
             if (target == null)
             {
                 TryFindPlayer();
@@ -226,6 +232,74 @@ namespace RoguePirates.V4.Foundation.Player
             transform.position = desiredPosition;
             ApplyRotation(desiredPosition, smooth: false);
             _snapped = true;
+            _simAnchorInitialized = false;
+        }
+
+        // ---- V5 M9b close (determinism): the simulation view ----
+        // The drawn camera follows the ship's transform, which Rigidbody interpolation moves between physics steps by the
+        // frame's render phase (Time.time against Time.fixedTime). Spawn placement and the off-screen ambush asked that
+        // camera what is on screen, so two plays of one seed with the same inputs placed enemies differently (the M9a
+        // determinism test). The simulation view is the same camera (offset, aim, smoothing, play-area clamp and
+        // projection) following the ship's simulated position instead: a hidden, never-rendering camera that gameplay
+        // asks (SimulationViewOf); the drawn camera is unchanged.
+
+        Camera _simulationView;
+        Vector3 _simAnchor, _simAnchorVelocity;
+        bool _simAnchorInitialized;
+
+        /// <summary>The camera gameplay asks what is on screen: <paramref name="camera"/>'s simulation view when it is the
+        /// run's follow camera, else <paramref name="camera"/> itself (null stays null).</summary>
+        public static Camera SimulationViewOf(Camera camera)
+        {
+            if (camera == null) return null;
+            var follow = camera.GetComponent<FollowCamera>();
+            return follow != null && follow._simulationView != null ? follow._simulationView : camera;
+        }
+
+        /// <summary>The simulation view (null until the camera has a target).</summary>
+        public Camera SimulationView => _simulationView;
+
+        void UpdateSimulationView()
+        {
+            if (target == null || !_snapped) return;
+            if (_viewCamera == null) _viewCamera = GetComponent<Camera>();
+            if (_viewCamera == null) return;
+            var ship = _ship != null ? _ship.SimPosition : target.position;
+            var smoothing = ActivePositionSmoothing;
+            if (!_simAnchorInitialized || smoothing <= 0f || IsThirdPersonView)
+            {
+                _simAnchor = ship;
+                _simAnchorVelocity = Vector3.zero;
+                _simAnchorInitialized = true;
+            }
+            else
+            {
+                _simAnchor = Vector3.SmoothDamp(_simAnchor, ship, ref _simAnchorVelocity, 1f / Mathf.Max(smoothing, 0.01f), Mathf.Infinity, Time.deltaTime);
+            }
+            var anchor = IsThirdPersonView ? _simAnchor : ClampAnchorToPlayArea(_simAnchor, ship, _simAnchor);
+            if (!IsThirdPersonView) _simAnchor = anchor;
+            var position = GetDesiredPosition(anchor);
+            var rotation = GetDesiredRotation(position, anchor);
+            if (_simulationView == null)
+            {
+                var go = new GameObject("FollowCameraSimulationView") { hideFlags = HideFlags.DontSave };
+                _simulationView = go.AddComponent<Camera>();
+                _simulationView.enabled = false; // never renders: gameplay only reads its view
+            }
+            _simulationView.transform.SetPositionAndRotation(position, rotation);
+            _simulationView.orthographic = _viewCamera.orthographic;
+            _simulationView.orthographicSize = _viewCamera.orthographicSize;
+            _simulationView.fieldOfView = _viewCamera.fieldOfView;
+            _simulationView.nearClipPlane = _viewCamera.nearClipPlane;
+            _simulationView.farClipPlane = _viewCamera.farClipPlane;
+            _simulationView.aspect = _viewCamera.aspect;
+        }
+
+        void OnDestroy()
+        {
+            if (_simulationView == null) return;
+            if (Application.isPlaying) Destroy(_simulationView.gameObject);
+            else DestroyImmediate(_simulationView.gameObject);
         }
 
         void UpdateSmoothedAnchor(Vector3 anchorPosition)
@@ -268,14 +342,20 @@ namespace RoguePirates.V4.Foundation.Player
         /// inside the play area; once the storm is shrinking the safe area, inside the storm edge too, as long as the ship
         /// stays on screen. A view wider than the area centres on it.
         /// </summary>
-        Vector3 ClampAnchorToPlayArea(Vector3 anchor)
+        Vector3 ClampAnchorToPlayArea(Vector3 anchor) =>
+            ClampAnchorToPlayArea(anchor, target.position, _anchorInitialized ? _smoothedAnchor : GetAnchorPosition());
+
+        /// <summary>The clamp for a follow point, with the ship at <paramref name="shipPos"/> and the camera aimed from
+        /// <paramref name="lookAnchor"/> (the drawn camera: the interpolated ship and its own anchor; the simulation view: the
+        /// simulated ship and its anchor).</summary>
+        Vector3 ClampAnchorToPlayArea(Vector3 anchor, Vector3 shipPos, Vector3 lookAnchor)
         {
             if (!clampToPlayArea || PlayBounds.HalfExtentX <= 0f || PlayBounds.HalfExtentZ <= 0f) return anchor;
             if (_viewCamera == null) _viewCamera = GetComponent<Camera>();
             if (_viewCamera == null) return anchor;
 
             var pos = GetDesiredPosition(anchor);
-            var rot = GetDesiredRotation(pos);
+            var rot = GetDesiredRotation(pos, lookAnchor);
             var tan = Mathf.Tan(_viewCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
             var aspect = _viewCamera.aspect;
             // The footprint's middle row gives the sideways reach at the ship's depth (the tilted view's far corners spread
@@ -306,7 +386,6 @@ namespace RoguePirates.V4.Foundation.Player
             result.x = ClampAxis(result.x, c.x, PlayBounds.HalfExtentX, minX, maxX);
             result.z = ClampAxis(result.z, c.z, PlayBounds.HalfExtentZ, minZ, maxZ);
             // The ship always stays on screen.
-            var shipPos = target.position;
             result.x = KeepInView(result.x, shipPos.x, minX, maxX);
             result.z = KeepInView(result.z, shipPos.z, minZ, maxZ);
             return result;
@@ -389,12 +468,15 @@ namespace RoguePirates.V4.Foundation.Player
                 : desiredRotation;
         }
 
-        Quaternion GetDesiredRotation(Vector3 cameraPosition)
+        Quaternion GetDesiredRotation(Vector3 cameraPosition) =>
+            GetDesiredRotation(cameraPosition, _anchorInitialized ? _smoothedAnchor : GetAnchorPosition());
+
+        Quaternion GetDesiredRotation(Vector3 cameraPosition, Vector3 lookAnchor)
         {
             if (ActiveRotationMode == RotationMode.Manual)
                 return Quaternion.Euler(ActiveRotationEuler);
 
-            var lookPoint = _anchorInitialized ? _smoothedAnchor : GetAnchorPosition();
+            var lookPoint = lookAnchor;
             var lookOffset = ActiveLookAtOffset;
 
             if (ActiveFollowShipRotation && _ship != null &&

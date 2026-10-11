@@ -63,7 +63,7 @@ namespace RoguePirates.V4.Enemies
                     return true;
                 case SaltwindCombatArchetype.Shark:
                 case SaltwindCombatArchetype.DrownedPursuer:
-                    velocity = TickShark(ref agent, state, dir, dist, playerPos, playerVelocity);
+                    velocity = TickShark(ref agent, state, dir, dist, playerPos, playerVelocity, dt);
                     return true;
                 case SaltwindCombatArchetype.Swordfish:
                     velocity = TickSwordfish(ref agent, state, profile, dir, dist, dt, playerPos, playerVelocity);
@@ -106,7 +106,7 @@ namespace RoguePirates.V4.Enemies
                     velocity = TickNetCutterRoute(ref agent, state, dir, playerVelocity, dt);
                     return true;
                 case SaltwindCombatArchetype.TreasureRaider:
-                    velocity = TickTreasureRaider(ref agent, state, dir, dist, playerPos);
+                    velocity = TickTreasureRaider(ref agent, state, dir, dist, playerPos, dt);
                     return true;
                 case SaltwindCombatArchetype.KrakenSpawn:
                 case SaltwindCombatArchetype.EliteKrakenSpawn:
@@ -230,11 +230,12 @@ namespace RoguePirates.V4.Enemies
             Vector3 dir,
             float dist,
             Vector3 playerPos,
-            Vector3 playerVelocity)
+            Vector3 playerVelocity,
+            float dt)
         {
             if (state.phase == EnemyCombatPhase.Recover)
             {
-                state.phaseTimer -= Time.deltaTime;
+                state.phaseTimer -= dt; // V5 M9b close (review): the simulation's step (was the frame's delta time)
                 if (state.phaseTimer <= 0f)
                     state.phase = EnemyCombatPhase.Approach;
                 return -dir * (agent.moveSpeed * 0.85f);
@@ -798,11 +799,12 @@ namespace RoguePirates.V4.Enemies
             CombatAgentState state,
             Vector3 dir,
             float dist,
-            Vector3 playerPos)
+            Vector3 playerPos,
+            float dt)
         {
             if (state.phase == EnemyCombatPhase.Flee)
             {
-                state.phaseTimer -= Time.deltaTime;
+                state.phaseTimer -= dt; // V5 M9b close (review): the simulation's step (was the frame's delta time)
                 if (state.phaseTimer <= 0f)
                     state.phase = EnemyCombatPhase.Approach;
                 var away = (agent.position - playerPos).normalized;

@@ -1,6 +1,6 @@
 {
- "rulesVersion": 5,
- "configHash": "0a96e35a72d7c8660f37cb59c83baef8e5c9518ba29c9c3e0c0b43a7e44fd266",
+ "rulesVersion": 7,
+ "configHash": "83779c995b73c5dd4fb492586c12bd7e8ff68fc6f8d66db226644d98c5eba527",
  "sessions": [
   {
    "file": "session-log-20261006-152859-rook.json",

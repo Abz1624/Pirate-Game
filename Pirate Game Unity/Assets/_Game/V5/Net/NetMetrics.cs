@@ -39,11 +39,37 @@ namespace RoguePirates.V5.Net
         public float StartedAt { get; private set; }
         public int GuessedInputs, LateInputs, CatchUpSteps;
 
+        /// <summary>V5 M9b close: the server's per-tick and per-snapshot lists keep only a rolling window (about the last 5 to
+        /// 10 minutes at 30 Hz: past this many samples the oldest half goes), so an idle match server does not keep every
+        /// tick (1.72 million samples after 16 h on Railway, sorted for every stats line). The totals below cover the whole
+        /// voyage.</summary>
+        public const int ServerWindowSamples = 18000;
+        /// <summary>Every tick measured since <see cref="Reset"/>, and the slowest one (the window drops older ticks).</summary>
+        public long TicksMeasured { get; private set; }
+        public float TickMsMax { get; private set; }
+
+        /// <summary>One server tick's work time: into the rolling window, and the voyage's count and maximum.</summary>
+        public void AddTick(float ms)
+        {
+            TicksMeasured++;
+            if (ms > TickMsMax) TickMsMax = ms;
+            AddCapped(TickMs, ms, ServerWindowSamples);
+        }
+
+        /// <summary>One snapshot's size and enemy count, in the rolling window.</summary>
+        public void AddSnapshot(float bytes, float enemies)
+        {
+            AddCapped(SnapshotBytes, bytes, ServerWindowSamples);
+            AddCapped(SnapshotEnemies, enemies, ServerWindowSamples);
+        }
+
         public void Reset()
         {
             _clients.Clear();
             TickMs.Clear(); SnapshotBytes.Clear(); SnapshotEnemies.Clear(); PredictionError.Clear(); Correction.Clear(); ResumeSeconds.Clear(); InputLagMs.Clear();
             GuessedInputs = LateInputs = CatchUpSteps = 0;
+            TicksMeasured = 0;
+            TickMsMax = 0f;
             StartedAt = Time.realtimeSinceStartup;
         }
 
@@ -116,6 +142,8 @@ namespace RoguePirates.V5.Net
             }
             sb.Append(first ? "],\n" : "\n" + indent + "],\n");
             Stats(sb, indent, "tickMs", TickMs);
+            Field(sb, indent, "ticksMeasured", TicksMeasured);
+            Field(sb, indent, "tickMsMaxVoyage", TickMsMax);
             Stats(sb, indent, "snapshotBytes", SnapshotBytes);
             Stats(sb, indent, "snapshotEnemies", SnapshotEnemies);
             Stats(sb, indent, "predictionErrorMetres", PredictionError);

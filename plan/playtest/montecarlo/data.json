@@ -4933,9 +4933,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "0a96e35a72d7c8660f37cb59c83baef8e5c9518ba29c9c3e0c0b43a7e44fd266",
+  "configHash": "83779c995b73c5dd4fb492586c12bd7e8ff68fc6f8d66db226644d98c5eba527",
   "preset": null,
-  "exported": "2026-10-10T03:12:21Z",
+  "exported": "2026-10-10T22:59:29Z",
   "unity": "6000.3.11f1"
  }
 }

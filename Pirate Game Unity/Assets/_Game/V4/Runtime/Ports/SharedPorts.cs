@@ -161,7 +161,11 @@ namespace RoguePirates.V4.Ports
         public Func<float> IncomingDamage;
 
         public bool Exists => Ship != null;
+        /// <summary>The ship's simulated position (V5 M9b close: gameplay reads the body, not the interpolated transform).</summary>
         public Vector3 Position => Ship != null ? Ship.Position : Vector3.zero;
+        /// <summary>V5 M9b close: presenters draw at the drawn (interpolated) ship, so what sits on it does not step at the
+        /// physics rate.</summary>
+        Vector3 IShipView.Position => Ship != null ? Ship.DrawnPosition : Vector3.zero;
         /// <summary>The ship's velocity (weapons and views read it as is).</summary>
         public Vector3 Velocity => Ship != null ? Ship.Velocity : Vector3.zero;
         /// <summary>Enemies read the horizontal velocity (y = 0).</summary>
@@ -178,12 +182,14 @@ namespace RoguePirates.V4.Ports
         public Vector3 MovementForward => Ship != null ? Ship.MovementForward : Vector3.forward;
         /// <summary>V5 M9a (I9a.1): the steer (x) and throttle (y) input the ship last sailed on.</summary>
         public Vector2 SteerThrottle => Ship != null ? Ship.LastSteerThrottle : Vector2.zero;
-        public Vector3 TransformPoint(Vector3 local) => Ship.transform.TransformPoint(local);
+        /// <summary>A point on the ship at its simulated pose (V5 M9b close: was the interpolated transform's).</summary>
+        public Vector3 TransformPoint(Vector3 local) =>
+            Matrix4x4.TRS(Ship.SimPosition, Ship.SimRotation, Ship.transform.lossyScale).MultiplyPoint3x4(local);
 
         public float ContactRadius => Ship != null ? Ship.IslandCollisionRadius : 1.15f;
         public bool HasDamageReceiver => Ship != null && Ship.Damage != null;
         public bool IsAlive => HasDamageReceiver && Ship.Damage.IsAlive;
-        public Vector3 HullPosition => HasDamageReceiver ? Ship.Damage.transform.position : Position;
+        public Vector3 HullPosition => HasDamageReceiver && Ship.Damage.transform != Ship.transform ? Ship.Damage.transform.position : Position;
         public float Hp => HasDamageReceiver ? Ship.Damage.CurrentHP : 0f;
         public float MaxHp => HasDamageReceiver ? Ship.Damage.MaxHP : 0f;
         public float CurrentHp => Hp;
@@ -215,7 +221,7 @@ namespace RoguePirates.V4.Ports
 
         public bool HullExists => HasDamageReceiver;
         public bool HullAlive => IsAlive;
-        Vector3 IPlayerHull.HullPosition => Ship != null ? Ship.transform.position : Vector3.zero;
+        Vector3 IPlayerHull.HullPosition => Ship != null ? Ship.Position : Vector3.zero; // V5 M9b close: simulated, not drawn
         public float HullHp => Hp;
         public bool HullInvulnerable => HasDamageReceiver && InvulnerableField != null && (bool)InvulnerableField.GetValue(Ship.Damage);
         public void HitHull(float amount, Vector3 source) { if (HasDamageReceiver) Ship.Damage.TakeDamage(amount, source, false); }
@@ -288,28 +294,33 @@ namespace RoguePirates.V4.Ports
 
         public SpawnPlacementPort(Func<PlayerShipController> ship) { _ship = ship; }
 
-        Transform Player
+        PlayerShipController Ship
         {
             get
             {
                 var ship = _ship?.Invoke();
                 if (ship == null) ship = Object.FindFirstObjectByType<PlayerShipController>();
-                return ship != null ? ship.transform : null;
+                return ship;
             }
         }
 
-        /// <summary>EncounterSpawner.GetCamera: the main camera, re-fetched when it goes inactive.</summary>
+        /// <summary>V5 M9b close (determinism): the ship's simulated pose (was its interpolated transform).</summary>
+        SpawnAnchor Player => SpawnAnchor.FromShip(Ship);
+
+        /// <summary>EncounterSpawner.GetCamera: the main camera, re-fetched when it goes inactive. V5 M9b close (determinism):
+        /// placement reads the follow camera's simulation view (the same camera on the simulated ship, see
+        /// <see cref="FollowCamera.SimulationViewOf"/>), not the drawn camera, which follows the interpolated ship.</summary>
         Camera Camera
         {
             get
             {
                 if (_camera == null || !_camera.isActiveAndEnabled) _camera = Camera.main;
-                return _camera;
+                return FollowCamera.SimulationViewOf(_camera);
             }
         }
 
-        public bool Ready => Player != null && RunManager.Instance != null && RunManager.Instance.Rng != null;
-        public Vector3 PlayerPosition => Player != null ? Player.position : Vector3.zero;
+        public bool Ready => Ship != null && RunManager.Instance != null && RunManager.Instance.Rng != null;
+        public Vector3 PlayerPosition => Player.Valid ? Player.position : Vector3.zero;
 
         public bool TryPick(SpawnPlacementSettings settings, float spawnRadius, bool allowNearPlayerFallback, out Vector3 position) =>
             SpawnPlacementService.TryPickSpawnPosition(Player, Camera, settings, spawnRadius, RunManager.Instance.Rng, allowNearPlayerFallback, out position);
@@ -321,6 +332,6 @@ namespace RoguePirates.V4.Ports
             SpawnPlacementService.IsFormationPositionValid(position, spawnRadius, Camera, settings);
 
         public float ViewEdgeDistance =>
-            Camera != null && Player != null ? SpawnPlacementService.GetMinSpawnDistanceBeyondView(Camera, Player, 0.08f) + 1.5f : 0f;
+            Camera != null && Player.Valid ? SpawnPlacementService.GetMinSpawnDistanceBeyondView(Camera, Player, 0.08f) + 1.5f : 0f;
     }
 }

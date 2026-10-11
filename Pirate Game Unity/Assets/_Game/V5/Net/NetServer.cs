@@ -100,6 +100,9 @@ namespace RoguePirates.V5.Net
             public float awaySince = -1f;
             /// <summary>Ticks guessed in a row (the client's input was not there in time).</summary>
             public int guessRun;
+            /// <summary>V5 M9b close: the least input margin at the ticks applied since the last snapshot (negative: a tick
+            /// whose input was not there in time, guessed); int.MaxValue when none was applied.</summary>
+            public int leastMargin = int.MaxValue;
         }
 
         public Session Current { get; private set; }
@@ -340,6 +343,7 @@ namespace RoguePirates.V5.Net
                 seed = Seed,
                 ship = BuildShip(s),
             });
+            s.leastMargin = int.MaxValue; // V5 M9b close: a welcome starts the margin afresh
             Send(NetProtocol.Welcome, clientId, NetworkDelivery.ReliableSequenced);
             if (LevelUps != null && LevelUps.Pending) SendOffer(LevelUps.Message()); // the cards still up after a resume
             if (EndSent) SendEnd(LastEndReason);
@@ -668,6 +672,11 @@ namespace RoguePirates.V5.Net
             var tick = s.expectNext;
             if (LevelUps != null && LevelUps.AwaitingHold) _beforeTick[tick % (uint)_beforeTick.Length] = (tick, Ship.Capture(), Ship.CaptureBoost());
             NetInput input;
+            // V5 M9b close: the margin at the moment the tick is applied (newest input received minus this tick; negative when
+            // its input is not here), the least since the last snapshot goes out with it. The margin read when the snapshot
+            // was built missed inputs that came under a tick late: they had arrived by then, so a client a tick short of
+            // lead had most of its inputs guessed while its snapshots read 0 (up to 5 s after a hitch, 11 Oct).
+            s.leastMargin = (int)Math.Min(s.leastMargin, Math.Max(sbyte.MinValue, Math.Min(sbyte.MaxValue, (long)s.newestReceived - tick)));
             if (Has(s, tick)) { input = s.ring[tick % (uint)s.ring.Length]; s.guessRun = 0; }
             else
             {
@@ -711,7 +720,7 @@ namespace RoguePirates.V5.Net
                 kills = (uint)(run != null ? run.KillCount : 0),
                 gold = (uint)(run != null ? Mathf.Max(0, run.Gold) : 0),
                 flags = flags,
-                inputMargin = s != null && s.started ? (sbyte)Mathf.Clamp((int)((long)s.newestReceived - s.lastAck), sbyte.MinValue, sbyte.MaxValue) : (sbyte)0,
+                inputMargin = s != null && s.started ? (sbyte)Mathf.Clamp(Mathf.Min((int)((long)s.newestReceived - s.lastAck), s.leastMargin), sbyte.MinValue, sbyte.MaxValue) : (sbyte)0,
             };
         }
 
@@ -720,12 +729,12 @@ namespace RoguePirates.V5.Net
             var bytes = 0;
             _writer.Clear();
             NetCodec.WriteShip(_writer, BuildShip(s));
+            s.leastMargin = int.MaxValue; // the next snapshot reports the ticks applied after this one
             bytes += Send(NetProtocol.Snapshot, s.clientId, NetworkDelivery.Unreliable);
             var enemyCount = 0;
             bytes += SendEnemies(s, ref enemyCount);
             s.snapshots++;
-            Metrics.SnapshotBytes.Add(bytes);
-            Metrics.SnapshotEnemies.Add(enemyCount);
+            Metrics.AddSnapshot(bytes, enemyCount);
         }
 
         int SendEnemies(Session s, ref int sent)
@@ -845,7 +854,7 @@ namespace RoguePirates.V5.Net
             _pendingWorkMs += _work.Elapsed.TotalMilliseconds;
             if (_ticksThisFrame <= 0) return;
             var perTick = (float)(_pendingWorkMs / _ticksThisFrame);
-            for (var i = 0; i < _ticksThisFrame; i++) Metrics.TickMs.Add(perTick);
+            for (var i = 0; i < _ticksThisFrame; i++) Metrics.AddTick(perTick); // V5 M9b close: a rolling window, not every tick
             _pendingWorkMs = 0;
             _ticksThisFrame = 0;
         }
