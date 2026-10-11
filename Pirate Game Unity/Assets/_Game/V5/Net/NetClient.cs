@@ -581,10 +581,9 @@ namespace RoguePirates.V5.Net
             // V5 M9b close: late snapshots counted over the last LateWindowSnapshots (were counted only in a row). A lead a
             // tick short of the link leaves some ticks' inputs late and others not: snapshots alternating late and on time,
             // never three in a row, and the server guessed every few ticks for up to 5 s (a hitch's resync, 11 Oct).
-            _lateMask = ((_lateMask << 1) | (late ? 1 : 0)) & ((1 << LateWindowSnapshots) - 1);
-            _lateSnapshots = 0;
-            for (var m = _lateMask; m != 0; m &= m - 1) _lateSnapshots++;
-            var behind = late && (s.inputMargin <= -LateTicksToResync || _lateSnapshots >= LateSnapshotsToResync);
+            // The rule lives in NetLateness (EditMode tests pin it).
+            _lateSnapshots = NetLateness.Push(ref _lateMask, late);
+            var behind = NetLateness.Behind(late, s.inputMargin, _lateSnapshots);
             var resync = ack != 0 && _resyncNext && !s.HoldPending;
             if (ack > Tick || behind || resync)
             {
@@ -684,9 +683,9 @@ namespace RoguePirates.V5.Net
 
         /// <summary>Snapshots (of the last <see cref="LateWindowSnapshots"/>) showing this client's inputs late before it moves its tick ahead (or at once when
         /// they were this many ticks late); the extra ticks of lead it then takes.</summary>
-        const int LateSnapshotsToResync = 3, LateTicksToResync = 3, ResyncSlackTicks = 3;
+        const int LateSnapshotsToResync = NetLateness.SnapshotsToResync, LateTicksToResync = NetLateness.TicksToResync, ResyncSlackTicks = 3;
         /// <summary>V5 M9b close: the late snapshots are counted over this many (about half a second at 15 Hz).</summary>
-        const int LateWindowSnapshots = 8;
+        const int LateWindowSnapshots = NetLateness.WindowSnapshots;
         int _lateMask;
         /// <summary>A frame longer than this is this page running slowly (not the link); late inputs are not acted on until
         /// <see cref="SlowFrameQuietSeconds"/> after the last one.</summary>

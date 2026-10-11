@@ -133,7 +133,11 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>
-        /// V5 M9b close (determinism): the simulation's modules read no frame clock and no drawn camera. A frame clock
+        /// V5 M9b close (determinism): the simulation code in the Runtime folders listed in <see cref="SimulationRoots"/>
+        /// (enemies, spawning, weapons, stage, progression, difficulty, rewards) reads no frame clock and no drawn camera.
+        /// Foundation is not scanned: its gameplay MonoBehaviours still read the frame clock in places (RunManager's elapsed
+        /// time, DamageReceiver's hit immunity, the ship's roll and its island clock off DirectStep, ShipBoostController),
+        /// and the spawn placement there takes its camera and ship pose from the run's port. A frame clock
         /// (Time.deltaTime, Time.time, the unscaled and realtime clocks, Time.frameCount) makes a timer depend on the frame
         /// rate (and on the match server, which steps at 30 Hz, run differently); the main camera follows the ship's
         /// interpolated transform, so asking it what is on screen depends on the frame's render phase (the seed-8282

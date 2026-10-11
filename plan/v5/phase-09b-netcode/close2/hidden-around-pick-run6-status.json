@@ -1,0 +1,20 @@
+{
+  "status": "completed",
+  "duration": 22.49,
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetPlayModeTests.LevelUp_PageHiddenAroundThePick_AndAThrottledFrame_SteersAgain_ResyncsBounded",
+      "Status": "Passed",
+      "Duration": 22.4247239,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

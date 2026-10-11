@@ -682,8 +682,8 @@ namespace RoguePirates.V4.Tests
                 if (raider == null && profile.archetype == SaltwindCombatArchetype.TreasureRaider) raider = d.id;
             }
             Assert.IsNotNull(shark, "an enemy with the shark's combat archetype");
-            var cases = new List<(string id, EnemyCombatPhase phase)> { (shark, EnemyCombatPhase.Recover) };
-            if (raider != null) cases.Add((raider, EnemyCombatPhase.Flee));
+            Assert.IsNotNull(raider, "an enemy with the treasure raider's combat archetype");
+            var cases = new List<(string id, EnemyCombatPhase phase)> { (shark, EnemyCombatPhase.Recover), (raider, EnemyCombatPhase.Flee) };
             foreach (var (id, phase) in cases)
             {
                 var at30 = PhaseSeconds(config, id, phase, 1f / 30f);

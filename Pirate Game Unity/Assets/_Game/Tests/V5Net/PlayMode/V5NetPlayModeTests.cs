@@ -1360,7 +1360,9 @@ namespace RoguePirates.V5.Net.Tests
             }
             report["after_recoverySeconds"] = (lastGuessAt - settleFrom).ToString("0.00");
             Assert.Less(Time.realtimeSinceStartup - lastGuessAt, 5f, "the inputs are on time again within 5 s of the hitch");
-            Assert.LessOrEqual(lastGuessAt - settleFrom, 4f, "the late inputs after the hitch are put right within 4 s");
+            // V5 M9b close 2 (11 Oct): measured 0.11-1.41 s in 6 runs alone, 2.32 and 2.45 s in two full suite runs
+            // (plan/v5/phase-09b-netcode/close2/): the bound is the largest plus about half a second (was 4 s).
+            Assert.LessOrEqual(lastGuessAt - settleFrom, 3f, "the late inputs after the hitch are put right within 3 s");
             var guessed = 0;
             var windows = 0;
             var worstFrame = 0f;

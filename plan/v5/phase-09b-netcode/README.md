@@ -42,7 +42,51 @@ Gate for `V5 M9b` (plan: automated check, owner playtest):
   Railway.
 - **Owner playtest: done 11 Oct** on Railway (image of `1c84ad2f`, desktop Chrome): "enemies smooth, tab switching fine,
   no pop-ins". Tracked, not blocking: the ram jolt (1-2.6 m when an enemy rams the ship; `plan/v5/TODO-FOR-YOU.md`).
+- **Determinism failure, resolved:** see "Review fixes `4c050833`" below.
 - **Independent review (11 Oct):** fail as it stood, pass with fixes; 1 blocker (the determinism test) and its Majors are being fixed (timing-free gate tests, simulation dt for the shark and treasure-raider timers, steer clamp, leash config and fallback); owner decisions logged in `plan/v5/OPEN-QUESTIONS.md` (11 Oct).
+- **Review fixes `4c050833` (11 Oct, close 2):** EditMode **617/617** and PlayMode **123/123**, twice
+  (`editmode-close2.json`, `editmode-close2-b.json`, `playmode-close2.json`, `playmode-close2-b.json`). Root cause of the
+  determinism failure (`SameSeedAndInputs_GiveTheSamePerMinuteLog`): gameplay read the ship's Rigidbody-interpolated
+  drawn pose and the drawn camera that follows it. Interpolation places the transform between physics steps by the
+  frame's render phase (`Time.time` against `Time.fixedTime`), so spawn placement and the off-screen ambush saw a
+  slightly different ship and view in two plays of one seed. Gameplay now reads the simulated pose (`SpawnAnchor.FromShip`)
+  and a simulation camera (`FollowCamera.SimulationViewOf`). The run checks are at **rules v7** (`plausibility-rules.json`
+  `rulesVersion` 7; the commit message said v6). The API is already deployed with rules v7.
+- **Focused re-review of `4c050833`:** passed with fixes, no blockers. Fixes (close 2b, not committed):
+  - Server `dotnet test` **163/163** (`server-close2.trx`).
+  - Hitch recovery (`LevelUp_PageHiddenAroundThePick_AndAThrottledFrame_SteersAgain_ResyncsBounded`, `after_recoverySeconds`):
+    alone, 6 runs gave 1.41, 1.30, 1.26, 1.40, 0.11 and 0.11 s (`close2/hidden-around-pick-270ms-run1..6.json`); the
+    close-2 suite run gave 2.32 s and the close-3 suite run 2.45 s (`close2/hidden-around-pick-270ms-suite-close3.json`).
+    The bound went from 4 s to **3 s**, the largest measured value plus about 0.5 s. The suite runs need the longer bound:
+    2 s would have failed both, and 2.5 s (the first choice, which the close-3 suite passed with) left 0.05 s of margin.
+    Rerun alone with 3 s: passed, 0.06 s (`close2/hidden-around-pick-270ms-run7-bound3s.json`).
+  - **Close 3 suites** (all the changes below, before the bound went from 2.5 s to 3 s, a looser assertion only):
+    EditMode **619/619** (`editmode-close3.json`: 617 + the 2 new late-rule tests); PlayMode **125/125**
+    (`playmode-close3.json`: 123 + the 2 frame-rate checks), including `SameSeedAndInputs_GiveTheSamePerMinuteLog` with
+    the simulation camera stepped on the tick.
+  - New EditMode tests: `LateRule_ThreeOfTheLastEight_ResyncsAlternatingLateSnapshots_ThreeInARowWouldNot` (late and
+    on-time snapshots alternating trigger a resync at the fifth snapshot; "3 in a row" never fires on that pattern) and
+    `ServerMargin_IsTheLeastAtTheAppliedTicks_NotTheMarginWhenTheSnapshotIsBuilt` (inputs under a tick late read 0 when the
+    snapshot is built, -1 as the least margin over the ticks applied). The rules moved into `NetLateness` (pure functions
+    used by `NetClient` and `NetServer`; the behaviour is unchanged).
+  - Single-player playable check (`V5SharkRaiderFrameRatePlayModeTests`, `close2/singleplayer-shark-raider-{60,144}fps.json`):
+    Scenario Lab voyage of 20 s run time with the trace's wander pilot, 5 sharks and 3 treasure raiders, at a fixed 60 and
+    144 fps. Raider flights at 60 fps were 1.517 s (6 of them) and 1.617 s (one hit flight); at 144 fps they were 1.507 s
+    (6) and 1.597 s (the same hit flight). Timer: 1.5 s. A weapon hit's knockback holds the behaviour for a few ticks. Shark
+    recovery: 1.217 s at 60 fps and 1.201 s at 144 fps (timer 1.2 s). No runtime path puts a shark in Recover, so the test
+    puts one live shark in Recover. With the old frame clock, 144 fps would have given about 3.6 s and 2.9 s. In both runs
+    the clock ran the 20 s, 4 sharks were sunk, and the ship stayed afloat.
+  - The simulation camera is now created when the camera snaps to its target (in `Start`, `SetTarget` and `SnapToTarget`),
+    so the first tick's spawns use it. It is a child of the drawn camera, not a separate `DontSave` root. The run steps it
+    once per simulation tick by the tick's dt (`SimulationViewPort` in `V4Game`'s tick loop, before the modules), not per
+    frame by `Time.deltaTime`, so its follow smoothing no longer depends on the frame rate. The implicit
+    `Transform -> SpawnAnchor` conversion is removed. `SharkRecoverAndRaiderFlee_LastTheSame_At30And60Hz` now asserts that a
+    treasure raider exists. The `V5RunSeedingTests` source-scan comment now names what it scans (the Runtime simulation
+    folders) and what it does not (Foundation, with the frame-clock readers left there).
+  - `plausibility.mjs`: the same-bounds entry for `0a96...` has a note that sharks and raiders now recover on the simulation
+    timer (more aggressive on screens faster than 60 Hz). No bounded output is raised. The shipped
+    `plausibility-rules.json` and the fixtures keep the old note text until the next `generate` (bounds and hash unchanged;
+    no redeploy needed).
 - **Railway clean-up done (11 Oct):** `match-test` deleted, the API's ticket settings removed, `.railway/railway.ts` in sync (`railway/cleanup-proof.md`). Railway's usage export needs the owner's login (estimate about $0.17 from metrics).
 - **Unity Transport patch:** the embedded `Packages/com.unity.transport` is 2.7.4 with two patched files (the WebSocket Host header for native clients; browsers are unaffected). The exact change is `utp-host-header.patch` (made against the pristine 2.7.4 tarball): on a Unity Transport update, take the new package and re-apply it with `git apply`, or drop the fork if Unity fixes the bug. Licence: the package stays under the Unity Companion License (`LICENSE.md` kept); under its section 3 Unity owns the modified copy, and it may only be used with Unity content, which this is.
 

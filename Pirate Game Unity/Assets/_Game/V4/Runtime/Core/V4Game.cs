@@ -67,6 +67,8 @@ namespace RoguePirates.V4
         Telemetry.RunTelemetry _telemetry;
         Views.ToastForwarder _toasts;
         RunLifecycle _lifecycle;
+        /// <summary>V5 M9b close 2: steps the follow camera's simulation view once per tick.</summary>
+        readonly SimulationViewPort _simulationView = new SimulationViewPort();
         int _seed;
         bool _running;
         bool _ended;
@@ -456,6 +458,8 @@ namespace RoguePirates.V4
                 var steps = _clock.Advance(Time.deltaTime);
                 for (var i = 0; i < steps; i++)
                 {
+                    // V5 M9b close 2: the camera gameplay asks what is on screen moves on the tick's dt (not the frame's).
+                    _simulationView.Step(_clock.TickDuration);
                     _modules.TickAll(_clock.NextTick());
                     _events.EndTick(); // one batch per simulation tick
                 }

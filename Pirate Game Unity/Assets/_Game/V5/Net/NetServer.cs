@@ -676,7 +676,7 @@ namespace RoguePirates.V5.Net
             // its input is not here), the least since the last snapshot goes out with it. The margin read when the snapshot
             // was built missed inputs that came under a tick late: they had arrived by then, so a client a tick short of
             // lead had most of its inputs guessed while its snapshots read 0 (up to 5 s after a hitch, 11 Oct).
-            s.leastMargin = (int)Math.Min(s.leastMargin, Math.Max(sbyte.MinValue, Math.Min(sbyte.MaxValue, (long)s.newestReceived - tick)));
+            s.leastMargin = NetLateness.LeastMargin(s.leastMargin, s.newestReceived, tick);
             if (Has(s, tick)) { input = s.ring[tick % (uint)s.ring.Length]; s.guessRun = 0; }
             else
             {
@@ -720,7 +720,7 @@ namespace RoguePirates.V5.Net
                 kills = (uint)(run != null ? run.KillCount : 0),
                 gold = (uint)(run != null ? Mathf.Max(0, run.Gold) : 0),
                 flags = flags,
-                inputMargin = s != null && s.started ? (sbyte)Mathf.Clamp(Mathf.Min((int)((long)s.newestReceived - s.lastAck), s.leastMargin), sbyte.MinValue, sbyte.MaxValue) : (sbyte)0,
+                inputMargin = s != null && s.started ? NetLateness.SnapshotMargin(s.newestReceived, s.lastAck, s.leastMargin) : (sbyte)0,
             };
         }
 

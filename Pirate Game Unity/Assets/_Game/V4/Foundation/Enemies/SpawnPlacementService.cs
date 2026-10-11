@@ -7,7 +7,7 @@ namespace RoguePirates.V4.Foundation.Enemies
 {
     /// <summary>
     /// V5 M9b close (determinism): the ship as spawn placement reads it: its simulated position, yaw and movement forward.
-    /// The run passes <see cref="FromShip"/> (the physics body's pose); a Transform still converts (its drawn pose, which
+    /// The run passes <see cref="FromShip"/> (the physics body's pose), not the ship's transform (its drawn pose, which
     /// Rigidbody interpolation moves between physics steps by the frame's render phase, so two plays of one seed differed).
     /// </summary>
     public readonly struct SpawnAnchor
@@ -33,18 +33,8 @@ namespace RoguePirates.V4.Foundation.Enemies
         public static SpawnAnchor FromShip(PlayerShipController ship) =>
             ship == null ? default : new SpawnAnchor(ship.SimPosition, ship.SimRotation.eulerAngles.y, ship.MovementForward);
 
-        public static implicit operator SpawnAnchor(Transform player)
-        {
-            if (player == null) return default;
-            var ship = player.GetComponent<PlayerShipController>();
-            if (ship != null)
-            {
-                var movement = ship.MovementForward;
-                movement.y = 0f;
-                if (movement.sqrMagnitude > 0.01f) return new SpawnAnchor(player.position, player.eulerAngles.y, movement);
-            }
-            return new SpawnAnchor(player.position, player.eulerAngles.y, player.forward);
-        }
+        // V5 M9b close 2 (review): the implicit Transform conversion (the drawn, interpolated pose) is gone, so no caller
+        // can pass the drawn pose by accident; build an anchor from the ship (FromShip) or from explicit values.
     }
 
     public static class SpawnPlacementService

@@ -287,6 +287,19 @@ namespace RoguePirates.V4.Ports
     }
 
     /// <summary>Spawn placement through the shared placement service, the ship's transform and the main camera.</summary>
+    /// <summary>V5 M9b close 2: the run steps the follow camera's simulation view (the camera gameplay asks what is on
+    /// screen, <see cref="FollowCamera.SimulationViewOf"/>) by each simulation tick's dt, before the tick's modules run.</summary>
+    public sealed class SimulationViewPort
+    {
+        Camera _camera;
+
+        public void Step(float dt)
+        {
+            if (_camera == null || !_camera.isActiveAndEnabled) _camera = Camera.main;
+            FollowCamera.StepSimulationViewOf(_camera, dt);
+        }
+    }
+
     public sealed class SpawnPlacementPort : ISpawnPlacement
     {
         readonly Func<PlayerShipController> _ship;

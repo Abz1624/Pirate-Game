@@ -937,5 +937,87 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual(0f, m.TickMsMax);
             Assert.AreEqual(0, m.TickMs.Count);
         }
+
+        // ---- V5 M9b close 2: the late-input rules --------------------------------------------------------------------
+
+        /// <summary>
+        /// The client's 3-of-the-last-8 late-snapshot rule: snapshots alternating late (a tick late) and on time, as a lead
+        /// a tick short of the link gives, move the tick ahead at the fifth snapshot (the third late one); the old rule,
+        /// three late in a row, never fires on that pattern. A lone late snapshot among on-time ones never fires; one three
+        /// ticks late fires at once.
+        /// </summary>
+        [Test]
+        public void LateRule_ThreeOfTheLastEight_ResyncsAlternatingLateSnapshots_ThreeInARowWouldNot()
+        {
+            var mask = 0;
+            var inARow = 0;
+            int firedAt = -1, oldFiredAt = -1;
+            for (var i = 0; i < 40; i++)
+            {
+                var late = i % 2 == 0; // late, on time, late, on time, ...
+                var count = NetLateness.Push(ref mask, late);
+                inARow = late ? inARow + 1 : 0;
+                if (firedAt < 0 && NetLateness.Behind(late, late ? -1 : 0, count)) firedAt = i;
+                if (oldFiredAt < 0 && late && inARow >= NetLateness.SnapshotsToResync) oldFiredAt = i;
+            }
+            Assert.AreEqual(4, firedAt, "the third late snapshot of the window (the fifth snapshot) moves the tick ahead");
+            Assert.AreEqual(-1, oldFiredAt, "three late in a row never happens on this pattern");
+
+            // One late snapshot in every 8: at most one in the window, never fires.
+            mask = 0;
+            for (var i = 0; i < 64; i++)
+            {
+                var late = i % 8 == 0;
+                var count = NetLateness.Push(ref mask, late);
+                Assert.LessOrEqual(count, 1);
+                Assert.IsFalse(NetLateness.Behind(late, late ? -1 : 0, count), $"snapshot {i}: a lone late one does not resync");
+            }
+            // Late snapshots age out of the window: two late, eight on time, one late: one in the window.
+            mask = 0;
+            NetLateness.Push(ref mask, true);
+            NetLateness.Push(ref mask, true);
+            for (var i = 0; i < NetLateness.WindowSnapshots; i++) NetLateness.Push(ref mask, false);
+            Assert.AreEqual(1, NetLateness.Push(ref mask, true), "the old late ones left the window");
+            // Three ticks late fires at once; an on-time snapshot never does.
+            mask = 0;
+            Assert.IsTrue(NetLateness.Behind(true, -NetLateness.TicksToResync, NetLateness.Push(ref mask, true)));
+            Assert.IsFalse(NetLateness.Behind(false, -5, 8), "not late (a slow frame, the guard): no resync");
+        }
+
+        /// <summary>
+        /// The server's per-applied-tick margin: inputs that arrive under a tick late (each tick applied before its input,
+        /// which arrives before the snapshot is built) read 0 at the snapshot, as before the fix, but the least margin at
+        /// the applied ticks is -1, so the snapshot says late. On time, the margin is the inputs' lead; it starts afresh
+        /// after each snapshot; a tick far behind is clamped to the byte.
+        /// </summary>
+        [Test]
+        public void ServerMargin_IsTheLeastAtTheAppliedTicks_NotTheMarginWhenTheSnapshotIsBuilt()
+        {
+            // Ticks 100 and 101 applied (a snapshot every 2nd tick), each while the newest input received was the tick before.
+            var least = int.MaxValue;
+            least = NetLateness.LeastMargin(least, 99, 100);
+            least = NetLateness.LeastMargin(least, 100, 101);
+            // Tick 101's input arrived before the snapshot is built.
+            uint newest = 101, lastAck = 101;
+            Assert.AreEqual(0, (int)((long)newest - lastAck), "the margin read when the snapshot is built shows nothing");
+            Assert.AreEqual(-1, NetLateness.SnapshotMargin(newest, lastAck, least), "the snapshot carries the late ticks");
+
+            // One late tick of the two is enough.
+            least = int.MaxValue;
+            least = NetLateness.LeastMargin(least, 103, 102);
+            least = NetLateness.LeastMargin(least, 102, 103);
+            Assert.AreEqual(-1, NetLateness.SnapshotMargin(104, 103, least));
+
+            // On time: inputs two ticks ahead at every applied tick, then the lead.
+            least = int.MaxValue;
+            least = NetLateness.LeastMargin(least, 106, 104);
+            least = NetLateness.LeastMargin(least, 107, 105);
+            Assert.AreEqual(2, NetLateness.SnapshotMargin(107, 105, least));
+            // Afresh after a snapshot (the server resets the least to int.MaxValue): the margin now.
+            Assert.AreEqual(3, NetLateness.SnapshotMargin(110, 107, int.MaxValue));
+            // Clamped to the byte both ways.
+            Assert.AreEqual(sbyte.MinValue, NetLateness.SnapshotMargin(0, 1000, NetLateness.LeastMargin(int.MaxValue, 0, 1000)));
+            Assert.AreEqual(sbyte.MaxValue, NetLateness.SnapshotMargin(1000, 0, int.MaxValue));
+        }
     }
 }

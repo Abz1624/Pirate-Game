@@ -1,0 +1,17 @@
+{
+  "report": "singleplayer-shark-raider-60fps",
+  "utc": "2026-10-11T02:33:01.9351019Z",
+  "unity": "6000.3.11f1",
+  "frameSeconds": 0.016667,
+  "frames": 1201,
+  "runSeconds": 20.017,
+  "raiderFleeSeconds": [1.517, 1.517, 1.617, 1.517, 1.517, 1.517, 1.517],
+  "raiderFleeTimer": 1.5,
+  "sharkRecoverSeconds": [1.217],
+  "sharkRecoverTimer": 1.2,
+  "sharkRecoverForced": true,
+  "sharkRecoversWithoutForcing": 0,
+  "kills": 4,
+  "shipAlive": true,
+  "enemiesActiveAtEnd": 4
+}

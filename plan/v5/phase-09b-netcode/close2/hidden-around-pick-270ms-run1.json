@@ -1,0 +1,61 @@
+{
+  "report": "hidden-around-pick-270ms",
+  "utc": "2026-10-11T02:22:31.1180620Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "A_controlAfterPickSeconds": "0.026",
+  "A_resyncs": "0",
+  "B_controlAfterWelcomeSeconds": "0.036",
+  "B_resyncs": "0",
+  "C_controlAfterHitchSeconds": "0.036",
+  "C_resyncs": "1",
+  "C_snapshotsCoalesced": "16",
+  "after_recoverySeconds": "1.41",
+  "after_windowsMeasured": "1",
+  "after_worstFrameMs": "6",
+  "after_guessedInputs": "0",
+  "after_resyncs": "0",
+  "after_predictionErrorP95": "0.000",
+  "aways": "2",
+  "link": "135 ms each way, 15 ms jitter, 1% loss",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 19.765,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 2166.208, "bytesUpPerSecond": 548.483, "wireDownPerSecondEstimate": 2471.589, "wireUpPerSecondEstimate": 777.368, "messagesDown": 503, "messagesUp": 377}
+      ],
+      "tickMs": {"count": 591, "mean": 1.303, "p50": 1.595, "p95": 2.034, "max": 7.937},
+      "ticksMeasured": 591,
+      "tickMsMaxVoyage": 7.937,
+      "snapshotBytes": {"count": 245, "mean": 171, "p50": 171, "p95": 171, "max": 171},
+      "snapshotEnemies": {"count": 245, "mean": 1, "p50": 1, "p95": 1, "max": 1},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 102,
+      "lateInputs": 14,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 1.51,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2491.46, "bytesUpPerSecond": 894.064, "wireDownPerSecondEstimate": 2841.138, "wireUpPerSecondEstimate": 1251.69, "messagesDown": 44, "messagesUp": 45}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "ticksMeasured": 0,
+      "tickMsMaxVoyage": 0,
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 22, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 22, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 22, "mean": 365.152, "p50": 366.667, "p95": 366.667, "max": 366.667},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

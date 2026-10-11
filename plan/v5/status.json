@@ -1,6 +1,6 @@
 {
  "updated": "9 Oct 2026",
- "statusLine": "M9b closing (GO for M9c); you are away, so I continue through M9c and later phases and log decisions and questions in OPEN-QUESTIONS.md.",
+ "statusLine": "M9b closed (GO). M9c building: S0 single-player fingerprint first. Owner away; questions logged in OPEN-QUESTIONS.md.",
  "statusOk": false,
  "facts": [
   [
@@ -82,12 +82,12 @@
    "chip": "done 8 Oct · tag v5-m9a"
   },
   "M9b": {
-   "state": "building",
-   "chip": "closing · determinism fix and review"
+   "state": "done",
+   "chip": "done 11 Oct · tag v5-m9b"
   },
   "M9c": {
-   "state": "planned",
-   "chip": "planned"
+   "state": "building",
+   "chip": "started 11 Oct · S0 fingerprint"
   }
  },
  "log": [
@@ -560,10 +560,17 @@
    "when": "11 Oct",
    "commit": "49f26ad2",
    "what": "<strong>M9b closing</strong>: your 11 Oct re-test passed (enemies smooth, tab switching fine, no pop-ins); a Railway redeploy mid-voyage ends it cleanly. Final memo: <strong>GO for M9c</strong> (server tick p95 0.4-2 ms vs 8 ms, corrections under 0.1 m except enemy rams, resume 1.4-2 s, about $0.007 per voyage-hour; the whole Railway test cost about $0.17). Test service deleted and test settings removed (D26). Before the close: a determinism test broke (same seed giving different spawns), being fixed, and the independent review is running."
+  },
+  {
+   "when": "11 Oct",
+   "commit": "",
+   "what": "<strong>M9b closed</strong> (tag v5-m9b): a browser player plays a voyage run by a Netcode server on Railway; GO for M9c. Final suites EditMode 619/619, PlayMode 125/125, server 163/163. Late fixes: the same seed now always plays the same (gameplay had read the ship's drawn, smoothed position), sharks and raiders time their phases on the game clock at any frame rate. <strong>M9c started</strong>: plan reviewed and adopted (two checkpoints, M9c-1 then M9c-2); first step a single-player fingerprint. You are away: decisions and questions are logged in OPEN-QUESTIONS.md."
   }
  ],
  "todos": {
   "next": [
+   "<strong>Read and answer</strong> the questions logged while you were away in <code>plan/v5/OPEN-QUESTIONS.md</code> (M9b close and M9c design).",
+   "Ram jolt (online): tell me if it bothers you.",
    "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [

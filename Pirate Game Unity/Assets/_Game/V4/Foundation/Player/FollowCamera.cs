@@ -163,7 +163,9 @@ namespace RoguePirates.V4.Foundation.Player
         void LateUpdate()
         {
             LateUpdateView();
-            UpdateSimulationView();
+            // V5 M9b close 2: once the run steps the simulation view on its ticks (StepSimulationViewOf), only the run moves
+            // it; before that (a scene without a run), the frame does.
+            if (!_simSteppedByRun) UpdateSimulationView(Time.deltaTime);
         }
 
         void LateUpdateView()
@@ -223,6 +225,7 @@ namespace RoguePirates.V4.Foundation.Player
             if (target == null) return;
 
             CacheTargetBody();
+            if (_ship == null) _ship = target.GetComponent<PlayerShipController>();
             var anchorPosition = GetAnchorPosition();
             _smoothedAnchor = IsThirdPersonView ? anchorPosition : ClampAnchorToPlayArea(anchorPosition);
             _anchorVelocity = Vector3.zero;
@@ -233,6 +236,7 @@ namespace RoguePirates.V4.Foundation.Player
             ApplyRotation(desiredPosition, smooth: false);
             _snapped = true;
             _simAnchorInitialized = false;
+            UpdateSimulationView(0f); // V5 M9b close 2: the view exists (snapped) before the run's first tick asks it
         }
 
         // ---- V5 M9b close (determinism): the simulation view ----
@@ -259,7 +263,21 @@ namespace RoguePirates.V4.Foundation.Player
         /// <summary>The simulation view (null until the camera has a target).</summary>
         public Camera SimulationView => _simulationView;
 
-        void UpdateSimulationView()
+        bool _simSteppedByRun;
+
+        /// <summary>V5 M9b close 2: the run steps <paramref name="camera"/>'s simulation view once per simulation tick, by the
+        /// tick's dt, before the tick's modules ask it what is on screen, so the view (and its follow smoothing) is the same
+        /// at any frame rate (was stepped each drawn frame by the frame's delta time). No-op for a camera without one.</summary>
+        public static void StepSimulationViewOf(Camera camera, float dt)
+        {
+            if (camera == null) return;
+            var follow = camera.GetComponent<FollowCamera>();
+            if (follow == null) return;
+            follow._simSteppedByRun = true;
+            follow.UpdateSimulationView(dt);
+        }
+
+        void UpdateSimulationView(float dt)
         {
             if (target == null || !_snapped) return;
             if (_viewCamera == null) _viewCamera = GetComponent<Camera>();
@@ -272,9 +290,9 @@ namespace RoguePirates.V4.Foundation.Player
                 _simAnchorVelocity = Vector3.zero;
                 _simAnchorInitialized = true;
             }
-            else
+            else if (dt > 0f)
             {
-                _simAnchor = Vector3.SmoothDamp(_simAnchor, ship, ref _simAnchorVelocity, 1f / Mathf.Max(smoothing, 0.01f), Mathf.Infinity, Time.deltaTime);
+                _simAnchor = Vector3.SmoothDamp(_simAnchor, ship, ref _simAnchorVelocity, 1f / Mathf.Max(smoothing, 0.01f), Mathf.Infinity, dt);
             }
             var anchor = IsThirdPersonView ? _simAnchor : ClampAnchorToPlayArea(_simAnchor, ship, _simAnchor);
             if (!IsThirdPersonView) _simAnchor = anchor;
@@ -282,7 +300,9 @@ namespace RoguePirates.V4.Foundation.Player
             var rotation = GetDesiredRotation(position, anchor);
             if (_simulationView == null)
             {
+                // A child of the drawn camera: it goes with it (no separate object to clean up), and it is not saved.
                 var go = new GameObject("FollowCameraSimulationView") { hideFlags = HideFlags.DontSave };
+                go.transform.SetParent(transform, false);
                 _simulationView = go.AddComponent<Camera>();
                 _simulationView.enabled = false; // never renders: gameplay only reads its view
             }
@@ -293,13 +313,6 @@ namespace RoguePirates.V4.Foundation.Player
             _simulationView.nearClipPlane = _viewCamera.nearClipPlane;
             _simulationView.farClipPlane = _viewCamera.farClipPlane;
             _simulationView.aspect = _viewCamera.aspect;
-        }
-
-        void OnDestroy()
-        {
-            if (_simulationView == null) return;
-            if (Application.isPlaying) Destroy(_simulationView.gameObject);
-            else DestroyImmediate(_simulationView.gameObject);
         }
 
         void UpdateSmoothedAnchor(Vector3 anchorPosition)
