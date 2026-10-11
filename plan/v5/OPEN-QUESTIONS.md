@@ -124,3 +124,7 @@ Full plan: `plan/v5/phase-09c-multiship/PLAN.md` ("Product decisions"). The ones
 - The Unity Editor hung on a Package Manager dialog during S0b; I stopped it and restarted it. Its scene-recovery
   backup (one small file, most likely the test runner's temporary scene) is kept in
   `Documents/RoguePirates-scene-backups/20261011-1318` rather than recovered or discarded. Delete it if you don't need it.
+- M9c S1 (11 Oct, tag v5-m9c-s1): the match server now runs each voyage on its own clock (no more freezing Unity's
+  global time); single player byte-identical; the solo server voyage's odd second outcome is explained (a 0.2 s hit
+  immunity read the process clock) and gone. Not yet met: the server-tick target at 200 enemies (best 8.0 ms vs 7), and
+  in 4 of 6 load runs the enemies lost track of the ship (S1b is fixing this before the ship refactor).
