@@ -74,7 +74,13 @@ namespace RoguePirates.V4.Online
         public int kills; public int runSeconds; public int level; public string captain;
         /// <summary>V5 M9a (I9a.3): the run passed the server's run checks (shadow mode: unchecked runs still rank).</summary>
         public bool @checked;
+        /// <summary>Hackathon (12 Oct): the player's wallet, shortened (null for guests), and the week's devnet SOL reward
+        /// (JsonUtility fills a null reward with zeros: lamports 0 means none).</summary>
+        public string wallet; public LeaderboardReward reward;
     }
+
+    /// <summary>Hackathon (12 Oct): a weekly board place's devnet SOL reward.</summary>
+    [Serializable] public sealed class LeaderboardReward { public long lamports; public double sol; public string status; public string signature; }
 
     [Serializable] public sealed class LeaderboardMe { public int rank; public int kills; public int runSeconds; public int level; public bool @checked; }
 

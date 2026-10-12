@@ -56,7 +56,7 @@ namespace RoguePirates.V4.Presentation.Online
             hl.spacing = 12f;
             hl.childControlWidth = hl.childControlHeight = true;
             hl.childForceExpandWidth = false;
-            Cells(columns, OnlineUi.Dim, 24, "#", "Player", "Kills", "Time", "Level", "Captain");
+            Cells(columns, OnlineUi.Dim, 24, "#", "Player", "Kills", "Time", "Level", "Captain", "Reward");
 
             var body = OnlineUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 104f, 24f, 200f));
             _list = OnlineUi.ScrollList(body, "Scroll", Vector4.zero);
@@ -68,8 +68,9 @@ namespace RoguePirates.V4.Presentation.Online
             _me.margin = new Vector4(20f, 0f, 20f, 0f);
         }
 
-        /// <summary>Rank, name, kills, time, level, Captain: the column widths shared by the header and the rows.</summary>
-        static void Cells(Transform row, Color color, float size, string rank, string name, string kills, string time, string level, string captain)
+        /// <summary>Rank, name, kills, time, level, Captain, reward (Hackathon, 12 Oct): the column widths shared by the header
+        /// and the rows.</summary>
+        static void Cells(Transform row, Color color, float size, string rank, string name, string kills, string time, string level, string captain, string reward)
         {
             OnlineUi.Cell(row, rank, 90f, size, TextAlignmentOptions.MidlineLeft, color);
             OnlineUi.Cell(row, name, 0f, size, TextAlignmentOptions.MidlineLeft, color);
@@ -77,6 +78,18 @@ namespace RoguePirates.V4.Presentation.Online
             OnlineUi.Cell(row, time, 140f, size, TextAlignmentOptions.MidlineRight, color);
             OnlineUi.Cell(row, level, 110f, size, TextAlignmentOptions.MidlineRight, color);
             OnlineUi.Cell(row, captain, 170f, size, TextAlignmentOptions.MidlineRight, color);
+            OnlineUi.Cell(row, reward, 190f, size, TextAlignmentOptions.MidlineRight, color);
+        }
+
+        /// <summary>Hackathon (12 Oct): the wallet after the name, and the place's devnet SOL reward.</summary>
+        static string WalletMark(LeaderboardEntry e) =>
+            string.IsNullOrEmpty(e.wallet) ? string.Empty : "  <size=70%><color=#9aa4ad>" + e.wallet + "</color></size>";
+
+        static string Reward(LeaderboardEntry e)
+        {
+            if (e.reward == null || e.reward.lamports <= 0) return "-";
+            var sol = "<color=#ffd166>" + e.reward.sol.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + " SOL</color>";
+            return e.reward.status == "sent" ? sol + " <size=70%><color=#7fd68b>paid</color></size>" : sol;
         }
 
         public void Open(bool previous = false)
@@ -145,8 +158,8 @@ namespace RoguePirates.V4.Presentation.Online
                     var row = OnlineUi.Row(_list, 60f, tint);
                     var color = e.rank == 1 ? OnlineUi.Gold : OnlineUi.TextColor;
                     // V5 M9a (I9a.3): "checked" when the run passed the server's run checks (shadow mode: the rest still rank)
-                    Cells(row, color, 28, "#" + e.rank, e.name + "<color=#9aa4ad>" + e.tag + "</color>" + (e.@checked ? CheckedMark : ""), e.kills.ToString(),
-                        OnlineRules.RunTime(e.runSeconds), e.level.ToString(), Captain(e.captain));
+                    Cells(row, color, 28, "#" + e.rank, e.name + "<color=#9aa4ad>" + e.tag + "</color>" + (e.@checked ? CheckedMark : "") + WalletMark(e), e.kills.ToString(),
+                        OnlineRules.RunTime(e.runSeconds), e.level.ToString(), Captain(e.captain), Reward(e));
                     _rows.Add(row.gameObject);
                 }
             }

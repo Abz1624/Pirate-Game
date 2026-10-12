@@ -42,10 +42,27 @@ namespace RoguePirates.V4.Online
         /// <summary>A lobby code from an invite link (?join=CODE on WebGL), waiting for the menu to join it.</summary>
         public static string PendingJoinCode { get; set; }
 
+        /// <summary>Hackathon (12 Oct): a display hook run on every lobby state and "match_start" before anyone reads them
+        /// (the hackathon names the practice bot as the AI captain). Display only: the ids and rules are untouched.</summary>
+        public static Action<LobbyState> LobbyReceived;
+        public static Action<MatchStartMsg> MatchStartReceived;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             PendingJoinCode = null;
+        }
+
+        static void Filter(LobbyState state)
+        {
+            try { LobbyReceived?.Invoke(state); }
+            catch (Exception e) { Debug.LogException(e); }
+        }
+
+        static void Filter(MatchStartMsg start)
+        {
+            try { MatchStartReceived?.Invoke(start); }
+            catch (Exception e) { Debug.LogException(e); }
         }
 
         ILobbySocket _socket;
@@ -258,6 +275,7 @@ namespace RoguePirates.V4.Online
 
         void SetLobby(LobbyState state)
         {
+            Filter(state);
             var newLobby = Lobby == null || Lobby.lobbyId != state.lobbyId;
             Lobby = state;
             if (newLobby)
@@ -377,6 +395,7 @@ namespace RoguePirates.V4.Online
                 {
                     var start = JsonUtility.FromJson<MatchStartMsg>(json);
                     if (start == null || string.IsNullOrEmpty(start.matchId)) return;
+                    Filter(start);
                     if (!_offsetMeasured) _offsetMs = start.serverNow - UtcNowMs;
                     var fresh = Match == null || Match.matchId != start.matchId;
                     Match = start;
