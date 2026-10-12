@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 21:15 IST",
+ "updated": "12 Oct, 22:35 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Round 2 desktop build ready at http://localhost:8090 (all 17 changes, review passed, server deployed). Your test pass next; Android after that.",
+ "headline": "New desktop build at http://localhost:8090 (22:28): round 2 plus the Anchor Flail balanced to the other starting weapons. Your test pass next; Android after that.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -232,6 +232,10 @@
   [
    "21:15",
    "Review found 2 deposit blockers (stranded SOL, no way to pay after rejoining): fixed, refunds tested, deployed (server 211). Practice raids pay nothing. Goldens re-frozen (flail, x2 damage); EditMode 788/791, PlayMode 130/134 (remaining: plausibility rules for the new config, being regenerated; flail level-1 DPS above the starter rule). Desktop WebGL rebuilt (120.2 MB), menu loads with no errors."
+  ],
+  [
+   "22:35",
+   "Anchor Flail level-1 DPS 24.4 -> 14.8 (base damage 12.1), matching the other starting weapons. Run checks v8 for the new config (older builds still accepted), server deployed (211). All tests green. Desktop WebGL rebuilt 22:28."
   ]
  ]
 }
