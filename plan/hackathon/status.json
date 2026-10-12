@@ -1,37 +1,134 @@
 {
- "updated": "12 Oct, 07:40 IST",
+ "updated": "12 Oct, 07:26 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Server core done; server features and wallet login in progress. Treasury funded on devnet.",
+ "headline": "On-chain basics proven on devnet: deposit, payout, Island NFT mint and transfer. Server features and wallet login in progress.",
  "features": [
-  {"name": "Wallet login / sign-up (devnet)", "detail": "Sign-in with Solana: the wallet signs a one-time message; profile keyed by wallet; email optional. Desktop: Phantom. Android: Solana Mobile Wallet Adapter (Seed Vault).", "server": "done", "unity": "building", "chain": "pending"},
-  {"name": "Islands: claim, base building, RUM", "detail": "Claim mints an Island NFT; RUM store fills over time; vault keeps 60%; defences make raids harder.", "server": "building", "unity": "todo", "chain": "pending"},
-  {"name": "Raids vs the AI captain", "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.", "server": "building", "unity": "todo", "chain": "pending"},
-  {"name": "AI captain", "detail": "Named AI opponent ship on the PvP bot: 1v1 opponent and island defender.", "server": "n/a", "unity": "todo", "chain": "n/a"},
-  {"name": "Daily island race", "detail": "One seeded course per day; fastest time to 100 kills; daily board.", "server": "building", "unity": "todo", "chain": "n/a"},
-  {"name": "Weekly kill leaderboard + SOL rewards", "detail": "Top places paid in devnet SOL from the treasury; owner-triggered payout for the demo.", "server": "building", "unity": "todo", "chain": "pending"},
-  {"name": "1v1 PvP with SOL wagers", "detail": "Both deposit the stake to escrow; the winner is paid 2x; vs the AI captain the house matches the stake.", "server": "building", "unity": "todo", "chain": "pending"},
-  {"name": "Island NFT marketplace", "detail": "List (NFT to escrow), buy with SOL, cancel; the server swaps.", "server": "building", "unity": "todo", "chain": "pending"},
-  {"name": "Builds", "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.", "server": "n/a", "unity": "todo", "chain": "n/a"}
+  {
+   "name": "Wallet login / sign-up (devnet)",
+   "detail": "Sign-in with Solana: the wallet signs a one-time message; profile keyed by wallet; email optional. Desktop: Phantom. Android: Solana Mobile Wallet Adapter (Seed Vault).",
+   "server": "done",
+   "unity": "building",
+   "chain": "done"
+  },
+  {
+   "name": "Islands: claim, base building, RUM",
+   "detail": "Claim mints an Island NFT; RUM store fills over time; vault keeps 60%; defences make raids harder.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "pending"
+  },
+  {
+   "name": "Raids vs the AI captain",
+   "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "pending"
+  },
+  {
+   "name": "AI captain",
+   "detail": "Named AI opponent ship on the PvP bot: 1v1 opponent and island defender.",
+   "server": "n/a",
+   "unity": "todo",
+   "chain": "n/a"
+  },
+  {
+   "name": "Daily island race",
+   "detail": "One seeded course per day; fastest time to 100 kills; daily board.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "n/a"
+  },
+  {
+   "name": "Weekly kill leaderboard + SOL rewards",
+   "detail": "Top places paid in devnet SOL from the treasury; owner-triggered payout for the demo.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "pending"
+  },
+  {
+   "name": "1v1 PvP with SOL wagers",
+   "detail": "Both deposit the stake to escrow; the winner is paid 2x; vs the AI captain the house matches the stake.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "pending"
+  },
+  {
+   "name": "Island NFT marketplace",
+   "detail": "List (NFT to escrow), buy with SOL, cancel; the server swaps.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "pending"
+  },
+  {
+   "name": "Builds",
+   "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
+   "server": "n/a",
+   "unity": "todo",
+   "chain": "n/a"
+  }
  ],
  "schedule": [
-  ["07:10-09:30", "Server core (done 07:19); wallet login in Unity"],
-  ["09:30-13:00", "Server features; 1v1 wagers, AI captain, daily race, rewards in Unity"],
-  ["13:00-16:00", "Islands and marketplace in Unity; deploy the API"],
-  ["16:00-17:30", "WebGL desktop + Android APK; devnet end-to-end test with you"],
-  ["17:30-18:00", "Buffer"]
+  [
+   "07:10-09:30",
+   "Server core (done 07:19); wallet login in Unity"
+  ],
+  [
+   "09:30-13:00",
+   "Server features; 1v1 wagers, AI captain, daily race, rewards in Unity"
+  ],
+  [
+   "13:00-16:00",
+   "Islands and marketplace in Unity; deploy the API"
+  ],
+  [
+   "16:00-17:30",
+   "WebGL desktop + Android APK; devnet end-to-end test with you"
+  ],
+  [
+   "17:30-18:00",
+   "Buffer"
+  ]
  ],
  "needs": [
-  {"done": true, "text": "Phantom on devnet in Chrome"},
-  {"done": true, "text": "Devnet SOL: treasury 25 SOL, test wallet 10 SOL"},
-  {"done": false, "text": "Solana Mobile device ready for the APK (wallet set to devnet)"}
+  {
+   "done": true,
+   "text": "Phantom on devnet in Chrome"
+  },
+  {
+   "done": true,
+   "text": "Devnet SOL: treasury 25 SOL, test wallet 10 SOL"
+  },
+  {
+   "done": false,
+   "text": "Solana Mobile device ready for the APK (wallet set to devnet)"
+  }
  ],
  "wallets": [
-  ["Treasury / escrow", "Gw2ao9v6cAB8oQiJJsy7h1wZuVS8wDyZNj6bU8z5GsG7"],
-  ["Test wallet", "DcUmg69FiPbf49Z1SMUBxNXEQszuum3d1dQ2bbsDcBkr"]
+  [
+   "Treasury / escrow",
+   "Gw2ao9v6cAB8oQiJJsy7h1wZuVS8wDyZNj6bU8z5GsG7"
+  ],
+  [
+   "Test wallet",
+   "DcUmg69FiPbf49Z1SMUBxNXEQszuum3d1dQ2bbsDcBkr"
+  ]
  ],
  "log": [
-  ["07:04", "Hackathon branch hackathon-demo created; plan written."],
-  ["07:19", "Server core committed: wallet sign-in, Solana service (deposits, payouts, NFT mint), schema for every feature; 176 server tests pass."],
-  ["07:35", "Owner funded devnet: treasury 25 SOL, test wallet 10 SOL. Android will use the Solana Mobile Wallet Adapter."]
+  [
+   "07:04",
+   "Hackathon branch hackathon-demo created; plan written."
+  ],
+  [
+   "07:19",
+   "Server core committed: wallet sign-in, Solana service (deposits, payouts, NFT mint), schema for every feature; 176 server tests pass."
+  ],
+  [
+   "07:22",
+   "Owner funded devnet: treasury 25 SOL, test wallet 10 SOL. Android will use the Solana Mobile Wallet Adapter."
+  ],
+  [
+   "07:26",
+   "Devnet proven: 0.01 SOL deposit verified, payout back, Island NFT minted (1-of-1, Metaplex metadata + master edition) and moved out of escrow. About 0.018 SOL per island mint."
+  ]
  ]
 }
