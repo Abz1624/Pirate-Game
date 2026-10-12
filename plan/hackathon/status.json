@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 14:42 IST",
+ "updated": "12 Oct, 15:16 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Boss teleport fixed and the minimap is back; the defence designer is live on the server. Now: the designer screen and conquest raids in the game (until 16:15), then the rebuild.",
+ "headline": "Every requested feature is in the game, including the island defence designer and conquest raids. Final rebuild of WebGL and the APK running; then your test and the demo reset.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -21,14 +21,14 @@
    "name": "Raids vs the AI captain",
    "detail": "Conquer another player's island: survive its designed waves and sink its guardian boss; a win loots 25% of the exposed RUM; 4 h shield. No SOL stake.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
    "name": "Island defence designer",
    "detail": "Each island is a roguelike level its owner designs: a 15-minute timeline in 1-minute windows, a points budget per window (grows each minute and with defences), enemy picks with costs, a guardian boss and its arrival minute; presets. Raiders must survive the waves and sink the guardian.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "n/a"
   },
   {
@@ -70,7 +70,7 @@
    "name": "Builds",
    "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
    "server": "n/a",
-   "unity": "todo",
+   "unity": "building",
    "chain": "n/a"
   },
   {
@@ -84,15 +84,15 @@
  "schedule": [
   [
    "14:00-15:15",
-   "Defence designer on the server; boss teleport fix + minimap in the game"
+   "Defence designer, conquest raids, boss fix, minimap (done 15:15)"
   ],
   [
    "15:15-16:30",
-   "Designer screen and base-conquest raids in the game; deploy"
+   "Final rebuild: WebGL desktop + APK, install on the Seeker"
   ],
   [
    "16:30-17:30",
-   "Rebuild WebGL + APK, install on the Seeker, your test"
+   "Your test pass"
   ],
   [
    "17:30-18:00",
@@ -191,6 +191,10 @@
   [
    "14:42",
    "Fixed: the Barnacle King teleport (the overlap pass let a spawning crowd shove the boss ~10 m in one frame; not the leash). Minimap back as a one-time snapshot with 10 Hz icons. Defence designer live on the server (15 windows, budgets, costs, guardian, presets). EditMode 761/761; server 206."
+  ],
+  [
+   "15:16",
+   "Game: defence designer (15 minute rows, budget bars, enemy picker, guardian minute, presets; saving checked on the live server) and conquest raids (the island design replaces the waves; the Barnacle King rises at the designed minute; a raid won on Smoke Cove A, 46 RUM looted). Bigger boss icon on the minimap. EditMode 767/767; fingerprints green. Final rebuild started."
   ]
  ]
 }
