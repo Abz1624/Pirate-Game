@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 08:13 IST",
+ "updated": "12 Oct, 08:56 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "In the game now: wallet login, 1v1 SOL wagers, Captain Marrow, the daily race and weekly rewards. Islands, raids and the marketplace screens are being built.",
+ "headline": "Every demo feature works in the game against the live devnet server. Now building desktop WebGL and the Android APK.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -14,14 +14,14 @@
    "name": "Islands: claim, base building, RUM",
    "detail": "Claim mints an Island NFT; RUM store fills over time; vault keeps 60%; defences make raids harder.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
    "name": "Raids vs the AI captain",
    "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
@@ -56,14 +56,14 @@
    "name": "Island NFT marketplace",
    "detail": "List (NFT to escrow), buy with SOL, cancel; the server swaps.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
    "name": "Builds",
    "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
    "server": "n/a",
-   "unity": "todo",
+   "unity": "building",
    "chain": "n/a"
   }
  ],
@@ -78,11 +78,11 @@
   ],
   [
    "13:00-16:00",
-   "Islands, raids and marketplace screens (building); API deployed (done)"
+   "Islands, raids and marketplace in the game (done 08:56); API deployed (done)"
   ],
   [
    "16:00-17:30",
-   "WebGL desktop + Android APK; devnet end-to-end test with you"
+   "WebGL desktop + Android APK (started 09:00); devnet end-to-end test with you"
   ],
   [
    "17:30-18:00",
@@ -153,6 +153,10 @@
   [
    "08:13",
    "Game: 1v1 stake picker and deposit (a real 0.01 SOL wager vs Captain Marrow settled on devnet; a refund paid on leave), Captain Marrow (banner, name over his ship, barks), the daily race (seeded voyage, kills/100 HUD, entry + board), wallets and SOL rewards on the leaderboard. EditMode 750/750."
+  ],
+  [
+   "08:56",
+   "Game: islands (world map, claim with a real Island NFT, RUM collect, buildings, shield), raids vs Captain Marrow (a 0.01 SOL stake won and paid 0.02), island market (listed to escrow, cancelled back, two islands bought) all checked on devnet. EditMode 757/757. Builds started."
   ]
  ]
 }
