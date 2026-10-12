@@ -10,6 +10,15 @@
       `GameObject/Guns/MaelstromCharge/`; `GameObject/Guns/Mortar Barrage.prefab` + `GameObject/Guns/MortarBarrage/Prefabs/`
       + `GameObject/Guns/VFX/Mortar_Explosion_VFX.prefab` (launcher `GameObject/Guns/Mortar.prefab`);
       `GameObject/Guns/TidalAura/TidalAura_VFX.prefab`; `GameObject/fish_bell.prefab` + `Mesh/Cursed/bell/fish_bell.fbx`.
+- [ ] Icon mapping (13 Oct, the art team's UI icons): wired by content id in `V4IconCatalog`; these are waiting for you
+      (files in `Assets/_Game/V4/Demo/Art/Icons/Unmapped/`, not in any build until mapped):
+      weapons `Aura` (siren_bell?), `Ramming Prow`, `Mortar.png` (newer mortar? `mortar` keeps the current one, identical to
+      `mortar(1).png`), `Boarding Party` and `Grapeshot` (already in `UI/New_items/weapons`); items `chain shott`
+      (chain_locker?), `Devil's Match`, `Hammerhead Helm`, `Kraken Ink Sac` (cuttlefish_bone?), `Queen Anne's Fuse`,
+      `Storm in a Bottle`; Logbooks `Big Game Hunter`, `Chaos`, `Echo Arsenal`. Please confirm `Shackle` -> `rusted_shackle`.
+      No icon yet: weapons `siren_bell`, `squid_ink_pots`; items `chain_locker`, `cuttlefish_bone`, `cursed_chest_key`;
+      Logbooks `admiral`, `extra_hands`. To wire one: save it as `Icons/<Weapons|Items|Logbooks>/<content id>.png`, then
+      Tools > Rogue Pirates > Demo > Wire Icons.
 - [ ] Check the art in the Editor: `Assets/_Game/Scenes/V4/Hackathon_ArtShowcase.unity` (Play), or V4Boot > Set Sail.
 - [ ] Art team: Kraken_Crown `Kraken.mat` white emission (pale in game); CutthroatSkiff wake trail has no material; ship
       textures are 2048 px (WebGL caps at 1024).

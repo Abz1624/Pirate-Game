@@ -144,6 +144,22 @@ namespace RoguePirates.V4.Editor
             return null;
         }
 
+        /// <summary>Hackathon (13 Oct): the art team's icon set, one file per content id (Weapons/, Items/, Logbooks/;
+        /// Unmapped/ holds the art whose content the owner has not named yet). These win over the older New_items files.</summary>
+        const string IconsFolder = "Assets/_Game/V4/Demo/Art/Icons";
+
+        static Sprite ById(string kind, string id) =>
+            string.IsNullOrEmpty(id) ? null : AssetDatabase.LoadAssetAtPath<Sprite>(IconsFolder + "/" + kind + "/" + id + ".png");
+
+        [MenuItem("Tools/Rogue Pirates/Demo/Wire Icons")]
+        public static void WireIconsOnly()
+        {
+            var log = new List<string>();
+            WireIcons(log);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[DemoArtWiring]\n" + string.Join("\n", log));
+        }
+
         static void WireIcons(List<string> log)
         {
             var catalog = AssetDatabase.LoadAssetAtPath<IconCatalog>(ResourcesFolder + "/V4IconCatalog.asset");
@@ -151,12 +167,12 @@ namespace RoguePirates.V4.Editor
             int w = 0, i = 0;
             for (var k = 0; k < catalog.weapons.Count; k++)
             {
-                var sprite = Match("Assets/UI/New_items/weapons", catalog.weapons[k].id);
+                var sprite = ById("Weapons", catalog.weapons[k].id) ?? Match("Assets/UI/New_items/weapons", catalog.weapons[k].id);
                 if (sprite != null) { catalog.weapons[k] = new IconCatalog.Entry { id = catalog.weapons[k].id, sprite = sprite }; w++; }
             }
             for (var k = 0; k < catalog.items.Count; k++)
             {
-                var sprite = Match("Assets/UI/New_items/Items", catalog.items[k].id);
+                var sprite = ById("Items", catalog.items[k].id) ?? Match("Assets/UI/New_items/Items", catalog.items[k].id);
                 if (sprite != null) { catalog.items[k] = new IconCatalog.Entry { id = catalog.items[k].id, sprite = sprite }; i++; }
             }
             // Playtest (3 Oct): Logbook icons by file name from New_items/Logbooks (one entry per Logbook; no file: the HUD and cards show the name).
@@ -167,13 +183,14 @@ namespace RoguePirates.V4.Editor
                 if (logbook == null || string.IsNullOrEmpty(logbook.logbookId)) continue;
                 var index = catalog.logbooks.FindIndex(e => e.id == logbook.logbookId);
                 if (index < 0) { catalog.logbooks.Add(new IconCatalog.Entry { id = logbook.logbookId }); index = catalog.logbooks.Count - 1; }
-                var sprite = AssetDatabase.IsValidFolder("Assets/UI/New_items/Logbooks") ? Match("Assets/UI/New_items/Logbooks", logbook.logbookId) : null;
+                var sprite = ById("Logbooks", logbook.logbookId);
+                if (sprite == null) sprite = AssetDatabase.IsValidFolder("Assets/UI/New_items/Logbooks") ? Match("Assets/UI/New_items/Logbooks", logbook.logbookId) : null;
                 if (sprite == null) sprite = AssetDatabase.IsValidFolder("Assets/UI/New_items/Logbooks") ? Match("Assets/UI/New_items/Logbooks", logbook.displayName) : null;
                 catalog.logbooks[index] = new IconCatalog.Entry { id = logbook.logbookId, sprite = sprite };
                 if (sprite != null) lb++;
             }
             EditorUtility.SetDirty(catalog);
-            log.Add($"Icons: {w}/{catalog.weapons.Count} weapons, {i}/{catalog.items.Count} items, {lb}/{catalog.logbooks.Count} Logbooks from New_items");
+            log.Add($"Icons: {w}/{catalog.weapons.Count} weapons, {i}/{catalog.items.Count} items, {lb}/{catalog.logbooks.Count} Logbooks from Demo/Art/Icons and New_items");
         }
 
         static void WireCards(List<string> log)

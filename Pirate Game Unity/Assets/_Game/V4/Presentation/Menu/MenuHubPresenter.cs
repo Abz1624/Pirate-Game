@@ -192,7 +192,24 @@ namespace RoguePirates.V4.Presentation.Menu
             _rows.Clear();
         }
 
-        TextMeshProUGUI Row(string text, Color color, string buttonText = null, System.Action click = null, bool interactable = true)
+        Hud.IconCatalog _icons;
+        bool _iconsLoaded;
+
+        /// <summary>Hackathon (13 Oct): the art team's icon for a shop or collection entry (V4IconCatalog), or null.</summary>
+        Sprite IconOf(StoreCategory category, string contentId)
+        {
+            if (!_iconsLoaded) { _icons = Hud.IconCatalog.Load(); _iconsLoaded = true; }
+            if (_icons == null) return null;
+            switch (category)
+            {
+                case StoreCategory.Weapon: return _icons.Weapon(contentId);
+                case StoreCategory.Logbook: return _icons.Logbook(contentId);
+                case StoreCategory.Item: return _icons.Item(contentId);
+                default: return null;
+            }
+        }
+
+        TextMeshProUGUI Row(string text, Color color, string buttonText = null, System.Action click = null, bool interactable = true, Sprite icon = null)
         {
             var go = new GameObject("Row", typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
             go.transform.SetParent(_list, false);
@@ -203,6 +220,18 @@ namespace RoguePirates.V4.Presentation.Menu
             h.spacing = 16f;
             h.childControlWidth = h.childControlHeight = true;
             h.childForceExpandWidth = false;
+            if (icon != null)
+            {
+                var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                iconGo.transform.SetParent(go.transform, false);
+                var image = iconGo.GetComponent<Image>();
+                image.sprite = icon;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+                var le = iconGo.GetComponent<LayoutElement>();
+                le.minWidth = le.preferredWidth = 72f;
+                le.minHeight = le.preferredHeight = 72f;
+            }
             var labelGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(LayoutElement));
             labelGo.transform.SetParent(go.transform, false);
             labelGo.GetComponent<LayoutElement>().flexibleWidth = 1f;
@@ -249,9 +278,10 @@ namespace RoguePirates.V4.Presentation.Menu
                 var owned = _meta.Owns(e.ContentId);
                 var tags = (e.IsNew ? "  NEW" : string.Empty) + (e.OnSale ? $"  SALE (was {e.BasePrice})" : string.Empty);
                 var color = RarityColors[Mathf.Clamp(e.Rarity, 0, 4)];
-                if (owned) { Row(e.DisplayName + tags, color, "Owned", null, false); continue; }
+                var icon = IconOf(_category, e.ContentId);
+                if (owned) { Row(e.DisplayName + tags, color, "Owned", null, false, icon); continue; }
                 var id = e.ContentId;
-                Row(e.DisplayName + tags, color, $"Buy {e.Price} RUM", () => Buy(id), _meta.CanAfford(e.Price));
+                Row(e.DisplayName + tags, color, $"Buy {e.Price} RUM", () => Buy(id), _meta.CanAfford(e.Price), icon);
             }
             if (_rows.Count == 0) Row("Nothing for sale here yet.", Text);
         }
@@ -274,7 +304,7 @@ namespace RoguePirates.V4.Presentation.Menu
                 var owned = _meta.Owned(cat);
                 var total = _meta.All.Count(e => e.Category == cat);
                 Row($"{name}: {owned.Count} of {total}", Text);
-                foreach (var e in owned) Row("   " + e.DisplayName, RarityColors[Mathf.Clamp(e.Rarity, 0, 4)]);
+                foreach (var e in owned) Row("   " + e.DisplayName, RarityColors[Mathf.Clamp(e.Rarity, 0, 4)], icon: IconOf(cat, e.ContentId));
             }
         }
 

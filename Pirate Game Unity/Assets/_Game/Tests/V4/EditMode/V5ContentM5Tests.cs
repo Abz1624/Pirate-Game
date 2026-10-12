@@ -79,10 +79,9 @@ namespace RoguePirates.V4.Tests
             foreach (var id in Commons.Concat(Bought))
             {
                 Assert.IsTrue(items.ContainsKey(id) && items[id].inChestPool, id);
-                // V5 M8z (7 Oct, review): none of the M5 items has art yet (the borrowed placeholder icons were removed on purpose
-                // in playtest round 7), so the card shows the name: no icon, and a name to show. Art for one fails this
-                // on purpose: move it to V4HudM6Tests.ArtWeapons/ArtItems.
-                Assert.IsNull(icons.Item(id), id + ": no icon art yet (the name stands in)");
+                // Hackathon (13 Oct): the art team's icon set covers every M5 item (V4HudM6Tests.ArtItems); before it, the
+                // card showed the name (playtest round 7 removed the borrowed placeholder icons on purpose).
+                Assert.IsNotNull(icons.Item(id), id + ": the art team's icon");
                 Assert.IsFalse(string.IsNullOrWhiteSpace(items[id].displayName), id + " has a name for the card");
                 StringAssert.DoesNotContain("—", items[id].description, id + ": no em dash in UI text");
             }

@@ -90,6 +90,8 @@ namespace RoguePirates.V4.Tests
         {
             "broadside_battery", "deck_cannons", "flamethrower", "flying_cutlasses", "harpoon_gun", "lightning_mast", "long_nine",
             "mortar", "powder_kegs", "swivel_guns",
+            // Hackathon (13 Oct): the art team's icon set (Assets/_Game/V4/Demo/Art/Icons).
+            "anchor_flail", "chainshot", "cursed_doubloons", "lighthouse_lantern", "maelstrom_charge", "monkey_gunners", "parrot_squadron",
         };
 
         static readonly string[] ArtItems =
@@ -97,6 +99,18 @@ namespace RoguePirates.V4.Tests
             "admirals_ledger", "black_powder_keg", "broadside_drum", "captains_bell", "copper_conductor", "cursed_compass",
             "double_fuse_cord", "dragons_breath_nozzle", "ghost_lantern", "golden_figurehead", "grapeshot_pouch", "gunners_gloves",
             "leviathan_tooth", "lucky_doubloon", "powder_fuse", "reinforced_keel", "sea_witchs_eye", "serrated_scabbard", "stormglass",
+            // Hackathon (13 Oct): the art team's icon set.
+            "banana_crate", "barnacle_crown", "black_spot", "captains_last_rum", "captains_perch", "crows_nest", "cursed_coin",
+            "dead_mans_compass", "fresnel_lens", "jolly_roger", "leviathan_heart", "manta_sail", "powder_horn_of_the_line",
+            "powder_monkey", "reef_carapace", "rusted_shackle", "shark_tooth_necklace", "siege_quadrant", "siren_scale", "skeleton_key",
+            "smugglers_ledger", "spare_planks", "storm_conch", "swivel_mount", "whale_oil_barrel",
+        };
+
+        /// <summary>Hackathon (13 Oct): the Logbooks with the art team's icons; the rest show their name.</summary>
+        internal static readonly string[] ArtLogbooks =
+        {
+            "carpenters_notes", "cartographers_folio", "fortune", "gunnery_manual", "ironclad", "lookouts_glass", "navigators_charts",
+            "oversized_shot", "plunderer", "powder_drill", "quartermasters_ledger", "scavengers_net", "tidecaller",
         };
 
         [Test]
@@ -107,8 +121,8 @@ namespace RoguePirates.V4.Tests
             // and their slot and card show the name instead (it must not be empty).
             var catalog = IconCatalog.Load();
             Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset");
-            Assert.AreEqual(10, ArtWeapons.Length);
-            Assert.AreEqual(19, ArtItems.Length);
+            Assert.AreEqual(17, ArtWeapons.Length);
+            Assert.AreEqual(44, ArtItems.Length);
             var weapons = AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" })
                 .Select(g => AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(g))).ToList();
             var items = AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" })
@@ -132,6 +146,73 @@ namespace RoguePirates.V4.Tests
                     Assert.IsNull(catalog.Item(item.itemId), item.itemId + ": no art (an icon here means new art: add it to ArtItems)");
                     Assert.IsFalse(string.IsNullOrWhiteSpace(item.displayName), item.itemId + ": the name stands in for the icon");
                 }
+            }
+            foreach (var logbook in AllLogbooks())
+            {
+                if (ArtLogbooks.Contains(logbook.logbookId)) Assert.IsNotNull(catalog.Logbook(logbook.logbookId), logbook.logbookId + " shows its art icon");
+                else
+                {
+                    Assert.IsNull(catalog.Logbook(logbook.logbookId), logbook.logbookId + ": no art (an icon here means new art: add it to ArtLogbooks)");
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(logbook.displayName), logbook.logbookId + ": the name stands in for the icon");
+                }
+            }
+        }
+
+        const string IconFolder = "Assets/_Game/V4/Demo/Art/Icons";
+
+        static List<LogbookConfig> AllLogbooks() => AssetDatabase.FindAssets("t:LogbookConfig", new[] { "Assets/_Game/V4/Data/Build/Logbooks" })
+            .Select(g => AssetDatabase.LoadAssetAtPath<LogbookConfig>(AssetDatabase.GUIDToAssetPath(g))).ToList();
+
+        /// <summary>
+        /// Hackathon (13 Oct): the art team's icon set. Every icon file is named after a content id that exists and is that
+        /// id's sprite in V4IconCatalog; every catalog entry names real content and every assigned sprite loads; the files
+        /// import as small UI sprites; the art still waiting for the owner (Icons/Unmapped) is in no catalog entry.
+        /// </summary>
+        [Test]
+        public void IconCatalog_TheArtTeamsIconSet_IsWiredByContentId()
+        {
+            var catalog = IconCatalog.Load();
+            Assert.IsNotNull(catalog);
+            var weaponIds = AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" })
+                .Select(g => AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(g)).weaponId).ToList();
+            var itemIds = AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" })
+                .Select(g => AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(g)).itemId).ToList();
+            var logbookIds = AllLogbooks().Select(l => l.logbookId).ToList();
+            var kinds = new (string folder, List<string> ids, List<IconCatalog.Entry> entries, System.Func<string, Sprite> get)[]
+            {
+                ("Weapons", weaponIds, catalog.weapons, catalog.Weapon),
+                ("Items", itemIds, catalog.items, catalog.Item),
+                ("Logbooks", logbookIds, catalog.logbooks, catalog.Logbook),
+            };
+            var files = 0;
+            foreach (var (folder, ids, entries, get) in kinds)
+            {
+                // Every content id has one catalog entry, and every entry names real content.
+                CollectionAssert.AreEquivalent(ids, entries.Select(e => e.id).ToList(), folder + ": one catalog entry per content id");
+                foreach (var e in entries)
+                    if (e.sprite != null) Assert.IsTrue(AssetDatabase.Contains(e.sprite), folder + "/" + e.id + ": the sprite is a project asset");
+                foreach (var guid in AssetDatabase.FindAssets("t:Sprite", new[] { IconFolder + "/" + folder }))
+                {
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    var id = System.IO.Path.GetFileNameWithoutExtension(path);
+                    CollectionAssert.Contains(ids, id, path + " is named after a content id");
+                    Assert.AreSame(AssetDatabase.LoadAssetAtPath<Sprite>(path), get(id), path + " is the catalog's icon for " + id);
+                    files++;
+                }
+            }
+            Assert.AreEqual(17 - 10 + 25 + 13, files, "7 new weapon icons (the other 10 were already in New_items), 25 items, 13 Logbooks");
+            var all = catalog.weapons.Concat(catalog.items).Concat(catalog.logbooks).Where(e => e.sprite != null)
+                .Select(e => AssetDatabase.GetAssetPath(e.sprite)).ToList();
+            Assert.IsFalse(all.Any(p => p.StartsWith(IconFolder + "/Unmapped/")), "art waiting for the owner's mapping stays unwired");
+            foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { IconFolder }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+                Assert.AreEqual(TextureImporterType.Sprite, importer.textureType, path);
+                Assert.IsFalse(importer.mipmapEnabled, path + ": no mipmaps");
+                Assert.IsTrue(importer.alphaIsTransparency, path);
+                Assert.LessOrEqual(importer.maxTextureSize, 512, path + ": a UI icon, kept small for WebGL");
+                Assert.AreEqual(TextureImporterCompression.Compressed, importer.textureCompression, path);
             }
         }
 
