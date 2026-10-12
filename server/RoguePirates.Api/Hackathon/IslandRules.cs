@@ -38,7 +38,6 @@ public static class IslandRules
     public const long RaidFeeRum = 25;
     public static readonly TimeSpan RaidTimeout = TimeSpan.FromMinutes(10);
     public const int RaidTimeLimitSeconds = 300;
-    public const long MinRaidStakeLamports = 1_000_000, MaxRaidStakeLamports = 500_000_000; // 0.001 .. 0.5 SOL
     public const string NftSymbol = "RPISL";
     public const string DefenderCaptainId = "ai_captain";
     public const string DefenderCaptainName = "Captain Marrow";

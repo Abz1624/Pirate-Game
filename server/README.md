@@ -501,12 +501,14 @@ or the mint fails, the island is still created with `nft.status:"pending"` and `
 RUM, vault included, to your balance). `POST /api/islands/{id}/build` `{"kind":"walls"}` (owner) -> `{"kind","level","cost","rum","island"}`.
 Errors: `403 not_your_island`, `409 island_listed`, `400 invalid_kind`, `409 max_level`, `400 insufficient_rum`.
 
-**Raids.** `POST /api/raids/start` `{"islandId","stakeLamports":null}` -> 
-`{"raidId","islandId","islandName","startedAt","expiresAt","feePaid":25,"rum","defender":{...},"loot":{"exposedRum","ifWon","ifPartial","lootPercent":25},"wager":null|{...}}`.
+**Raids.** Raids have **no SOL stake** (owner, 12 Oct: SOL wagers are only in 1v1 PvP); the only cost is the RUM fee.
+`POST /api/raids/start` `{"islandId"}` ->
+`{"raidId","islandId","islandName","startedAt","expiresAt","feePaid":25,"rum","defender":{...},"loot":{"exposedRum","ifWon","ifPartial","lootPercent":25},"wager":null}`.
 The **defender config** for the AI-captain fight:
 `{"captainId":"ai_captain","captainName":"Captain Marrow","seed","hullMultiplier","extraWaves","weaponLevel","cannonTower","walls","difficulty":1-7,"timeLimitSeconds":300}`.
 Errors: `400 own_island`, `409 island_shielded`, `409 island_listed`, `409 raid_in_progress`, `400 insufficient_rum`,
-`400 invalid_stake`, `503 treasury_off` (wager only). Starting a new raid abandons your own unfinished one.
+`400 raid_stakes_off` (any `stakeLamports` > 0), `400 invalid_stake` (negative). Starting a new raid abandons your own
+unfinished one.
 
 `POST /api/raids/{id}/result` `{"won":true,"partial":false,"seconds":95,"runLog":null}` (within **10 minutes** of the
 start; `seconds` 1..360 and not more than the time since the start) ->
@@ -514,12 +516,12 @@ start; `seconds` 1..360 and not more than the time since the start) ->
 Errors: `409 raid_expired` (marked `abandoned`), `409 raid_finished`, `400 invalid_seconds`, `403 not_your_raid`.
 `runLog` is accepted and not checked yet.
 
-Optional **SOL wager** (vs the house): start with `stakeLamports` 1,000,000..500,000,000; `wager` is
-`{"wagerId","stakeLamports","status":"awaiting_deposits|funded|settled|cancelled","memo":"raid:<raidId>","treasury","payoutIfWon","depositSignature","payout"}`.
-Send the stake to `treasury` with the memo, then `POST /api/raids/{id}/wager` `{"signature"}` -> `{"raidId","wager"}`
-(deposit errors as `/api/deposits/verify`). Full win pays **2x** (`raid_win`), partial win refunds the stake
-(`raid_refund`), loss or expiry keeps it; an unfunded wager is cancelled at the result. If the payout fails the wager
-stays `funded` with `payout.status:"failed"`: `POST /api/raids/{id}/settle` retries (never pays twice).
+`POST /api/raids/{id}/wager` (the old raid stake deposit) -> `410 raid_stakes_off`. Raids staked before stakes were
+switched off still settle as before, so no deposit is lost: their `wager` is
+`{"wagerId","stakeLamports","status":"awaiting_deposits|funded|settled|cancelled","memo":"raid:<raidId>","treasury","payoutIfWon","depositSignature","payout"}`;
+a full win pays **2x** (`raid_win`), a partial win refunds the stake (`raid_refund`), a loss or expiry keeps it, and an
+unfunded one is cancelled at the result. If the payout fails the wager stays `funded` with `payout.status:"failed"`:
+`POST /api/raids/{id}/settle` retries (never pays twice). New raids always have `wager: null`.
 
 `GET /api/raids/mine` -> `{"attacks":[row],"defences":[row]}`, row
 `{"raidId","islandId","islandName","attacker":{"playerId","name","wallet"},"defender":{...},"result","rumLooted","seconds","startedAt","finishedAt","wager"}`.

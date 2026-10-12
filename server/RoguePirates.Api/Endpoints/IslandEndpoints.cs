@@ -50,8 +50,12 @@ public static class IslandEndpoints
         app.MapPost("/api/raids/start", async (HttpContext ctx, RaidStartRequest req, PlayerAuth auth, RaidService raids) =>
             Results.Ok(await raids.StartAsync(await auth.RequireAsync(ctx), req.IslandId, req.StakeLamports)));
 
-        app.MapPost("/api/raids/{id:guid}/wager", async (HttpContext ctx, Guid id, SignatureRequest req, PlayerAuth auth, RaidService raids) =>
-            Results.Ok(await raids.FundWagerAsync(await auth.RequireAsync(ctx), id, req.Signature)));
+        // Raid stakes are off (SOL wagers are only in 1v1): 410 raid_stakes_off.
+        app.MapPost("/api/raids/{id:guid}/wager", async (HttpContext ctx, Guid id, PlayerAuth auth) =>
+        {
+            await auth.RequireAsync(ctx);
+            return Results.Ok(await RaidService.FundWagerAsync());
+        });
 
         app.MapPost("/api/raids/{id:guid}/result", async (HttpContext ctx, Guid id, RaidResultRequest req, PlayerAuth auth, RaidService raids) =>
             Results.Ok(await raids.ResultAsync(await auth.RequireAsync(ctx), id, req.Won, req.Partial ?? false, req.Seconds)));

@@ -10,6 +10,7 @@ only. The public build is made at the very end (session downloads off then).
 - Unity wallet SDK: MagicBlock's Solana Unity SDK (`Solana.Unity-SDK`): browser wallets on WebGL, Mobile Wallet
   Adapter on Android.
 - Wagers in devnet SOL only (no SKR on devnet). Hunt mode skipped for the demo.
+- SOL wagering exists only in 1v1 PvP matches; raids have no stake at all (only the RUM fee).
 - The AI captain is an AI opponent ship (named captain on the existing PvP bot): 1v1 opponent and island defender.
 - Island NFTs on devnet with an in-game escrow marketplace (server escrow wallet).
 
@@ -19,13 +20,14 @@ only. The public build is made at the very end (session downloads off then).
    the ed25519 signature and issues a session; profile keyed by the wallet address; optional email field.
 2. **Islands**: claim an island (mints an Island NFT on devnet to the player's wallet), base building (a few structures
    upgraded with RUM: a RUM store that fills over time, a vault, defences), raiding another player's island (a combat
-   run against the island's AI-captain defender; a win loots part of the exposed RUM; optional SOL wager on the raid).
+   run against the island's AI-captain defender; a win loots part of the exposed RUM). Raids have **no SOL wager**
+   (owner, 12 Oct): the only cost is the 25 RUM fee.
 3. **1 AI captain**: a named AI opponent ship (built on the PvP bot) for 1v1 and island defence.
 4. **Daily island async race**: one seeded course per day, everyone races the same seed; best time on a daily board
    (run checks in shadow mode as today).
 5. **Weekly kill leaderboard with devnet SOL rewards**: the existing weekly board; the server pays the top places from
    the devnet treasury at the week's end (and an owner-triggered payout for the demo).
-6. **1v1 PvP with SOL wagers**: both players deposit the stake to the escrow wallet (wallet-signed transfer, verified
+6. **1v1 PvP with SOL wagers** (the only place SOL is wagered): both players deposit the stake to the escrow wallet (wallet-signed transfer, verified
    by the server on devnet) before the match; the server pays the winner (minus nothing for the demo); refund on
    cancel. Vs the AI captain also works (the house matches the stake).
 7. **Island NFT marketplace**: list your island NFT (it moves to escrow), others buy with devnet SOL, the server swaps;

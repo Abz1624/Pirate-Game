@@ -9,8 +9,10 @@ namespace RoguePirates.Api.Hackathon;
 /// Hackathon raids: a fight against an island's AI-captain defender. Start (not your own island, not shielded, not
 /// listed, one raid at a time per island, a RUM fee), then the client reports the result within 10 minutes. A win loots
 /// 25% of the exposed RUM (half on a partial win) and shields the island for 4 hours; attacking never touches the
-/// attacker's own shield (D24). Optional devnet SOL wager against the house: deposit with memo raid:&lt;raidId&gt;; a full
-/// win pays 2x, a partial win refunds the stake, a loss (or an expired raid) keeps it.
+/// attacker's own shield (D24). Raids have no SOL stake (owner, 12 Oct: SOL wagers are only in 1v1 PvP): a start with
+/// stakeLamports &gt; 0 and the old /wager deposit are refused with raid_stakes_off. Raids staked before that keep their
+/// rules so no deposit is lost: a full win pays 2x, a partial win refunds the stake, a loss (or an expired raid) keeps it,
+/// and /settle retries a failed payout.
 /// </summary>
 public sealed class RaidService
 {
@@ -63,13 +65,8 @@ public sealed class RaidService
     public async Task<object> StartAsync(Player player, Guid islandId, long? stakeLamports)
     {
         IslandService.RequireWallet(player);
-        var stake = stakeLamports ?? 0;
-        if (stake != 0)
-        {
-            if (stake < IslandRules.MinRaidStakeLamports || stake > IslandRules.MaxRaidStakeLamports)
-                throw new ApiException(400, "invalid_stake", $"stakeLamports is {IslandRules.MinRaidStakeLamports}..{IslandRules.MaxRaidStakeLamports} (or 0 / null for no wager).");
-            if (!_sol.TreasuryOn) throw new ApiException(503, "treasury_off", "The treasury wallet is not configured on this server; raid without a wager.");
-        }
+        if (stakeLamports is > 0) throw RaidStakesOff();
+        if (stakeLamports is < 0) throw new ApiException(400, "invalid_stake", "stakeLamports must be 0 or left out (raids have no SOL stake).");
 
         await IslandLocks.Economy.WaitAsync();
         try
@@ -95,21 +92,10 @@ public sealed class RaidService
                 Id = Guid.NewGuid(), AttackerPlayerId = player.Id, IslandId = islandId, DefenderPlayerId = island.OwnerPlayerId,
                 Result = Raid.Started, Seed = Random.Shared.Next(1, int.MaxValue), CreatedAt = now,
             };
-            Wager? wager = null;
-            if (stake > 0)
-            {
-                wager = new Wager
-                {
-                    Id = Guid.NewGuid(), Kind = WagerKind, StakeLamports = stake, HostPlayerId = player.Id, GuestPlayerId = island.OwnerPlayerId,
-                    VsHouse = true, Status = Wager.AwaitingDeposits, CreatedAt = now,
-                };
-                _db.Wagers.Add(wager);
-                raid.WagerId = wager.Id;
-            }
             _db.Raids.Add(raid);
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
-            _log.LogInformation("Raid {Id}: {Attacker} on island {Island} (stake {Stake})", raid.Id, player.Id, islandId, stake);
+            _log.LogInformation("Raid {Id}: {Attacker} on island {Island}", raid.Id, player.Id, islandId);
 
             var exposed = island.RumStored;
             return new
@@ -118,7 +104,7 @@ public sealed class RaidService
                 feePaid = IslandRules.RaidFeeRum, rum,
                 defender = IslandRules.Defender(s.LevelOf(IslandRules.CannonTower), s.LevelOf(IslandRules.Walls), raid.Seed),
                 loot = new { exposedRum = exposed, ifWon = Loot(exposed, false), ifPartial = Loot(exposed, true), lootPercent = IslandRules.RaidLootPercent },
-                wager = WagerView(wager, raid.Id),
+                wager = (object?)null, // raids have no SOL stake (kept in the JSON for older clients)
             };
         }
         finally { IslandLocks.Economy.Release(); }
@@ -133,27 +119,16 @@ public sealed class RaidService
         payout = payout == null ? null : LedgerService.PayoutView(payout, _sol.Cluster),
     };
 
-    // ---------- the optional SOL wager ----------
+    // ---------- the old raid SOL wager (off) ----------
 
-    public async Task<object> FundWagerAsync(Player player, Guid raidId, string? signature)
-    {
-        IslandService.RequireWallet(player);
-        var raid = await OwnRaidAsync(player, raidId);
-        if (raid.Result != Raid.Started) throw new ApiException(409, "raid_finished", "This raid is already over.");
-        if (raid.CreatedAt + IslandRules.RaidTimeout <= _clock.UtcNow) throw new ApiException(409, "raid_expired", "This raid expired (10 minutes).");
-        if (raid.WagerId == null) throw new ApiException(400, "no_wager", "This raid has no wager; start it with stakeLamports.");
-        var wager = await _db.Wagers.FirstAsync(w => w.Id == raid.WagerId);
-        if (wager.Status == Wager.Funded && wager.HostDepositSig == signature?.Trim())
-            return new { raidId, wager = WagerView(wager, raidId) };
-        if (wager.Status != Wager.AwaitingDeposits) throw new ApiException(409, "wager_not_open", $"The wager is {wager.Status}.");
-        var (deposit, _) = await _ledger.VerifyDepositAsync(player, signature, DepositPurpose, raidId.ToString(), wager.StakeLamports, Memo(raidId));
-        deposit.Status = SolanaDeposit.Consumed;
-        deposit.ConsumedAt = _clock.UtcNow;
-        wager.HostDepositSig = deposit.Signature;
-        wager.Status = Wager.Funded;
-        await _db.SaveChangesAsync();
-        return new { raidId, wager = WagerView(wager, raidId) };
-    }
+    /// <summary>Raid stakes are off (owner, 12 Oct: SOL wagers are only in 1v1 PvP).</summary>
+    public static ApiException RaidStakesOff() =>
+        new(400, "raid_stakes_off", "Raids have no SOL stake; SOL wagers are only in 1v1 matches.");
+
+    /// <summary>POST /api/raids/{id}/wager: gone. Raids staked before stakes were switched off still settle (result and
+    /// /settle pay a funded stake as before).</summary>
+    public static Task<object> FundWagerAsync() =>
+        throw new ApiException(410, "raid_stakes_off", "Raid stakes are switched off; SOL wagers are only in 1v1 matches. Raid without a stake.");
 
     // ---------- result ----------
 

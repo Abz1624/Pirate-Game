@@ -2,8 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using RoguePirates.Api.Data;
 using RoguePirates.Api.Solana;
 using Solnet.Wallet;
 using Solnet.Wallet.Utilities;
@@ -29,7 +31,7 @@ public sealed class FlakyRpc : ISolanaRpc
     public Task<string> RequestAirdropAsync(string a, long l, CancellationToken ct = default) => Inner.RequestAirdropAsync(a, l, ct);
 }
 
-/// <summary>Hackathon islands: claim and NFT mint, RUM accrual, collect, build, raids (with the SOL wager) and the market.</summary>
+/// <summary>Hackathon islands: claim and NFT mint, RUM accrual, collect, build, raids (no SOL stake; old staked raids still settle) and the market.</summary>
 public sealed class IslandTests
 {
     sealed record Wallet(Account Account, string Token, HttpClient Http)
@@ -348,7 +350,7 @@ public sealed class IslandTests
     }
 
     [Fact]
-    public async Task RaidWager_DepositWithTheRaidMemo_WinPaysDouble()
+    public async Task RaidStakes_AreOff_StartRefusesAStake_AndTheWagerDepositIsGone()
     {
         var (host, rpc, treasury) = NewHost();
         using var _h = host;
@@ -356,54 +358,72 @@ public sealed class IslandTests
         var raider = await SignInAsync(host);
         var id = (await ClaimAsync(owner)).GetProperty("islandId").GetGuid();
         await EarnRumAsync(raider, 600);
-        await AssertError(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = 5 }), HttpStatusCode.BadRequest, "invalid_stake");
+        var rumBefore = await RumAsync(raider);
 
-        var start = await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = 10_000_000 }));
+        await AssertError(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = 10_000_000 }), HttpStatusCode.BadRequest, "raid_stakes_off");
+        await AssertError(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = -1 }), HttpStatusCode.BadRequest, "invalid_stake");
+        Assert.Equal(rumBefore, await RumAsync(raider)); // a refused start charges no fee
+
+        var start = await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = 0 }));
         var raidId = start.GetProperty("raidId").GetGuid();
-        var wager = start.GetProperty("wager");
-        Assert.Equal($"raid:{raidId}", wager.GetProperty("memo").GetString());
-        Assert.Equal(treasury.PublicKey.Key, wager.GetProperty("treasury").GetString());
-        Assert.Equal("awaiting_deposits", wager.GetProperty("status").GetString());
-
-        var wrongMemo = Deposit(rpc.Inner, raider.Key, treasury.PublicKey.Key, 10_000_000, "raid:other");
-        await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/wager", new { signature = wrongMemo }), HttpStatusCode.BadRequest, "memo_mismatch");
+        Assert.Equal(JsonValueKind.Null, start.GetProperty("wager").ValueKind);
         var sig = Deposit(rpc.Inner, raider.Key, treasury.PublicKey.Key, 10_000_000, $"raid:{raidId}");
-        var funded = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/wager", new { signature = sig }));
-        Assert.Equal("funded", funded.GetProperty("wager").GetProperty("status").GetString());
+        await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/wager", new { signature = sig }), HttpStatusCode.Gone, "raid_stakes_off");
 
         host.Clock.Advance(TimeSpan.FromSeconds(60));
         var sentBefore = rpc.Inner.Sent.Count;
         var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 60 }));
-        var w = result.GetProperty("wager");
-        Assert.Equal("settled", w.GetProperty("status").GetString());
-        Assert.Equal(20_000_000, w.GetProperty("payout").GetProperty("lamports").GetInt64());
-        Assert.Equal("sent", w.GetProperty("payout").GetProperty("status").GetString());
-        Assert.Equal(sentBefore + 1, rpc.Inner.Sent.Count);
-        // settling again pays nothing more
-        await Ok(await raider.Http.PostAsync($"/api/raids/{raidId}/settle", null));
-        Assert.Equal(sentBefore + 1, rpc.Inner.Sent.Count);
+        Assert.Equal("won", result.GetProperty("result").GetString());
+        Assert.Equal(JsonValueKind.Null, result.GetProperty("wager").ValueKind);
+        Assert.Equal(sentBefore, rpc.Inner.Sent.Count); // no SOL moves on a raid
+    }
+
+    /// <summary>A raid staked and funded before raid stakes were switched off (seeded in the database).</summary>
+    static async Task<Guid> LegacyStakedRaidAsync(ApiHost host, Wallet raider, Guid islandId, long stake)
+    {
+        var raidId = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId }))).GetProperty("raidId").GetGuid();
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+        var raid = await db.Raids.FirstAsync(r => r.Id == raidId);
+        var wager = new Wager
+        {
+            Id = Guid.NewGuid(), Kind = RoguePirates.Api.Hackathon.RaidService.WagerKind, StakeLamports = stake,
+            HostPlayerId = raid.AttackerPlayerId, GuestPlayerId = raid.DefenderPlayerId, VsHouse = true,
+            Status = Wager.Funded, HostDepositSig = HackathonTests.RandomSignature(), CreatedAt = host.Clock.UtcNow,
+        };
+        db.Wagers.Add(wager);
+        raid.WagerId = wager.Id;
+        await db.SaveChangesAsync();
+        return raidId;
     }
 
     [Fact]
-    public async Task RaidWager_FailedPayout_IsRetriedBySettle()
+    public async Task LegacyStakedRaid_WinPaysDouble_FailedPayoutIsRetriedBySettle_OnlyOnce()
     {
-        var (host, rpc, treasury) = NewHost();
+        var (host, rpc, _) = NewHost();
         using var _h = host;
         var owner = await SignInAsync(host);
         var raider = await SignInAsync(host);
         var id = (await ClaimAsync(owner)).GetProperty("islandId").GetGuid();
         await EarnRumAsync(raider, 600);
-        var raidId = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = 10_000_000 }))).GetProperty("raidId").GetGuid();
-        await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/wager", new { signature = Deposit(rpc.Inner, raider.Key, treasury.PublicKey.Key, 10_000_000, $"raid:{raidId}") }));
+        var raidId = await LegacyStakedRaidAsync(host, raider, id, 10_000_000);
+
         host.Clock.Advance(TimeSpan.FromSeconds(60));
         rpc.FailSends = true;
         var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 60 }));
         Assert.Equal("funded", result.GetProperty("wager").GetProperty("status").GetString());
         Assert.Equal("failed", result.GetProperty("wager").GetProperty("payout").GetProperty("status").GetString());
         rpc.FailSends = false;
+        var sentBefore = rpc.Inner.Sent.Count;
         var settled = await Ok(await raider.Http.PostAsync($"/api/raids/{raidId}/settle", null));
-        Assert.Equal("settled", settled.GetProperty("wager").GetProperty("status").GetString());
-        Assert.Equal("sent", settled.GetProperty("wager").GetProperty("payout").GetProperty("status").GetString());
+        var w = settled.GetProperty("wager");
+        Assert.Equal("settled", w.GetProperty("status").GetString());
+        Assert.Equal("sent", w.GetProperty("payout").GetProperty("status").GetString());
+        Assert.Equal(20_000_000, w.GetProperty("payout").GetProperty("lamports").GetInt64());
+        Assert.Equal(sentBefore + 1, rpc.Inner.Sent.Count);
+        // settling again pays nothing more
+        await Ok(await raider.Http.PostAsync($"/api/raids/{raidId}/settle", null));
+        Assert.Equal(sentBefore + 1, rpc.Inner.Sent.Count);
     }
 
     // ---- marketplace ----
