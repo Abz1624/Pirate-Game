@@ -17,6 +17,7 @@
 # reproduces the S0 golden byte for byte (only server.worldTick now counts stepped ticks: 4613 -> 4612). Variant Y and its
 # fallback are deleted (cause: s1/REPORT.md).
 # Re-frozen 12 Oct 2026 (hackathon-demo round 2): enemy damage x2 and enemy shot spread scaled by the target's speed. Minute 0 identical; minute 1 damage taken 39.8 -> 92.2 on the sailing ship, so it sinks at 103 s instead of 155 s.
+# Re-frozen 12 Oct 2026 (hackathon-demo, Anchor Flail level-1 DPS matched to the other starters, baseDamage 20 -> 12.1): only the config hash moved; the voyage itself is byte-identical.
 case: c-server-8282
 view.aspect: 1.77777779
 seed: 8282
@@ -30,7 +31,7 @@ end: sunk
 server.worldTick: 3093
 server.stepsApplied: 3092
 server.chestChoicesSkipped: 0
-runlog.header: seed=8282 seedSource=requested configHash=9dff43f962c6d59f2c8711dc183e2836722c4afda330d41dc7c36c3d00bca7c1 balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
+runlog.header: seed=8282 seedSource=requested configHash=d5e7b2d1578e09f9d2d5b46a24e1a26c5af70f03bcc6aac6aaaeb4f4276183d8 balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
 runlog.end: sunk
 runlog.minutes.sha256: 165049c4b1bf7d39cf986de50948282adbbac0294cf63e3b8bf8b9086dcf99c7
 runlog.00: "weapons":["swivel_guns"],"minutes":[

@@ -3,6 +3,7 @@
 # no cards, invulnerable; wander pilot (ScriptedPilot wander-v1) at a fixed frame time (fixedDeltaTime) for 180 s.
 # Frozen 11 Oct 2026 on v5-live-game HEAD b31139ce plus the S0 determinism fixes; identical alone in two Editor sessions and inside the full PlayMode suite.
 # Re-frozen 12 Oct 2026 (hackathon-demo round 2): only the config hash moved (enemy damage x2, ExperimentConfig.enemyDamageMultiplier 2); the invulnerable voyage itself is byte-identical.
+# Re-frozen 12 Oct 2026 (hackathon-demo, Anchor Flail level-1 DPS matched to the other starters, baseDamage 20 -> 12.1): only the config hash moved; the voyage itself is byte-identical (Game view 16:9).
 case: a-plain-8282
 view.aspect: 1.77777779
 seed: 8282
@@ -13,7 +14,7 @@ enemies@120: t=120.011871 count=13 elites=1 bosses=0 sha256=dd105dd89feaf075d8f4
 ship@120: position=-26.7408352 -51.72302 hull=100 islandImpacts=3 islandDamage=2
 enemies@180: t=180.001633 count=7 elites=1 bosses=0 sha256=05596c86c462789455b825d8f02743d9a0361186e72959395ad6f1088c5be9d2
 ship@180: position=-26.7487545 -51.7171326 hull=100 islandImpacts=3 islandDamage=2
-runlog.header: seed=8282 seedSource=requested configHash=841839da62e5725ed09b23c1b7eac0a8d754659ecbf461b9e74fddb7213c9c32 balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
+runlog.header: seed=8282 seedSource=requested configHash=8ea655e3d8f8846f901e7e65e0f16ace27ece826a43a5babddb9ba532121001b balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
 runlog.end: quit
 runlog.minutes.sha256: 53b9a85e5db0b49369f271859458fa8c4ccc076a724b21bcee19ca5ae51bbb18
 runlog.00: "weapons":["swivel_guns"],"minutes":[

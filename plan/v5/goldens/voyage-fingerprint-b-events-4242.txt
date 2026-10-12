@@ -5,6 +5,7 @@
 # Frozen 11 Oct 2026 on v5-live-game HEAD b31139ce plus the S0 determinism fixes; identical alone in two Editor sessions and inside the full PlayMode suite.
 # Re-frozen 12 Oct 2026 (hackathon-demo): bosses and minibosses no longer give way to lighter enemies in the overlap pass (the Barnacle King teleport fix), so from the boss fight on (t=100) one enemy differs.
 # Re-frozen 12 Oct 2026 (hackathon-demo round 2): enemy damage x2. Enemies and positions identical through t=100; damage taken doubles (40.8 -> 81.6), so the ship sinks earlier in overtime (929.4 -> 924.1) and misses the last card (tidecaller).
+# Re-frozen 12 Oct 2026 (hackathon-demo, Anchor Flail level-1 DPS matched to the other starters, baseDamage 20 -> 12.1): only the config hash moved; the voyage itself is byte-identical (Game view 16:9).
 case: b-events-4242
 view.aspect: 1.77777779
 seed: 4242
@@ -33,7 +34,7 @@ powerups.collected: BattleSignal@30.0004959
 chests: take@45.02084 gold=20
 ram.hits: 26
 sinking: sea@924.122559
-runlog.header: seed=4242 seedSource=requested configHash=841839da62e5725ed09b23c1b7eac0a8d754659ecbf461b9e74fddb7213c9c32 balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
+runlog.header: seed=4242 seedSource=requested configHash=8ea655e3d8f8846f901e7e65e0f16ace27ece826a43a5babddb9ba532121001b balanceVersion=3 contentHash=71ae3cfe121b7e7e8e4588adc63dea42a7f6adf924e43f9ad4c2a3a5a4571e19 stageProfile=saltwind_solo captain=rook startingWeapon=swivel_guns
 runlog.end: sunk
 runlog.minutes.sha256: 143b706abb3787e78f3b2683a67f77bf8b8d84fdf40a5c8f7bb091dce955a04f
 runlog.00: "weapons":["swivel_guns","siren_bell","lightning_mast","harpoon_gun","chainshot"],"minutes":[
