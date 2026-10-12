@@ -24,6 +24,11 @@ namespace RoguePirates.Hackathon
     [Serializable]
     public sealed class IslandDefence { public double hullMultiplier; public int extraWaves; public int weaponLevel; public int difficulty; public int cannonTower; public int walls; }
 
+    /// <summary>The island's defence record (raids it held / finished raids against it); successPercent is 0 with no raids
+    /// (JsonUtility reads the server's null as 0), so read raidsAgainst first.</summary>
+    [Serializable]
+    public sealed class DefenceRecord { public int raidsAgainst; public int defended; public int fallen; public int successPercent; public string label; }
+
     [Serializable]
     public sealed class IslandView
     {
@@ -32,7 +37,7 @@ namespace RoguePirates.Hackathon
         public IslandOwner owner; public bool isMine; public IslandNft nft; public IslandRum rum;
         public IslandBuilding[] buildings; public IslandDefence defence;
         public string shieldUntil; public bool shielded; public bool listed; public string listingId; public long priceLamports;
-        public bool raidInProgress; public bool raidable; public string createdAt;
+        public bool raidInProgress; public bool raidable; public string createdAt; public DefenceRecord defenceRecord;
 
         public IslandBuilding Building(string kind)
         {
@@ -70,7 +75,11 @@ namespace RoguePirates.Hackathon
     {
         public string raidId; public string islandId; public string islandName; public string startedAt; public string expiresAt;
         public long feePaid; public long rum; public DefenderConfig defender; public RaidLoot loot; public RaidDefence defence;
+        /// <summary>A practice raid on your own island (POST /api/raids/practice): nothing is charged, stored or reported.</summary>
+        public bool practice;
     }
+
+    [Serializable] public sealed class PracticeRequest { public string islandId; }
 
 
     [Serializable] public sealed class RaidResultRequest { public bool won; public bool partial; public int seconds; }
@@ -96,7 +105,7 @@ namespace RoguePirates.Hackathon
     // ---- Market ----
 
     [Serializable]
-    public sealed class ListingIsland { public string islandId; public string name; public int slot; public string slotName; public string region; public int level; public long ratePerHour; }
+    public sealed class ListingIsland { public string islandId; public string name; public int slot; public string slotName; public string region; public int level; public long ratePerHour; public DefenceRecord defenceRecord; }
 
     [Serializable]
     public sealed class Listing

@@ -66,11 +66,10 @@ namespace RoguePirates.Hackathon.UI
             HackUi.Button(header, "Refresh", Refresh, new Vector2(0.675f, 0.06f), new Vector2(0.835f, 0.94f));
             _close = HackUi.Button(header, "Close", Close, new Vector2(0.845f, 0.06f), new Vector2(1f, 0.94f));
 
-            var statusStrip = HackUi.TopStrip(rt, "Status", 98f, 40f);
-            _status = HackUi.TextAt(statusStrip, "Text", string.Empty, 24, TextAlignmentOptions.MidlineLeft, HackUi.Dim, Vector2.zero, Vector2.one);
+            _status = HackUi.StatusBar(rt, 100f, 48f);
 
             // Left: the map (square, as large as fits).
-            var left = HackUi.Area(rt, "MapArea", Vector2.zero, new Vector2(0.5f, 1f), new Vector4(24f, 20f, 10f, 146f));
+            var left = HackUi.Area(rt, "MapArea", Vector2.zero, new Vector2(0.5f, 1f), new Vector4(24f, 20f, 10f, 164f));
             var holder = HackUi.Area(left, "MapHolder", Vector2.zero, Vector2.one, new Vector4(0f, 44f, 0f, 0f));
             var mapGo = new GameObject("Map", typeof(RectTransform), typeof(Image), typeof(AspectRatioFitter), typeof(RectMask2D));
             mapGo.transform.SetParent(holder, false);
@@ -87,7 +86,7 @@ namespace RoguePirates.Hackathon.UI
             Legend(left);
 
             // Right: tabs and the detail list.
-            var right = HackUi.Area(rt, "Detail", new Vector2(0.5f, 0f), Vector2.one, new Vector4(10f, 20f, 24f, 146f));
+            var right = HackUi.Area(rt, "Detail", new Vector2(0.5f, 0f), Vector2.one, new Vector4(10f, 20f, 24f, 164f));
             var tabs = HackUi.Area(right, "Tabs", new Vector2(0f, 1f), Vector2.one);
             tabs.offsetMin = new Vector2(0f, -76f);
             _tabMine = HackUi.Button(tabs, "My island", () => Show(View.Mine), new Vector2(0f, 0f), new Vector2(0.49f, 1f));
@@ -174,7 +173,7 @@ namespace RoguePirates.Hackathon.UI
                 var le = dot.GetComponent<LayoutElement>();
                 le.preferredWidth = le.minWidth = 20f;
                 le.preferredHeight = 20f;
-                var t = HackUi.Text(strip, label, label, 20, TextAlignmentOptions.MidlineLeft, HackUi.Dim);
+                var t = HackUi.Text(strip, label, label, 22, TextAlignmentOptions.MidlineLeft, HackUi.Dim);
                 t.gameObject.AddComponent<LayoutElement>().preferredWidth = t.GetPreferredValues(label).x + 14f;
             }
         }
@@ -403,13 +402,14 @@ namespace RoguePirates.Hackathon.UI
 
             // RUM.
             var rum = me.rum ?? new IslandRum();
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>RUM</b></color>   brewing {rum.ratePerHour}/h   " +
-                                    $"<color=#ff8c73>exposed {rum.exposed}</color>   <color=#7fc8ff>vault {rum.vault}</color> (never raidable)", 25);
+            HackUi.Section(_list, "RUM", $"{rum.ratePerHour} RUM per hour");
+            IslandUi.TextRow(_list, $"<color=#ff8c73>Exposed {rum.exposed}</color> (raiders can loot it)   " +
+                                    $"<color=#7fc8ff>Vault {rum.vault}</color> (always safe)", 25);
             IslandUi.Bar(_list, IslandRules.RumFill(rum.total, rum.cap), $"{rum.total} / {rum.cap} RUM", new Color(0.85f, 0.55f, 0.15f, 1f));
             IslandUi.ButtonRowOf(_list, ($"Collect {rum.total} RUM", Collect));
 
             // Buildings.
-            IslandUi.TextRow(_list, "<color=#ffd166><b>Buildings</b></color>", 26);
+            HackUi.Section(_list, "Buildings", "upgrade with RUM");
             foreach (var kind in IslandRules.BuildingKinds)
             {
                 var b = me.Building(kind);
@@ -425,11 +425,17 @@ namespace RoguePirates.Hackathon.UI
             }
 
             // Defence and shield.
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>Defence</b></color>   {HackathonRules.CaptainName} guards it with your design: 15 one-minute waves and the guardian. " +
+            HackUi.Section(_list, "Defence");
+            IslandUi.TextRow(_list, $"{HackathonRules.CaptainName} guards it with your design: 15 one-minute waves and the guardian. " +
                                     "Raiders must sink the guardian to conquer it.", 25);
             var islandId = me.islandId;
             var islandName = me.name;
-            IslandUi.ButtonRowOf(_list, ("Design defences", () => OpenDefence(islandId, islandName)))[0].interactable = !me.listed;
+            var defenceButtons = IslandUi.ButtonRowOf(_list, ("Design defences", () => OpenDefence(islandId, islandName)),
+                ("Test defences", () => StartPractice(islandId, islandName)));
+            defenceButtons[0].interactable = !me.listed;
+            defenceButtons[1].interactable = !_busy;
+            IslandUi.TextRow(_list, "<color=#9aa4ad>Test defences: sail a practice raid against your saved design. No RUM fee, no loot, no shield, nothing recorded.</color>", 22);
+            IslandUi.TextRow(_list, $"<color=#ffd166><b>Defence record</b></color>   {IslandRules.DefenceRecordLine(me.defenceRecord)}", 25);
             _shieldPrefix = "<color=#ffd166><b>Shield</b></color>   ";
             _shield = IslandUi.TextRow(_list, _shieldPrefix, 25);
             _shieldUntil = OnlineRules.ParseUtc(me.shieldUntil);
@@ -563,6 +569,7 @@ namespace RoguePirates.Hackathon.UI
             cell.textWrappingMode = TextWrappingModes.Normal;
 
             var exposed = island.rum != null ? island.rum.exposed : 0;
+            IslandUi.TextRow(_list, $"<color=#ffd166><b>Key stats</b></color>   {IslandRules.KeyStats(island.rum != null ? island.rum.ratePerHour : 0, island.defenceRecord)}", 25);
             IslandUi.TextRow(_list, $"<color=#ffd166><b>Defender: {HackathonRules.CaptainName}</b></color>, {HackathonRules.CaptainTitle}\n" +
                                     "<b>Conquest:</b> survive the island's designed waves (15 minutes) and sink its guardian, the Barnacle King. " +
                                     "Reaching the guardian's minute without sinking it is a partial win.", 25);
@@ -602,6 +609,23 @@ namespace RoguePirates.Hackathon.UI
             SetSail();
         }
 
+        /// <summary>"Test defences": a practice raid on your own island with its saved design (no fee, nothing recorded).</summary>
+        public async void StartPractice(string islandId, string islandName)
+        {
+            if (_busy || string.IsNullOrEmpty(islandId)) return;
+            _busy = true;
+            Status($"Preparing a practice raid on {islandName}...", HackUi.Gold);
+            try
+            {
+                var (raid, error) = await IslandApi.PracticeRaid(islandId);
+                if (this == null) return;
+                if (error != null) { Status(error, HackUi.Bad); return; }
+                _pendingRaid = raid;
+            }
+            finally { _busy = false; }
+            SetSail();
+        }
+
         void SetSail()
         {
             var raid = _pendingRaid;
@@ -619,7 +643,7 @@ namespace RoguePirates.Hackathon.UI
 
         public void OpenDefence(string islandId, string islandName)
         {
-            if (_defence == null) { _defence = DefencePanel.Create(transform.parent); _defence.Closed = Open; }
+            if (_defence == null) { _defence = DefencePanel.Create(transform.parent); _defence.Closed = Open; _defence.Practice = StartPractice; }
             gameObject.SetActive(false); // the designer covers the Islands screen; Close comes back here
             _defence.Open(islandId, islandName);
         }
@@ -629,15 +653,15 @@ namespace RoguePirates.Hackathon.UI
         async void ShowHistory()
         {
             if (!Web3Session.Instance.SignedIn) { IslandUi.TextRow(_list, "Connect a wallet to see your raids.", 26); return; }
-            IslandUi.TextRow(_list, "Loading raids...", 24, HackUi.Dim);
+            IslandUi.TextRow(_list, "Loading your raids...", 24, HackUi.Dim);
             var (raids, error) = await IslandApi.MyRaids();
             if (this == null || _view != View.History) return;
             ClearList();
             if (error != null) { IslandUi.TextRow(_list, error, 24, HackUi.Bad); return; }
             LastRaidBlock();
-            IslandUi.TextRow(_list, "<color=#ffd166><b>Your raids</b></color>", 27);
+            HackUi.Section(_list, "Your raids");
             Rows(raids.attacks, true);
-            IslandUi.TextRow(_list, "<color=#ffd166><b>Raids on your islands</b></color>", 27);
+            HackUi.Section(_list, "Raids on your islands");
             Rows(raids.defences, false);
         }
 

@@ -76,6 +76,17 @@ namespace RoguePirates.Hackathon
             return r.Ok && r.Data != null && !string.IsNullOrEmpty(r.Data.raidId) ? (r.Data, null) : (null, Error("raid", r));
         }
 
+        /// <summary>A practice raid on your own island with its saved design (owner, 12 Oct): no fee, no loot, no shield, no
+        /// raid record and nothing to report afterwards.</summary>
+        public static async Task<(RaidStart raid, string error)> PracticeRaid(string islandId)
+        {
+            if (Token == null) return (null, "Sign in with a wallet first (Wallet button, top of the menu).");
+            var r = await Client.Post<RaidStart>("/api/raids/practice", new PracticeRequest { islandId = islandId }, Token);
+            if (!r.Ok || r.Data == null) return (null, Error("practice raid", r));
+            r.Data.practice = true;
+            return (r.Data, null);
+        }
+
         public static async Task<(RaidResult result, string error)> ReportRaid(string raidId, bool won, bool partial, int seconds)
         {
             var body = new RaidResultRequest { won = won, partial = partial, seconds = Mathf.Clamp(seconds, 1, 360) };

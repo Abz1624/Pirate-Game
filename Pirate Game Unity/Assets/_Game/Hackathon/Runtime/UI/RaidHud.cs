@@ -133,7 +133,7 @@ namespace RoguePirates.Hackathon.UI
             _clock = HackUi.TextAt(box, "Clock", string.Empty, 30, TextAlignmentOptions.Center, HackUi.TextColor, new Vector2(0f, 0.38f), new Vector2(1f, 0.74f));
             _clock.fontStyle = FontStyles.Bold;
             _wave = HackUi.TextAt(box, "Wave", string.Empty, 21, TextAlignmentOptions.Center, HackUi.Dim, new Vector2(0.02f, 0.04f), new Vector2(0.98f, 0.38f));
-            _goal.text = $"CONQUER {_raid.islandName}   sink the guardian";
+            _goal.text = _raid.practice ? $"PRACTICE: TEST {_raid.islandName}'S DEFENCES   no fee, no loot" : $"CONQUER {_raid.islandName}   sink the guardian";
             _hullBack = Box(box, "Hull", new Vector2(0.5f, 0f), new Vector2(0f, -30f), new Vector2(640f, 22f), new Color(0f, 0f, 0f, 0.6f));
             _hullBack.pivot = new Vector2(0.5f, 1f);
             var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
@@ -159,10 +159,10 @@ namespace RoguePirates.Hackathon.UI
             _resultTitle = HackUi.TextAt(_resultBox, "Title", string.Empty, 52, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.76f), new Vector2(1f, 0.97f), true);
             _resultText = HackUi.TextAt(_resultBox, "Text", string.Empty, 28, TextAlignmentOptions.Top, HackUi.TextColor, new Vector2(0.04f, 0.26f), new Vector2(0.96f, 0.76f));
             _resultText.textWrappingMode = TextWrappingModes.Normal;
-            HackUi.Button(_resultBox, "Return to port", () => V4Game.GoToMenu(), new Vector2(0.27f, 0.05f), new Vector2(0.73f, 0.22f));
+            HackUi.Button(_resultBox, _raid.practice ? "Back to my island" : "Return to port", () => V4Game.GoToMenu(), new Vector2(0.27f, 0.05f), new Vector2(0.73f, 0.22f));
             _resultBox.gameObject.SetActive(false);
 
-            Say($"Ye dare raid {_raid.islandName}? Fifteen minutes of my finest, and then the Barnacle King!", 5f);
+            Say(_raid.practice ? $"A drill on {_raid.islandName}, Captain? Let us see if yer defences hold." : $"Ye dare raid {_raid.islandName}? Fifteen minutes of my finest, and then the Barnacle King!", 5f);
         }
 
         static RectTransform Box(Transform parent, string name, Vector2 anchor, Vector2 pos, Vector2 size, Color color)
@@ -278,10 +278,21 @@ namespace RoguePirates.Hackathon.UI
             _clock.text = won ? "<color=#7fd68b>ISLAND CONQUERED</color>" : partial ? "<color=#ffd166>THE GUARDIAN HOLDS</color>" : "<color=#ff8c73>RAID FAILED</color>";
             Say(won ? "My King... sunk. Take yer plunder. Marrow never forgets." : partial ? "Ye reached my King and still ye fled. Scurry home with yer crumbs!" : "Another hull for the reef! Come back when ye can sail.", 6f);
             _resultBox.gameObject.SetActive(true);
-            _resultTitle.text = won ? "Island conquered!" : partial ? "Partial raid" : "Raid failed";
+            _resultTitle.text = _raid.practice ? (won ? "Practice: defences fell" : partial ? "Practice: partly held" : "Practice: defences held")
+                : won ? "Island conquered!" : partial ? "Partial raid" : "Raid failed";
             var reason = why == "time" ? "Time ran out." : why == "sunk" ? "Your ship went down." : why == "left" ? "You left the raid." :
                 $"You sank the guardian in {IslandRules.Clock(_raidSeconds)}.";
             reason += $" Reached minute {Math.Min(15, minute)} of 15.";
+            if (_raid.practice)
+            {
+                // A practice raid stores nothing: no result to send.
+                _reported = true;
+                var verdict = IslandRules.PracticeVerdict(won, minute, GuardianMinute);
+                _resultText.text = reason + "\n" + verdict + "\n<size=85%><color=#9aa4ad>Practice only: no RUM, no loot, no shield, no record.</color></size>";
+                LastResult = $"<b>Practice on {_raid.islandName}</b>: {verdict}";
+                LastRaid = null;
+                return;
+            }
             _resultText.text = reason + "\nSending the result...";
             Report(won, minute, reason);
         }
@@ -316,7 +327,7 @@ namespace RoguePirates.Hackathon.UI
         {
             RaidSchedule.Clear();
             // Leaving the voyage early still reports the raid (how far it got).
-            if (_raid != null && !_reported && _lastMinute > 0)
+            if (_raid != null && !_raid.practice && !_reported && _lastMinute > 0)
             {
                 _ended = true;
                 Report(false, MinuteReached(false), "You left the raid.");

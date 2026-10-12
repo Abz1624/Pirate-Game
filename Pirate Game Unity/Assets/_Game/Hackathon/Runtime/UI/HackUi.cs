@@ -197,6 +197,62 @@ namespace RoguePirates.Hackathon.UI
             return t;
         }
 
+        /// <summary>The panels' status line (12 Oct polish): a tinted strip <paramref name="height"/> tall at
+        /// <paramref name="fromTop"/>, its text wrapping inside. The tint follows the text colour (red for errors, green for
+        /// success, amber while working) and a message ending in "..." gets animated dots, so loading is visible.</summary>
+        public static TextMeshProUGUI StatusBar(Transform panel, float fromTop, float height = 48f)
+        {
+            var strip = TopStrip(panel, "Status", fromTop, height);
+            var bg = strip.gameObject.AddComponent<Image>();
+            bg.color = new Color(1f, 1f, 1f, 0.05f);
+            bg.raycastTarget = false;
+            var t = TextAt(strip, "Text", string.Empty, 24, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
+            t.margin = new Vector4(14f, 2f, 14f, 2f);
+            t.textWrappingMode = TextWrappingModes.Normal;
+            t.overflowMode = TextOverflowModes.Ellipsis;
+            var s = t.gameObject.AddComponent<HackStatus>();
+            s.Background = bg;
+            return t;
+        }
+
+        /// <summary>The tint of a status strip for a text colour.</summary>
+        public static Color StatusTint(Color text)
+        {
+            if (Near(text, Bad)) return new Color(0.75f, 0.18f, 0.12f, 0.28f);
+            if (Near(text, Good)) return new Color(0.2f, 0.6f, 0.25f, 0.25f);
+            if (Near(text, Gold)) return new Color(1f, 0.75f, 0.25f, 0.16f);
+            return new Color(1f, 1f, 1f, 0.05f);
+        }
+
+        static bool Near(Color a, Color b) => Mathf.Abs(a.r - b.r) < 0.02f && Mathf.Abs(a.g - b.g) < 0.02f && Mathf.Abs(a.b - b.b) < 0.02f;
+
+        /// <summary>A section heading in a scroll list: a gold bar, a title and an optional dim hint.</summary>
+        public static TextMeshProUGUI Section(Transform list, string title, string hint = null)
+        {
+            var go = new GameObject("Section", typeof(RectTransform), typeof(LayoutElement));
+            go.transform.SetParent(list, false);
+            var le = go.GetComponent<LayoutElement>();
+            le.minHeight = le.preferredHeight = 52f;
+            var bar = new GameObject("Bar", typeof(RectTransform), typeof(Image));
+            bar.transform.SetParent(go.transform, false);
+            var brt = (RectTransform)bar.transform;
+            brt.anchorMin = new Vector2(0f, 0.18f);
+            brt.anchorMax = new Vector2(0f, 0.82f);
+            brt.pivot = new Vector2(0f, 0.5f);
+            brt.sizeDelta = new Vector2(6f, 0f);
+            brt.anchoredPosition = new Vector2(4f, 0f);
+            bar.GetComponent<Image>().color = Gold;
+            bar.GetComponent<Image>().raycastTarget = false;
+            var line = SectionText(title, hint);
+            var t = TextAt(go.transform, "Title", line, 29, TextAlignmentOptions.BottomLeft, Gold, Vector2.zero, Vector2.one, true);
+            t.margin = new Vector4(20f, 0f, 8f, 6f);
+            return t;
+        }
+
+        /// <summary>The heading's rich text ("Title  hint").</summary>
+        public static string SectionText(string title, string hint) =>
+            string.IsNullOrEmpty(hint) ? title : title + "  <size=75%><color=#9aa4ad>" + hint + "</color></size>";
+
         /// <summary>A single-line name field (TMP input), stretched in <paramref name="parent"/>.</summary>
         public static TMP_InputField Input(Transform parent, string placeholder, int characterLimit)
         {

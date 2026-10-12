@@ -17,7 +17,8 @@ namespace RoguePirates.Hackathon.UI
     {
         RectTransform _list;
         TextMeshProUGUI _title, _status;
-        Button _save, _close;
+        Button _save, _close, _test;
+        bool _dirty;
         DefenceCatalog _catalog;
         IslandDefenceView _view;
         DefenceDesign _design;
@@ -46,13 +47,12 @@ namespace RoguePirates.Hackathon.UI
         void Build(RectTransform rt)
         {
             var header = HackUi.TopStrip(rt, "Header", 14f, 80f);
-            _title = HackUi.TextAt(header, "Title", "Design defences", 42, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.6f, 1f), true);
-            _save = HackUi.Button(header, "Save", Save, new Vector2(0.62f, 0.06f), new Vector2(0.8f, 0.94f));
-            _close = HackUi.Button(header, "Close", Close, new Vector2(0.82f, 0.06f), new Vector2(1f, 0.94f));
-            var statusStrip = HackUi.TopStrip(rt, "Status", 98f, 44f);
-            _status = HackUi.TextAt(statusStrip, "Text", string.Empty, 24, TextAlignmentOptions.MidlineLeft, HackUi.Dim, Vector2.zero, Vector2.one);
-            _status.textWrappingMode = TextWrappingModes.Normal;
-            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 20f, 24f, 150f));
+            _title = HackUi.TextAt(header, "Title", "Design defences", 42, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.44f, 1f), true);
+            _test = HackUi.Button(header, "Test defences", TestDefences, new Vector2(0.45f, 0.06f), new Vector2(0.67f, 0.94f));
+            _save = HackUi.Button(header, "Save", Save, new Vector2(0.68f, 0.06f), new Vector2(0.83f, 0.94f));
+            _close = HackUi.Button(header, "Close", Close, new Vector2(0.84f, 0.06f), new Vector2(1f, 0.94f));
+            _status = HackUi.StatusBar(rt, 100f, 56f);
+            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 20f, 24f, 168f));
             _list = HackUi.ScrollList(body, "Scroll", Vector4.zero);
             _list.GetComponent<VerticalLayoutGroup>().spacing = 6f;
         }
@@ -97,11 +97,27 @@ namespace RoguePirates.Hackathon.UI
             if (kinds != null) foreach (var k in kinds) if (k != null) { _costs[k.kind] = k.cost; _kinds[k.kind] = k; }
             _budgets = view.budgets != null && view.budgets.Length >= DefenceRules.Windows ? view.budgets : _budgets;
             _design = DefenceRules.Normalize(view.design, _catalog?.defaultGuardian ?? "barnacle_king");
+            _dirty = false;
             Render();
         }
 
         /// <summary>Called after Close (the Islands screen reopens).</summary>
         public Action Closed;
+        /// <summary>"Test defences": starts a practice raid on (islandId, islandName) with the saved design.</summary>
+        public Action<string, string> Practice;
+        public bool Dirty => _dirty;
+
+        /// <summary>Saves unsaved changes first (a practice raid uses the saved design), then starts the practice raid.</summary>
+        public async void TestDefences()
+        {
+            if (_design == null || _busy) return;
+            if (_dirty && !await SaveNow()) return;
+            if (this == null) return;
+            var id = _islandId;
+            var name = _islandName;
+            Close();
+            Practice?.Invoke(id, name);
+        }
 
         public void Close()
         {
@@ -145,7 +161,7 @@ namespace RoguePirates.Hackathon.UI
             // Presets.
             if (_catalog?.presets != null && _catalog.presets.Length > 0)
             {
-                IslandUi.TextRow(_list, "<color=#ffd166><b>Presets</b></color>  <color=#9aa4ad>replace the whole design</color>", 25);
+                HackUi.Section(_list, "Presets", "replace the whole design");
                 var buttons = new List<(string, Action)>();
                 foreach (var p in _catalog.presets)
                 {
@@ -274,22 +290,25 @@ namespace RoguePirates.Hackathon.UI
         void Edited()
         {
             _problems = null;
+            _dirty = true;
             var over = OverBudgetWindows();
             Status(over > 0 ? $"{over} minute{(over == 1 ? " is" : "s are")} over budget. The server will refuse the design until they fit." : "Unsaved changes. Save to keep them.",
                 over > 0 ? HackUi.Bad : HackUi.Gold);
             Render();
         }
 
-        public async void Save()
+        public async void Save() => await SaveNow();
+
+        async System.Threading.Tasks.Task<bool> SaveNow()
         {
-            if (_design == null || _busy) return;
+            if (_design == null || _busy) return false;
             _busy = true;
             _save.interactable = false;
             Status("Saving the design...", HackUi.Gold);
             try
             {
                 var (view, error, problems) = await IslandApi.SaveDefence(_islandId, DefenceRules.ForSave(_design));
-                if (this == null) return;
+                if (this == null) return false;
                 if (error != null)
                 {
                     if (problems != null && problems.Length > 0)
@@ -300,11 +319,12 @@ namespace RoguePirates.Hackathon.UI
                     }
                     Status(error + (problems != null && problems.Length > 0 ? $" {problems.Length} problem{(problems.Length == 1 ? string.Empty : "s")} listed below." : string.Empty), HackUi.Bad);
                     Render();
-                    return;
+                    return false;
                 }
                 _problems = null;
                 Apply(view);
-                Status($"Saved. Raiders of {_islandName} now face this design.", HackUi.Good);
+                Status($"Saved. Raiders of {_islandName} now face this design. Press Test defences to try it.", HackUi.Good);
+                return true;
             }
             finally
             {

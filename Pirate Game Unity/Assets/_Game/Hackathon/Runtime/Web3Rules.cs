@@ -55,5 +55,37 @@ namespace RoguePirates.Hackathon
             var at = s.IndexOf('@');
             return at > 0 && at == s.LastIndexOf('@') && s.IndexOf('.', at) > at + 1 && !s.EndsWith(".") && s.IndexOf(' ') < 0;
         }
+
+        /// <summary>The server's default wallet name: "Captain " and four base58 characters of the address.</summary>
+        /// <remarks>With the <paramref name="wallet"/> it must be that wallet's first or last four characters (so a chosen
+        /// "Captain Jack" is not mistaken for the default).</remarks>
+        public static bool IsDefaultName(string name, string wallet = null)
+        {
+            if (string.IsNullOrEmpty(name) || name.Length != 12 || !name.StartsWith("Captain ", StringComparison.Ordinal)) return false;
+            if (!string.IsNullOrEmpty(wallet) && wallet.Length >= 4)
+            {
+                var tail = name.Substring(8);
+                return tail == wallet.Substring(0, 4) || tail == wallet.Substring(wallet.Length - 4);
+            }
+            for (var i = 8; i < 12; i++)
+                if (!LooksLikeAddressChar(name[i])) return false;
+            return true;
+        }
+
+        static bool LooksLikeAddressChar(char c) =>
+            c >= '1' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'N' || c >= 'P' && c <= 'Z' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z';
+
+        /// <summary>The server's name rules (3 to 16 letters, digits, spaces, _ or -): the trimmed name, or null with
+        /// <paramref name="error"/> set. The server also refuses rude names.</summary>
+        public static string CleanName(string raw, out string error)
+        {
+            var name = (raw ?? string.Empty).Trim();
+            error = null;
+            if (name.Length < 3 || name.Length > 16) { error = "Names are 3 to 16 characters."; return null; }
+            foreach (var c in name)
+                if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == ' ' || c == '_' || c == '-'))
+                { error = "Use letters, digits, spaces, _ or - only."; return null; }
+            return name;
+        }
     }
 }

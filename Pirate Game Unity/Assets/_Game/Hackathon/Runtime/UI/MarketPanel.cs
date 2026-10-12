@@ -45,13 +45,12 @@ namespace RoguePirates.Hackathon.UI
             HackUi.TextAt(header, "Title", "Island market", 46, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.45f, 1f), true);
             HackUi.Button(header, "Refresh", Refresh, new Vector2(0.6f, 0.06f), new Vector2(0.79f, 0.94f));
             _close = HackUi.Button(header, "Close", Close, new Vector2(0.81f, 0.06f), new Vector2(1f, 0.94f));
-            var sub = HackUi.TopStrip(rt, "Sub", 98f, 76f);
+            var sub = HackUi.TopStrip(rt, "Sub", 96f, 40f);
             _sub = HackUi.TextAt(sub, "Text", "Island NFTs for devnet SOL. The game's escrow holds a listed NFT and swaps it for the payment.", 24,
-                TextAlignmentOptions.TopLeft, HackUi.Dim, Vector2.zero, new Vector2(1f, 1f));
+                TextAlignmentOptions.MidlineLeft, HackUi.Dim, Vector2.zero, new Vector2(1f, 1f));
             _sub.textWrappingMode = TextWrappingModes.Normal;
-            _status = HackUi.TextAt(sub, "Status", string.Empty, 25, TextAlignmentOptions.BottomLeft, HackUi.Dim, Vector2.zero, Vector2.one);
-            _status.textWrappingMode = TextWrappingModes.Normal;
-            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 20f, 24f, 184f));
+            _status = HackUi.StatusBar(rt, 142f, 48f);
+            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 20f, 24f, 202f));
             _list = HackUi.ScrollList(body, "Scroll", Vector4.zero);
             _list.GetComponent<VerticalLayoutGroup>().spacing = 8f;
         }
@@ -116,7 +115,7 @@ namespace RoguePirates.Hackathon.UI
             }
             var myId = Web3Session.Instance.SignedIn && Web3Session.Instance.Profile != null ? Web3Session.Instance.Profile.playerId : null;
 
-            IslandUi.TextRow(_list, "<color=#ffd166><b>For sale</b></color>", 28);
+            HackUi.Section(_list, "For sale", "RUM per hour and defence record help you judge an island");
             var any = false;
             if (_market?.listings != null)
                 foreach (var l in _market.listings)
@@ -124,11 +123,13 @@ namespace RoguePirates.Hackathon.UI
                     if (l == null || l.status != "active") continue;
                     any = true;
                     var mine = myId != null && l.seller != null && l.seller.playerId == myId;
-                    var row = HackUi.Row(_list, 112f, mine ? IslandUi.MineTint : IslandUi.RowTint);
-                    IslandUi.Picture(row, ImageFor(l), 100f);
+                    var row = HackUi.Row(_list, 140f, mine ? IslandUi.MineTint : IslandUi.RowTint);
+                    IslandUi.Picture(row, ImageFor(l), 120f);
                     var isl = l.island ?? new ListingIsland();
-                    var c = HackUi.Cell(row, $"<b>{isl.name}</b>   Level {isl.level}\n<size=82%><color=#9aa4ad>{isl.slotName}, {isl.region}   {isl.ratePerHour} RUM/h   seller {l.seller?.name} {l.seller?.walletShort}</color></size>",
-                        0f, 26, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
+                    var c = HackUi.Cell(row, $"<b>{isl.name}</b>   Level {isl.level}\n" +
+                                             $"<color=#ffd166>{isl.ratePerHour} RUM per hour</color>   Defence <color={RecordColor(isl.defenceRecord)}>{IslandRules.DefenceRecordLine(isl.defenceRecord)}</color>\n" +
+                                             $"<size=82%><color=#9aa4ad>{isl.slotName}, {isl.region}   Seller {l.seller?.name} {l.seller?.walletShort}</color></size>",
+                        0f, 25, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
                     c.textWrappingMode = TextWrappingModes.Normal;
                     HackUi.Cell(row, $"<color=#ffd166><b>{HackathonRules.Sol(l.priceLamports)}</b></color>", 170f, 28, TextAlignmentOptions.MidlineRight, HackUi.TextColor);
                     var listing = l;
@@ -140,7 +141,7 @@ namespace RoguePirates.Hackathon.UI
             // Sell.
             if (Web3Session.Instance.SignedIn)
             {
-                IslandUi.TextRow(_list, "<color=#ffd166><b>Sell your island</b></color>", 28);
+                HackUi.Section(_list, "Sell your island", "the NFT waits in escrow until sold or cancelled");
                 var islands = _islands?.islands;
                 IslandView sellable = null;
                 if (islands != null) foreach (var i in islands) if (i != null && !i.listed) { sellable = i; break; }
@@ -167,7 +168,7 @@ namespace RoguePirates.Hackathon.UI
             // My listings (history and anything to finish).
             if (_mine?.listings != null && _mine.listings.Length > 0)
             {
-                IslandUi.TextRow(_list, "<color=#ffd166><b>Your trades</b></color>", 28);
+                HackUi.Section(_list, "Your trades");
                 foreach (var l in _mine.listings)
                 {
                     if (l == null) continue;
@@ -187,6 +188,14 @@ namespace RoguePirates.Hackathon.UI
                     if (!string.IsNullOrEmpty(l.nftMint)) IslandUi.RowButton(row, "NFT", () => Application.OpenURL(IslandRules.ExplorerAddress(listing.nftMint)), 110f);
                 }
             }
+        }
+
+        /// <summary>Green for a strong record (75% and up), amber in between, red under 40%, grey with no raids.</summary>
+        static string RecordColor(DefenceRecord r)
+        {
+            if (r == null || r.raidsAgainst <= 0) return "#9aa4ad";
+            var p = IslandRules.SuccessPercent(r.defended, r.raidsAgainst) ?? 0;
+            return p >= 75 ? "#7fd68b" : p >= 40 ? "#ffd166" : "#ff8c73";
         }
 
         string ImageFor(Listing l)

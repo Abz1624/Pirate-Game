@@ -42,17 +42,17 @@ namespace RoguePirates.Hackathon.UI
         void Build(RectTransform rt)
         {
             var header = HackUi.TopStrip(rt, "Header", 16f, 80f);
-            HackUi.TextAt(header, "Title", "Daily island race", 44, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.56f, 1f), true);
-            _sail = HackUi.Button(header, "Set sail", SetSail, new Vector2(0.56f, 0.05f), new Vector2(0.8f, 0.95f));
+            HackUi.TextAt(header, "Title", "Daily island race", 44, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.44f, 1f), true);
+            HackUi.Button(header, "Refresh", Refresh, new Vector2(0.45f, 0.05f), new Vector2(0.62f, 0.95f));
+            _sail = HackUi.Button(header, "Set sail", SetSail, new Vector2(0.63f, 0.05f), new Vector2(0.81f, 0.95f));
             _close = HackUi.Button(header, "Close", Close, new Vector2(0.82f, 0.05f), new Vector2(1f, 0.95f));
 
-            var sub = HackUi.TopStrip(rt, "Sub", 104f, 80f);
-            _sub = HackUi.TextAt(sub, "Text", string.Empty, 25, TextAlignmentOptions.TopLeft, HackUi.TextColor, Vector2.zero, new Vector2(0.74f, 1f));
+            var sub = HackUi.TopStrip(rt, "Sub", 104f, 64f);
+            _sub = HackUi.TextAt(sub, "Text", string.Empty, 25, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, Vector2.one);
             _sub.textWrappingMode = TextWrappingModes.Normal;
-            _status = HackUi.TextAt(sub, "Status", string.Empty, 24, TextAlignmentOptions.TopRight, HackUi.Dim, new Vector2(0.74f, 0f), Vector2.one);
-            HackUi.Button(sub, "Refresh", Refresh, new Vector2(0.82f, 0f), new Vector2(1f, 0.5f));
+            _status = HackUi.StatusBar(rt, 174f, 48f);
 
-            var columns = HackUi.TopStrip(rt, "Columns", 192f, 44f, 32f);
+            var columns = HackUi.TopStrip(rt, "Columns", 230f, 44f, 32f);
             var hl = columns.gameObject.AddComponent<HorizontalLayoutGroup>();
             hl.padding = new RectOffset(16, 12, 0, 0);
             hl.spacing = 12f;
@@ -60,7 +60,7 @@ namespace RoguePirates.Hackathon.UI
             hl.childForceExpandWidth = false;
             Cells(columns, HackUi.Dim, 24, "#", "Captain", "Wallet", "Time", "Tries");
 
-            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 104f, 24f, 240f));
+            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 104f, 24f, 278f));
             _list = HackUi.ScrollList(body, "Scroll", Vector4.zero);
 
             var footer = HackUi.Area(rt, "Footer", Vector2.zero, new Vector2(1f, 0f), new Vector4(24f, 16f, 24f, 0f));

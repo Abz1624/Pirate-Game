@@ -207,6 +207,8 @@ namespace RoguePirates.Hackathon
             });
             if (!verify.Ok || verify.Data == null || string.IsNullOrEmpty(verify.Data.token)) return ApiError("sign-in", verify);
             StoreProfile(address, verify.Data);
+            // A first sign-in (or a profile still on the default "Captain xxxx") asks for a captain name once.
+            NamePromptDue = verify.Data.isNew || Web3Rules.IsDefaultName(verify.Data.name, address);
             // Health check and a /me read through V4's online service (rating, and the chip goes Online).
             await OnlineService.EnsureConnected();
             await OnlineService.SyncActive();
@@ -287,6 +289,33 @@ namespace RoguePirates.Hackathon
             _readOnly = new InGameWallet(RpcCluster.DevNet, string.IsNullOrWhiteSpace(s.customRpc) ? null : s.customRpc.Trim(),
                 string.IsNullOrWhiteSpace(s.customStreamingRpc) ? null : s.customStreamingRpc.Trim());
             return _readOnly;
+        }
+
+        /// <summary>True after a sign-in that should ask for a captain name (a new wallet, or the default name). The menu shows
+        /// the prompt once and clears it (<see cref="DismissNamePrompt"/>), whether the player picks a name or skips.</summary>
+        public bool NamePromptDue { get; private set; }
+
+        public void DismissNamePrompt() => NamePromptDue = false;
+
+        /// <summary>Renames the signed-in profile (PATCH /api/profiles/me, the server's name rules). Null on success.</summary>
+        public async Task<string> SetName(string rawName)
+        {
+            var name = Web3Rules.CleanName(rawName, out var invalid);
+            if (name == null) return invalid;
+            var p = Profile;
+            if (p == null) return "Sign in with a wallet first.";
+            var r = await OnlineService.Client.Patch<ProfileNameResponse>("/api/profiles/me", new ProfileNameRequest { name = name }, p.token);
+            if (!r.Ok)
+            {
+                if (r.ErrorCode == "name_not_allowed") return "That name is not allowed. Please pick a different one.";
+                if (r.ErrorCode == "invalid_name") return "Names are 3 to 16 characters: letters, digits, spaces, _ or -.";
+                return ApiError("name", r);
+            }
+            var saved = r.Data != null && !string.IsNullOrEmpty(r.Data.name) ? r.Data.name : name;
+            OnlineService.Profiles.Rename(p.localId, saved, true); // not dirty: the server has it
+            NamePromptDue = false;
+            Raise(Status);
+            return null;
         }
 
         /// <summary>Sets (or clears, with an empty value) the profile's contact email. Null on success.</summary>

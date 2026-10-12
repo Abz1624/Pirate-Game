@@ -76,10 +76,14 @@ namespace RoguePirates.Hackathon
                 if (r.ErrorCode != null && r.ErrorCode != "tx_not_confirmed") RememberDeposit(w.lobbyId, null);
                 return (null, Error("deposit", r));
             }
-            return (null, "Devnet has not confirmed the transfer yet. Press Deposit again in a few seconds (you will not pay twice).");
+            return (null, "Devnet has not confirmed the transfer yet. Press Check deposit in a few seconds (you will not pay twice).");
         }
 
         static string _pendingLobby, _pendingSig;
+
+        /// <summary>A deposit transfer for <paramref name="lobbyId"/> was sent but the server has not confirmed it yet (leaving
+        /// the lobby then could strand the SOL, so the menu keeps the lobby and offers "Check deposit").</summary>
+        public static bool HasPendingDeposit(string lobbyId) => !string.IsNullOrEmpty(PendingDeposit(lobbyId));
         static string PendingDeposit(string lobbyId) => _pendingLobby == lobbyId ? _pendingSig : null;
         static void RememberDeposit(string lobbyId, string sig)
         {

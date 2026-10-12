@@ -12,5 +12,7 @@ namespace RoguePirates.Hackathon
         public string wallet; public string email; public bool isNew;
     }
     [Serializable] public sealed class EmailRequest { public string email; }
+    [Serializable] public sealed class ProfileNameRequest { public string name; }
+    [Serializable] public sealed class ProfileNameResponse { public string playerId; public string name; public string tag; }
     [Serializable] public sealed class EmailResponse { public string playerId; public string wallet; public string email; public bool emailVerified; }
 }

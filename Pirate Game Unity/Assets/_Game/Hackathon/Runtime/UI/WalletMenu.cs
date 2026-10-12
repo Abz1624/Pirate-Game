@@ -28,14 +28,18 @@ namespace RoguePirates.Hackathon.UI
         Button _entry;
         RectTransform _panel;
         TextMeshProUGUI _address, _balance, _profile, _message;
-        TMP_InputField _email;
-        Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail, _copy, _explorer;
+        TMP_InputField _email, _name, _promptName;
+        Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail, _copy, _explorer, _saveName, _promptSave, _promptSkip;
+        RectTransform _prompt;
+        TextMeshProUGUI _promptMessage;
         RectTransform _addressActions;
         TMP_FontAsset _font;
 
         public bool IsOpen => _panel != null && _panel.gameObject.activeSelf;
         public string EntryLabel => _entry != null ? _entry.GetComponentInChildren<TextMeshProUGUI>(true).text : null;
         public string MessageText => _message != null ? _message.text : null;
+        public bool NamePromptOpen => _prompt != null && _prompt.gameObject.activeSelf;
+        public string NamePromptMessage => _promptMessage != null ? _promptMessage.text : null;
         static Web3Session S => Web3Session.Instance;
 
         // ---------------------------------------------------------------- attach
@@ -96,8 +100,8 @@ namespace RoguePirates.Hackathon.UI
             var go = new GameObject("HackathonWalletPanel", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(canvas, false);
             _panel = (RectTransform)go.transform;
-            _panel.anchorMin = new Vector2(0.18f, 0.2f);
-            _panel.anchorMax = new Vector2(0.82f, 0.92f);
+            _panel.anchorMin = new Vector2(0.15f, 0.05f);
+            _panel.anchorMax = new Vector2(0.85f, 0.95f);
             _panel.offsetMin = _panel.offsetMax = Vector2.zero;
             go.GetComponent<Image>().color = PanelColor;
             SettingsPanel.DrawOnTop(go, 240);
@@ -111,8 +115,9 @@ namespace RoguePirates.Hackathon.UI
 
             var y = 16f;
             var header = Strip("Header", ref y, 80f);
-            TextIn(header, "Title", "Pirate wallet (devnet)", 44, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, new Vector2(0.72f, 1f), true);
-            ButtonIn(header, "Close", Close, new Vector2(0.74f, 0.05f), new Vector2(1f, 0.95f));
+            TextIn(header, "Title", "Wallet and profile", 44, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, new Vector2(0.55f, 1f), true);
+            TextIn(header, "Network", "Solana devnet", 24, TextAlignmentOptions.MidlineRight, Dim, new Vector2(0.5f, 0f), new Vector2(0.76f, 1f));
+            ButtonIn(header, "Close", Close, new Vector2(0.78f, 0.05f), new Vector2(1f, 0.95f));
 
             // The full address (wraps on narrow screens), then Copy address and View on explorer.
             _address = TextIn(Strip("Address", ref y, 84f), "Address", string.Empty, 30, TextAlignmentOptions.MidlineLeft, TextColor, Vector2.zero, Vector2.one);
@@ -127,7 +132,7 @@ namespace RoguePirates.Hackathon.UI
             _explorer = Flex(SettingsPanel.CreateButton(_addressActions, "View on explorer", OpenExplorer), 64f);
             _balance = TextIn(Strip("Balance", ref y, 44f), "Balance", string.Empty, 30, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one);
             _profile = TextIn(Strip("Profile", ref y, 44f), "Profile", string.Empty, 28, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
-            y += 8f;
+            y += 4f;
 
             var actions = Strip("Actions", ref y, Row);
             var h = actions.gameObject.AddComponent<HorizontalLayoutGroup>();
@@ -140,9 +145,23 @@ namespace RoguePirates.Hackathon.UI
             _refresh = Flex(SettingsPanel.CreateButton(actions, "Refresh", () => Run(RefreshOnly())));
             _airdrop = Flex(SettingsPanel.CreateButton(actions, "Airdrop 1 SOL", () => Run(S.RequestAirdrop(1))));
             _disconnect = Flex(SettingsPanel.CreateButton(actions, "Disconnect", () => { S.Disconnect(); SetMessage("Disconnected.", Dim); }));
-            y += 16f;
+            y += 12f;
 
-            TextIn(Strip("EmailLabel", ref y, 40f), "EmailLabel", "Email (optional, for match news)", 26, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
+            // Captain name (the name other players see; the server's name rules).
+            TextIn(Strip("NameLabel", ref y, 36f), "NameLabel", "Captain name  <size=85%>(3 to 16 letters, digits, spaces, _ or -)</size>", 26, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
+            var nameRow = Strip("Name", ref y, Row);
+            var nh = nameRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+            nh.spacing = 12f;
+            nh.childControlWidth = nh.childControlHeight = true;
+            nh.childForceExpandWidth = false;
+            _name = Input(nameRow, "Your captain name", 16);
+            _name.onSubmit.AddListener(_ => SaveName());
+            _saveName = SettingsPanel.CreateButton(nameRow, "Save name", SaveName);
+            var nle = _saveName.GetComponent<LayoutElement>() ?? _saveName.gameObject.AddComponent<LayoutElement>();
+            nle.minWidth = 240f;
+            y += 8f;
+
+            TextIn(Strip("EmailLabel", ref y, 36f), "EmailLabel", "Email  <size=85%>(optional, for match news)</size>", 26, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
             var email = Strip("Email", ref y, Row);
             var eh = email.gameObject.AddComponent<HorizontalLayoutGroup>();
             eh.spacing = 12f;
@@ -156,12 +175,97 @@ namespace RoguePirates.Hackathon.UI
             sle.minWidth = 240f;
             y += 12f;
 
-            _message = TextIn(Strip("Message", ref y, 96f), "Message", string.Empty, 26, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
+            _message = TextIn(Strip("Message", ref y, 84f), "Message", string.Empty, 26, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
             _message.textWrappingMode = TextWrappingModes.Normal;
             _message.overflowMode = TextOverflowModes.Overflow;
 
             go.SetActive(false);
+            BuildNamePrompt(canvas);
         }
+
+        /// <summary>After a first wallet sign-in: "Name your captain" (skippable). Drawn above the wallet panel.</summary>
+        void BuildNamePrompt(Transform canvas)
+        {
+            var go = new GameObject("HackathonNamePrompt", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(canvas, false);
+            _prompt = (RectTransform)go.transform;
+            _prompt.anchorMin = new Vector2(0.22f, 0.28f);
+            _prompt.anchorMax = new Vector2(0.78f, 0.74f);
+            _prompt.offsetMin = _prompt.offsetMax = Vector2.zero;
+            go.GetComponent<Image>().color = PanelColor;
+            SettingsPanel.DrawOnTop(go, 250);
+            var blocker = new GameObject("Blocker", typeof(RectTransform), typeof(Image));
+            blocker.transform.SetParent(_prompt, false);
+            var brt = (RectTransform)blocker.transform;
+            brt.anchorMin = new Vector2(-2f, -2f);
+            brt.anchorMax = new Vector2(3f, 3f);
+            brt.offsetMin = brt.offsetMax = Vector2.zero;
+            blocker.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
+
+            var y = 20f;
+            TextIn(StripIn(_prompt, "Title", ref y, 64f), "Title", "Name your captain", 42, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one, true);
+            var intro = TextIn(StripIn(_prompt, "Intro", ref y, 72f), "Intro",
+                "Other captains see this name on the leaderboards, in 1v1 lobbies and on your island. You can change it later in the wallet panel.",
+                26, TextAlignmentOptions.TopLeft, TextColor, Vector2.zero, Vector2.one);
+            intro.textWrappingMode = TextWrappingModes.Normal;
+            var field = StripIn(_prompt, "Name", ref y, Row);
+            var fh = field.gameObject.AddComponent<HorizontalLayoutGroup>();
+            fh.childControlWidth = fh.childControlHeight = true;
+            _promptName = Input(field, "3 to 16 letters, digits, spaces, _ or -", 16);
+            _promptName.onSubmit.AddListener(_ => SavePromptName());
+            var buttons = StripIn(_prompt, "Buttons", ref y, Row);
+            var h = buttons.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 12f;
+            h.childControlWidth = h.childControlHeight = true;
+            h.childForceExpandWidth = true;
+            _promptSave = Flex(SettingsPanel.CreateButton(buttons, "Save name", SavePromptName));
+            _promptSkip = Flex(SettingsPanel.CreateButton(buttons, "Skip for now", SkipNamePrompt));
+            _promptMessage = TextIn(StripIn(_prompt, "Message", ref y, 48f), "Message", string.Empty, 24, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
+            _promptMessage.textWrappingMode = TextWrappingModes.Normal;
+            go.SetActive(false);
+        }
+
+        public void OpenNamePrompt()
+        {
+            if (_prompt == null) return;
+            var current = S.Profile?.name;
+            var isDefault = Web3Rules.IsDefaultName(current, S.Address);
+            _promptName.text = isDefault ? string.Empty : current ?? string.Empty;
+            _promptMessage.text = isDefault ? "For now you are " + current + "." : string.Empty;
+            _promptMessage.color = Dim;
+            _prompt.gameObject.SetActive(true);
+            _prompt.SetAsLastSibling();
+            _promptName.ActivateInputField();
+        }
+
+        public void SkipNamePrompt()
+        {
+            S.DismissNamePrompt();
+            if (_prompt != null) _prompt.gameObject.SetActive(false);
+            SetMessage("You can set your captain name here any time.", Dim);
+        }
+
+        public async void SavePromptName()
+        {
+            if (_prompt == null || S.Busy) return;
+            _promptSave.interactable = _promptSkip.interactable = false;
+            _promptMessage.text = "Saving...";
+            _promptMessage.color = Gold;
+            try
+            {
+                var error = await S.SetName(_promptName.text);
+                if (this == null) return;
+                if (error != null) { _promptMessage.text = error; _promptMessage.color = Bad; return; }
+                _prompt.gameObject.SetActive(false);
+                if (_name != null) _name.text = S.Profile?.name ?? string.Empty;
+                SetMessage("Ahoy, " + S.Profile?.name + "! Your captain name is saved.", Good);
+                Refresh();
+            }
+            catch (Exception e) { if (this != null) { _promptMessage.text = e.Message; _promptMessage.color = Bad; } }
+            finally { if (this != null) _promptSave.interactable = _promptSkip.interactable = true; }
+        }
+
+        void SaveName() => Run(S.SetName(_name.text), "Captain name saved.");
 
         // ---------------------------------------------------------------- behaviour
 
@@ -188,6 +292,7 @@ namespace RoguePirates.Hackathon.UI
             if (_panel == null) return;
             _panel.gameObject.SetActive(true);
             _email.text = S.Email ?? string.Empty;
+            _name.text = S.Profile?.name ?? string.Empty;
             if (string.IsNullOrEmpty(S.LastError)) SetMessage(string.Empty, Dim);
             Refresh();
             if (!string.IsNullOrEmpty(S.Address)) Run(RefreshOnly());
@@ -240,6 +345,8 @@ namespace RoguePirates.Hackathon.UI
         void Refresh()
         {
             if (_entry == null) return;
+            // A first wallet sign-in asks for a captain name once (skippable), even with the wallet panel closed.
+            if (S.SignedIn && !S.Busy && S.NamePromptDue && !NamePromptOpen) OpenNamePrompt();
             var address = S.Address;
             var signedIn = S.SignedIn;
             var connected = S.WalletConnected;
@@ -265,9 +372,12 @@ namespace RoguePirates.Hackathon.UI
             _refresh.gameObject.SetActive(!string.IsNullOrEmpty(address));
             _airdrop.gameObject.SetActive(connected && Web3Session.TestWalletAvailable);
             _disconnect.gameObject.SetActive(!string.IsNullOrEmpty(address));
-            foreach (var b in new[] { _connect, _test, _signIn, _refresh, _airdrop, _disconnect, _saveEmail }) b.interactable = !busy;
+            foreach (var b in new[] { _connect, _test, _signIn, _refresh, _airdrop, _disconnect, _saveEmail, _saveName }) b.interactable = !busy;
             _email.interactable = signedIn && !busy;
             _saveEmail.interactable = signedIn && !busy;
+            _name.interactable = signedIn && !busy;
+            _saveName.interactable = signedIn && !busy;
+            if (!signedIn && !_name.isFocused) _name.text = string.Empty;
 
             if (busy && !string.IsNullOrEmpty(S.Status)) SetMessage(S.Status, Gold);
             else if (!string.IsNullOrEmpty(S.LastError)) SetMessage(S.LastError, Bad);
@@ -283,10 +393,12 @@ namespace RoguePirates.Hackathon.UI
 
         // ---------------------------------------------------------------- UI bits (the menu hub's look)
 
-        RectTransform Strip(string name, ref float fromTop, float height)
+        RectTransform Strip(string name, ref float fromTop, float height) => StripIn(_panel, name, ref fromTop, height);
+
+        static RectTransform StripIn(RectTransform parent, string name, ref float fromTop, float height)
         {
             var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(_panel, false);
+            go.transform.SetParent(parent, false);
             var rt = (RectTransform)go.transform;
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = new Vector2(1f, 1f);

@@ -145,5 +145,28 @@ namespace RoguePirates.Hackathon
             if (i.raidable) return Marker.Raidable;
             return Marker.Busy;
         }
+
+        /// <summary>The defence success rate in whole percent (rounded down), or null with no finished raids.</summary>
+        public static int? SuccessPercent(int defended, int raids) => raids <= 0 ? (int?)null : Math.Max(0, defended) * 100 / raids;
+
+        /// <summary>"75% (3 of 4 raids defended)", or "No raids yet".</summary>
+        public static string DefenceRecordLine(DefenceRecord r)
+        {
+            if (r == null || r.raidsAgainst <= 0) return "No raids yet";
+            var p = SuccessPercent(r.defended, r.raidsAgainst) ?? 0;
+            return $"{p}% ({r.defended} of {r.raidsAgainst} raid{(r.raidsAgainst == 1 ? string.Empty : "s")} defended)";
+        }
+
+        /// <summary>The two stats a buyer looks at: RUM per hour and the defence record, one line.</summary>
+        public static string KeyStats(long ratePerHour, DefenceRecord r) =>
+            $"{ratePerHour} RUM per hour   Defence: {DefenceRecordLine(r)}";
+
+        /// <summary>A practice raid's verdict for the island's owner.</summary>
+        public static string PracticeVerdict(bool guardianSunk, int minuteReached, int guardianMinute)
+        {
+            if (guardianSunk) return "Your defences fell: the guardian was sunk. A raider would have conquered the island.";
+            if (minuteReached >= guardianMinute) return "Partly held: you reached the guardian but did not sink it. A raider would take a partial loot.";
+            return $"Your defences held: the raid ended in minute {Math.Max(1, minuteReached)}, before the guardian.";
+        }
     }
 }
