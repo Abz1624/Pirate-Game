@@ -27,8 +27,11 @@ public sealed class ApiHost : WebApplicationFactory<Program>
 
     public TestClock Clock { get; } = new();
 
-    public ApiHost(Dictionary<string, string?>? settings = null)
+    readonly Action<IServiceCollection>? _services;
+
+    public ApiHost(Dictionary<string, string?>? settings = null, Action<IServiceCollection>? services = null)
     {
+        _services = services;
         _settings = new Dictionary<string, string?>
         {
             ["DATABASE_URL"] = "",
@@ -37,6 +40,9 @@ public sealed class ApiHost : WebApplicationFactory<Program>
             ["SWEEP_SECONDS"] = "3600",
             ["MATCH_SERVER_URL"] = "",
             ["ARENA_TICK_MS"] = "3600000", // tests drive the relay clock with MatchRelay.TickAsync
+            ["TREASURY_SECRET_KEY"] = "", // hackathon: no treasury unless a test sets one (never the machine's)
+            ["ADMIN_KEY"] = "",
+            ["SOLANA_RPC_URL"] = "http://127.0.0.1:9/no-rpc-in-tests",
         };
         if (settings != null)
             foreach (var (k, v) in settings) _settings[k] = v;
@@ -63,6 +69,7 @@ public sealed class ApiHost : WebApplicationFactory<Program>
         {
             s.RemoveAll<IClock>();
             s.AddSingleton<IClock>(Clock);
+            _services?.Invoke(s);
         });
     }
 

@@ -32,6 +32,18 @@ public sealed class ApiSettings
     /// <summary>V5 M9b: join ticket lifetime in seconds (10-120, default 60).</summary>
     public int MatchTicketLifetimeSeconds { get; init; } = 60;
 
+    /// <summary>Hackathon: Solana JSON-RPC endpoint (devnet by default).</summary>
+    public string SolanaRpcUrl { get; init; } = "https://api.devnet.solana.com";
+    /// <summary>Hackathon: the treasury/escrow keypair (base58 64-byte secret, or a solana-keygen JSON array). Never logged
+    /// or returned; unset: the endpoints that need it answer 503 treasury_off.</summary>
+    public string? TreasurySecretKey { get; init; }
+    /// <summary>Hackathon: the domain named in the sign-in message (SIWS_DOMAIN).</summary>
+    public string SiwsDomain { get; init; } = "roguepirates.fun";
+    /// <summary>Hackathon: the Solana cluster named in the sign-in message and the explorer links.</summary>
+    public string SolanaCluster { get; init; } = "devnet";
+    /// <summary>Hackathon: owner key for the admin endpoints (X-Admin-Key header). Unset: the admin endpoints answer 503.</summary>
+    public string? AdminKey { get; init; }
+
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
 
@@ -53,6 +65,11 @@ public sealed class ApiSettings
         MatchTicketSecret = NullIfEmpty(c["RP_MATCH_TICKET_SECRET"]),
         VoyageServerUrl = NullIfEmpty(c["VOYAGE_SERVER_URL"]),
         VoyageMatchId = NullIfEmpty(c["VOYAGE_MATCH_ID"]),
+        SolanaRpcUrl = NullIfEmpty(c["SOLANA_RPC_URL"]) ?? "https://api.devnet.solana.com",
+        TreasurySecretKey = NullIfEmpty(c["TREASURY_SECRET_KEY"]),
+        SiwsDomain = NullIfEmpty(c["SIWS_DOMAIN"]) ?? "roguepirates.fun",
+        SolanaCluster = NullIfEmpty(c["SOLANA_CLUSTER"]) ?? "devnet",
+        AdminKey = NullIfEmpty(c["ADMIN_KEY"]),
         MatchTicketLifetimeSeconds = int.TryParse(c["MATCH_TICKET_LIFETIME_SECONDS"], out var lt) ? Math.Clamp(lt, 10, MatchTickets.MaxLifetimeSeconds) : 60,
     };
 

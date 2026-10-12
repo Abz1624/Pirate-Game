@@ -139,7 +139,13 @@ public sealed class PlayerAuth
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length > 128) return null;
         var hash = Tokens.Hash(token.Trim());
-        return await _db.Players.FirstOrDefaultAsync(p => p.TokenHash == hash);
+        var player = await _db.Players.FirstOrDefaultAsync(p => p.TokenHash == hash);
+        if (player != null) return player;
+        // Hackathon: wallet sign-ins issue one session per sign-in (several devices stay signed in)
+        var session = await _db.PlayerSessions.AsNoTracking().FirstOrDefaultAsync(s => s.TokenHash == hash);
+        if (session == null) return null;
+        // (no expiry check on the clock here: sessions carry ExpiresAt for later use; null = no expiry)
+        return await _db.Players.FirstOrDefaultAsync(p => p.Id == session.PlayerId);
     }
 
     public Task<Player?> TryGetAsync(HttpContext ctx)

@@ -22,6 +22,153 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("RoguePirates.Api.Data.DailyRace", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MapId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("DailyRaces");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.DailyRaceEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("DailyRaceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long?>("RunId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TimeMs")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Verdict")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DailyRaceId", "PlayerId")
+                        .IsUnique();
+
+                    b.HasIndex("DailyRaceId", "TimeMs");
+
+                    b.ToTable("DailyRaceEntries");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.Island", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastAccrualAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MintSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("NftMint")
+                        .HasMaxLength(44)
+                        .HasColumnType("character varying(44)");
+
+                    b.Property<Guid>("OwnerPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("RumStored")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RumVault")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NftMint")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerPlayerId");
+
+                    b.ToTable("Islands");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.IslandBuilding", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("IslandId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IslandId", "Kind")
+                        .IsUnique();
+
+                    b.ToTable("IslandBuildings");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.Lobby", b =>
                 {
                     b.Property<Guid>("Id")
@@ -88,6 +235,67 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.HasIndex("Status", "IsPublic");
 
                     b.ToTable("Lobbies");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.MarketListing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BuyerPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EscrowSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<Guid?>("IslandId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NftMint")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("character varying(44)");
+
+                    b.Property<string>("PaymentSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<string>("PayoutSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<long>("PriceLamports")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("SellerPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("TransferSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NftMint");
+
+                    b.HasIndex("SellerPlayerId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("MarketListings");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.Match", b =>
@@ -188,6 +396,62 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.ToTable("MatchReports");
                 });
 
+            modelBuilder.Entity("RoguePirates.Api.Data.Payout", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<long>("Lamports")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("RefId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Signature")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("character varying(44)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("Reason", "RefId");
+
+                    b.ToTable("Payouts");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.Player", b =>
                 {
                     b.Property<Guid>("Id")
@@ -196,6 +460,10 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
 
                     b.Property<int>("Losses")
                         .HasColumnType("integer");
@@ -208,10 +476,17 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
+                    b.Property<long>("Rum")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
+
+                    b.Property<string>("WalletAddress")
+                        .HasMaxLength(44)
+                        .HasColumnType("character varying(44)");
 
                     b.Property<int>("Wins")
                         .HasColumnType("integer");
@@ -221,7 +496,83 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
+                    b.HasIndex("WalletAddress")
+                        .IsUnique();
+
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.PlayerSession", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("PlayerSessions");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.Raid", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AttackerPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IslandId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<long>("RumLooted")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("WagerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttackerPlayerId");
+
+                    b.HasIndex("IslandId");
+
+                    b.ToTable("Raids");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.RunLog", b =>
@@ -372,6 +723,180 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.ToTable("RunVerdicts");
                 });
 
+            modelBuilder.Entity("RoguePirates.Api.Data.SolanaDeposit", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Lamports")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Memo")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("RefId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Signature")
+                        .IsRequired()
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<long>("Slot")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("character varying(44)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("Signature")
+                        .IsUnique();
+
+                    b.HasIndex("Purpose", "RefId");
+
+                    b.ToTable("SolanaDeposits");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.Wager", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GuestDepositSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<Guid?>("GuestPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("HostDepositSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<Guid>("HostPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid?>("LobbyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("MatchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long?>("PayoutId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PayoutSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("character varying(88)");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("StakeLamports")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<bool>("VsHouse")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("WinnerPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Wagers");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.WalletNonce", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("Nonce")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("character varying(44)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nonce")
+                        .IsUnique();
+
+                    b.HasIndex("Wallet");
+
+                    b.ToTable("WalletNonces");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.WeeklyBest", b =>
                 {
                     b.Property<long>("Id")
@@ -418,6 +943,47 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                         .IsUnique();
 
                     b.ToTable("WeeklyBests");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.WeeklyReward", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Lamports")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("MapId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<long?>("PayoutId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("WeekStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("WeekStart", "MapId", "Rank")
+                        .IsUnique();
+
+                    b.ToTable("WeeklyRewards");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.RunLog", b =>

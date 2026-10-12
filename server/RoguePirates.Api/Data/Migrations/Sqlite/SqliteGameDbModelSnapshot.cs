@@ -17,6 +17,147 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
+            modelBuilder.Entity("RoguePirates.Api.Data.DailyRace", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MapId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("DailyRaces");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.DailyRaceEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("DailyRaceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("RunId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TimeMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Verdict")
+                        .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DailyRaceId", "PlayerId")
+                        .IsUnique();
+
+                    b.HasIndex("DailyRaceId", "TimeMs");
+
+                    b.ToTable("DailyRaceEntries");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.Island", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastAccrualAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MintSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NftMint")
+                        .HasMaxLength(44)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("RumStored")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("RumVault")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NftMint")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerPlayerId");
+
+                    b.ToTable("Islands");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.IslandBuilding", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("IslandId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IslandId", "Kind")
+                        .IsUnique();
+
+                    b.ToTable("IslandBuildings");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.Lobby", b =>
                 {
                     b.Property<Guid>("Id")
@@ -83,6 +224,67 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.HasIndex("Status", "IsPublic");
 
                     b.ToTable("Lobbies");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.MarketListing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("BuyerPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EscrowSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("IslandId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NftMint")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PayoutSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("PriceLamports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SellerPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TransferSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NftMint");
+
+                    b.HasIndex("SellerPlayerId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("MarketListings");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.Match", b =>
@@ -181,6 +383,60 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.ToTable("MatchReports");
                 });
 
+            modelBuilder.Entity("RoguePirates.Api.Data.Payout", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(512)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Lamports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RefId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Signature")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("Reason", "RefId");
+
+                    b.ToTable("Payouts");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.Player", b =>
                 {
                     b.Property<Guid>("Id")
@@ -188,6 +444,10 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Losses")
@@ -201,9 +461,16 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<int>("Rating")
                         .HasColumnType("INTEGER");
 
+                    b.Property<long>("Rum")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WalletAddress")
+                        .HasMaxLength(44)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Wins")
@@ -214,7 +481,81 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
+                    b.HasIndex("WalletAddress")
+                        .IsUnique();
+
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.PlayerSession", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("PlayerSessions");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.Raid", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AttackerPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("IslandId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("RumLooted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("WagerId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttackerPlayerId");
+
+                    b.HasIndex("IslandId");
+
+                    b.ToTable("Raids");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.RunLog", b =>
@@ -363,6 +704,176 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.ToTable("RunVerdicts");
                 });
 
+            modelBuilder.Entity("RoguePirates.Api.Data.SolanaDeposit", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ConsumedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Lamports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Memo")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RefId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Signature")
+                        .IsRequired()
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Slot")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("Signature")
+                        .IsUnique();
+
+                    b.HasIndex("Purpose", "RefId");
+
+                    b.ToTable("SolanaDeposits");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.Wager", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GuestDepositSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("GuestPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HostDepositSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("HostPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("LobbyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("MatchId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("PayoutId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PayoutSig")
+                        .HasMaxLength(88)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("StakeLamports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("VsHouse")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("WinnerPlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LobbyId");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Wagers");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.WalletNonce", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nonce")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nonce")
+                        .IsUnique();
+
+                    b.HasIndex("Wallet");
+
+                    b.ToTable("WalletNonces");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.WeeklyBest", b =>
                 {
                     b.Property<long>("Id")
@@ -407,6 +918,45 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .IsUnique();
 
                     b.ToTable("WeeklyBests");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.WeeklyReward", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Lamports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MapId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("PayoutId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("WeekStart")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("WeekStart", "MapId", "Rank")
+                        .IsUnique();
+
+                    b.ToTable("WeeklyRewards");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.RunLog", b =>

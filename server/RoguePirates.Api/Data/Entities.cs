@@ -11,6 +11,12 @@ public sealed class Player
     public int Rating { get; set; } = 1000;
     public int Wins { get; set; }
     public int Losses { get; set; }
+    /// <summary>Hackathon: the Solana wallet (base58) this profile signed in with; null for guest profiles. Unique.</summary>
+    public string? WalletAddress { get; set; }
+    /// <summary>Hackathon: optional contact email (unverified).</summary>
+    public string? Email { get; set; }
+    /// <summary>Hackathon: the player's RUM balance (islands, raids).</summary>
+    public long Rum { get; set; }
 }
 
 /// <summary>Every accepted run (counts runs played).</summary>

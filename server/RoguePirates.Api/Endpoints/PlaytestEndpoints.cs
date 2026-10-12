@@ -162,6 +162,6 @@ public static class PlaytestEndpoints
     static object ProfileView(Player p) => new
     {
         playerId = p.Id, name = p.Name, tag = PlayerTags.For(p.Id), rating = p.Rating, wins = p.Wins, losses = p.Losses,
-        createdAt = p.CreatedAt,
+        createdAt = p.CreatedAt, wallet = p.WalletAddress, email = p.Email, rum = p.Rum,
     };
 }

@@ -40,6 +40,13 @@ builder.Services.AddSingleton<LobbyBroadcaster>();
 builder.Services.AddSingleton<MatchRelay>();
 builder.Services.AddHostedService<PlaytestSweeper>();
 builder.Services.AddHostedService<ArenaTicker>();
+// Hackathon (devnet): Solana RPC (replaceable in tests), the Solana service (treasury from TREASURY_SECRET_KEY), wallet sign-in, deposits and payouts.
+builder.Services.AddHttpClient("solana", c => c.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddSingleton<RoguePirates.Api.Solana.ISolanaRpc>(sp => new RoguePirates.Api.Solana.HttpSolanaRpc(
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("solana"), sp.GetRequiredService<ApiSettings>().SolanaRpcUrl));
+builder.Services.AddSingleton<RoguePirates.Api.Solana.SolanaService>();
+builder.Services.AddScoped<RoguePirates.Api.Solana.WalletAuthService>();
+builder.Services.AddScoped<RoguePirates.Api.Solana.LedgerService>();
 
 builder.Services.AddCors();
 builder.Services.AddOptions<CorsOptions>().Configure<IServiceProvider>((o, sp) =>
@@ -133,6 +140,7 @@ app.Use(async (ctx, next) =>
 });
 
 app.MapPlaytestApi();
+app.MapHackathonApi();
 
 app.Run();
 

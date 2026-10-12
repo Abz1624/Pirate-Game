@@ -45,6 +45,11 @@ dotnet test server/RoguePirates.Api.Tests
 | `VOYAGE_SERVER_URL` | unset | V5 M9b: the match server a voyage ticket is for (`wss://...` on Railway), returned as `matchServerUrl`. |
 | `VOYAGE_MATCH_ID` | unset | V5 M9b: the match server's `RP_MATCH_ID`, put in the ticket as `mid`; unset: a fresh id per ticket. |
 | `MATCH_TICKET_LIFETIME_SECONDS` | `60` | V5 M9b: voyage ticket lifetime, clamped to 10-120 s. |
+| `SOLANA_RPC_URL` | `https://api.devnet.solana.com` | Hackathon: Solana JSON-RPC endpoint (devnet). |
+| `SOLANA_CLUSTER` | `devnet` | Hackathon: cluster named in the sign-in message and explorer links. |
+| `TREASURY_SECRET_KEY` | unset | Hackathon: treasury/escrow keypair, base58 64-byte secret or a solana-keygen JSON array. Never logged or returned. Unset: endpoints that need it answer 503 `treasury_off`. |
+| `SIWS_DOMAIN` | `roguepirates.fun` | Hackathon: domain in the sign-in message. |
+| `ADMIN_KEY` | unset | Hackathon: owner key for `/api/admin/*` (header `X-Admin-Key`). Unset: 503 `admin_off`. |
 
 No secrets live in code. The schema is managed with EF Core migrations, applied on startup (an empty database gets
 every table; the database the old `EnsureCreated` built is baselined first, keeping its data). How to add a migration
@@ -320,6 +325,46 @@ or `server_draw` and `reason` (`sunk`, `time`, `forfeit`, `draw`; `null` for rep
 from the server tallies and add `barrelsTaken` and `finalHp` (`kills` is `null`). A draw (`winnerPlayerId: null`)
 scores 0.5 each for Elo (equal ratings do not move) and counts as neither a win nor a loss. Bot matches and matches
 both players abandoned are recorded without rating, win or loss changes. Each player entry also has `bot`.
+
+### Hackathon: wallet sign-in, treasury, deposits (Solana devnet)
+
+Lamports are integers (1 SOL = 1,000,000,000). Solana RPC failures answer `502 solana_rpc_error` with the node's message.
+
+`POST /api/auth/wallet/nonce` `{"wallet":"<base58>"}` -> `200`
+`{"wallet","nonce","message","issuedAt","expiresAt"}`. Sign `message` exactly (UTF-8 bytes, ed25519, the wallet's
+`signMessage`); valid 5 minutes, usable once. `400 invalid_wallet`.
+
+`POST /api/auth/wallet/verify` `{"wallet","signature":"<base58 64 bytes>","message","name":null}` (optional bearer of a
+guest profile: the wallet is linked to that profile) -> `200`
+`{"playerId","token","name","tag","wallet","email","isNew"}` (the same `token` use as `POST /api/profiles`: send it as
+`Authorization: Bearer`). Each sign-in issues its own session; earlier sessions stay valid. Errors: `401`
+`unknown_nonce`, `nonce_used`, `nonce_expired`, `bad_signature`; `400 invalid_message`, `invalid_request`.
+New wallet profiles are named `Captain XXXX` (first 4 characters of the wallet) unless a valid `name` is sent.
+
+`PUT /api/profile/email` (auth) `{"email":"a@b.co"}` (empty clears) -> `200 {"playerId","wallet","email","emailVerified":false}`; `400 invalid_email`.
+
+`GET /api/profiles/me` now also returns `wallet`, `email` and `rum`.
+
+`GET /api/wallet/balance` (auth; or `?wallet=<address>` without auth) -> `200 {"wallet","lamports","sol","cluster"}`;
+`400 wallet_required` for a guest profile.
+
+`GET /api/treasury` (public) -> `200 {"enabled":true,"address","lamports","sol","cluster"}` (`enabled:false` and nulls
+without a treasury key).
+
+`POST /api/deposits/verify` (auth, wallet profile) `{"signature","purpose":"generic","refId":null,"minLamports":1,"memo":null}`
+-> `200 {"depositId","signature","wallet","purpose","refId","lamports","sol","memo","status":"verified","slot","createdAt","alreadyVerified"}`.
+Checks on chain (confirmed commitment): the transaction succeeded, your wallet signed it, its system transfers from
+your wallet to the treasury add up to at least `minLamports`, and its memo contains `memo` when given. Each signature
+is credited once: the same player, purpose and `refId` again returns the stored deposit with `alreadyVerified:true`;
+any other reuse is `409 signature_used`. Errors: `409 tx_not_confirmed` (retry in a few seconds), `400 tx_failed`,
+`wrong_sender`, `wrong_recipient`, `amount_too_low`, `memo_mismatch`, `invalid_signature`, `invalid_purpose`,
+`wallet_required`; `503 treasury_off`. `purpose`: 1-32 of `a-z 0-9 _`.
+
+`GET /api/deposits/mine`, `GET /api/payouts/mine` (auth) -> the last 50 (`{"deposits":[...]}` / `{"payouts":[{"payoutId","wallet","lamports","sol","reason","refId","status","signature","error","explorerUrl","createdAt","sentAt"}]}`).
+Payout `status`: `pending`, `sent`, `failed`, `unconfirmed` (sent but not confirmed within 45 s).
+
+Owner tools (header `X-Admin-Key: <ADMIN_KEY>`): `POST /api/admin/payouts` `{"wallet","lamports","reason"}` -> payout
+view; `POST /api/admin/airdrop` `{"wallet":null,"lamports":1000000000}` (devnet faucet; default the treasury).
 
 ## 1v1 match protocol (relay)
 
