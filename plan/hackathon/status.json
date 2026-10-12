@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 16:25 IST",
+ "updated": "12 Oct, 17:40 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Desktop sign-in fixed on the server (no rebuild needed): reload localhost:8090 and sign in again. Android build waits until everything else is ready.",
+ "headline": "Owner test round 2: 17 changes in progress (deadline has slack). Three agents: gameplay fixes, weapons, hackathon UI + server. Then one desktop WebGL build.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -79,24 +79,41 @@
    "server": "n/a",
    "unity": "done",
    "chain": "n/a"
+  },
+  {
+   "name": "Round 2: gameplay fixes",
+   "detail": "Minimap shows only the player and POIs (lag); daily race ends at the goal; enemy damage 2x; enemy cannon aim; orbit weapons keep spinning while turning; elite drops fly to the ship like barrels; raid boss only at its minute; no gold coins on XP pickup; AI captain uses real weapons and logbooks.",
+   "server": "n/a",
+   "unity": "building",
+   "chain": "n/a"
+  },
+  {
+   "name": "Round 2: weapons",
+   "detail": "Anchor Flail becomes a chained mace thrown at enemies and reeled back (1 per attack, up to 4); Cursed Doubloons shows gold coins flying to the enemies.",
+   "server": "n/a",
+   "unity": "building",
+   "chain": "n/a"
+  },
+  {
+   "name": "Round 2: hackathon UI",
+   "detail": "Test your own island's defences; RUM per hour and defence success rate on island NFTs; UI polish; 1v1 deposit signed when the match is created; set and change your captain name.",
+   "server": "building",
+   "unity": "building",
+   "chain": "n/a"
   }
  ],
  "schedule": [
   [
-   "14:00-15:15",
-   "Defence designer, conquest raids, boss fix, minimap (done 15:15)"
+   "17:40-19:00",
+   "Round 2 changes (three agents in parallel)"
   ],
   [
-   "15:15-16:30",
-   "Final rebuild: WebGL desktop + APK, install on the Seeker"
+   "19:00-19:45",
+   "Integration: goldens, full tests, desktop WebGL build"
   ],
   [
-   "16:30-17:30",
-   "Your test pass"
-  ],
-  [
-   "17:30-18:00",
-   "Demo reset, public build if wanted, buffer"
+   "After",
+   "Your test pass; Android APK once everything is ready"
   ]
  ],
  "needs": [
@@ -207,6 +224,10 @@
   [
    "16:25",
    "Owner: desktop sign-in failed (\"cancelled in the wallet\"): Phantom refused the message because it named roguepirates.fun while the page is localhost:8090. The sign-in message now names the page origin when it is an allowed one (server deployed, 207 tests). Owner: desktop builds only until everything is ready, then Android."
+  ],
+  [
+   "17:40",
+   "Owner: desktop sign-in works. Round 2 list (17 items) started; deadline has slack. Desktop builds only until everything is ready."
   ]
  ]
 }
