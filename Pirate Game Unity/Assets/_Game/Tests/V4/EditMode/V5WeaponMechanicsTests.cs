@@ -324,6 +324,9 @@ namespace RoguePirates.V4.Tests
         static readonly string[] NewWeapons = { "anchor_flail", "chainshot", "siren_bell", "squid_ink_pots",
             "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons" };
 
+        /// <summary>Owner disabled them 13 Oct (hackathon): out of the Saltwind weapon pools, so neither starter nor priced.</summary>
+        static readonly string[] OwnerDisabled13Oct = { "flamethrower", "lighthouse_lantern", "squid_ink_pots", "siren_bell" };
+
         [Test]
         public void TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable()
         {
@@ -336,7 +339,9 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(weapons.ContainsKey(id), id);
                 Assert.GreaterOrEqual(weapons[id].databaseOrder, 0, $"{id} is in the level-up offers once owned");
                 // V5 M8z (7 Oct, I8z.5): every weapon is a free starter for now (D18 P3); a weapon is a starter or has a price.
-                Assert.IsTrue(unlocks.starterWeaponIds.Contains(id) || unlocks.weaponUnlocks.Any(u => u.weaponId == id && u.rumCost > 0), $"{id} is a starter or has a Rum price");
+                // Hackathon: owner disabled siren_bell, squid_ink_pots and lighthouse_lantern 13 Oct (out of the Saltwind pools).
+                if (!OwnerDisabled13Oct.Contains(id))
+                    Assert.IsTrue(unlocks.starterWeaponIds.Contains(id) || unlocks.weaponUnlocks.Any(u => u.weaponId == id && u.rumCost > 0), $"{id} is a starter or has a Rum price");
                 Assert.IsTrue(icons.Weapon(id) != null || !string.IsNullOrWhiteSpace(weapons[id].displayName), $"{id} has an icon or a name (playtest round 7)");
             }
             var items = config.All<ItemConfig>().ToDictionary(i => i.itemId);

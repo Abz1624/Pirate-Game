@@ -18,7 +18,6 @@ MonoBehaviour:
   starterWeaponIds:
   - broadside_battery
   - deck_cannons
-  - flamethrower
   - flying_cutlasses
   - harpoon_gun
   - lightning_mast
@@ -28,18 +27,13 @@ MonoBehaviour:
   - swivel_guns
   - anchor_flail
   - chainshot
-  - siren_bell
-  - squid_ink_pots
   - parrot_squadron
   - monkey_gunners
   - maelstrom_charge
-  - lighthouse_lantern
   - cursed_doubloons
   weaponUnlocks:
   - weaponId: lightning_mast
     rumCost: 60
-  - weaponId: flamethrower
-    rumCost: 80
   - weaponId: mortar
     rumCost: 100
   - weaponId: harpoon_gun
@@ -48,18 +42,12 @@ MonoBehaviour:
     rumCost: 120
   - weaponId: chainshot
     rumCost: 130
-  - weaponId: siren_bell
-    rumCost: 150
-  - weaponId: squid_ink_pots
-    rumCost: 160
   - weaponId: parrot_squadron
     rumCost: 170
   - weaponId: monkey_gunners
     rumCost: 180
   - weaponId: maelstrom_charge
     rumCost: 190
-  - weaponId: lighthouse_lantern
-    rumCost: 200
   - weaponId: cursed_doubloons
     rumCost: 220
   logbookUnlocks:

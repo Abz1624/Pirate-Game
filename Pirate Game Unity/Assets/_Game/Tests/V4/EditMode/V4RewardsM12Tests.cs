@@ -328,7 +328,8 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var starters = set.Single<UnlockConfig>().starterWeaponIds;
-            Assert.IsTrue(starters.Contains("flamethrower"), "D18 P3: every weapon is a starter for now");
+            // Owner disabled the Flamethrower 13 Oct (hackathon): out of the Saltwind pools, so no longer a starter (was D18 P3).
+            Assert.IsFalse(starters.Contains("flamethrower"), "out of the pools (owner, 13 Oct)");
             set.Single<UnlockConfig>().starterWeaponIds = starters.Where(id => id != "flamethrower").ToArray();
             var save = new SaveService(new MemorySaveBackend());
             var lifetime = 0;
@@ -407,7 +408,8 @@ namespace RoguePirates.V4.Tests
             var save = new SaveService(new MemorySaveBackend());
             var unlocks = new UnlockService(() => save, () => set);
             // V3's Saltwind unlock prices (its stage profile), weapons in V3's goal order.
-            foreach (var (id, price) in new[] { ("lightning_mast", 60), ("flamethrower", 80), ("mortar", 100), ("harpoon_gun", 100), ("brine", 100), ("flint", 140) })
+            // Owner disabled the Flamethrower 13 Oct (hackathon): out of the Saltwind pools, so it has no price (was 80).
+            foreach (var (id, price) in new[] { ("lightning_mast", 60), ("mortar", 100), ("harpoon_gun", 100), ("brine", 100), ("flint", 140) })
                 Assert.AreEqual(price, unlocks.CostOf(id), id);
             Assert.AreEqual("lightning_mast", unlocks.NextLockedWeapon(), "a fresh save's first locked weapon, as V3 picked it");
 
