@@ -1,6 +1,6 @@
 {
- "rulesVersion": 7,
- "configHash": "83779c995b73c5dd4fb492586c12bd7e8ff68fc6f8d66db226644d98c5eba527",
+ "rulesVersion": 8,
+ "configHash": "8ea655e3d8f8846f901e7e65e0f16ace27ece826a43a5babddb9ba532121001b",
  "sessions": [
   {
    "file": "session-log-20261006-152859-rook.json",
@@ -20,14 +20,14 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 134,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 134,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "level",
@@ -56,14 +56,14 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 190,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 190,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "level",
@@ -120,14 +120,14 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 201,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 201,
-     "bound": 118
+     "bound": 120
     }
    ]
   },
@@ -149,14 +149,14 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 182,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 182,
-     "bound": 118
+     "bound": 120
     },
     {
      "code": "level",
@@ -185,7 +185,7 @@
      "rule": "PR-XP-RUN",
      "minute": 2,
      "value": 503,
-     "bound": 423
+     "bound": 428
     }
    ]
   },
@@ -229,7 +229,7 @@
      "minute": 9
     },
     "PR-XP-MIN": {
-     "used": 38.1,
+     "used": 37.5,
      "minute": 0
     },
     "PR-GOLD-MIN": {
@@ -237,7 +237,7 @@
      "minute": 2
     },
     "PR-DEALT-MIN": {
-     "used": 15.6,
+     "used": 15.4,
      "minute": 4
     },
     "PR-CHESTS-MIN": {
@@ -249,11 +249,11 @@
      "minute": 3
     },
     "PR-KILLS-RUN": {
-     "used": 58,
-     "minute": 9
+     "used": 57.9,
+     "minute": 15
     },
     "PR-XP-RUN": {
-     "used": 49.2,
+     "used": 48.6,
      "minute": 2
     },
     "PR-GOLD-RUN": {

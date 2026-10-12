@@ -35,6 +35,12 @@
 // Rules v3 (9 Oct, D27): regenerated for the Cuttlefish Bone config (the Iron Figurehead renamed, same effect); the rules also
 // accept the previous config hash (SAME_BOUNDS_CONFIGS, checked against its committed export), so the owner's builds from
 // before D27 (S6) still pass instead of turning outdated_client.
+//
+// Rules v8 (12 Oct, hackathon round 2): enemy damage x2 and the Anchor Flail's chained mace (a balance change: new bounds);
+// the rules v7 config (83779c, the build deployed earlier that day) stays accepted with every bound the higher of its own
+// and today's (MERGED_CONFIGS); the older same-bounds configs are checked against its export. Later the same day the Anchor
+// Flail's level-1 DPS was matched to the other starters (baseDamage 20 -> 12.1): the round 2 build before that (841839)
+// is merged the same way, from its export kept in exports/.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -303,6 +309,32 @@ export const SAME_BOUNDS_CONFIGS = [
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
   ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])])) : v;
 
+/**
+ * Rules v8 (12 Oct, hackathon round 2): a balance change (enemy damage x2, the Anchor Flail reworked into a chained mace)
+ * gives new bounds, but the deployed build from earlier the same day (config 83779c, the rules v7 config) must keep passing.
+ * Each MERGED_CONFIGS entry's export (committed data.json at a commit, or a file in exports/) is simulated the same way as today's and every bound becomes the higher of
+ * the two (a bound only ever loosens), so a run on that config meets at least its own rules. SAME_BOUNDS_CONFIGS are then
+ * checked against the merged config's export (their bounds equal its own), not against today's.
+ */
+export const MERGED_CONFIGS = [
+  { configHash: '841839da62e5725ed09b23c1b7eac0a8d754659ecbf461b9e74fddb7213c9c32', file: 'exports/data-841839da62.json',
+    note: 'Hackathon round 2 (12 Oct), before the Anchor Flail\'s level-1 DPS was matched to the other starting weapons (baseDamage 20, 24.4 DPS; now 12.1, 14.8 DPS): the desktop build made that day before the fix. Never committed as data.json, so its export is kept in exports/ (the Editor\'s MonteCarloExport with that asset); every bound is the higher of its own and today\'s' },
+  { configHash: '83779c995b73c5dd4fb492586c12bd7e8ff68fc6f8d66db226644d98c5eba527', export: 'b31139ce', sameBoundsBase: true,
+    note: 'Hackathon round 2 (12 Oct): enemy damage x2 (ExperimentConfig.enemyDamageMultiplier) and the Anchor Flail reworked into a chained mace change the export, so the bounds are new; this config (the rules v7 config, the desktop build deployed earlier on 12 Oct) is simulated from its committed export too and every bound is the higher of its own and today\'s, so its runs meet at least the rules v7 bounds' },
+];
+
+const BOUNDED = new Set(['minute', 'total', 'level']);
+/** Every bound of a becomes the higher of a's and b's (same rule list, same order); returns a. */
+function mergeBounds(a, b) {
+  a.rules.forEach((r, i) => {
+    const o = b.rules[i];
+    if (!o || o.id !== r.id) throw new Error(`rules differ at ${r.id}: cannot merge`);
+    if (BOUNDED.has(r.kind)) r.bounds = r.bounds.map((v, j) => Math.max(v, o.bounds[j] ?? 0));
+    if (r.kind === 'overtimeSurvival') r.bound = Math.max(r.bound, o.bound);
+  });
+  return a;
+}
+
 /** The SAME_BOUNDS_CONFIGS whose committed export matches data.json once renamed; throws on any other difference. */
 export function sameBoundsConfigs(data) {
   const out = [];
@@ -332,10 +364,25 @@ export function makeRules(data, margins, baseModel = {}) {
 function generate() {
   const data = readJson(path.join(here, 'data.json')), margins = readJson(path.join(here, 'plausibility-margins.json'));
   const t0 = Date.now();
-  const previous = sameBoundsConfigs(data); // checked before the long simulation
+  // checked before the long simulation: the merged configs' exports, and the same-bounds configs against the first of them
+  const merged = MERGED_CONFIGS.filter(c => c.configHash !== data.meta?.configHash).map(c => {
+    const old = c.file ? readJson(path.join(here, c.file))
+      : JSON.parse(execFileSync('git', ['show', `${c.export}:plan/playtest/montecarlo/data.json`], { cwd: here, encoding: 'utf8', maxBuffer: 1 << 26 }));
+    if (old.meta?.configHash !== c.configHash) throw new Error(`${c.file ?? c.export}'s export has config ${old.meta?.configHash}, not ${c.configHash}`);
+    return { ...c, data: old };
+  });
+  const base = merged.find(m => m.sameBoundsBase);
+  const previous = sameBoundsConfigs(base ? base.data : data);
   const rules = makeRules(data, margins);
-  rules.configHashes = [rules.configHash, ...previous.map(c => c.configHash)];
-  if (previous.length) rules.sameBoundsConfigs = previous;
+  for (const m of merged) {
+    const t1 = Date.now();
+    mergeBounds(rules, makeRules(m.data, margins));
+    console.log(`merged the bounds of config ${m.configHash.slice(0, 10)} (${m.export ?? m.file}) in ${((Date.now() - t1) / 1000).toFixed(0)} s`);
+  }
+  if (merged.length) rules.simulator.mergedWith = merged.map(m => ({ configHash: m.configHash, export: m.export ?? m.file, exported: m.data.meta?.exported, bound: 'the higher of its bound and today\'s' }));
+  const accepted = [...merged.map(m => ({ configHash: m.configHash, export: m.export ?? m.file, renames: [], note: m.note, bounds: 'merged' })), ...previous];
+  rules.configHashes = [rules.configHash, ...accepted.map(c => c.configHash)];
+  if (accepted.length) rules.sameBoundsConfigs = accepted;
   console.log('screen (median kills a voyage):', rules.simulator.screen.map(s => `${s.id} ${s.medianKills}`).join(', '));
   const strongest = { id: rules.simulator.personality }, logs = { length: rules.simulator.runs };
   // the version: unchanged when the content is the same, else one more than the file's

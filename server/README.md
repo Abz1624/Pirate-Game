@@ -196,6 +196,13 @@ earlier hash only when that config's committed Monte Carlo export equals today's
 the simulator's input, and with it every bound, is the same. Voyages from builds before D27 (S6) still pass instead of
 turning `outdated_client`.
 
+Rules v8 (12 Oct, hackathon round 2): enemy damage x2 and the Anchor Flail's chained mace (level-1 DPS then matched to the
+other starters) are balance changes, so the bounds are new. The two earlier builds of that day stay accepted
+(`MERGED_CONFIGS` in plausibility.mjs, listed in `sameBoundsConfigs` with `"bounds": "merged"`): 83779c (rules v7, from its
+committed export) and 841839 (round 2 before the flail fix, export kept in `plan/playtest/montecarlo/exports/`) are
+simulated the same way and every bound is the higher of theirs and today's, so their runs meet at least their own bounds.
+The older same-bounds hashes are checked against 83779c's export.
+
 Regenerating the rules (after any balance change; `V5PlausibilityRulesTests` fails until then), in
 `plan/playtest/montecarlo`, after exporting `data.json` from the Editor (RoguePirates > V5 > Balance: export the Monte
 Carlo data):
