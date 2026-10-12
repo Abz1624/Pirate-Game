@@ -3,7 +3,57 @@ guid: c47dc5aaaa29c5749ac5a10227c8fe41
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Leaves
+    second: {fileID: 2100000, guid: 4c71ee8518e864afbb8d2c35de7bab06, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Leaves1
+    second: {fileID: 2100000, guid: 3f0bd68396c534dab97cea98228ed76f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plant_Texture
+    second: {fileID: 2100000, guid: 98006d21f829e4ca8b36ce8c77d50219, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plant_Texture1
+    second: {fileID: 2100000, guid: 4cc75d5bdc63343779c0f36baff69d52, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Trunk
+    second: {fileID: 2100000, guid: 236469a6484a645f48a1ca714de4fac4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Trunk1
+    second: {fileID: 2100000, guid: 17eae6f21acc748198f6ca02e1f124d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert2
+    second: {fileID: 2100000, guid: 53d16293e15194d93bee5c7b10c81146, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert3
+    second: {fileID: 2100000, guid: cbd409021960e430288e30e58eeb30d6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: standardSurface1
+    second: {fileID: 2100000, guid: ea1eb66d9f4aa4557a1195b597c7e903, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wooden_bridge1
+    second: {fileID: 2100000, guid: 49be7e4a37c9e457b940027dfb0d89e8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
