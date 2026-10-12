@@ -256,6 +256,14 @@ namespace RoguePirates.V4.Tests
         {
             "DevTools/Trace/RunTraceRecorder.cs:deck_cannons",
             "Runtime/Ports/StageProfilePort.cs:elite_hammerhead",
+            // Hackathon (12 Oct): the PvP practice bot's fallback draft when the match names none (a copy of the server's
+            // practice bot draft; every id is still checked against the config set before it is used).
+            "Runtime/Pvp/PvpBotArsenal.cs:deck_cannons",
+            "Runtime/Pvp/PvpBotArsenal.cs:mortar",
+            "Runtime/Pvp/PvpBotArsenal.cs:chainshot",
+            "Runtime/Pvp/PvpBotArsenal.cs:swivel_guns",
+            "Runtime/Pvp/PvpBotArsenal.cs:harpoon_gun",
+            "Runtime/Pvp/PvpBotArsenal.cs:long_nine",
         };
 
         /// <summary>

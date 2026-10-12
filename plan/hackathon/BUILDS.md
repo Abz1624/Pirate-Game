@@ -3,9 +3,15 @@
 Branch `hackathon-demo`, final rebuild 12 Oct 15:16-16:05 at `fad370cf` (island defence designer and conquest raids, boss teleport fix, snapshot minimap; earlier: raids without SOL stakes, full wallet address with Copy address and View on explorer). Unity 6000.3.11f1, Solana Unity SDK pinned at `bd0d30f6` (1.3.0). Both are
 release (non-development) builds that talk to the live API `https://api-production-dad8.up.railway.app` (devnet).
 
+**Round 2 WebGL rebuild, 12 Oct 20:23-21:06** at `7aeebfc6` (round 2 gameplay: chained-mace Anchor Flail, enemy damage x2,
+speed-scaled enemy spread, world-space orbit weapons, elite powerups fly to the ship, PvP bot with real weapons, practice
+raids, bundled 1v1 deposit, captain name prompt). Same profile and method as below; WebGL only (no new APK, the APK in the
+table is still the 16:05 one from `fad370cf`).
+
 | Build | Path | Size | Build time | Result |
 |---|---|---|---|---|
-| Desktop WebGL (playtest profile) | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 111.0 MB, wasm 14.8 MB, Brotli) | 34 min (final build, done 15:51; 37 min at 13:39, the first full build 45 min) | Succeeded (report counts 1 error log, as in the 13:39 build; the build itself succeeded) |
+| Desktop WebGL (playtest profile), round 2 | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 42 min (2545 s, done 21:05) | Succeeded, 0 errors |
+| Desktop WebGL (playtest profile), earlier | (overwritten by round 2) | 120.2 MB download (data 111.0 MB, wasm 14.8 MB, Brotli) | 34 min (final build, done 15:51; 37 min at 13:39, the first full build 45 min) | Succeeded (report counts 1 error log, as in the 13:39 build; the build itself succeeded) |
 | Android APK (Solana Mobile / any arm64 Android 7.1+) | `Pirate Game Unity/Builds/Android-Hackathon/RoguePirates-hackathon.apk` | 148.6 MB | 12 min (final build, done 16:05; 8 min at 13:39, the first build 20 min) | Succeeded, 0 errors |
 
 Build reports: `Builds/V5WebGL-Desktop-Hackathon-report.txt`, `Builds/Android-Hackathon/RoguePirates-hackathon-report.txt`.
@@ -64,6 +70,12 @@ automated.
 Final build re-checked on 12 Oct 15:55 (built-in browser, localhost:8090, the new data file fetched fresh with 200): loads to the
 main menu with the wallet panel open; after Close the menu shows DAILY RACE, ISLANDS, MARKET, PVP (1V1), LEADERBOARD,
 LEDGER; no console errors (only the WebGL "uniform buffer too small" warnings).
+
+Round 2 build checked on 12 Oct 21:08 (built-in browser, localhost:8090 served by `serve-webgl.py` from the folder above,
+loader, framework, wasm and data all fetched with 200): loads to the main menu with the wallet panel open (Connect Wallet,
+captain name field); after Close the menu shows DAILY RACE, ISLANDS, MARKET, PVP (1V1), LEADERBOARD, LEDGER; no console
+errors (only the WebGL "uniform buffer too small" warnings). Font, TextMesh Pro, URP and graphics settings churn from the
+build was reverted again.
 
 ## Install the APK
 

@@ -1,6 +1,6 @@
 # V5WeaponGoldenTests: each weapon and evolution fired for 10 s at a fixed ring of enemies (levels 1 and 6, still and moving).
-# Recorded 2026-10-07 on Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset. Re-record: delete this file, run the test once, review the diff.
-anchor_flail|-|L1: hits 34, statuses 0, total 602.888, log D30E9B91
+# Recorded 2026-10-12 on Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset. Re-record: delete this file, run the test once, review the diff.
+anchor_flail|-|L1: hits 12, statuses 0, total 264, log 430BE791
 broadside_battery|-|L1: hits 21, statuses 0, total 279.279, log AA494BBD
 chainshot|-|L1: hits 10, statuses 0, total 155.232, log EA02D94E
 cursed_doubloons|-|L1: hits 50, statuses 50, total 605.419, log ADD8A15B
@@ -28,7 +28,7 @@ powder_kegs|devils_wake|L1: hits 54, statuses 0, total 632.111, log 581A95F6
 siren_bell|drowned_choir|L1: hits 56, statuses 0, total 2069.759, log 2123B849
 flamethrower|hellfire_nozzle|L1: hits 0, statuses 0, total 0, log 00000011
 broadside_battery|kings_broadside|L1: hits 21, statuses 0, total 279.279, log AA494BBD
-anchor_flail|kraken_chain|L1: hits 0, statuses 0, total 0, log 00000011
+anchor_flail|kraken_chain|L1: hits 12, statuses 0, total 343.2, log 059E43D1
 monkey_gunners|monkey_battery|L1: hits 26, statuses 0, total 138.31, log DA4A18D7
 parrot_squadron|parrot_armada|L1: hits 68, statuses 0, total 150.797, log 01ECFF31
 cursed_doubloons|pirate_kings_hoard|L1: hits 70, statuses 70, total 964.108, log D00AA471
@@ -38,7 +38,7 @@ deck_cannons|stormshot_cannon|L1: hits 105, statuses 0, total 567.894, log 35A87
 swivel_guns|swivel_battery|L1: hits 40, statuses 0, total 224.31, log CBB3D311
 lightning_mast|tempest_mast|L1: hits 24, statuses 18, total 498.52, log ACB384B3
 harpoon_gun|whalers_volley|L1: hits 26, statuses 26, total 384.313, log 32F4A151
-anchor_flail|-|L6: hits 34, statuses 0, total 876.928, log ED4370B1
+anchor_flail|-|L6: hits 24, statuses 0, total 768, log 1E169491
 broadside_battery|-|L6: hits 21, statuses 0, total 406.224, log 4E1CCF36
 chainshot|-|L6: hits 10, statuses 0, total 225.792, log 8246F18E
 cursed_doubloons|-|L6: hits 60, statuses 60, total 1007.589, log C2F2FE13
@@ -66,7 +66,7 @@ powder_kegs|devils_wake|L6: hits 54, statuses 0, total 919.434, log 372BCAB6
 siren_bell|drowned_choir|L6: hits 56, statuses 0, total 3010.56, log 882738C9
 flamethrower|hellfire_nozzle|L6: hits 0, statuses 0, total 0, log 00000011
 broadside_battery|kings_broadside|L6: hits 21, statuses 0, total 406.224, log 4E1CCF36
-anchor_flail|kraken_chain|L6: hits 50, statuses 0, total 1676.479, log C76ED27D
+anchor_flail|kraken_chain|L6: hits 24, statuses 0, total 998.4, log 3D60CD11
 monkey_gunners|monkey_battery|L6: hits 33, statuses 0, total 255.341, log AC75CD6F
 parrot_squadron|parrot_armada|L6: hits 85, statuses 0, total 274.176, log EE08FE43
 cursed_doubloons|pirate_kings_hoard|L6: hits 80, statuses 80, total 1530.904, log F38B98F1
@@ -76,7 +76,7 @@ deck_cannons|stormshot_cannon|L6: hits 105, statuses 0, total 713.749, log 2272D
 swivel_guns|swivel_battery|L6: hits 40, statuses 0, total 326.269, log 86CB7D51
 lightning_mast|tempest_mast|L6: hits 24, statuses 18, total 725.119, log B52FC0C7
 harpoon_gun|whalers_volley|L6: hits 26, statuses 26, total 559, log 56B8ADB1
-anchor_flail|-|L1|moving: hits 10, statuses 0, total 177.32, log 6164E293
+anchor_flail|-|L1|moving: hits 10, statuses 0, total 220, log B608214F
 broadside_battery|-|L1|moving: hits 15, statuses 0, total 199.485, log 03571E6E
 chainshot|-|L1|moving: hits 13, statuses 0, total 199.584, log CE11480A
 cursed_doubloons|-|L1|moving: hits 30, statuses 30, total 376.63, log D8B4DB4C
@@ -104,7 +104,7 @@ powder_kegs|devils_wake|L1|moving: hits 18, statuses 0, total 210.704, log 6E1A5
 siren_bell|drowned_choir|L1|moving: hits 23, statuses 0, total 850.08, log FA6F4BE3
 flamethrower|hellfire_nozzle|L1|moving: hits 48, statuses 48, total 136.278, log 4537DD07
 broadside_battery|kings_broadside|L1|moving: hits 19, statuses 0, total 235.755, log 32E71CB8
-anchor_flail|kraken_chain|L1|moving: hits 22, statuses 0, total 507.135, log 2C98B60B
+anchor_flail|kraken_chain|L1|moving: hits 10, statuses 0, total 286, log 73BBD993
 monkey_gunners|monkey_battery|L1|moving: hits 26, statuses 0, total 138.31, log 0DEDA56F
 parrot_squadron|parrot_armada|L1|moving: hits 66, statuses 0, total 146.362, log 35D7CA51
 cursed_doubloons|pirate_kings_hoard|L1|moving: hits 39, statuses 39, total 564.633, log ABCB01D3
@@ -114,7 +114,7 @@ deck_cannons|stormshot_cannon|L1|moving: hits 103, statuses 0, total 547.191, lo
 swivel_guns|swivel_battery|L1|moving: hits 37, statuses 0, total 207.487, log 6C2C5296
 lightning_mast|tempest_mast|L1|moving: hits 21, statuses 15, total 415.03, log B38F820A
 harpoon_gun|whalers_volley|L1|moving: hits 22, statuses 22, total 325.188, log 146F7305
-anchor_flail|-|L6|moving: hits 15, statuses 0, total 386.88, log 44DD12BC
+anchor_flail|-|L6|moving: hits 22, statuses 0, total 704, log 8358F8D1
 broadside_battery|-|L6|moving: hits 15, statuses 0, total 290.16, log 931C2ABD
 chainshot|-|L6|moving: hits 13, statuses 0, total 290.304, log D1EA9B28
 cursed_doubloons|-|L6|moving: hits 35, statuses 35, total 611.315, log 6E2801A8
@@ -142,7 +142,7 @@ powder_kegs|devils_wake|L6|moving: hits 18, statuses 0, total 306.478, log E6879
 siren_bell|drowned_choir|L6|moving: hits 23, statuses 0, total 1236.48, log 85F37B98
 flamethrower|hellfire_nozzle|L6|moving: hits 48, statuses 48, total 198.223, log 971115DD
 broadside_battery|kings_broadside|L6|moving: hits 19, statuses 0, total 326.43, log 8D825707
-anchor_flail|kraken_chain|L6|moving: hits 27, statuses 0, total 905.299, log E6459A36
+anchor_flail|kraken_chain|L6|moving: hits 22, statuses 0, total 915.2, log 36204F55
 monkey_gunners|monkey_battery|L6|moving: hits 34, statuses 0, total 263.078, log 39A4D591
 parrot_squadron|parrot_armada|L6|moving: hits 83, statuses 0, total 267.725, log D14AFD05
 cursed_doubloons|pirate_kings_hoard|L6|moving: hits 43, statuses 43, total 872.71, log BDA2A1FD
