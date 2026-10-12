@@ -9858,8 +9858,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapEmissionPulse
   emissionColor: {r: 1, g: 0.76, b: 0.34, a: 1}
-  minIntensity: 0.7
-  maxIntensity: 1.1
+  minIntensity: 0.97
+  maxIntensity: 2.23
   period: 3.6
   randomPhase: 1
 --- !u!4 &3911660149239167668 stripped
