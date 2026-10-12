@@ -172,6 +172,9 @@ public sealed class WagerService
     /// <summary>
     /// A seated player's stake deposit: verifies the transfer (memo wager:&lt;lobbyId&gt;, at least the stake), attaches it
     /// to their seat and, when both stakes are in and both seats are ready, starts the match. Returns the lobby state.
+    /// Since 12 Oct (the client signs the deposit as part of creating or joining): a valid transfer is always verified and
+    /// recorded first; when the seat or wager is no longer valid (left or not seated, wager closed, match started, stake
+    /// already paid) it is refunded once and the call fails with 409 deposit_refunded, so no SOL is ever stranded.
     /// </summary>
     public async Task<object> DepositAsync(Player player, Guid lobbyId, string? signature)
     {
@@ -180,14 +183,13 @@ public sealed class WagerService
         try
         {
             var lobby = await LoadLobbyAsync(lobbyId);
-            w = await ForLobbyAsync(_db, lobbyId) ?? throw new ApiException(404, "no_wager", "This lobby has no stake.");
-            CheckSeat(lobby, w, player);
+            // any wager of this lobby, a cancelled one too (closed while the player signed: the transfer is refunded)
+            w = await ForLobbyAsync(_db, lobbyId)
+                ?? await _db.Wagers.Where(x => x.LobbyId == lobbyId).OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync()
+                ?? throw new ApiException(404, "no_wager", "This lobby has no stake.");
             var mine = lobby.HostPlayerId == player.Id ? w.HostDepositSig : w.GuestPlayerId == player.Id ? w.GuestDepositSig : null;
-            if (mine != null)
-            {
-                if (mine == (signature ?? "").Trim()) return await _lobbies.BuildStateAsync(lobby); // idempotent
-                throw new ApiException(409, "already_deposited", "You already deposited your stake.");
-            }
+            if (mine != null && mine == (signature ?? "").Trim()) return await _lobbies.BuildStateAsync(lobby); // idempotent
+            // Seat and wager checks come after the chain check: a transfer already sent is recorded and refunded below.
         }
         finally { GameLocks.Lobby.Release(); }
 
@@ -208,7 +210,7 @@ public sealed class WagerService
             try { CheckSeat(lobby, w, player); }
             catch (ApiException ex) { refuse = ex.Message; }
             var isHost = lobby.HostPlayerId == player.Id;
-            if (d.Status == SolanaDeposit.Refunded) throw new ApiException(409, "deposit_refunded", "This deposit was already refunded; send a new one.");
+            if (d.Status == SolanaDeposit.Refunded) throw new ApiException(409, "deposit_refunded", "This deposit was already refunded to your wallet.");
             if (refuse == null && (isHost ? w.HostDepositSig : w.GuestDepositSig) is { } other && other != d.Signature)
                 refuse = "Your stake was already deposited.";
 
@@ -237,7 +239,10 @@ public sealed class WagerService
         if (refuse != null)
         {
             await ProcessPaymentsAsync(w.Id);
-            throw new ApiException(409, "wager_closed", refuse + " Your deposit is being refunded.");
+            var refunded = await _db.SolanaDeposits.AsNoTracking().AnyAsync(x => x.Id == deposit.Id && x.Status == SolanaDeposit.Refunded);
+            throw new ApiException(409, "deposit_refunded", refuse + (refunded
+                ? " Your deposit was refunded to your wallet."
+                : " Your deposit is being refunded to your wallet."));
         }
         _log.LogInformation("Wager {WagerId}: deposit {Sig} from player {PlayerId}", w.Id, deposit.Signature, player.Id);
         return state!;

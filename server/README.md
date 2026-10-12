@@ -386,8 +386,13 @@ Code: `Hackathon/WagerService.cs`, `Endpoints/WagerEndpoints.cs`. Both players n
 2. **Deposit.** Each human seat sends a SOL transfer of at least `stakeLamports` from its wallet to `wager.treasury` with
    the memo `wager.memo` (`wager:<lobbyId>`), then `POST /api/wagers/{lobbyId}/deposit` `{"signature":"<base58>"}`
    -> lobby JSON. Same checks and errors as `/api/deposits/verify` (`409 tx_not_confirmed`: retry in a few seconds;
-   `memo_mismatch`, `amount_too_low`, ...) plus `404 no_wager`, `403 not_in_lobby`, `409 already_deposited`,
-   `409 already_started`, `409 wager_closed`. The same signature again is idempotent.
+   `memo_mismatch`, `amount_too_low`, ...) plus `404 no_wager`. The same signature again is idempotent.
+   Since 12 Oct a valid transfer is always verified and recorded **before** the seat and wager checks: when the seat
+   is no longer valid (not seated or left, the wager closed or cancelled, the match started, or this seat already paid
+   with another transfer) the transfer is refunded once (one payout per deposit) and the call returns
+   `409 deposit_refunded` with the reason in `message`. Sending the same signature again returns `deposit_refunded`
+   without a second refund. (Replaces the old `not_in_lobby`, `already_deposited`, `already_started` and
+   `wager_closed` errors here, which left the SOL in the treasury.)
 3. **Start.** The match starts only when both seats are ready **and** the stake is funded (the second deposit or the
    last "ready" starts it, as before). Against the practice bot / AI captain (`POST /api/lobbies/{id}/bot`) only the
    host deposits; the house matches the stake.

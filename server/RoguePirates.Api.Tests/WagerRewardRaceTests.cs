@@ -140,8 +140,9 @@ public sealed class WagerRewardRaceTests
         Assert.Equal(2 * Stake, started.GetProperty("wager").GetProperty("potLamports").GetInt64());
         var matchId = started.GetProperty("match").GetProperty("matchId").GetGuid();
 
-        // a deposit after the start is refused before it is credited
-        Assert.Equal("already_started", await ErrorOf(await guest.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = w.Transfer(guest, Stake, "wager:" + lobbyId) })));
+        // a deposit after the start is not credited: it is recorded and refunded (deposit_refunded)
+        Assert.Equal("deposit_refunded", await ErrorOf(await guest.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = w.Transfer(guest, Stake, "wager:" + lobbyId) })));
+        Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason && p.Wallet == guest.Key);
 
         await w.DecideAsync(matchId, guest.Id);
         await w.SettleAsync(lobbyId);
@@ -158,7 +159,7 @@ public sealed class WagerRewardRaceTests
         Assert.Equal(guest.Key, wins[0].Wallet);
         Assert.Equal(2 * Stake, wins[0].Lamports);
         Assert.Equal(Payout.Sent, wins[0].Status);
-        Assert.DoesNotContain(w.Payouts(), p => p.Reason == WagerService.RefundReason);
+        Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason); // only the late deposit above
 
         // the lobby JSON carries the result too
         var lobby = await Ok(await host.Http.GetAsync($"/api/lobbies/{lobbyId}"));
@@ -261,6 +262,39 @@ public sealed class WagerRewardRaceTests
     }
 
     [Fact]
+    public async Task Wager_LobbyClosedWhileTheGuestSigned_DepositIsRecordedAndRefundedOnce_ReplayRefundsNothing()
+    {
+        using var w = NewWorld();
+        var host = await w.SignInAsync();
+        var guest = await w.SignInAsync();
+        var created = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { stakeLamports = Stake }));
+        var id = created.GetProperty("lobbyId").GetGuid();
+        await Ok(await guest.Http.PostAsJsonAsync("/api/lobbies/join", new { code = created.GetProperty("code").GetString() }));
+
+        // the guest's wallet is signing; meanwhile the host closes the lobby
+        var sig = w.Transfer(guest, Stake, "wager:" + id);
+        await Ok(await host.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "left" }));
+
+        var res = await guest.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = sig });
+        Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
+        var body = await res.ReadJson();
+        Assert.Equal("deposit_refunded", body.GetProperty("error").GetString());
+        Assert.Contains("refunded", body.GetProperty("message").GetString());
+        var refunds = w.Payouts().Where(p => p.Reason == WagerService.RefundReason).ToList();
+        Assert.Single(refunds);
+        Assert.Equal(guest.Key, refunds[0].Wallet);
+        Assert.Equal(Stake, refunds[0].Lamports);
+        Assert.Equal(Payout.Sent, refunds[0].Status);
+
+        // the same signature again (a client retry): no second refund
+        Assert.Equal("deposit_refunded", await ErrorOf(await guest.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = sig })));
+        await w.SettleAsync(id);
+        Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason);
+        var mine = await Ok(await guest.Http.GetAsync("/api/deposits/mine"));
+        Assert.Equal("refunded", mine.GetProperty("deposits")[0].GetProperty("status").GetString());
+    }
+
+    [Fact]
     public async Task Wager_Validation()
     {
         using var w = NewWorld();
@@ -283,13 +317,16 @@ public sealed class WagerRewardRaceTests
         Assert.Equal("memo_mismatch", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:other") })));
         Assert.Equal("amount_too_low", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake - 1, "wager:" + id) })));
         var stranger = await w.SignInAsync();
-        Assert.Equal("not_in_lobby", await ErrorOf(await stranger.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(stranger, Stake, "wager:" + id) })));
+        Assert.Equal("deposit_refunded", await ErrorOf(await stranger.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(stranger, Stake, "wager:" + id) })));
+        Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason && p.Wallet == stranger.Key);
 
         // the same signature again is idempotent
         var sig = w.Transfer(host, Stake, "wager:" + id);
         await Ok(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = sig }));
         await Ok(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = sig }));
-        Assert.Equal("already_deposited", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:" + id) })));
+        // a second, different transfer for an already paid seat is refunded, not kept
+        Assert.Equal("deposit_refunded", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:" + id) })));
+        Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason && p.Wallet == host.Key);
 
         // removing the stake is refused after a deposit; with 0 on a fresh lobby it cancels
         var other = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { stakeLamports = Stake }));
