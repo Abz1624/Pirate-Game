@@ -15,6 +15,8 @@ namespace RoguePirates.V4.Weapons
         /// <summary>Where it flies to: its target's position while the target lives, else where it last was.</summary>
         public Vector3 TargetPoint;
         public int TargetIndex = -1, TargetUnit = -1;
+        /// <summary>Aimed this far beside its target (a second mace at the same enemy flies beside the first).</summary>
+        public Vector3 AimOffset;
         public bool Returning;
         public float OutSeconds;
         public float BaseDamage, DamageBonus, ProcCoefficient, HitRadius, Knockback, OutSpeed, ReturnSpeed, Height, MaxOutSeconds;
@@ -33,6 +35,7 @@ namespace RoguePirates.V4.Weapons
     /// </summary>
     public sealed class ChainedMaceBehavior : WeaponBehavior
     {
+        const float SideStep = 0.9f;
         readonly List<int> _targets = new List<int>(4);
         readonly Stack<ChainedMace> _free = new Stack<ChainedMace>();
 
@@ -69,13 +72,20 @@ namespace RoguePirates.V4.Weapons
             for (var k = 0; k < count; k++)
             {
                 var target = _targets[k % _targets.Count]; // distinct while there are enough enemies
+                // A mace sent at an enemy that already has one flies beside it (still within its reach), so each shows.
+                var round = k / _targets.Count;
+                var toTarget = C.Enemies.Position(target) - origin;
+                toTarget.y = 0f;
+                var side = toTarget.sqrMagnitude > 0.0001f ? Vector3.Cross(Vector3.up, toTarget.normalized) : Vector3.right;
+                var offset = round == 0 ? Vector3.zero : side * (round % 2 == 1 ? SideStep : -SideStep) * ((round + 1) / 2);
                 var mace = _free.Count > 0 ? _free.Pop() : new ChainedMace();
                 mace.Source = w;
                 mace.WeaponId = def.weaponId;
                 mace.Position = origin;
                 mace.TargetIndex = target;
                 mace.TargetUnit = C.Enemies.UnitId(target);
-                mace.TargetPoint = C.Enemies.Position(target);
+                mace.AimOffset = offset;
+                mace.TargetPoint = C.Enemies.Position(target) + offset;
                 mace.TargetPoint.y = m.height;
                 mace.Returning = false;
                 mace.OutSeconds = 0f;
@@ -136,7 +146,7 @@ namespace RoguePirates.V4.Weapons
                     if (mace.TargetIndex >= 0 && mace.TargetIndex < C.Enemies.Capacity && C.Enemies.IsActive(mace.TargetIndex)
                         && C.Enemies.UnitId(mace.TargetIndex) == mace.TargetUnit)
                     {
-                        mace.TargetPoint = C.Enemies.Position(mace.TargetIndex);
+                        mace.TargetPoint = C.Enemies.Position(mace.TargetIndex) + mace.AimOffset;
                         mace.TargetPoint.y = mace.Height;
                     }
                     else mace.TargetIndex = -1; // gone: fly on to where it was

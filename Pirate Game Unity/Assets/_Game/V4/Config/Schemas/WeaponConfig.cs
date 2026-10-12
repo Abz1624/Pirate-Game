@@ -149,7 +149,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Metres a second on the way out.")] [Min(0.1f)] public float outSpeed = 24f;
         [Tooltip("Metres a second while it is reeled back.")] [Min(0.1f)] public float returnSpeed = 28f;
         [Tooltip("Hit radius of the ball (x size), added to the enemy's radius.")] [Min(0f)] public float hitRadius = 1.1f;
-        [Tooltip("The ball flies this high above the water.")] public float height = 0.6f;
+        [Tooltip("The ball flies this high above the water.")] public float height = 1.1f;
         public float damageMultiplier = 1f;
         [Tooltip("Each hit pushes the enemy this far away from the ship (x the Knockback card; 0 = no push).")] [Min(0f)] public float knockbackMeters = 1.5f;
         [Tooltip("A throw that has not reached its target after this many seconds turns back.")] [Min(0.1f)] public float maxOutSeconds = 0.8f;

@@ -14,8 +14,8 @@ namespace RoguePirates.V4.Presentation.Weapons
     {
         const string KindMace = "mace";
         const int ChainPoints = 12;
-        const float ChainWidth = 0.13f;
-        static readonly Color ChainColor = new Color(0.36f, 0.37f, 0.42f, 1f);
+        const float ChainWidth = 0.26f;
+        static readonly Color ChainColor = new Color(0.16f, 0.16f, 0.19f, 1f);
         static Material _chainMaterial;
 
         readonly List<View> _maceViews = new List<View>();
@@ -49,7 +49,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 var model = WeaponPlaceholderModels.Mace(_pools != null ? _pools.Staging : null);
                 while (_maceViews.Count < count)
                 {
-                    var go = Spawn(KindMace, model, maces[_maceViews.Count].Position, Quaternion.identity, 1f, out var pooled);
+                    var go = Spawn(KindMace, model, maces[_maceViews.Count].Position, Quaternion.identity, 1.25f, out var pooled);
                     if (go == null) break;
                     var prep = Prepare(go);
                     if (!prep.Done) { StripPhysics(go); prep.Done = true; }
@@ -68,7 +68,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 if (!visible) continue;
                 var ball = maces[i].Position;
                 _maceViews[i].Go.transform.SetPositionAndRotation(ball, spin);
-                DrawChain(line, shipPos + Vector3.up * 0.9f, ball);
+                DrawChain(line, shipPos + Vector3.up * 1.6f, ball);
             }
         }
 
@@ -76,7 +76,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         static void DrawChain(LineRenderer line, Vector3 from, Vector3 to)
         {
             var length = Vector3.Distance(from, to);
-            var sag = Mathf.Min(0.9f, 0.06f * length);
+            var sag = Mathf.Min(0.45f, 0.04f * length);
             for (var p = 0; p < ChainPoints; p++)
             {
                 var k = p / (ChainPoints - 1f);

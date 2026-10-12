@@ -228,7 +228,7 @@ MonoBehaviour:
     outSpeed: 24
     returnSpeed: 28
     hitRadius: 1.1
-    height: 0.6
+    height: 1.1
     damageMultiplier: 1
     knockbackMeters: 1.5
     maxOutSeconds: 0.8
