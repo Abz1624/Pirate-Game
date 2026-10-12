@@ -17,8 +17,6 @@ namespace RoguePirates.V4.Pvp
         public const string WeaponId = "bot_cannons";
         const float OrbitMin = 12f, OrbitMax = 18f;
         const float TurnDegreesPerSecond = 110f;
-        const float ShotSpeed = 32f, ShotHitRadius = 3.2f, FireRange = 26f;
-        const float BaseVolleyDamage = 50f, DamagePerLevel = 0.08f, FireSeconds = 1.3f;
 
         public Vector3 Position;
         public Vector3 Velocity;
@@ -33,7 +31,7 @@ namespace RoguePirates.V4.Pvp
         public readonly PvpHitWindow Hits = new PvpHitWindow();
 
         readonly RoguePirates.V4.Foundation.Core.RunStream _rng; // V5 M9a (I9a.2): seeded from the match seed
-        float _boostLeft, _boostCooldown = 6f, _fireTimer = 2f, _strafeSign = 1f, _strafeTimer = 4f, _stuckTimer;
+        float _boostLeft, _boostCooldown = 6f, _strafeSign = 1f, _strafeTimer = 4f, _stuckTimer;
 
         public PvpBot(int seed, Vector3 position, float yaw, float maxHp)
         {
@@ -44,9 +42,6 @@ namespace RoguePirates.V4.Pvp
         }
 
         float Rand() => (float)_rng.NextDouble();
-
-        /// <summary>One volley's raw damage (before the victim's PvP rules).</summary>
-        public float VolleyDamage => BaseVolleyDamage * (1f + DamagePerLevel * (Level - 1));
 
         public void LevelUp()
         {
@@ -149,26 +144,5 @@ namespace RoguePirates.V4.Pvp
         }
 
         static float Flat(Vector3 v) => new Vector2(v.x, v.z).magnitude;
-
-        /// <summary>Fires when ready and in range: the aim point (where the player will be when the shot lands) and the
-        /// flight time.</summary>
-        public bool TryFire(float dt, Vector3 player, Vector3 playerVelocity, bool playerAlive, out Vector3 aim, out float flight)
-        {
-            aim = default;
-            flight = 0f;
-            if (!Alive || !playerAlive) return false;
-            _fireTimer -= dt;
-            if (_fireTimer > 0f) return false;
-            var d = Flat(player - Position);
-            if (d > FireRange) return false;
-            _fireTimer = FireSeconds * (0.85f + Rand() * 0.3f);
-            flight = d / ShotSpeed;
-            aim = player + new Vector3(playerVelocity.x, 0f, playerVelocity.z) * flight;
-            aim += new Vector3(Rand() - 0.5f, 0f, Rand() - 0.5f) * 2f; // a little spread
-            return true;
-        }
-
-        /// <summary>The shot landed at <paramref name="aim"/>: does it hit the player now at <paramref name="player"/>?</summary>
-        public static bool Lands(Vector3 aim, Vector3 player) => Flat(aim - player) <= ShotHitRadius;
     }
 }

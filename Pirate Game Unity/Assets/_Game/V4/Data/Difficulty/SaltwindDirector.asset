@@ -200,7 +200,7 @@ MonoBehaviour:
   focusHpAtMax: 1.5
   focusDamageAtMax: 1.2
   compositionLever: 1
-  closeRangeBehaviors: 0200000003000000040000000500000007000000
+  closeRangeBehaviors: 02000000030000000400000005000000070000000a000000
   compositionRules:
   - enemyTag: ranged
     favouredBy: 0

@@ -134,6 +134,12 @@ namespace RoguePirates.V4.Tests
             _owned.Add(settings);
             var ship = new FakeShipView { Pos = new Vector3(2f, 0f, 0f) };
             _presenter.Bind(_pools, weapons, ship, settings);
+            var flail = ScriptableObject.CreateInstance<WeaponConfig>();
+            flail.weaponId = "anchor_flail";
+            flail.behavior = ConfigEnums.WeaponBehavior.ChainedMace;
+            _owned.Add(flail);
+            _presenter.PrewarmModels(new[] { flail });
+            Assert.AreEqual(flail.mace.maxPerAttack + 2, _presenter.ChainCount, "the chains are made at bind, not mid-run (review)");
             weapons.MaceList.Add(new ChainedMace { Position = new Vector3(2f, 0.6f, 6f) });
             weapons.MaceList.Add(new ChainedMace { Position = new Vector3(-3f, 0.6f, 2f) });
             _presenter.SyncMaces();

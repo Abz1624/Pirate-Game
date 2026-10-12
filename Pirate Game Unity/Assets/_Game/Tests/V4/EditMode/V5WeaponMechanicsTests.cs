@@ -420,6 +420,8 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(ConfigEnums.WeaponBehavior.ChainedMace, flail.behavior);
             Assert.AreEqual(4, flail.mace.maxPerAttack, "owner: at most 4 at once");
             Assert.AreEqual(1, flail.baseQuantity, "owner: 1 a throw to start");
+            CollectionAssert.Contains(rig.Config.All<DirectorConfig>().Single().closeRangeBehaviors, ConfigEnums.WeaponBehavior.ChainedMace,
+                "the director counts the flail as close range (review)");
             foreach (var text in new[] { flail.description, flail.behaviorLine }.Concat(flail.milestones.Select(m => m.description)))
                 StringAssert.DoesNotContain("—", text, "no em dashes in UI text");
         }

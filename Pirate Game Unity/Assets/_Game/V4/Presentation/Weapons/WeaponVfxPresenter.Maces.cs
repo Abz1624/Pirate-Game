@@ -26,11 +26,15 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>A drawn mace's ball position (tests).</summary>
         public Vector3 MacePosition(int index) => _maceViews[index].Go != null ? _maceViews[index].Go.transform.position : Vector3.zero;
         /// <summary>A drawn chain's end points (tests): the ship end and the ball end.</summary>
+        /// <summary>Chains made so far (tests: prewarmed at bind).</summary>
+        public int ChainCount => _chains.Count;
         public (Vector3 ship, Vector3 ball) ChainEnds(int index) => (_chains[index].GetPosition(0), _chains[index].GetPosition(ChainPoints - 1));
 
-        /// <summary>Pools the mace model (one per mace an attack can throw, and two spare).</summary>
+        /// <summary>Pools the mace model and makes the chains (one per mace an attack can throw, and two spare) at bind,
+        /// so a throw creates no object while the run plays.</summary>
         void PrewarmMaces(int count)
         {
+            while (_chains.Count < count) _chains.Add(CreateChain(_chains.Count));
             if (_pools == null) return;
             EnsurePool(KindMace, WeaponPlaceholderModels.Mace(_pools.Staging), count);
         }
@@ -56,7 +60,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     _maceViews.Add(new View { Go = go, Pooled = pooled });
                 }
             }
-            while (_chains.Count < _maceViews.Count) _chains.Add(CreateChain(_chains.Count));
+            while (_chains.Count < _maceViews.Count) _chains.Add(CreateChain(_chains.Count)); // only past the prewarmed ones
 
             var shipPos = _ship != null && _ship.Exists ? _ship.Position : Vector3.zero;
             var spin = Quaternion.Euler(Time.time * 720f, Time.time * 260f, 0f);

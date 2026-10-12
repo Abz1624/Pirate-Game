@@ -134,7 +134,8 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(11)] public bool compositionLever = true;
         [Tooltip("Weapon behaviours counted as close range; the rest are long range.")]
         [AppliesFrom(11)] public ConfigEnums.WeaponBehavior[] closeRangeBehaviors =
-            { ConfigEnums.WeaponBehavior.Orbit, ConfigEnums.WeaponBehavior.ConeStream, ConfigEnums.WeaponBehavior.Trail, ConfigEnums.WeaponBehavior.Mine, ConfigEnums.WeaponBehavior.Aura };
+            { ConfigEnums.WeaponBehavior.Orbit, ConfigEnums.WeaponBehavior.ConeStream, ConfigEnums.WeaponBehavior.Trail, ConfigEnums.WeaponBehavior.Mine, ConfigEnums.WeaponBehavior.Aura,
+              ConfigEnums.WeaponBehavior.ChainedMace }; // Hackathon (12 Oct): the Anchor Flail's maces reach 9 m
         [Tooltip("A close-range build draws more ranged ships; a long-range build draws more swarms (gameplay doc §5.3).")]
         [AppliesFrom(11)] public CompositionRule[] compositionRules =
         {
