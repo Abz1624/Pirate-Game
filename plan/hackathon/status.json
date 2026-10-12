@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 19:30 IST",
+ "updated": "12 Oct, 21:15 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Round 2: all 17 changes committed by the three agents; an independent review is checking every item before the full tests and the desktop build.",
+ "headline": "Round 2 desktop build ready at http://localhost:8090 (all 17 changes, review passed, server deployed). Your test pass next; Android after that.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -84,36 +84,32 @@
    "name": "Round 2: gameplay fixes",
    "detail": "Minimap shows only the player and POIs (lag); daily race ends at the goal; enemy damage 2x; enemy cannon aim; orbit weapons keep spinning while turning; elite drops fly to the ship like barrels; raid boss only at its minute; no gold coins on XP pickup; AI captain uses real weapons and logbooks.",
    "server": "n/a",
-   "unity": "testing",
+   "unity": "done",
    "chain": "n/a"
   },
   {
    "name": "Round 2: weapons",
    "detail": "Anchor Flail becomes a chained mace thrown at enemies and reeled back (1 per attack, up to 4); Cursed Doubloons shows gold coins flying to the enemies.",
    "server": "n/a",
-   "unity": "testing",
+   "unity": "done",
    "chain": "n/a"
   },
   {
    "name": "Round 2: hackathon UI",
    "detail": "Test your own island's defences; RUM per hour and defence success rate on island NFTs; UI polish; 1v1 deposit signed when the match is created; set and change your captain name.",
    "server": "done",
-   "unity": "testing",
+   "unity": "done",
    "chain": "n/a"
   }
  ],
  "schedule": [
   [
-   "17:40-19:00",
-   "Round 2 changes (three agents in parallel)"
+   "Now",
+   "Your test pass on the desktop build (localhost:8090)"
   ],
   [
-   "19:00-19:45",
-   "Integration: goldens, full tests, desktop WebGL build"
-  ],
-  [
-   "After",
-   "Your test pass; Android APK once everything is ready"
+   "Next",
+   "Fixes from your test; Anchor Flail level-1 damage decision; then the Android APK"
   ]
  ],
  "needs": [
@@ -232,6 +228,10 @@
   [
    "19:30",
    "Round 2 committed: gameplay fixes (minimap, race end, damage x2, aim, orbit spin, elite drops, XP coins, Captain Marrow real weapons), chained-mace Anchor Flail and Doubloons coins, Test defences, island stats on NFTs, deposit at match creation, captain names, UI polish, guardian countdown (the 4:00 boss was the raid guardian by design). Server 210, deployed. Review running."
+  ],
+  [
+   "21:15",
+   "Review found 2 deposit blockers (stranded SOL, no way to pay after rejoining): fixed, refunds tested, deployed (server 211). Practice raids pay nothing. Goldens re-frozen (flail, x2 damage); EditMode 788/791, PlayMode 130/134 (remaining: plausibility rules for the new config, being regenerated; flail level-1 DPS above the starter rule). Desktop WebGL rebuilt (120.2 MB), menu loads with no errors."
   ]
  ]
 }
