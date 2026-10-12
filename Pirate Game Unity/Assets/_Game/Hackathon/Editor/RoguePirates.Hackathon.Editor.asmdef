@@ -1,7 +1,9 @@
 {
     "name": "RoguePirates.Hackathon.Editor",
     "rootNamespace": "RoguePirates.Hackathon.Editor",
-    "references": [],
+    "references": [
+        "RoguePirates.V4.Editor"
+    ],
     "includePlatforms": [
         "Editor"
     ],

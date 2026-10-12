@@ -12,6 +12,14 @@ table is still the 16:05 one from `fad370cf`).
 other starting weapons, baseDamage 20 -> 12.1, config 8ea655e3; run checks v8 deployed for it, which also accept the
 21:05 build's config 841839 and the 15:51 build's 83779c). Same profile and method; WebGL only.
 
+**APK rebuild, 13 Oct 05:04-05:22** at `fc6ab20b` + the batch entry `HackathonApkCli` (art team models and boats lifted,
+new icons and renames, flamethrower / lighthouse lantern / squid ink pots / siren bell out of the pools, placeholder UI).
+Built in batch mode (the open Editor hung on "Detecting Android SDK"):
+`Unity.exe -batchmode -nographics -quit -projectPath "Pirate Game Unity" -buildTarget Android -executeMethod
+RoguePirates.Hackathon.Editor.HackathonApkCli.Build`. Result: Succeeded, 190.9 MB (was 148.6 MB; the new art),
+936 s, `Pirate Game Unity/Builds/Android/RoguePirates-hackathon.apk`; installed on a Pixel 9a (Phantom present),
+menu loads signed in. The server run checks are behind this build's config (shadow mode: runs marked outdated).
+
 | Build | Path | Size | Build time | Result |
 |---|---|---|---|---|
 | Desktop WebGL (playtest profile), round 2 + flail DPS | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 12 min (695 s, incremental, done 22:28) | Succeeded (report counts 1 error log, as in earlier builds) |
