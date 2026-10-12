@@ -67,7 +67,7 @@ namespace RoguePirates.V4.Tests
             for (var i = 2; i < p.xpToNextTable.Length; i++) Assert.GreaterOrEqual(p.xpToNextTable[i], p.xpToNextTable[i - 1], $"never cheaper later (level {i})");
             for (var i = 1; i < p.levelsPerRarity.Length; i++) Assert.GreaterOrEqual(p.levelsPerRarity[i], p.levelsPerRarity[i - 1], "a rarer card is worth at least as many levels");
             var e = rt.Single<ExperimentConfig>();
-            Assert.AreEqual((1f, 1f), (e.enemyHpMultiplier, e.enemyDamageMultiplier), "M3c's interim ×0.85 enemy scale stays gone");
+            Assert.AreEqual((1f, 2f), (e.enemyHpMultiplier, e.enemyDamageMultiplier), "M3c's interim ×0.85 enemy scale stays gone (Hackathon 12 Oct, owner: enemy damage x2)");
         }
 
     }

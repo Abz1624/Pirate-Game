@@ -28,6 +28,6 @@ MonoBehaviour:
   weaponEvolutionsEnabled: 1
   spawnDensityMultiplier: 1
   enemyHpMultiplier: 1
-  enemyDamageMultiplier: 1
+  enemyDamageMultiplier: 2
   playerVfxIntensityMultiplier: 1
   telemetryEnabled: 1

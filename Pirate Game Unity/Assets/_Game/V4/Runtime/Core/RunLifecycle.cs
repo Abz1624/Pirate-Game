@@ -76,6 +76,18 @@ namespace RoguePirates.V4
         /// the match); the voyage's death flow (Rum, results) does not run.</summary>
         public Action PvpSunk;
 
+        /// <summary>Hackathon playtest (12 Oct, owner: "in Daily Race, end the game after the goal is reached"): a goal run
+        /// ends as a win: the ship stops, the Rum earned so far is settled once (as at death, not ended by death) and the
+        /// run goes to RunComplete. Returns the Rum settled (0 when the run had already ended).</summary>
+        public int CompleteGoalRun()
+        {
+            if (_run == null || !_run.Exists || _run.State == RunState.RunComplete || _run.State == RunState.PlayerDead) return 0;
+            SetShipMovement?.Invoke(false);
+            var rum = _rewards != null ? _rewards.Settle(_run.RunId, false) : 0;
+            _run.SetState(RunState.RunComplete);
+            return rum;
+        }
+
         public void OnPlayerDied(Action trySecureIfBossDead, Action cancelPendingLevelUps)
         {
             cancelPendingLevelUps?.Invoke();

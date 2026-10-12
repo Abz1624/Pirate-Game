@@ -840,7 +840,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             for (var index = 0; index < count; index++)
             {
                 // V5 M8z (7 Oct, Q20): with a milestone's spin (this fallback does not carry the simulation's angle offset).
-                var angle = (time * o.angularSpeedDegrees * w.SpinMult + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
+                // Hackathon playtest (12 Oct): a world angle, as the simulation's (the ship's yaw is taken off).
+                var angle = (time * o.angularSpeedDegrees * w.SpinMult + index * (360f / Mathf.Max(1, count)) - shipRotation.eulerAngles.y) * Mathf.Deg2Rad;
                 var localOffset = new Vector3(Mathf.Sin(angle), o.heightOffset, Mathf.Cos(angle)) * orbitRadius;
                 into.Add(shipPosition + shipRotation * localOffset);
             }

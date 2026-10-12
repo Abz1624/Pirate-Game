@@ -495,6 +495,10 @@ namespace RoguePirates.V4.Weapons
             CollectOrbitSlots(slots);
             foreach (var s in _states.Values) s.Hits.Clear();
             if (C.Ship == null || !C.Ship.Exists) return;
+            // Hackathon playtest (12 Oct, owner: "rotating weapons slow down/stop rotating when I turn left"): the blade
+            // angle is a WORLD angle. The offset goes through the ship's transform (its scale and height), so the ship's
+            // own yaw is taken off first; before, the blades turned with the ship, so turning against the spin cancelled it.
+            var shipYaw = ShipYawDegrees(C.Ship);
             for (var k = 0; k < _orbitSlots.Count; k++)
             {
                 var w = _orbitSlots[k];
@@ -515,7 +519,7 @@ namespace RoguePirates.V4.Weapons
                 }
                 for (var index = 0; index < count; index++)
                 {
-                    var angle = (time * o.angularSpeedDegrees * state.SpinMult + state.SpinOffsetDegrees + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
+                    var angle = (time * o.angularSpeedDegrees * state.SpinMult + state.SpinOffsetDegrees + index * (360f / Mathf.Max(1, count)) - shipYaw) * Mathf.Deg2Rad;
                     if (o.beamSegments > 0)
                     {
                         // V5 M4b: a beam from the ship out to the radius (the Lighthouse Lantern), as a line of spheres.
@@ -530,6 +534,14 @@ namespace RoguePirates.V4.Weapons
                     hits.Add(new HitSphere { Position = C.Ship.TransformPoint(localOffset), Radius = o.hitRadius });
                 }
             }
+        }
+
+        /// <summary>The ship transform's yaw in degrees (0 = local forward along world +z, positive turning right).</summary>
+        internal static float ShipYawDegrees(IShipState ship)
+        {
+            var f = ship.TransformPoint(Vector3.forward) - ship.TransformPoint(Vector3.zero);
+            f.y = 0f;
+            return f.sqrMagnitude > 1e-8f ? Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg : 0f;
         }
 
         public void ClearHits()

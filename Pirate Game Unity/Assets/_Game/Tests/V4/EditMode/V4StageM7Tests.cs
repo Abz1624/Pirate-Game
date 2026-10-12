@@ -518,6 +518,33 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(1, rig.Events.Count(e => e.kind == CombatEventKind.BossState && e.a == 1));
         }
 
+        /// <summary>Hackathon playtest (12 Oct, owner: "the boss spawned randomly when attacking an island"): in an island raid
+        /// the guardian rises only at the designed minute: there is no Beacon on the stage and nothing summons it earlier.</summary>
+        [Test]
+        public void HackathonRaid_GuardianRisesOnlyAtItsMinute()
+        {
+            RaidSchedule.Set(new RaidSchedule.Entry[0], 240f);
+            try
+            {
+                var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)), (POIType.SalvageChest, new Vector3(3f, 0f, 0f)));
+                Assert.IsFalse(rig.Layout.pois.Any(p => p.type == POIType.BossBeacon), "no Beacon in a raid");
+                for (var t = 0f; t < 239f; t += 0.5f)
+                {
+                    rig.Run.ElapsedSeconds = t;
+                    rig.Tick(0.5f);
+                }
+                Assert.IsFalse(rig.Stage.BossSummoned, "not before the guardian's minute");
+                Assert.IsFalse(rig.Tracker.Records.Values.Any(r => r.kind == EncounterKind.Boss));
+                for (var t = 240f; t < 260f && !rig.Stage.BossSummoned; t += 0.5f)
+                {
+                    rig.Run.ElapsedSeconds = t;
+                    rig.Tick(0.5f);
+                }
+                Assert.IsTrue(rig.Stage.BossSummoned, "the guardian rises at its minute");
+            }
+            finally { RaidSchedule.Clear(); }
+        }
+
         [Test]
         public void Beacon_FailedSummon_Toasts_AndV3sStickyTelegraphIsKept()
         {

@@ -105,7 +105,8 @@ public static class HitRules
     /// <summary>The weapon may hit for this seat: one of its drafted weapons or the generic id (the bot: its cannons).</summary>
     public static bool WeaponAllowed(RelaySeat attacker, string weaponId)
     {
-        if (attacker.IsBot) return weaponId == BotWeaponId;
+        // Hackathon (12 Oct, owner): the bot fires its drafted weapons (the game's own); its old cannons tag still counts.
+        if (attacker.IsBot) return weaponId == BotWeaponId || (attacker.Draft?.Weapons?.Contains(weaponId, StringComparer.Ordinal) ?? false);
         if (weaponId == GenericWeaponId) return true;
         // no draft on record (an old client): nothing to check against
         return attacker.Draft?.Weapons is not { Count: > 0 } weapons || weapons.Contains(weaponId, StringComparer.Ordinal);

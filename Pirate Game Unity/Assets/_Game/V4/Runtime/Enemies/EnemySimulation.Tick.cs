@@ -1201,7 +1201,7 @@ namespace RoguePirates.V4.Enemies
                 if (hostiles == null) return;
 
                 GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-                dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e);
+                dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e, playerVelocity);
                 var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
                 if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius,
                         LedShotDistance(muzzle, playerPos, playerVelocity, speed)))
@@ -1244,7 +1244,7 @@ namespace RoguePirates.V4.Enemies
             if (hostiles == null) return;
 
             GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-            dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e);
+            dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e, playerVelocity);
             var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
             var shotDistance = LedShotDistance(muzzle, playerPos, playerVelocity, speed);
             if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius, shotDistance))
@@ -1281,12 +1281,20 @@ namespace RoguePirates.V4.Enemies
         /// </summary>
         internal const float ShotSpreadDegrees = 8f;
 
-        internal static Vector3 Spread(Vector3 dir, in EnemyUnit agent)
+        /// <summary>Hackathon playtest (12 Oct, owner: "even when I'm standing still, only a few are hitting me"): the
+        /// wander scales with the target's speed, full at this speed (m/s) and none on a ship at rest, so a stationary
+        /// ship is hit by every led shot while a moving ship still sees the spread (and can dodge the lead).</summary>
+        internal const float FullSpreadTargetSpeed = 4f;
+
+        internal static Vector3 Spread(Vector3 dir, in EnemyUnit agent, Vector3 targetVelocity)
         {
             if (agent.isElite || agent.isBoss) return dir;
+            targetVelocity.y = 0f;
+            var scale = Mathf.Clamp01(targetVelocity.magnitude / FullSpreadTargetSpeed);
+            if (scale <= 0f) return dir;
             var h = Mathf.Sin(agent.id * 12.9898f + agent.position.x * 78.233f + agent.position.z * 37.719f) * 43758.5453f;
             var u = h - Mathf.Floor(h); // 0..1
-            return Quaternion.Euler(0f, (u * 2f - 1f) * ShotSpreadDegrees, 0f) * dir;
+            return Quaternion.Euler(0f, (u * 2f - 1f) * ShotSpreadDegrees * scale, 0f) * dir;
         }
 
         /// <summary>Horizontal distance from the muzzle to the led aim point, so the shot's arc lands there.</summary>

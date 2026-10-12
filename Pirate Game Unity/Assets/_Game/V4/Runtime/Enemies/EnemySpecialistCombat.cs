@@ -231,7 +231,7 @@ namespace RoguePirates.V4.Enemies
             {
                 // Lead the volley at firing time and fan it (-6, 0, +6 degrees) instead of stacking three shots on one line.
                 var aim = EnemySimulation.Spread(EnemySimulation.AimLed(
-                    agent.position, playerPos, playerVelocity, profile.projectileSpeed, state.committedDirection), agent);
+                    agent.position, playerPos, playerVelocity, profile.projectileSpeed, state.committedDirection), agent, playerVelocity);
                 var muzzle = agent.position + aim * (agent.radius + 1.2f) + Vector3.up * 0.55f;
                 var shotDistance = EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed);
                 for (var shot = 0; shot < 3; shot++)
@@ -274,7 +274,7 @@ namespace RoguePirates.V4.Enemies
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent);
+                    dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent, playerVelocity);
                     var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
                     hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.4f, 0.45f, 0.35f,
                         EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed));
@@ -348,7 +348,7 @@ namespace RoguePirates.V4.Enemies
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, NeedleShotSpeed, dir), agent);
+                    dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, NeedleShotSpeed, dir), agent, playerVelocity);
                     var muzzle = agent.position + dir * (agent.radius + 1.3f) + Vector3.up * 0.55f;
                     hostiles.TrySpawn(muzzle, dir, NeedleShotSpeed, agent.damage, 1.2f, 0.35f, 0.28f,
                         EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, NeedleShotSpeed));

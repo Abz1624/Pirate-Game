@@ -711,14 +711,18 @@ public class RelayTests : IDisposable
         await h.Send(Hit(25));
         var onBot = await h.Next("hit");
         Assert.Equal(botId, onBot.GetProperty("to").GetGuid());
-        await h.Send(Hit(10, "mortar", asBot: true)); // V5 M8z: the bot fires only its cannons
-        var notCannons = await h.Next("reject");
-        Assert.Equal("not_in_draft", notCannons.GetProperty("reason").GetString());
-        Assert.Equal(10, notCannons.GetProperty("dropped").GetDouble());
-        await h.Send(Hit(10, HitRules.BotWeaponId, asBot: true));
+        await h.Send(Hit(10, "flamethrower", asBot: true)); // not in the bot's draft
+        var notDrafted = await h.Next("reject");
+        Assert.Equal("not_in_draft", notDrafted.GetProperty("reason").GetString());
+        Assert.Equal(10, notDrafted.GetProperty("dropped").GetDouble());
+        await h.Send(Hit(5, HitRules.BotWeaponId, asBot: true)); // its old cannons tag still counts
         var onHost = await h.Next("hit");
         Assert.Equal(botId, onHost.GetProperty("from").GetGuid());
         Assert.Equal(host.Id, onHost.GetProperty("to").GetGuid());
+        await h.Send(Hit(5, "mortar", asBot: true)); // Hackathon (12 Oct): the bot fires its drafted weapons
+        var drafted = await h.Next("hit");
+        Assert.Equal(botId, drafted.GetProperty("from").GetGuid());
+        Assert.Equal("mortar", drafted.GetProperty("weaponId").GetString());
 
         await At(d, 40); // seat 1 never connects: still no forfeit
         await h.Send(new { t = "dead", asBot = true });

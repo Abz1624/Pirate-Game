@@ -16,19 +16,21 @@ namespace RoguePirates.V4.Presentation.Hud
     /// elites, points of interest (Beacon, chests) and ordinary enemies (small dots, capped) are UI icons on top, placed by
     /// normalising their world positions to 0..1 within the bounds and refreshed at <see cref="RefreshHz"/> without
     /// per-frame allocations. Top-right, under the timer and inside the safe area (the touch controls own the bottom corners).
+    /// Hackathon playtest (12 Oct, owner: "the game was lagging, no need to show all the enemies on the minimap"): only
+    /// the ship, the points of interest and the stage boss are shown (no enemy dots, no miniboss or elite icons, no
+    /// pulsing halo); the map sits on its own nested canvas so moving its icons never rebuilds the whole HUD canvas, and
+    /// an icon is only touched when its position actually changed.
     /// </summary>
     public sealed class SnapshotMinimapPresenter : MonoBehaviour
     {
         public const float RefreshHz = 10f;
-        public const int MaxEnemyDots = 48;
-        const int MaxThreatIcons = 6;
+        const int MaxThreatIcons = 1; // the stage boss only
         /// <summary>Layers the snapshot draws (the islands live on "Island"; Default carries props parented to them).</summary>
         public static int SnapshotCullingMask => LayerMask.GetMask("Island");
         const int SnapshotSize = 256;
         static readonly Color SeaColor = new Color(0.11f, 0.42f, 0.66f, 1f);
         static readonly Color FrameGold = new Color(0.91f, 0.71f, 0.30f, 1f);
         static readonly Color FrameDark = new Color(0.07f, 0.12f, 0.2f, 0.92f);
-        static readonly Color EnemyDotColor = new Color(0.93f, 0.27f, 0.22f, 0.95f);
 
         [Range(0.12f, 0.35f)] public float heightFraction = 0.2f;
         /// <summary>Below the timer and the currency bar (a fraction of the canvas height from the top).</summary>
@@ -50,8 +52,10 @@ namespace RoguePirates.V4.Presentation.Hud
         readonly List<RectTransform> _threatIcons = new List<RectTransform>();
         readonly List<int> _threatKinds = new List<int>();
         readonly List<ThreatMarker> _threats = new List<ThreatMarker>(MaxThreatIcons);
-        readonly RectTransform[] _dots = new RectTransform[MaxEnemyDots];
-        readonly Vector3[] _enemyPositions = new Vector3[MaxEnemyDots];
+        Image _border;
+        Vector2 _layoutParentSize = new Vector2(-1f, -1f);
+        Rect _layoutSafe;
+        Vector2 _layoutBoundsExtent;
 
         /// <summary>Snapshots taken (tests).</summary>
         public int SnapshotCount { get; private set; }
@@ -95,7 +99,10 @@ namespace RoguePirates.V4.Presentation.Hud
             var root = (RectTransform)transform;
             root.anchorMin = root.anchorMax = root.pivot = new Vector2(1f, 1f);
             _frame = root;
+            // Its own canvas: the 10 Hz icon moves rebuild this small batch only, never the run HUD canvas.
+            root.gameObject.AddComponent<Canvas>();
             var border = root.gameObject.AddComponent<Image>();
+            _border = border;
             border.sprite = MinimapUiSprites.White;
             border.color = FrameGold;
             border.raycastTarget = false;
@@ -113,17 +120,6 @@ namespace RoguePirates.V4.Presentation.Hud
             _world.raycastTarget = false;
             _iconRoot = Child(_map, "Icons");
             Stretch(_iconRoot, 0f);
-            for (var i = 0; i < MaxEnemyDots; i++)
-            {
-                var dot = Child(_iconRoot, "Enemy");
-                dot.sizeDelta = new Vector2(4f, 4f);
-                var img = dot.gameObject.AddComponent<Image>();
-                img.sprite = MinimapUiSprites.Circle;
-                img.color = EnemyDotColor;
-                img.raycastTarget = false;
-                dot.gameObject.SetActive(false);
-                _dots[i] = dot;
-            }
             for (var i = 0; i < MaxThreatIcons; i++)
             {
                 var icon = Child(_iconRoot, "Threat");
@@ -174,8 +170,7 @@ namespace RoguePirates.V4.Presentation.Hud
         void SetVisible(bool on)
         {
             if (_map != null && _map.parent.gameObject.activeSelf != on) _map.parent.gameObject.SetActive(on);
-            var img = GetComponent<Image>();
-            if (img != null && img.enabled != on) img.enabled = on;
+            if (_border != null && _border.enabled != on) _border.enabled = on;
         }
 
         void Layout()
@@ -184,11 +179,16 @@ namespace RoguePirates.V4.Presentation.Hud
             if (parent == null) return;
             var h = parent.rect.height;
             var w = parent.rect.width;
+            var safe = Screen.safeArea;
+            var extent = new Vector2(PlayBounds.HalfExtentX, PlayBounds.HalfExtentZ);
+            if (_layoutParentSize.x == w && _layoutParentSize.y == h && _layoutSafe == safe && _layoutBoundsExtent == extent) return;
+            _layoutParentSize = new Vector2(w, h);
+            _layoutSafe = safe;
+            _layoutBoundsExtent = extent;
             var size = Mathf.Clamp(h * heightFraction, 96f, 240f);
             var aspect = PlayBounds.HalfExtentZ > 0.01f ? PlayBounds.HalfExtentX / PlayBounds.HalfExtentZ : 1f;
             aspect = Mathf.Clamp(aspect, 0.5f, 2f);
             // Safe area (notches, rounded corners): the right and top insets in canvas units.
-            var safe = Screen.safeArea;
             var sx = Screen.width > 0 ? w / Screen.width : 1f;
             var sy = Screen.height > 0 ? h / Screen.height : 1f;
             var right = (Screen.width - safe.xMax) * sx;
@@ -272,7 +272,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 icon.sizeDelta = new Vector2(12f, 12f);
                 MinimapMarkerGraphics.Apply(icon, MinimapMarkerGraphics.FromPoi(poi.type));
                 DisableRaycasts(icon);
-                icon.SetSiblingIndex(MaxEnemyDots); // over the dots, under the threats and the ship
+                icon.SetSiblingIndex(0); // under the boss and the ship
                 _poiIcons.Add(icon);
             }
         }
@@ -292,15 +292,9 @@ namespace RoguePirates.V4.Presentation.Hud
             }
 
             var enemies = _views.Enemies;
-            var n = enemies != null ? enemies.CopyEnemyPositions(_enemyPositions) : 0;
-            for (var i = 0; i < MaxEnemyDots; i++)
-            {
-                var on = i < n;
-                if (_dots[i].gameObject.activeSelf != on) _dots[i].gameObject.SetActive(on);
-                if (on) Place(_dots[i], _enemyPositions[i], size);
-            }
-
             if (enemies != null) enemies.CollectThreats(_threats); else _threats.Clear();
+            // The stage boss only (minibosses and elites are not shown).
+            for (var i = _threats.Count - 1; i >= 0; i--) if (!_threats[i].isBoss) _threats.RemoveAt(i);
             for (var i = 0; i < _threatIcons.Count; i++)
             {
                 var on = i < _threats.Count;
@@ -321,12 +315,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     _threatKinds[i] = kind;
                 }
                 Place(icon, t.position, size);
-                if (t.isBoss)
-                {
-                    icon.SetSiblingIndex(_iconRoot.childCount - 1); // over the dots and other icons (the ship goes last below)
-                    if (icon.childCount > 0 && icon.GetChild(0).name == "BossHalo")
-                        icon.GetChild(0).localScale = Vector3.one * (1f + 0.22f * Mathf.Sin(Time.unscaledTime * 6f));
-                }
+                if (icon.GetSiblingIndex() != _iconRoot.childCount - 2) icon.SetSiblingIndex(_iconRoot.childCount - 2); // under the ship
             }
 
             var ship = _views.Ship;
@@ -334,8 +323,13 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 Place(_player, ship.Position, size);
                 var f = ship.MovementForward;
-                if (f.sqrMagnitude > 0.01f) _player.localRotation = Quaternion.Euler(0f, 0f, 180f - Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg); // the glyph points down
-                _player.SetAsLastSibling();
+                if (f.sqrMagnitude > 0.01f)
+                {
+                    // the glyph points down; whole degrees so a steady heading does not dirty the canvas
+                    var z = Mathf.Round(180f - Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg);
+                    if (Mathf.Abs(Mathf.DeltaAngle(_player.localEulerAngles.z, z)) > 0.5f) _player.localRotation = Quaternion.Euler(0f, 0f, z);
+                }
+                if (_player.GetSiblingIndex() != _iconRoot.childCount - 1) _player.SetAsLastSibling();
             }
         }
 
@@ -358,8 +352,10 @@ namespace RoguePirates.V4.Presentation.Hud
         void Place(RectTransform icon, Vector3 world, Vector2 mapSize)
         {
             var uv = Normalize(_bounds, world);
-            icon.anchorMin = icon.anchorMax = Vector2.zero;
-            icon.anchoredPosition = new Vector2(uv.x * mapSize.x, uv.y * mapSize.y);
+            if (icon.anchorMin != Vector2.zero || icon.anchorMax != Vector2.zero) icon.anchorMin = icon.anchorMax = Vector2.zero;
+            // Whole canvas units: an icon that has not moved a unit is not touched (no canvas rebuild).
+            var pos = new Vector2(Mathf.Round(uv.x * mapSize.x), Mathf.Round(uv.y * mapSize.y));
+            if (icon.anchoredPosition != pos) icon.anchoredPosition = pos;
         }
 
         void OnDestroy()

@@ -45,7 +45,7 @@ namespace RoguePirates.V4.Tests
             }
             var director = rt.Single<DirectorConfig>();
             Assert.IsFalse(director.toughnessLever || director.capHpLever || director.focusLever, "the director's HP and damage levers are off");
-            Assert.AreEqual((1f, 1f), (rt.Single<ExperimentConfig>().enemyHpMultiplier, rt.Single<ExperimentConfig>().enemyDamageMultiplier), "M3c's interim scale is gone");
+            Assert.AreEqual((1f, 2f), (rt.Single<ExperimentConfig>().enemyHpMultiplier, rt.Single<ExperimentConfig>().enemyDamageMultiplier), "M3c's interim scale is gone (Hackathon 12 Oct, owner: enemy damage x2)");
         }
 
         [Test]

@@ -123,7 +123,12 @@ namespace RoguePirates.V4.Pvp
         readonly PvpHitWindow _hits = new PvpHitWindow();
         readonly Dictionary<int, PvpBarrel> _barrels = new Dictionary<int, PvpBarrel>();
         readonly List<PvpShot> _shots = new List<PvpShot>();
-        readonly List<(Vector3 aim, float lands, float damage)> _botVolleys = new List<(Vector3, float, float)>();
+        // Hackathon playtest (12 Oct, owner): the bot's guns are the game's weapons (PvpBotArsenal); their hits on the
+        // ship are batched like a player's and sent as the bot's.
+        PvpBotArsenal _arsenal;
+        float _botBatch, _botBatchAt;
+        readonly Dictionary<string, float> _botBatchByWeapon = new Dictionary<string, float>();
+        bool _botTagFallback;
         readonly Dictionary<string, float> _batchByWeapon = new Dictionary<string, float>();
         HashSet<string> _draftWeapons;
         Dictionary<string, string> _evolutionBase;
@@ -271,6 +276,7 @@ namespace RoguePirates.V4.Pvp
             }
             if (_sim != null) _sim.RemoteDamaged -= OnRemoteDamaged;
             if (_mirror != null) _mirror.Mirror -= OnMyWeaponFx;
+            _arsenal?.Dispose();
         }
 
         // ---- Frame ----
@@ -303,6 +309,7 @@ namespace RoguePirates.V4.Pvp
                 if (_bot != null && !_ended) SendBotState();
             }
             FlushHits();
+            FlushBotHits();
             FlushFx();
             for (var i = _shots.Count - 1; i >= 0; i--) if (Clock.TimeSingle > _shots[i].End + 0.3f) _shots.RemoveAt(i);
         }
@@ -320,24 +327,20 @@ namespace RoguePirates.V4.Pvp
                 _oppLevel = _bot.Level;
                 _oppAlive = _bot.Alive;
                 _oppKnown = true;
-                if (_started && !_ended && _bot.TryFire(dt, _ship.Position, _ship.Velocity, _ship.IsAlive && !_sunk, out var aim, out var flight))
+                // Hackathon playtest (12 Oct, owner): the bot fires its drafted weapons through the real weapon systems
+                // (was a made-up cannon volley drawn as plain spheres).
+                if (_arsenal != null)
                 {
-                    _botVolleys.Add((aim, Clock.TimeSingle + flight, _bot.VolleyDamage));
-                    _shots.Add(new PvpShot { From = _bot.Position, To = aim, Start = Clock.TimeSingle, End = Clock.TimeSingle + flight, Color = new Color(0.12f, 0.12f, 0.12f), Arc = 5f });
-                    // Playtest (3 Oct, owner, round 7): the bot's volley shows a muzzle flash too
-                    var vfx = _vfx?.Invoke();
-                    if (vfx is UnityEngine.Object unityObject && unityObject == null) vfx = null;
-                    var dir = aim - _bot.Position;
-                    dir.y = 0f;
-                    vfx?.Fired(PvpBot.WeaponId, _bot.Position + Vector3.up * 1.2f, dir.sqrMagnitude > 0.0001f ? dir.normalized : PvpRules.Forward(_bot.Yaw));
-                }
-                for (var i = _botVolleys.Count - 1; i >= 0; i--)
-                {
-                    if (Clock.TimeSingle < _botVolleys[i].lands) continue;
-                    var v = _botVolleys[i];
-                    _botVolleys.RemoveAt(i);
-                    if (!_ended && _bot.Alive && PvpBot.Lands(v.aim, _ship.Position))
-                        _session.Send(new HitMsg { dmg = PvpRules.ClampHit(v.damage, HitLimit), weaponId = PvpBot.WeaponId, asBot = true });
+                    _arsenal.ShipPosition = _bot.Position;
+                    _arsenal.ShipVelocity = _bot.Velocity;
+                    _arsenal.ShipYaw = _bot.Yaw;
+                    _arsenal.ShipAlive = _bot.Alive;
+                    _arsenal.TargetPosition = _ship.Position;
+                    _arsenal.TargetVelocity = _ship.Velocity;
+                    _arsenal.TargetRadius = Mathf.Max(1.2f, _ship.ContactRadius);
+                    _arsenal.TargetAlive = _ship.IsAlive && !_sunk;
+                    _arsenal.Active = _started && !_ended && _bot.Alive;
+                    _arsenal.Tick(dt);
                 }
             }
             else if (_interp.Sample(Clock.TimeSingle, out var p, out var yaw))
@@ -495,13 +498,65 @@ namespace RoguePirates.V4.Pvp
         const float FxSeconds = 0.1f, LoadoutSeconds = 2f, FiredGapSeconds = 0.08f;
 
         /// <summary>After Begin: my weapon effects are mirrored to the opponent (cosmetic; damage stays on "hit"); the
-        /// opponent's are played here through the weapon presenter (never back through the mirror).</summary>
-        public void AttachWeapons(WeaponEffectsForwarder mirror, Func<IWeaponEffects> vfx, ConfigSetRuntime config)
+        /// opponent's are played here through the weapon presenter (never back through the mirror). In a bot match the
+        /// bot's arsenal is built here (its draft's weapons and Logbooks, drawn through the same presenter).</summary>
+        public void AttachWeapons(WeaponEffectsForwarder mirror, Func<IWeaponEffects> vfx, ConfigSetRuntime config, Func<IProjectileViews> projectileViews = null)
         {
             _vfx = vfx;
             _config = config;
             _mirror = mirror;
             if (_mirror != null && !IsBotMatch) _mirror.Mirror += OnMyWeaponFx;
+            if (_bot != null && _arsenal == null && config != null)
+            {
+                var draft = _match?.Player(_oppSeat)?.draft;
+                _arsenal = new PvpBotArsenal(config, _match.seed, draft?.weapons, draft?.logbooks, new PvpBotEffects(vfx), projectileViews);
+                _arsenal.Hit = OnBotWeaponHit;
+                AddBotHull(_arsenal.HullGained);
+                _arsenal.HullAdded = AddBotHull;
+            }
+        }
+
+        /// <summary>The bot's arsenal (tests).</summary>
+        public PvpBotArsenal BotArsenal => _arsenal;
+
+        void AddBotHull(float amount)
+        {
+            if (_bot == null || amount <= 0f) return;
+            _bot.MaxHp += amount;
+            _bot.Hp += amount;
+        }
+
+        void OnBotWeaponHit(float damage, string weaponId)
+        {
+            if (_bot == null || !_bot.Alive || !_started || _ended || _sunk || damage <= 0f) return;
+            if (_botBatch <= 0f) _botBatchAt = Clock.TimeSingle + PvpRules.HitBatchSeconds;
+            _botBatch += damage;
+            var key = string.IsNullOrEmpty(weaponId) ? PvpBot.WeaponId : weaponId;
+            _botBatchByWeapon.TryGetValue(key, out var sum);
+            _botBatchByWeapon[key] = sum + damage;
+        }
+
+        /// <summary>The bot's weapon hits on my ship, one batch per 0.1 s, tagged with the weapon that dealt the most. A
+        /// server that only knows the bot's cannons refuses that tag once; the bot's hits then carry the cannons tag.</summary>
+        void FlushBotHits()
+        {
+            if (_botBatch <= 0f || Clock.TimeSingle < _botBatchAt) return;
+            var weapon = PvpBot.WeaponId;
+            var best = 0f;
+            foreach (var kv in _botBatchByWeapon) if (kv.Value > best) { best = kv.Value; weapon = kv.Key; }
+            if (_botTagFallback) weapon = PvpBot.WeaponId;
+            var dmg = PvpRules.ClampHit(_botBatch, HitLimit);
+            var rest = _botBatch - dmg;
+            _botBatch = 0f;
+            _botBatchByWeapon.Clear();
+            if (dmg <= 0f || _ended || _sunk || _bot == null || !_bot.Alive) return;
+            _session.Send(new HitMsg { dmg = dmg, weaponId = weapon.Length > 64 ? weapon.Substring(0, 64) : weapon, asBot = true });
+            if (rest > 0.05f)
+            {
+                _botBatch = rest;
+                _botBatchByWeapon[weapon] = rest;
+                _botBatchAt = Clock.TimeSingle + PvpRules.HitBatchSeconds;
+            }
         }
 
         void OnMyWeaponFx(char kind, string weaponId, Vector3 point, Vector3 direction, float radius)
@@ -723,7 +778,7 @@ namespace RoguePirates.V4.Pvp
                     if (b.by == _myId) TakeBarrel(b.IsXp);
                     else if (_bot != null && b.by == _match.bot.playerId)
                     {
-                        if (b.IsXp) _bot.LevelUp();
+                        if (b.IsXp) { _bot.LevelUp(); _arsenal?.LevelUp(); }
                         else _bot.Heal(HealFraction);
                         Notice(BotDisplayName + (b.IsXp ? " took an XP barrel" : " took a health barrel"));
                     }
@@ -776,6 +831,7 @@ namespace RoguePirates.V4.Pvp
         void OnHitRefused(RejectMsg r)
         {
             if (!r.asBot && r.dropped > 0f) _dealt = Mathf.Max(0f, _dealt - r.dropped);
+            if (r.asBot && r.reason == "not_in_draft") _botTagFallback = true; // a server that only knows the bot's cannons
             var reason = string.IsNullOrEmpty(r.reason) ? "unknown" : r.reason;
             _hitRefusals.TryGetValue(reason, out var n);
             _hitRefusals[reason] = n + 1;
@@ -882,8 +938,10 @@ namespace RoguePirates.V4.Pvp
             get
             {
                 if (_bot == null) return _oppWeapons;
-                if (_oppWeapons.Count == 0) _oppWeapons.Add((PvpBot.WeaponId, "Cannons", 1));
-                _oppWeapons[0] = (PvpBot.WeaponId, "Cannons", _bot.Level);
+                _oppWeapons.Clear();
+                if (_arsenal != null)
+                    foreach (var w in _arsenal.Loadout)
+                        _oppWeapons.Add((w.Id, !string.IsNullOrEmpty(w.Config.displayName) ? w.Config.displayName : w.Id, w.Level));
                 return _oppWeapons;
             }
         }

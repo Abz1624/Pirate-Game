@@ -871,7 +871,7 @@ namespace RoguePirates.V4.Enemies
             var dir = playerPos - agent.position;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f) return;
-            dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent);
+            dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent, playerVelocity);
             var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
             var shotDistance = EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed);
             if (!hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.5f, 0.45f, 0.35f, shotDistance))
@@ -929,7 +929,7 @@ namespace RoguePirates.V4.Enemies
             var dir = playerPos - agent.position;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f) return;
-            dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent);
+            dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent, playerVelocity);
             var shotDistance = EnemySimulation.LedShotDistance(
                 agent.position + dir * (agent.radius + 1.1f), playerPos, playerVelocity, profile.projectileSpeed);
             var count = Mathf.Max(1, profile.projectileCount);
@@ -1048,7 +1048,7 @@ namespace RoguePirates.V4.Enemies
                 // a shot speed (the harrier's data has 0) uses the runtime default of 9 m/s, else its shots only drop.
                 var shotSpeed = profile.projectileSpeed > 0f ? profile.projectileSpeed : 9f;
                 var dir = EnemySimulation.Spread(EnemySimulation.AimLed(
-                    agent.position, playerPos, playerVelocity, shotSpeed, state.committedPosition - agent.position), agent);
+                    agent.position, playerPos, playerVelocity, shotSpeed, state.committedPosition - agent.position), agent, playerVelocity);
                 var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
                 var shotDistance = EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, shotSpeed);
                 for (var i = 0; i < 2; i++)

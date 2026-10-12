@@ -102,7 +102,10 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(0, presenter.LiveCount);
 
                 var gem = (Transform)presenter.Acquire(PickupType.FlyingXp, Vector3.zero, 1);
-                Assert.IsNotNull(gem.Find("CollectSparkle"), "XP gems carry the coin's collect sparkle (V3 EnsureFlyingLootSparkle)");
+                // Hackathon playtest (12 Oct, owner): no gold coins on an XP pickup: the gem no longer carries the coin's sparkle.
+                Assert.IsNull(gem.Find("CollectSparkle"), "XP gems carry no gold coin sparkle");
+                foreach (var ps in gem.GetComponentsInChildren<ParticleSystemRenderer>(true))
+                    Assert.IsFalse(ps.sharedMaterial != null && ps.sharedMaterial.name.Contains("Coin"), "no coin particles on an XP gem: " + ps.name);
                 Assert.AreEqual(Juice().xpFlyingGemScale, gem.localScale.x, 1e-4f, "the gem's uniform crystal scale");
                 Assert.IsNull(gem.GetComponentInChildren<Collider>(true), "pickup models carry no colliders");
                 var barrel = (Transform)presenter.Acquire(PickupType.GoldBarrel, Vector3.zero, 1);

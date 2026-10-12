@@ -52,6 +52,8 @@ namespace RoguePirates.V4.Progression
             public Vector3 Position;
             public float Lifetime;
             public object View;
+            /// <summary>Hackathon playtest (12 Oct): flying to the ship (it came within the magnet radius).</summary>
+            public bool Homing;
         }
 
         readonly Func<PowerupConfig> _config;
@@ -203,10 +205,23 @@ namespace RoguePirates.V4.Progression
                     Despawn(i);
                     continue;
                 }
-                var bob = Mathf.Sin(_bobTime * 4f + i) * 0.1f;
-                if (_agents[i].View != null) _views.Move(_agents[i].View, _agents[i].Position + Vector3.up * bob);
                 var flat = playerPos - _agents[i].Position;
                 flat.y = 0f;
+                // Hackathon playtest (12 Oct, owner: "the items that elites drop should fly over like the barrels"): within
+                // the magnet radius the powerup flies to the ship (fast near it, like homing pickups) and is collected.
+                var dist = flat.magnitude;
+                if (!_agents[i].Homing && c.magnetRadius > 0f && dist <= c.magnetRadius) _agents[i].Homing = true;
+                if (_agents[i].Homing && dist > c.collectRadius)
+                {
+                    var speed = Mathf.Lerp(c.flySpeedMin, c.flySpeedMax, 1f - Mathf.Clamp01(dist / Mathf.Max(c.magnetRadius, 1f)));
+                    var step = Mathf.Min(dist, Mathf.Max(0f, speed) * dt);
+                    _agents[i].Position += flat / dist * step;
+                    _agents[i].Lifetime = Mathf.Max(_agents[i].Lifetime, 1f); // never expires on its way in
+                    flat = playerPos - _agents[i].Position;
+                    flat.y = 0f;
+                }
+                var bob = _agents[i].Homing ? 0f : Mathf.Sin(_bobTime * 4f + i) * 0.1f;
+                if (_agents[i].View != null) _views.Move(_agents[i].View, _agents[i].Position + Vector3.up * bob);
                 if (flat.sqrMagnitude > c.collectRadius * c.collectRadius) continue;
                 var kind = _agents[i].Kind;
                 Apply(kind);

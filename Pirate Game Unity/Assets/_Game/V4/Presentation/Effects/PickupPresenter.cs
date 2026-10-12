@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Presentation.Effects
     /// <summary>
     /// Pickup models (M14.9b; port of V3's PickupViewPool and the view half of PickupWorld, was LegacyPickupViews): the
     /// prefab and scale per pickup type, barrels squashed and floated to their submerged depth from the model's renderer
-    /// bounds (register R-74), XP gems with the coin's collect sparkle, the burst replayed on flying pickups, the spin, and
+    /// bounds (register R-74), XP gems (no coin sparkle since the hackathon playtest), the burst replayed on flying pickups, the spin, and
     /// the flying health billboard. Every model comes from the V4 view pool, keys "pickup/&lt;model&gt;", prewarmed at
     /// bind; the gem with its sparkle and the health billboard are built once as pool templates, so nothing is created
     /// while the run plays.
@@ -220,22 +220,16 @@ namespace RoguePirates.V4.Presentation.Effects
             return template;
         }
 
-        /// <summary>V3 EnsureFlyingLootSparkle, done once: the gem with the coin model's CollectSparkle, colliders removed.</summary>
+        /// <summary>The flying XP gem, done once: colliders removed. Hackathon playtest (12 Oct, owner: "in the XP pickup we're
+        /// also showing gold coins, please remove those"): V3's EnsureFlyingLootSparkle gave the gem the gold coin's
+        /// CollectSparkle (its particles use the CoinParticles material), so every XP gem burst gold coins; the gem now keeps
+        /// only its own particles, if it has any.</summary>
         GameObject GemTemplate(GameObject source)
         {
             var template = Object.Instantiate(source);
             template.SetActive(false);
             template.name = source.name;
             StripColliders(template);
-            var sparkleSource = _s.goldPickupPrefab != null ? _s.goldPickupPrefab.transform.Find("CollectSparkle") : null;
-            if (template.transform.Find("CollectSparkle") == null && sparkleSource != null)
-            {
-                var sparkle = Object.Instantiate(sparkleSource, template.transform);
-                sparkle.name = "CollectSparkle";
-                sparkle.localPosition = Vector3.zero;
-                sparkle.localRotation = Quaternion.identity;
-                sparkle.localScale = Vector3.one;
-            }
             return template;
         }
 

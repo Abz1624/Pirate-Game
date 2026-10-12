@@ -437,7 +437,8 @@ namespace RoguePirates.V4
             if (_pvp != null)
             {
                 _pvp.Begin(_shipPort, _damageSink, _build, _enemies.Simulation, _toasts);
-                _pvp.AttachWeapons(_weapons.Effects, () => _context.TryGet<RoguePirates.V4.Weapons.IWeaponEffects>(out var fx) ? fx : null, _config);
+                _pvp.AttachWeapons(_weapons.Effects, () => _context.TryGet<RoguePirates.V4.Weapons.IWeaponEffects>(out var fx) ? fx : null, _config,
+                    () => _context.TryGet<RoguePirates.V4.Weapons.IProjectileViews>(out var views) ? views : null); // the bot's projectiles
             }
 
             _runPort.AttachEvents(_publisher);

@@ -55,6 +55,10 @@ namespace RoguePirates.V4.Config
         [Tooltip("At most this many per stage (also the number of powerups on the water at once).")] public int maxPerStage = 6;
         [Tooltip("Seconds a powerup stays on the water.")] public float lifetimeSeconds = 30f;
         [Tooltip("The ship collects it this close (m).")] public float collectRadius = 1.5f;
+        [Tooltip("Hackathon playtest (12 Oct, owner): within this distance (m) the powerup flies to the ship, as a barrel opens at the pickups' barrel touch radius (5 m). 0 = off (sit until touched).")]
+        public float magnetRadius = 5f;
+        [Tooltip("Homing speed from min (far) to max (close), as the pickups' (m/s).")] public float flySpeedMin = 10f;
+        public float flySpeedMax = 28f;
         [Tooltip("Spot search around the kill: rings × points, ring spacing (m).")] public int searchRings = 4;
         public int searchPointsPerRing = 8;
         public float searchRingSpacing = 1.5f;
