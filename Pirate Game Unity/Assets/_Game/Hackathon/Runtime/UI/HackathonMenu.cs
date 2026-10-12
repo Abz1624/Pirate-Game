@@ -19,6 +19,12 @@ namespace RoguePirates.Hackathon.UI
         public DailyRacePanel Race { get; private set; }
         public RewardsStrip Rewards { get; private set; }
         public Button RaceButton { get; private set; }
+        public IslandsPanel Islands { get; private set; }
+        public MarketPanel Market { get; private set; }
+        public Button IslandsButton { get; private set; }
+        public Button MarketButton { get; private set; }
+
+        static string _shownRaid;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
@@ -42,7 +48,67 @@ namespace RoguePirates.Hackathon.UI
             menu.Race = DailyRacePanel.Create(canvas);
             menu.Rewards = RewardsStrip.Attach(online.Leaderboard);
             menu.RaceButton = BuildRaceButton(canvas, online.PvpButton, menu.Race);
+            // U-3: Islands and Market (copies of the art button under Daily Race; the unused V4 "Raid" placeholder goes,
+            // raids live on the Islands screen).
+            menu.Islands = IslandsPanel.Create(canvas);
+            menu.Market = MarketPanel.Create(canvas);
+            menu.Islands.Market = menu.Market;
+            menu.Market.Islands = menu.Islands;
+            var main = FindDeep(canvas, "MainMenuPanel");
+            var raid = main != null ? FindDeep(main, "Raid") : null;
+            if (raid != null && raid.GetComponent<Button>() != null) raid.gameObject.SetActive(false);
+            menu.IslandsButton = ArtButton(online.PvpButton, "HackathonIslands", "ISLANDS", menu.Islands.Open);
+            menu.MarketButton = ArtButton(online.PvpButton, "HackathonMarket", "MARKET", menu.Market.Open);
+            if (main != null) TightenColumn(main);
+            // Back from a raid voyage: show its result on the Islands screen.
+            var last = RaidHud.LastRaid != null ? RaidHud.LastRaid.raidId : RaidHud.LastResult;
+            if (last != null && last != _shownRaid)
+            {
+                _shownRaid = last;
+                menu.Islands.Open();
+            }
             return menu;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => _shownRaid = null;
+
+        /// <summary>Six side buttons in the height five had: a tighter gap, the column keeps its centre.</summary>
+        static void TightenColumn(Transform main)
+        {
+            var menu = FindDeep(main, "RightMenu") as RectTransform;
+            var layout = menu != null ? menu.GetComponent<VerticalLayoutGroup>() : null;
+            if (layout != null) layout.spacing = Mathf.Min(layout.spacing, 12f);
+            ArtMenuView.FitSideButtons(main);
+            if (menu == null || layout == null) return;
+            var height = 0f;
+            var count = 0;
+            foreach (Transform child in menu)
+            {
+                if (!child.gameObject.activeSelf) continue;
+                var le = child.GetComponent<LayoutElement>();
+                height += le != null && le.preferredHeight > 0f ? le.preferredHeight : 65f;
+                count++;
+            }
+            if (count > 0) height += layout.spacing * (count - 1) + layout.padding.vertical;
+            menu.sizeDelta = new Vector2(menu.sizeDelta.x, height);
+            LayoutRebuilder.MarkLayoutForRebuild(menu);
+        }
+
+        /// <summary>A copy of the art menu's PvP button just above it in the side column, labelled <paramref name="label"/>.</summary>
+        static Button ArtButton(Button pvp, string name, string label, UnityEngine.Events.UnityAction click)
+        {
+            if (pvp == null || pvp.transform.parent == null) return null;
+            var copy = Instantiate(pvp.gameObject, pvp.transform.parent, false);
+            copy.name = name;
+            copy.transform.SetSiblingIndex(pvp.transform.GetSiblingIndex());
+            var button = copy.GetComponent<Button>();
+            button.onClick = new Button.ButtonClickedEvent();
+            button.interactable = true;
+            foreach (var t in copy.GetComponentsInChildren<TextMeshProUGUI>(true)) t.text = label;
+            foreach (var t in copy.GetComponentsInChildren<Text>(true)) t.text = label;
+            button.onClick.AddListener(click);
+            return button;
         }
 
         /// <summary>A copy of the PvP button one button step above it ("DAILY RACE").</summary>

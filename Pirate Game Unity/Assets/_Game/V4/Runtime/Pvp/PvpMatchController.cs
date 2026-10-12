@@ -103,6 +103,10 @@ namespace RoguePirates.V4.Pvp
     /// </summary>
     public sealed class PvpMatchController : MonoBehaviour, IPvpMatchView
     {
+        /// <summary>Hackathon (12 Oct, U-3): how the match notices name the practice bot ("Captain Marrow" in the hackathon
+        /// build; display only).</summary>
+        public static string BotDisplayName = "The bot";
+
         RoguePirates.V4.Foundation.Core.SessionClock _clock;
         /// <summary>V5 M9c S1: the run's session clock (V4Game sets it; Unity's frame without one).</summary>
         public RoguePirates.V4.Foundation.Core.SessionClock Clock { get => _clock ??= new RoguePirates.V4.Foundation.Core.SessionClock(); set => _clock = value; }
@@ -721,7 +725,7 @@ namespace RoguePirates.V4.Pvp
                     {
                         if (b.IsXp) _bot.LevelUp();
                         else _bot.Heal(HealFraction);
-                        Notice(b.IsXp ? "The bot took an XP barrel" : "The bot took a health barrel");
+                        Notice(BotDisplayName + (b.IsXp ? " took an XP barrel" : " took a health barrel"));
                     }
                     else Notice(b.IsXp ? "Opponent took an XP barrel" : "Opponent took a health barrel");
                     return;

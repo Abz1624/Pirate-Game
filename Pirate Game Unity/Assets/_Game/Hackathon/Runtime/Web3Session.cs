@@ -374,6 +374,90 @@ namespace RoguePirates.Hackathon
             }
         }
 
+        /// <summary>
+        /// Hackathon U-3: sends one NFT (an SPL token of the classic token program, amount 1) from the wallet to
+        /// <paramref name="toAddress"/>'s associated token account, creating that account if needed (ATA "create
+        /// idempotent"). Returns the transaction signature.
+        /// </summary>
+        public async Task<(string signature, string error)> TransferNft(string mintAddress, string toAddress)
+        {
+            if (!WalletConnected) return (null, "Connect a wallet first.");
+            if (!Web3Rules.LooksLikeAddress(toAddress) || !Web3Rules.LooksLikeAddress(mintAddress)) return (null, "Not a Solana address.");
+            if (Busy) return (null, "Busy, please wait.");
+            Begin("Approve the NFT transfer in your wallet...");
+            try
+            {
+                var from = Wallet.Account.PublicKey;
+                var mint = new PublicKey(mintAddress);
+                var to = new PublicKey(toAddress);
+                // The NFT sits in the wallet's associated account (the server mints and moves it there); else any account
+                // of the wallet holding it.
+                var source = AssociatedTokenAccountProgram.DeriveAssociatedTokenAccount(from, mint);
+                var accounts = await Wallet.ActiveRpcClient.GetTokenAccountsByOwnerAsync(from.Key, mintAddress, null, Commitment.Confirmed);
+                var held = false;
+                if (accounts?.Result?.Value != null)
+                {
+                    foreach (var a in accounts.Result.Value)
+                    {
+                        var amount = a?.Account?.Data?.Parsed?.Info?.TokenAmount?.Amount;
+                        if (amount == null || amount == "0") continue;
+                        held = true;
+                        if (a.PublicKey != source.Key) source = new PublicKey(a.PublicKey);
+                        if (a.PublicKey == AssociatedTokenAccountProgram.DeriveAssociatedTokenAccount(from, mint).Key) break;
+                    }
+                }
+                if (!held) return (null, Fail("Your wallet does not hold this island's NFT."));
+                var destination = AssociatedTokenAccountProgram.DeriveAssociatedTokenAccount(to, mint);
+                var tx = new Transaction
+                {
+                    RecentBlockHash = await Wallet.GetBlockHash(Commitment.Confirmed, false),
+                    FeePayer = from,
+                    Instructions = new List<TransactionInstruction>
+                    {
+                        new TransactionInstruction
+                        {
+                            ProgramId = AssociatedTokenAccountProgram.ProgramIdKey.KeyBytes,
+                            Keys = new List<AccountMeta>
+                            {
+                                AccountMeta.Writable(from, true),
+                                AccountMeta.Writable(destination, false),
+                                AccountMeta.ReadOnly(to, false),
+                                AccountMeta.ReadOnly(mint, false),
+                                AccountMeta.ReadOnly(SystemProgram.ProgramIdKey, false),
+                                AccountMeta.ReadOnly(TokenProgram.ProgramIdKey, false),
+                            },
+                            Data = new byte[] { 1 }, // CreateIdempotent
+                        },
+                        TokenProgram.Transfer(source, destination, 1, from),
+                    },
+                    Signatures = new List<SignaturePubKeyPair>(),
+                };
+                var result = await Wallet.SignAndSendTransaction(tx, false, Commitment.Confirmed);
+                if (result == null || !result.WasSuccessful || string.IsNullOrEmpty(result.Result))
+                {
+                    var reason = result == null ? "no reply" : (result.Reason ?? "refused");
+                    var raw = result?.RawRpcResponse;
+                    if (!string.IsNullOrEmpty(raw))
+                    {
+                        var m = System.Text.RegularExpressions.Regex.Match(raw, @"""message""\s*:\s*""([^""]+)""");
+                        if (m.Success) reason = m.Groups[1].Value;
+                    }
+                    if (reason.IndexOf("no record of a prior credit", StringComparison.OrdinalIgnoreCase) >= 0)
+                        reason = "not enough devnet SOL for the fee (get some at faucet.solana.com)";
+                    return (null, Fail("NFT transfer failed: " + reason));
+                }
+                LastTransferSignature = result.Result;
+                Done();
+                _ = RefreshBalanceLater();
+                return (result.Result, null);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Web3Session.TransferNft: " + e);
+                return (null, Fail("NFT transfer failed: " + Readable(e)));
+            }
+        }
+
         async Task RefreshBalanceLater()
         {
             await Awaitable.WaitForSecondsAsync(2f);

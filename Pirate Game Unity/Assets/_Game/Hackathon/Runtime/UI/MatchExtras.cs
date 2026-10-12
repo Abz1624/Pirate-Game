@@ -44,6 +44,8 @@ namespace RoguePirates.Hackathon.UI
         {
             V4Game.RunStarted -= OnRun;
             V4Game.RunStarted += OnRun;
+            // U-3: the match notices name the AI captain ("Captain Marrow took an XP barrel").
+            PvpMatchController.BotDisplayName = HackathonRules.CaptainName;
         }
 
         static void OnRun(V4Game game)
