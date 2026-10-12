@@ -8,9 +8,14 @@ speed-scaled enemy spread, world-space orbit weapons, elite powerups fly to the 
 raids, bundled 1v1 deposit, captain name prompt). Same profile and method as below; WebGL only (no new APK, the APK in the
 table is still the 16:05 one from `fad370cf`).
 
+**Round 2 + Anchor Flail DPS WebGL rebuild, 12 Oct 22:16-22:28** at `72918c94` (the Anchor Flail's level-1 DPS matched to the
+other starting weapons, baseDamage 20 -> 12.1, config 8ea655e3; run checks v8 deployed for it, which also accept the
+21:05 build's config 841839 and the 15:51 build's 83779c). Same profile and method; WebGL only.
+
 | Build | Path | Size | Build time | Result |
 |---|---|---|---|---|
-| Desktop WebGL (playtest profile), round 2 | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 42 min (2545 s, done 21:05) | Succeeded, 0 errors |
+| Desktop WebGL (playtest profile), round 2 + flail DPS | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 12 min (695 s, incremental, done 22:28) | Succeeded (report counts 1 error log, as in earlier builds) |
+| Desktop WebGL (playtest profile), round 2 (21:05, overwritten by 22:28) | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 42 min (2545 s, done 21:05) | Succeeded, 0 errors |
 | Desktop WebGL (playtest profile), earlier | (overwritten by round 2) | 120.2 MB download (data 111.0 MB, wasm 14.8 MB, Brotli) | 34 min (final build, done 15:51; 37 min at 13:39, the first full build 45 min) | Succeeded (report counts 1 error log, as in the 13:39 build; the build itself succeeded) |
 | Android APK (Solana Mobile / any arm64 Android 7.1+) | `Pirate Game Unity/Builds/Android-Hackathon/RoguePirates-hackathon.apk` | 148.6 MB | 12 min (final build, done 16:05; 8 min at 13:39, the first build 20 min) | Succeeded, 0 errors |
 
@@ -76,6 +81,12 @@ loader, framework, wasm and data all fetched with 200): loads to the main menu w
 captain name field); after Close the menu shows DAILY RACE, ISLANDS, MARKET, PVP (1V1), LEADERBOARD, LEDGER; no console
 errors (only the WebGL "uniform buffer too small" warnings). Font, TextMesh Pro, URP and graphics settings churn from the
 build was reverted again.
+
+Round 2 + flail DPS build checked on 12 Oct 22:31 (built-in browser, localhost:8090, IndexedDB and Cache Storage cleared,
+loader, framework, wasm and data fetched with 200; served data file 110,987,005 bytes from 22:27): loads to the main menu
+with the wallet panel open (Connect Wallet, captain name and email fields; DAILY RACE, ISLANDS, MARKET, PVP (1V1),
+LEADERBOARD, LEDGER and SET SAIL visible behind it); no console errors. Font, TextMesh Pro, URP and graphics settings
+churn from the build was reverted again.
 
 ## Install the APK
 
