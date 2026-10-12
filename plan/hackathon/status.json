@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 16:06 IST",
+ "updated": "12 Oct, 16:25 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Final builds ready: desktop WebGL at localhost:8090 and the APK. Plug in the Seeker to install. Then your test pass and the demo reset.",
+ "headline": "Desktop sign-in fixed on the server (no rebuild needed): reload localhost:8090 and sign in again. Android build waits until everything else is ready.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -203,6 +203,10 @@
   [
    "16:06",
    "Final builds: WebGL desktop (120 MB, menu loads, no console errors) and APK (148.6 MB). The Seeker was not connected, so the APK is not installed yet."
+  ],
+  [
+   "16:25",
+   "Owner: desktop sign-in failed (\"cancelled in the wallet\"): Phantom refused the message because it named roguepirates.fun while the page is localhost:8090. The sign-in message now names the page origin when it is an allowed one (server deployed, 207 tests). Owner: desktop builds only until everything is ready, then Android."
   ]
  ]
 }

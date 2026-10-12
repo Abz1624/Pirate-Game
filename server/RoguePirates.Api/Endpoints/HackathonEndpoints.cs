@@ -16,8 +16,8 @@ public static class HackathonEndpoints
     public static void MapHackathonApi(this WebApplication app)
     {
         // ---- wallet sign-in ----
-        app.MapPost("/api/auth/wallet/nonce", async (WalletNonceRequest req, WalletAuthService auth) =>
-            Results.Ok(await auth.IssueNonceAsync(req)));
+        app.MapPost("/api/auth/wallet/nonce", async (HttpContext ctx, WalletNonceRequest req, WalletAuthService auth) =>
+            Results.Ok(await auth.IssueNonceAsync(req, ctx.Request.Headers.Origin.ToString())));
 
         app.MapPost("/api/auth/wallet/verify", async (HttpContext ctx, WalletVerifyRequest req, PlayerAuth players, WalletAuthService auth) =>
         {

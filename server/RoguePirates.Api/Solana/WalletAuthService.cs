@@ -34,10 +34,13 @@ public sealed partial class WalletAuthService
     }
 
     public static string BuildMessage(string domain, string wallet, string nonce, DateTime issuedAt, DateTime expiresAt, string cluster) =>
+        BuildMessage(domain, "https://" + domain, wallet, nonce, issuedAt, expiresAt, cluster);
+
+    public static string BuildMessage(string domain, string uri, string wallet, string nonce, DateTime issuedAt, DateTime expiresAt, string cluster) =>
         $"{domain} wants you to sign in with your Solana account:\n" +
         $"{wallet}\n\n" +
         "Sign in to Rogue Pirates. This request will not trigger a blockchain transaction or cost any fees.\n\n" +
-        $"URI: https://{domain}\n" +
+        $"URI: {uri}\n" +
         "Version: 1\n" +
         $"Chain ID: {cluster}\n" +
         $"Nonce: {nonce}\n" +
@@ -54,14 +57,26 @@ public sealed partial class WalletAuthService
         return new string(chars);
     }
 
-    public async Task<object> IssueNonceAsync(WalletNonceRequest req)
+    /// <summary>The sign-in message names the page's own origin when the browser sent an allowed Origin header: browser
+    /// wallets (Phantom) refuse a sign-in message whose domain is not the requesting page's. Without one (Android MWA, the
+    /// Editor) it names SIWS_DOMAIN.</summary>
+    public (string Domain, string Uri) DomainFor(string? origin)
+    {
+        if (_settings.IsOriginAllowed(origin) && Uri.TryCreate(origin!.TrimEnd('/'), UriKind.Absolute, out var u)
+            && (u.Scheme == "https" || u.Scheme == "http"))
+            return (u.Authority, u.GetLeftPart(UriPartial.Authority));
+        return (_settings.SiwsDomain, "https://" + _settings.SiwsDomain);
+    }
+
+    public async Task<object> IssueNonceAsync(WalletNonceRequest req, string? origin = null)
     {
         var wallet = (req.Wallet ?? "").Trim();
         if (!SolanaService.IsValidAddress(wallet)) throw new ApiException(400, "invalid_wallet", "Not a Solana wallet address.");
         var now = _clock.UtcNow;
         var nonce = NewNonce();
         var expires = now + NonceLifetime;
-        var message = BuildMessage(_settings.SiwsDomain, wallet, nonce, now, expires, _settings.SolanaCluster);
+        var (domain, uri) = DomainFor(origin);
+        var message = BuildMessage(domain, uri, wallet, nonce, now, expires, _settings.SolanaCluster);
         // tidy: drop this wallet's stale nonces
         var stale = await _db.WalletNonces.Where(n => n.Wallet == wallet && (n.ExpiresAt < now || n.UsedAt != null)).ToListAsync();
         _db.WalletNonces.RemoveRange(stale);

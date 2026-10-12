@@ -194,6 +194,32 @@ public sealed class HackathonTests
     }
 
     [Fact]
+    public async Task WalletSignIn_MessageNamesThePageOrigin_WhenAllowed()
+    {
+        // Phantom refuses a sign-in message whose domain is not the requesting page's (localhost:8090 desktop test)
+        var (host, _, _) = NewHost();
+        using var _h = host;
+        var wallet = new Account();
+        var anon = host.Anon();
+
+        async Task<string> MessageFrom(string? origin)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, "/api/auth/wallet/nonce") { Content = JsonContent.Create(new { wallet = wallet.PublicKey.Key }) };
+            if (origin != null) req.Headers.Add("Origin", origin);
+            return (await (await anon.SendAsync(req)).ReadJson()).GetProperty("message").GetString()!;
+        }
+
+        var local = await MessageFrom("http://localhost:8090");
+        Assert.StartsWith("localhost:8090 wants you to sign in", local);
+        Assert.Contains("URI: http://localhost:8090\n", local);
+        Assert.StartsWith("www.roguepirates.fun wants you", await MessageFrom("https://www.roguepirates.fun"));
+        Assert.StartsWith("roguepirates.fun wants you", await MessageFrom("https://evil.example"));
+        Assert.StartsWith("roguepirates.fun wants you", await MessageFrom(null));
+        Assert.Equal(HttpStatusCode.OK, (await anon.PostAsJsonAsync("/api/auth/wallet/verify",
+            new { wallet = wallet.PublicKey.Key, signature = SignBase58(wallet, local), message = local })).StatusCode);
+    }
+
+    [Fact]
     public async Task WalletSignIn_WithAGuestToken_LinksTheWalletToTheGuestProfile()
     {
         var (host, _, _) = NewHost();
