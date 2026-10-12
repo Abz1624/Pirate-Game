@@ -7,8 +7,8 @@ namespace RoguePirates.Hackathon
 {
     /// <summary>
     /// Hackathon (12 Oct, U-3): the island, raid and marketplace API calls (server/README.md, "Hackathon: islands, RUM,
-    /// raids, island NFT market") with the wallet profile's session, and the wallet steps around them (stake deposit,
-    /// purchase payment, NFT to escrow). Every call returns a player-facing error (or null) instead of throwing.
+    /// raids, island NFT market") with the wallet profile's session, and the wallet steps around them (purchase
+    /// payment, NFT to escrow). Every call returns a player-facing error (or null) instead of throwing.
     /// </summary>
     public static class IslandApi
     {
@@ -67,37 +67,13 @@ namespace RoguePirates.Hackathon
 
         // ---------------------------------------------------------------- raids
 
-        /// <summary>Starts a raid (pays the 25 RUM fee); a stake of 0 raids without a wager.</summary>
-        public static async Task<(RaidStart raid, string error)> StartRaid(string islandId, long stakeLamports)
+        /// <summary>Starts a raid (pays the 25 RUM fee). Raids have no SOL stake (SOL wagers are only in 1v1).</summary>
+        public static async Task<(RaidStart raid, string error)> StartRaid(string islandId)
         {
             if (Token == null) return (null, "Sign in with a wallet first (Wallet button, top of the menu).");
-            var stake = stakeLamports > 0 ? stakeLamports.ToString() : "null";
-            var body = new RawJsonBody("{\"islandId\":\"" + islandId + "\",\"stakeLamports\":" + stake + "}");
+            var body = new RawJsonBody("{\"islandId\":\"" + islandId + "\"}");
             var r = await Client.Post<RaidStart>("/api/raids/start", body, Token);
             return r.Ok && r.Data != null && !string.IsNullOrEmpty(r.Data.raidId) ? (r.Data, null) : (null, Error("raid", r));
-        }
-
-        /// <summary>Sends the raid's stake from the wallet to the treasury (memo raid:&lt;id&gt;) and has the server verify it.</summary>
-        public static async Task<(RaidWager wager, string error)> FundRaid(RaidStart raid, Action<string> progress)
-        {
-            var w = raid?.wager;
-            if (w == null || !w.Exists) return (null, "This raid has no stake.");
-            var session = Web3Session.Instance;
-            if (!session.WalletConnected) return (null, "Connect your wallet to send the stake.");
-            progress?.Invoke("Approve the " + HackathonRules.Sol(w.stakeLamports) + " stake in your wallet...");
-            var (sig, error) = await session.TransferSol(w.treasury, HackathonRules.LamportsToSol(w.stakeLamports),
-                string.IsNullOrEmpty(w.memo) ? "raid:" + raid.raidId : w.memo);
-            if (error != null) return (null, error);
-            for (var attempt = 0; attempt < 12; attempt++)
-            {
-                progress?.Invoke(attempt == 0 ? "Stake sent. The server is checking it on devnet..." : "Waiting for devnet to confirm the stake...");
-                var r = await Client.Post<RaidWagerResponse>("/api/raids/" + raid.raidId + "/wager", new RaidWagerRequest { signature = sig }, Token);
-                if (r.Ok && r.Data != null) return (r.Data.wager, null);
-                if (r.ErrorCode == "tx_not_confirmed" || r.Outcome == ApiOutcome.Offline) { await Awaitable.WaitForSecondsAsync(2.5f); continue; }
-                if (r.ErrorCode == "already_deposited") return (w, null);
-                return (null, Error("stake", r));
-            }
-            return (null, "Devnet has not confirmed the stake yet (" + HackathonRules.ShortSig(sig) + ").");
         }
 
         public static async Task<(RaidResult result, string error)> ReportRaid(string raidId, bool won, bool partial, int seconds)

@@ -66,23 +66,12 @@ namespace RoguePirates.Hackathon
     [Serializable] public sealed class RaidLoot { public long exposedRum; public long ifWon; public long ifPartial; public int lootPercent; }
 
     [Serializable]
-    public sealed class RaidWager
-    {
-        public string wagerId; public long stakeLamports; public string status; public string memo; public string treasury;
-        public long payoutIfWon; public string depositSignature; public PayoutView payout; public string payoutSignature;
-        public bool Exists => !string.IsNullOrEmpty(wagerId) && stakeLamports > 0;
-        public string PayoutSig => payout != null && !string.IsNullOrEmpty(payout.signature) ? payout.signature : payoutSignature;
-    }
-
-    [Serializable]
     public sealed class RaidStart
     {
         public string raidId; public string islandId; public string islandName; public string startedAt; public string expiresAt;
-        public long feePaid; public long rum; public DefenderConfig defender; public RaidLoot loot; public RaidWager wager;
+        public long feePaid; public long rum; public DefenderConfig defender; public RaidLoot loot;
     }
 
-    [Serializable] public sealed class RaidWagerRequest { public string signature; }
-    [Serializable] public sealed class RaidWagerResponse { public string raidId; public RaidWager wager; }
 
     [Serializable] public sealed class RaidResultRequest { public bool won; public bool partial; public int seconds; }
 
@@ -90,7 +79,7 @@ namespace RoguePirates.Hackathon
     public sealed class RaidResult
     {
         public string raidId; public string result; public long rumLooted; public long rum; public int seconds;
-        public string defenderShieldUntil; public RaidWager wager;
+        public string defenderShieldUntil;
     }
 
     [Serializable] public sealed class RaidParty { public string playerId; public string name; public string wallet; }
@@ -99,7 +88,7 @@ namespace RoguePirates.Hackathon
     public sealed class RaidRow
     {
         public string raidId; public string islandId; public string islandName; public RaidParty attacker; public RaidParty defender;
-        public string result; public long rumLooted; public int seconds; public string startedAt; public string finishedAt; public RaidWager wager;
+        public string result; public long rumLooted; public int seconds; public string startedAt; public string finishedAt;
     }
 
     [Serializable] public sealed class MyRaids { public RaidRow[] attacks; public RaidRow[] defences; }

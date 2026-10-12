@@ -8,8 +8,6 @@ namespace RoguePirates.Hackathon
     {
         public const long RaidFeeRum = 25;
         public const int RaidTimeLimitSeconds = 300;
-        /// <summary>The raid stakes offered (lamports; 0 = no stake).</summary>
-        public static readonly long[] RaidStakes = { 0L, 10_000_000L, 50_000_000L };
         public static readonly string[] BuildingKinds = { "rum_store", "vault", "cannon_tower", "walls" };
 
         /// <summary>

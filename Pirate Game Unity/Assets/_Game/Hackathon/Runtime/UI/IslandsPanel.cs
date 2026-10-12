@@ -15,7 +15,7 @@ namespace RoguePirates.Hackathon.UI
     /// Hackathon (12 Oct, U-3): the menu's "Islands" screen. Left: the world map (GET /api/islands: 24 slots on a
     /// 1000x1000 sea, markers for free, mine, raidable, shielded and listed islands). Right: "My island" (GET
     /// /api/islands/mine: claim with a name, the Island NFT, RUM with a filling bar and Collect, buildings with Upgrade,
-    /// defence and shield), a tapped island's raid panel (Captain Marrow defends; loot, fee, optional SOL stake; Raid starts
+    /// defence and shield), a tapped island's raid panel (Captain Marrow defends; loot and the RUM fee, no SOL stake; Raid starts
     /// the raid voyage, <see cref="RaidHud"/>) and the raid history (GET /api/raids/mine).
     /// </summary>
     public sealed class IslandsPanel : MonoBehaviour
@@ -30,7 +30,6 @@ namespace RoguePirates.Hackathon.UI
         View _view = View.Mine;
         string _selectedSlotIsland;
         int _selectedSlot = -1;
-        int _stakeIndex;
         bool _busy;
         int _requests;
         RaidStart _pendingRaid;
@@ -441,8 +440,6 @@ namespace RoguePirates.Hackathon.UI
             var last = RaidHud.LastResult;
             if (last == null) return;
             IslandUi.TextRow(_list, "<color=#ffd166><b>Last raid</b></color>\n" + last, 26, null, 44f, new Color(1f, 0.82f, 0.4f, 0.12f));
-            var url = RaidHud.LastPayoutUrl;
-            if (url != null) IslandUi.ButtonRowOf(_list, ("View wager payout", () => Application.OpenURL(url)));
         }
 
         async void Claim()
@@ -577,18 +574,11 @@ namespace RoguePirates.Hackathon.UI
 
             if (_pendingRaid != null && _pendingRaid.islandId == island.islandId)
             {
-                IslandUi.TextRow(_list, "Raid started. " + (_pendingRaid.wager != null && _pendingRaid.wager.Exists ? "Stake " + _pendingRaid.wager.status + "." : string.Empty), 25, HackUi.Gold);
-                var buttons = new List<(string, Action)> { ("Set sail: raid!", SetSail) };
-                if (_pendingRaid.wager != null && _pendingRaid.wager.Exists && _pendingRaid.wager.status == "awaiting_deposits") buttons.Add(("Send stake again", FundPending));
-                IslandUi.ButtonRowOf(_list, buttons.ToArray());
+                IslandUi.TextRow(_list, "Raid started.", 25, HackUi.Gold);
+                IslandUi.ButtonRowOf(_list, ("Set sail: raid!", SetSail));
                 return;
             }
 
-            var stake = IslandRules.RaidStakes[_stakeIndex];
-            var stakeRow = HackUi.Row(_list, IslandUi.ButtonRow, IslandUi.RowTint);
-            HackUi.Cell(stakeRow, stake > 0 ? $"<b>SOL wager</b> {HackathonRules.Sol(stake)}: a win pays <color=#7fd68b>{HackathonRules.Sol(stake * 2)}</color>, partial refunds, loss keeps it"
-                : "<b>SOL wager</b>: none (raid for RUM only)", 0f, 24, TextAlignmentOptions.MidlineLeft, HackUi.TextColor).textWrappingMode = TextWrappingModes.Normal;
-            IslandUi.RowButton(stakeRow, stake > 0 ? HackathonRules.Sol(stake) : "No stake", () => { _stakeIndex = (_stakeIndex + 1) % IslandRules.RaidStakes.Length; Show(View.Island); }, 200f);
             var raid = IslandUi.ButtonRowOf(_list, ($"Raid {island.name}", () => StartRaid(island)))[0];
             raid.interactable = island.raidable && !_busy;
             if (!island.raidable)
@@ -598,49 +588,18 @@ namespace RoguePirates.Hackathon.UI
         async void StartRaid(IslandView island)
         {
             if (_busy) return;
-            var stake = IslandRules.RaidStakes[_stakeIndex];
-            if (stake > 0 && !Web3Session.Instance.WalletConnected) { Status("Connect your wallet to stake SOL (or pick No stake).", HackUi.Bad); return; }
             _busy = true;
             Status($"Starting the raid on {island.name} (fee {IslandRules.RaidFeeRum} RUM)...", HackUi.Gold);
             try
             {
-                var (raid, error) = await IslandApi.StartRaid(island.islandId, stake);
+                var (raid, error) = await IslandApi.StartRaid(island.islandId);
                 if (this == null) return;
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 _pendingRaid = raid;
                 if (_mine != null) _mine.rum = raid.rum;
-                if (raid.wager != null && raid.wager.Exists)
-                {
-                    var (w, werr) = await IslandApi.FundRaid(raid, s => { if (this != null) Status(s, HackUi.Gold); });
-                    if (this == null) return;
-                    if (werr != null)
-                    {
-                        Status("Stake not sent: " + werr + " You can send it again, or raid without it.", HackUi.Bad);
-                        Render();
-                        return;
-                    }
-                    raid.wager = w ?? raid.wager;
-                    Status($"Stake funded ({HackathonRules.Sol(raid.wager.stakeLamports)}). Setting sail...", HackUi.Good);
-                }
             }
             finally { _busy = false; }
             SetSail();
-        }
-
-        async void FundPending()
-        {
-            if (_busy || _pendingRaid == null) return;
-            _busy = true;
-            try
-            {
-                var (w, werr) = await IslandApi.FundRaid(_pendingRaid, s => { if (this != null) Status(s, HackUi.Gold); });
-                if (this == null) return;
-                if (werr != null) { Status("Stake not sent: " + werr, HackUi.Bad); return; }
-                _pendingRaid.wager = w ?? _pendingRaid.wager;
-                Status("Stake funded. Set sail when ready.", HackUi.Good);
-                Render();
-            }
-            finally { _busy = false; }
         }
 
         void SetSail()
@@ -681,15 +640,12 @@ namespace RoguePirates.Hackathon.UI
                 var color = r.result == "won" ? "#7fd68b" : r.result == "partial" ? "#ffd166" : r.result == "lost" ? "#ff8c73" : "#9aa4ad";
                 var who = attacks ? r.islandName : $"{r.attacker?.name} on {r.islandName}";
                 var when = OnlineRules.ParseUtc(r.startedAt);
-                var stake = r.wager != null && r.wager.stakeLamports > 0 ? "   stake " + HackathonRules.Sol(r.wager.stakeLamports) + " (" + r.wager.status + ")" : string.Empty;
                 var c = HackUi.Cell(row, $"<b>{who}</b>   <color={color}>{r.result}</color>   {(attacks ? "+" : "-")}{r.rumLooted} RUM" +
-                                         (r.seconds > 0 ? "   " + IslandRules.Clock(r.seconds) : string.Empty) + stake +
+                                         (r.seconds > 0 ? "   " + IslandRules.Clock(r.seconds) : string.Empty) +
                                          (when.HasValue ? $"\n<size=80%><color=#9aa4ad>{when.Value.ToLocalTime():dd MMM HH:mm}</color></size>" : string.Empty),
                     0f, 23, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
                 c.textWrappingMode = TextWrappingModes.Normal;
                 c.overflowMode = TextOverflowModes.Overflow;
-                var sig = r.wager?.PayoutSig;
-                if (!string.IsNullOrEmpty(sig)) IslandUi.RowButton(row, "Payout", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 160f);
             }
         }
     }

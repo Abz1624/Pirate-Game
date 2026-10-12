@@ -11,7 +11,7 @@ namespace RoguePirates.Hackathon.UI
 {
     /// <summary>
     /// Hackathon (12 Oct, owner: web3 mode is the demo's path): a "Connect Wallet" button on the main menu (top centre) and
-    /// the wallet panel (short address, devnet SOL balance, profile, optional email, disconnect). Attached to V4's online
+    /// the wallet panel (full address with Copy address and View on explorer, devnet SOL balance, profile, optional email, disconnect). Attached to V4's online
     /// menu when the menu scene loads, so V4 code is unchanged. Reads <see cref="Web3Session"/> and its Changed event.
     /// </summary>
     public sealed class WalletMenu : MonoBehaviour
@@ -29,7 +29,8 @@ namespace RoguePirates.Hackathon.UI
         RectTransform _panel;
         TextMeshProUGUI _address, _balance, _profile, _message;
         TMP_InputField _email;
-        Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail;
+        Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail, _copy, _explorer;
+        RectTransform _addressActions;
         TMP_FontAsset _font;
 
         public bool IsOpen => _panel != null && _panel.gameObject.activeSelf;
@@ -113,7 +114,17 @@ namespace RoguePirates.Hackathon.UI
             TextIn(header, "Title", "Pirate wallet (devnet)", 44, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, new Vector2(0.72f, 1f), true);
             ButtonIn(header, "Close", Close, new Vector2(0.74f, 0.05f), new Vector2(1f, 0.95f));
 
-            _address = TextIn(Strip("Address", ref y, 52f), "Address", string.Empty, 34, TextAlignmentOptions.MidlineLeft, TextColor, Vector2.zero, Vector2.one);
+            // The full address (wraps on narrow screens), then Copy address and View on explorer.
+            _address = TextIn(Strip("Address", ref y, 84f), "Address", string.Empty, 30, TextAlignmentOptions.MidlineLeft, TextColor, Vector2.zero, Vector2.one);
+            _address.textWrappingMode = TextWrappingModes.Normal;
+            _address.overflowMode = TextOverflowModes.Overflow;
+            _addressActions = Strip("AddressActions", ref y, 64f);
+            var ah = _addressActions.gameObject.AddComponent<HorizontalLayoutGroup>();
+            ah.spacing = 12f;
+            ah.childControlWidth = ah.childControlHeight = true;
+            ah.childForceExpandWidth = true;
+            _copy = Flex(SettingsPanel.CreateButton(_addressActions, "Copy address", CopyAddress), 64f);
+            _explorer = Flex(SettingsPanel.CreateButton(_addressActions, "View on explorer", OpenExplorer), 64f);
             _balance = TextIn(Strip("Balance", ref y, 44f), "Balance", string.Empty, 30, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one);
             _profile = TextIn(Strip("Profile", ref y, 44f), "Profile", string.Empty, 28, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
             y += 8f;
@@ -145,7 +156,7 @@ namespace RoguePirates.Hackathon.UI
             sle.minWidth = 240f;
             y += 12f;
 
-            _message = TextIn(Strip("Message", ref y, 120f), "Message", string.Empty, 26, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
+            _message = TextIn(Strip("Message", ref y, 96f), "Message", string.Empty, 26, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
             _message.textWrappingMode = TextWrappingModes.Normal;
             _message.overflowMode = TextOverflowModes.Overflow;
 
@@ -193,6 +204,20 @@ namespace RoguePirates.Hackathon.UI
             return null;
         }
 
+        void CopyAddress()
+        {
+            var address = S.Address;
+            if (string.IsNullOrEmpty(address)) return;
+            Web3Clipboard.Copy(address);
+            SetMessage("Address copied: " + address, Good);
+        }
+
+        void OpenExplorer()
+        {
+            var url = Web3Rules.ExplorerAddress(S.Address);
+            if (url != null) Application.OpenURL(url);
+        }
+
         void SaveEmail() => Run(S.SetEmail(_email.text), "Email saved.");
 
         async void Run(System.Threading.Tasks.Task<string> task, string okMessage = null)
@@ -223,8 +248,9 @@ namespace RoguePirates.Hackathon.UI
 
             _address.text = string.IsNullOrEmpty(address)
                 ? "No wallet connected"
-                : Web3Rules.ShortAddress(address) + (connected ? (S.Kind == Web3Session.WalletKind.TestWallet ? "   <size=24><color=#9aa4ad>test wallet</color></size>" : string.Empty)
-                    : "   <size=24><color=#9aa4ad>session kept, reconnect to sign</color></size>");
+                : "<size=24><color=#9aa4ad>Wallet address</color></size>" + (connected ? (S.Kind == Web3Session.WalletKind.TestWallet ? "   <size=24><color=#9aa4ad>test wallet</color></size>" : string.Empty)
+                    : "   <size=24><color=#9aa4ad>session kept, reconnect to sign</color></size>") + "\n" + address;
+            _addressActions.gameObject.SetActive(!string.IsNullOrEmpty(address));
             _balance.text = string.IsNullOrEmpty(address) ? string.Empty : "Balance  " + Web3Rules.FormatSol(S.Balance) + "  (devnet)";
             var p = S.Profile;
             _profile.text = p != null
@@ -303,12 +329,12 @@ namespace RoguePirates.Hackathon.UI
             return b;
         }
 
-        static Button Flex(Button b)
+        static Button Flex(Button b, float height = Row)
         {
             var le = b.GetComponent<LayoutElement>() ?? b.gameObject.AddComponent<LayoutElement>();
             le.flexibleWidth = 1f;
             le.minWidth = 120f;
-            le.preferredHeight = le.minHeight = Row;
+            le.preferredHeight = le.minHeight = height;
             return b;
         }
 

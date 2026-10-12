@@ -15,6 +15,10 @@ namespace RoguePirates.Hackathon
             return address.Length <= keep * 2 + 3 ? address : address.Substring(0, keep) + "..." + address.Substring(address.Length - keep);
         }
 
+        /// <summary>The address's page on the Solana explorer (devnet); null for no address.</summary>
+        public static string ExplorerAddress(string address) =>
+            string.IsNullOrEmpty(address) ? null : "https://explorer.solana.com/address/" + address + "?cluster=devnet";
+
         /// <summary>SOL to lamports, rounded to the nearest lamport; negative or NaN is 0.</summary>
         public static ulong SolToLamports(double sol)
         {

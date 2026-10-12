@@ -18,6 +18,15 @@ namespace RoguePirates.Hackathon.Tests
         }
 
         [Test]
+        public void ExplorerAddress_PointsAtDevnet()
+        {
+            Assert.AreEqual("https://explorer.solana.com/address/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosg9fQe?cluster=devnet",
+                Web3Rules.ExplorerAddress("7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosg9fQe"));
+            Assert.IsNull(Web3Rules.ExplorerAddress(null));
+            Assert.IsNull(Web3Rules.ExplorerAddress(string.Empty));
+        }
+
+        [Test]
         public void SolToLamports_Rounds()
         {
             Assert.AreEqual(1_000_000UL, Web3Rules.SolToLamports(0.001));

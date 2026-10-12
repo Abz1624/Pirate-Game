@@ -12,8 +12,8 @@ namespace RoguePirates.Hackathon.UI
     /// for it (<see cref="Begin"/>): a voyage on the defender's seed against Captain Marrow's defence fleet. The goal is to
     /// sink <see cref="IslandRules.RaidTargetKills(DefenderConfig)"/> ships (more with the island's walls and cannon tower)
     /// within the time limit (5:00 of run time); half of that when time runs out, the ship sinks or the player leaves is a
-    /// partial win, less is a loss. The result goes to POST /api/raids/{id}/result; the HUD then shows the loot, the wager
-    /// payout (with an explorer button) and the defender's new shield. Captain Marrow taunts along the way.
+    /// partial win, less is a loss. The result goes to POST /api/raids/{id}/result; the HUD then shows the loot and the
+    /// defender's new shield (raids have no SOL stake: SOL wagers are only in 1v1). Captain Marrow taunts along the way.
     /// </summary>
     public sealed class RaidHud : MonoBehaviour
     {
@@ -29,16 +29,15 @@ namespace RoguePirates.Hackathon.UI
             RunRequest.RequestSeed(raid.defender != null && raid.defender.seed != 0 ? raid.defender.seed : raid.GetHashCode());
         }
 
-        /// <summary>The last raid's result line (the Islands screen shows it) and its wager payout link.</summary>
+        /// <summary>The last raid's result line (the Islands screen shows it).</summary>
         public static string LastResult { get; private set; }
-        public static string LastPayoutUrl { get; private set; }
         public static RaidResult LastRaid { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             _pending = null;
-            LastResult = LastPayoutUrl = null;
+            LastResult = null;
             LastRaid = null;
         }
 
@@ -67,8 +66,6 @@ namespace RoguePirates.Hackathon.UI
         float _runStart = -1f;
         TextMeshProUGUI _goal, _clock, _bark, _resultTitle, _resultText;
         RectTransform _barkBox, _resultBox;
-        Button _payout;
-        string _payoutUrl;
         float _barkUntil;
         bool _ended, _reported, _saidHalf, _saidClose, _saidLate;
         int _kills;
@@ -110,9 +107,7 @@ namespace RoguePirates.Hackathon.UI
             _resultTitle = HackUi.TextAt(_resultBox, "Title", string.Empty, 52, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.76f), new Vector2(1f, 0.97f), true);
             _resultText = HackUi.TextAt(_resultBox, "Text", string.Empty, 28, TextAlignmentOptions.Top, HackUi.TextColor, new Vector2(0.04f, 0.26f), new Vector2(0.96f, 0.76f));
             _resultText.textWrappingMode = TextWrappingModes.Normal;
-            HackUi.Button(_resultBox, "Return to port", () => V4Game.GoToMenu(), new Vector2(0.06f, 0.05f), new Vector2(0.48f, 0.22f));
-            _payout = HackUi.Button(_resultBox, "View payout", () => { if (_payoutUrl != null) Application.OpenURL(_payoutUrl); }, new Vector2(0.52f, 0.05f), new Vector2(0.94f, 0.22f));
-            _payout.gameObject.SetActive(false);
+            HackUi.Button(_resultBox, "Return to port", () => V4Game.GoToMenu(), new Vector2(0.27f, 0.05f), new Vector2(0.73f, 0.22f));
             _resultBox.gameObject.SetActive(false);
 
             Say("Ye dare raid " + _raid.islandName + "? My fleet will feed ye to the reef!", 5f);
@@ -187,29 +182,15 @@ namespace RoguePirates.Hackathon.UI
             var (result, error) = await IslandApi.ReportRaid(raid.raidId, won, partial, seconds);
             var line = error != null ? $"{raid.islandName}: the result was not accepted ({error})" : Summary(raid, result);
             LastRaid = result;
-            var sig = result?.wager?.PayoutSig;
-            LastPayoutUrl = HackathonRules.ExplorerTx(sig);
             LastResult = line;
             if (this == null || _resultText == null) return;
             _resultText.text = reason + "\n" + line;
-            _payoutUrl = LastPayoutUrl;
-            _payout.gameObject.SetActive(_payoutUrl != null);
             if (error != null) _resultText.color = HackUi.Bad;
         }
 
         static string Summary(RaidStart raid, RaidResult r)
         {
             var text = $"<b>{raid.islandName}</b>: " + IslandRules.ResultLine(r.result, r.rumLooted) + $" You have {r.rum} RUM.";
-            var w = r.wager;
-            if (w != null && w.Exists)
-            {
-                if (w.payout != null && !string.IsNullOrEmpty(w.payout.signature))
-                    text += $"\nWager paid: <color=#7fd68b>{HackathonRules.Sol(w.payout.lamports)}</color> to your wallet ({HackathonRules.ShortSig(w.payout.signature)}).";
-                else if (w.status == "funded" && (r.result == "won" || r.result == "partial"))
-                    text += "\nWager payout pending (retry from Raid history).";
-                else if (w.status == "cancelled") text += "\nThe stake was never funded: wager cancelled.";
-                else if (r.result == "lost") text += $"\nThe house keeps your {HackathonRules.Sol(w.stakeLamports)} stake.";
-            }
             var shield = OnlineRules.ParseUtc(r.defenderShieldUntil);
             var left = IslandRules.TimeLeft(DateTime.UtcNow, shield);
             if (left != null) text += $"\n{raid.islandName} is now shielded for {left}.";

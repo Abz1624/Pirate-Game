@@ -1,12 +1,12 @@
 # Hackathon builds (12 Oct 2026)
 
-Branch `hackathon-demo` at `91906f71` (U-3). Unity 6000.3.11f1, Solana Unity SDK pinned at `bd0d30f6` (1.3.0). Both are
+Branch `hackathon-demo`, rebuilt 12 Oct 13:39 after `f428d782` (raids without SOL stakes; full wallet address with Copy address and View on explorer). Unity 6000.3.11f1, Solana Unity SDK pinned at `bd0d30f6` (1.3.0). Both are
 release (non-development) builds that talk to the live API `https://api-production-dad8.up.railway.app` (devnet).
 
 | Build | Path | Size | Build time | Result |
 |---|---|---|---|---|
-| Desktop WebGL (playtest profile) | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 111.0 MB, wasm 14.8 MB, Brotli) | 11 min incremental (the first full build took 45 min) | Succeeded, 0 errors |
-| Android APK (Solana Mobile / any arm64 Android 7.1+) | `Pirate Game Unity/Builds/Android-Hackathon/RoguePirates-hackathon.apk` | 148.1 MB | 20 min (22 min including the target switches) | Succeeded, 0 errors |
+| Desktop WebGL (playtest profile) | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 111.0 MB, wasm 14.8 MB, Brotli) | 37 min (13:39 rebuild; 11 min incremental earlier, the first full build 45 min) | Succeeded, 0 errors |
+| Android APK (Solana Mobile / any arm64 Android 7.1+) | `Pirate Game Unity/Builds/Android-Hackathon/RoguePirates-hackathon.apk` | 148.5 MB | 8 min (13:39 rebuild; the first build took 20 min) | Succeeded, 0 errors |
 
 Build reports: `Builds/V5WebGL-Desktop-Hackathon-report.txt`, `Builds/Android-Hackathon/RoguePirates-hackathon-report.txt`.
 
@@ -75,7 +75,7 @@ The package is `fun.roguepirates.hackathon`, so it installs next to the playtest
 On the phone, install a Mobile Wallet Adapter wallet (Phantom or Solflare; Seeker also ships its own Seed Vault
 wallet) and set it to devnet. Connect Wallet opens the Android wallet chooser; the wallet returns to the game after approving.
 
-No device was attached on 12 Oct (`adb devices` empty), so the APK is built but not installed or tested on a phone.
+Installed on the owner's Seeker over USB on 12 Oct 13:39 (`adb install -r`, app data kept: still signed in): the menu loads at about 58 fps (2670x1200), and the wallet panel shows the full address; Copy address copies it (screens `plan/hackathon/screens/seeker-menu-nostake.png`, `seeker-wallet-panel.png`, `seeker-wallet-copied.png`).
 
 APK contents checked: `fun.roguepirates.hackathon`, label "Rogue Pirates", minSdk 25, targetSdk 36, `arm64-v8a` only;
 the dex has the SDK's `MwaChooserHelper` (the MWA wallet chooser), androidx.browser and guava; the data has the
@@ -83,7 +83,7 @@ the dex has the SDK's `MwaChooserHelper` (the MWA wallet chooser), androidx.brow
 
 ## Known limits
 
-- Devnet only. Phantom/Solflare must be switched to devnet, and the wallet needs devnet SOL for wagers, raids and buys.
+- Devnet only. Phantom/Solflare must be switched to devnet, and the wallet needs devnet SOL for 1v1 wagers and market buys (raids cost only RUM).
 - Release builds: the in-game test wallet is off (it is for the Editor and development builds), so a real wallet is
   needed on both platforms.
 - The APK is signed with the Unity debug key: fine for side-loading and the demo, not for the Play Store or the
