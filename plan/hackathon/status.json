@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 13:43 IST",
+ "updated": "12 Oct, 14:04 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Rebuilt and installed: raids without stakes, full wallet address with copy. Desktop at localhost:8090 and the APK on the Seeker are current. Remaining: your test pass, then the demo reset.",
+ "headline": "1v1 wager vs Captain Marrow works on the Seeker. Adding: raids as base conquest of a player-designed defence (15-minute wave plan + guardian boss), the boss teleport fix, and a cheap minimap.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -19,10 +19,17 @@
   },
   {
    "name": "Raids vs the AI captain",
-   "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield. No SOL stake (owner, 12 Oct): wagers are only in 1v1.",
+   "detail": "Conquer another player's island: survive its designed waves and sink its guardian boss; a win loots 25% of the exposed RUM; 4 h shield. No SOL stake.",
    "server": "done",
-   "unity": "done",
+   "unity": "todo",
    "chain": "done"
+  },
+  {
+   "name": "Island defence designer",
+   "detail": "Each island is a roguelike level its owner designs: a 15-minute timeline in 1-minute windows, a points budget per window (grows each minute and with defences), enemy picks with costs, a guardian boss and its arrival minute; presets. Raiders must survive the waves and sink the guardian.",
+   "server": "building",
+   "unity": "todo",
+   "chain": "n/a"
   },
   {
    "name": "AI captain",
@@ -63,30 +70,33 @@
    "name": "Builds",
    "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
    "server": "n/a",
-   "unity": "done",
+   "unity": "todo",
+   "chain": "n/a"
+  },
+  {
+   "name": "Fixes: boss teleport, minimap",
+   "detail": "The Barnacle King teleported mid-fight (suspected: the leash moving bosses); the minimap returns as a one-time snapshot with live icons on top (no per-frame rendering).",
+   "server": "n/a",
+   "unity": "building",
    "chain": "n/a"
   }
  ],
  "schedule": [
   [
-   "07:10-09:30",
-   "Server core (done 07:19); wallet login in Unity"
+   "14:00-15:15",
+   "Defence designer on the server; boss teleport fix + minimap in the game"
   ],
   [
-   "09:30-13:00",
-   "Server features (done 07:40); wagers, AI captain, daily race, rewards in the game (done 08:13)"
+   "15:15-16:30",
+   "Designer screen and base-conquest raids in the game; deploy"
   ],
   [
-   "13:00-16:00",
-   "Islands, raids and marketplace in the game (done 08:56); API deployed (done)"
-  ],
-  [
-   "16:00-17:30",
-   "WebGL desktop + Android APK (done 09:4x); devnet end-to-end test with you"
+   "16:30-17:30",
+   "Rebuild WebGL + APK, install on the Seeker, your test"
   ],
   [
    "17:30-18:00",
-   "Buffer"
+   "Demo reset, public build if wanted, buffer"
   ]
  ],
  "needs": [
@@ -173,6 +183,10 @@
   [
    "13:43",
    "Raids without SOL stake (game + server, deployed); wallet panel shows the full address with Copy and explorer buttons; WebGL desktop (120 MB) and APK (148.5 MB) rebuilt; the APK reinstalled on the Seeker (signed in, ~58 fps). Server 198, EditMode 758 pass."
+  ],
+  [
+   "14:04",
+   "Owner test: 1v1 wager vs Captain Marrow worked on the phone. New requests: raids conquer the base (waves + guardian boss), player-designed island defences (15 x 1-minute windows with budgets), Barnacle King teleport bug, minimap via a one-time snapshot. Server designer and the Unity fixes started."
   ]
  ]
 }
