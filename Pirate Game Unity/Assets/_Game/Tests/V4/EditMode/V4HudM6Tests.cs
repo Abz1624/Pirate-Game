@@ -10,6 +10,7 @@ using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Presentation.Hud;
+using RoguePirates.V4.Progression;
 using RoguePirates.V4.Views;
 using RoguePirates.V4.Weapons;
 using UnityEditor;
@@ -92,6 +93,8 @@ namespace RoguePirates.V4.Tests
             "mortar", "powder_kegs", "swivel_guns",
             // Hackathon (13 Oct): the art team's icon set (Assets/_Game/V4/Demo/Art/Icons).
             "anchor_flail", "chainshot", "cursed_doubloons", "lighthouse_lantern", "maelstrom_charge", "monkey_gunners", "parrot_squadron",
+            // Owner's mapping (13 Oct): Aura is the Siren Bell; Squid Ink Pots borrows the Kraken Ink Sac icon for now.
+            "siren_bell", "squid_ink_pots",
         };
 
         static readonly string[] ArtItems =
@@ -104,6 +107,8 @@ namespace RoguePirates.V4.Tests
             "dead_mans_compass", "fresnel_lens", "jolly_roger", "leviathan_heart", "manta_sail", "powder_horn_of_the_line",
             "powder_monkey", "reef_carapace", "rusted_shackle", "shark_tooth_necklace", "siege_quadrant", "siren_scale", "skeleton_key",
             "smugglers_ledger", "spare_planks", "storm_conch", "swivel_mount", "whale_oil_barrel",
+            // Owner's mapping (13 Oct): "chain shott" is the Chain Locker, the Kraken Ink Sac is the Cuttlefish Bone.
+            "chain_locker", "cuttlefish_bone",
         };
 
         /// <summary>Hackathon (13 Oct): the Logbooks with the art team's icons; the rest show their name.</summary>
@@ -111,6 +116,8 @@ namespace RoguePirates.V4.Tests
         {
             "carpenters_notes", "cartographers_folio", "fortune", "gunnery_manual", "ironclad", "lookouts_glass", "navigators_charts",
             "oversized_shot", "plunderer", "powder_drill", "quartermasters_ledger", "scavengers_net", "tidecaller",
+            // Owner's mapping (13 Oct): Big Game Hunter (was Admiral) and Echo Arsenal (was Extra Hands).
+            "admiral", "extra_hands",
         };
 
         [Test]
@@ -121,8 +128,8 @@ namespace RoguePirates.V4.Tests
             // and their slot and card show the name instead (it must not be empty).
             var catalog = IconCatalog.Load();
             Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset");
-            Assert.AreEqual(17, ArtWeapons.Length);
-            Assert.AreEqual(44, ArtItems.Length);
+            Assert.AreEqual(19, ArtWeapons.Length);
+            Assert.AreEqual(46, ArtItems.Length);
             var weapons = AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" })
                 .Select(g => AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(g))).ToList();
             var items = AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" })
@@ -195,12 +202,19 @@ namespace RoguePirates.V4.Tests
                 {
                     var path = AssetDatabase.GUIDToAssetPath(guid);
                     var id = System.IO.Path.GetFileNameWithoutExtension(path);
+                    files++;
                     CollectionAssert.Contains(ids, id, path + " is named after a content id");
                     Assert.AreSame(AssetDatabase.LoadAssetAtPath<Sprite>(path), get(id), path + " is the catalog's icon for " + id);
-                    files++;
                 }
             }
-            Assert.AreEqual(17 - 10 + 25 + 13, files, "7 new weapon icons (the other 10 were already in New_items), 25 items, 13 Logbooks");
+            // 13 Oct, owner's mapping: + siren_bell, mortar (the newer icon replaces New_items' mortar(1)) and squid_ink_pots
+            // (the Kraken Ink Sac icon for now); + chain_locker, cuttlefish_bone; + admiral, extra_hands.
+            Assert.AreEqual(10 + 27 + 15, files, "10 weapon icons (9 more are New_items'), 27 items, 15 Logbooks");
+            Assert.IsNull(catalog.Item("cursed_chest_key"), "the Cursed Chest Key is not the Skeleton Key: no icon (owner, 13 Oct)");
+            Assert.IsTrue(catalog.Weapon("mortar") != null && AssetDatabase.GetAssetPath(catalog.Weapon("mortar")) == IconFolder + "/Weapons/mortar.png",
+                "the newer Mortar icon replaces mortar(1)");
+            // Boarding Party, Grapeshot and Ramming Prow are old names of Monkey Buccaneer, Chainshot and Squid Ink Pots: unused.
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<Sprite>(IconFolder + "/Unmapped/Weapons/ramming_prow.png"));
             var all = catalog.weapons.Concat(catalog.items).Concat(catalog.logbooks).Where(e => e.sprite != null)
                 .Select(e => AssetDatabase.GetAssetPath(e.sprite)).ToList();
             Assert.IsFalse(all.Any(p => p.StartsWith(IconFolder + "/Unmapped/")), "art waiting for the owner's mapping stays unwired");
@@ -214,6 +228,58 @@ namespace RoguePirates.V4.Tests
                 Assert.LessOrEqual(importer.maxTextureSize, 512, path + ": a UI icon, kept small for WebGL");
                 Assert.AreEqual(TextureImporterCompression.Compressed, importer.textureCompression, path);
             }
+        }
+
+        /// <summary>Hackathon (13 Oct, owner): content with no icon is taken out of every offer pool (kept, not deleted).</summary>
+        internal static readonly string[] DisabledForMissingIcon = { "cursed_chest_key" };
+
+        /// <summary>
+        /// Hackathon (13 Oct, owner: "disable items, icons, or weapons that have missing icons"): everything the game still
+        /// offers (level-up weapons and Logbooks, chest and level-up items, the Rum shop, PvP drafts and the PvP bot's
+        /// default draft) has an icon; the content without one is out of every pool. The owner's renames are in.
+        /// </summary>
+        [Test]
+        public void OfferedContent_AllHasAnIcon_AndContentWithoutOneIsOutOfThePools()
+        {
+            var catalog = IconCatalog.Load();
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset"));
+            foreach (var w in config.All<WeaponConfig>()) Assert.IsNotNull(catalog.Weapon(w.weaponId), w.weaponId + " is offered and has an icon");
+            foreach (var l in config.All<LogbookConfig>().Where(l => l.inSaltwindPool)) Assert.IsNotNull(catalog.Logbook(l.logbookId), l.logbookId + " is offered and has an icon");
+            foreach (var i in config.All<ItemConfig>())
+            {
+                var offered = i.inChestPool || i.inLevelUpPool;
+                Assert.AreEqual(offered, catalog.Item(i.itemId) != null, i.itemId + (offered ? " is offered, so it needs an icon" : " has an icon, so it should be offered"));
+                Assert.AreEqual(!offered, DisabledForMissingIcon.Contains(i.itemId), i.itemId + ": DisabledForMissingIcon lists exactly the items out of the pools");
+                Assert.AreEqual(offered, RoguePirates.V5.Meta.LocalMetaServices.InAPool(config, i.itemId), i.itemId + ": the Rum shop sells only pooled items");
+            }
+            foreach (var id in Pvp.PvpBotArsenal.DefaultWeapons) Assert.IsNotNull(catalog.Weapon(id), "PvP bot draft: " + id);
+            foreach (var id in Pvp.PvpBotArsenal.DefaultLogbooks) Assert.IsNotNull(catalog.Logbook(id), "PvP bot draft: " + id);
+            var logbooks = config.All<LogbookConfig>().ToDictionary(l => l.logbookId);
+            Assert.AreEqual("Big Game Hunter", logbooks["admiral"].displayName);
+            Assert.AreEqual("Echo Arsenal", logbooks["extra_hands"].displayName);
+            Assert.AreEqual("Kraken Ink Sack", config.All<ItemConfig>().Single(i => i.itemId == "cuttlefish_bone").displayName);
+        }
+
+        /// <summary>Hackathon (13 Oct, owner): an item on a level-up card showed its id ("whale_oil_barrel"); it shows the
+        /// item's display name, like weapons and Logbooks.</summary>
+        [Test]
+        public void LevelUpCard_ForAnItem_ShowsTheItemsDisplayName()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset"));
+            var card = OfferCards.ToCard(new Offer { Kind = OfferKind.NewRunItem, Id = "whale_oil_barrel", IsNew = true }, config);
+            Assert.AreEqual("Whale Oil Barrel", card.title);
+            Assert.AreEqual("whale_oil_barrel", card.id, "the card still carries the id");
+            Assert.AreEqual(Foundation.UI.LevelOfferKind.NewRunItem, card.kind);
+            var items = config.All<ItemConfig>().ToList();
+            Assert.Greater(items.Count, 0);
+            foreach (var item in items.Where(i => !string.IsNullOrWhiteSpace(i.displayName)))
+            {
+                var c = OfferCards.ToCard(new Offer { Kind = OfferKind.NewRunItem, Id = item.itemId, IsNew = true }, config);
+                Assert.AreEqual(item.displayName, c.title, item.itemId);
+                Assert.AreEqual(item.description ?? string.Empty, c.description, item.itemId);
+            }
+            // Unknown content still shows something.
+            Assert.AreEqual("no_such_item", OfferCards.ToCard(new Offer { Kind = OfferKind.NewRunItem, Id = "no_such_item" }, config).title);
         }
 
         [TestCase("Deck Cannons", "Deck Canno…")]

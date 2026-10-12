@@ -95,6 +95,16 @@ namespace RoguePirates.V4.Presentation.Hud
                     card.upgradeLines = Array.Empty<WeaponUpgradeLine>();
                     return card;
                 }
+                case OfferKind.NewRunItem:
+                {
+                    // Hackathon (13 Oct, owner): an item card showed its id ("whale_oil_barrel"); it shows the item's name,
+                    // like weapons and Logbooks.
+                    var item = config?.All<ItemConfig>().FirstOrDefault(i => i.itemId == o.Id);
+                    var card = Plain(o, "New Item", config);
+                    if (item != null && !string.IsNullOrWhiteSpace(item.displayName)) card.title = item.displayName;
+                    card.description = item != null ? item.description ?? string.Empty : string.Empty;
+                    return card;
+                }
                 default: return Plain(o, string.Empty, config);
             }
         }

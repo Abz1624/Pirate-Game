@@ -16,7 +16,7 @@ MonoBehaviour:
   schemaVersion: 1
   balanceVersion: saltwind-v5-m5
   logbookId: admiral
-  displayName: Admiral
+  displayName: Big Game Hunter
   stat: 19
   perLevelAdditive: 0.1
   perLevelMultiplicative: 1

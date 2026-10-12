@@ -16,7 +16,7 @@ MonoBehaviour:
   schemaVersion: 1
   balanceVersion: saltwind-v5-m4
   itemId: cuttlefish_bone
-  displayName: Cuttlefish Bone
+  displayName: Kraken Ink Sack
   description: +9% damage. Evolves Squid Ink Pots into Black Tide at weapon level
     5.
   rarity: 1

@@ -28,7 +28,7 @@ MonoBehaviour:
   - id: long_nine
     sprite: {fileID: 21300000, guid: 9cd12b9f5ae134a4f8c074ab812492af, type: 3}
   - id: mortar
-    sprite: {fileID: 21300000, guid: b06f322bd137e4a6ab7bb2dcc1ab54bd, type: 3}
+    sprite: {fileID: 21300000, guid: 46f6a8194317f8a469bc3de9e9d30ee3, type: 3}
   - id: powder_kegs
     sprite: {fileID: 21300000, guid: fdf3a2cd22a594d8199cf7e099952a2d, type: 3}
   - id: swivel_guns
@@ -38,9 +38,9 @@ MonoBehaviour:
   - id: chainshot
     sprite: {fileID: 21300000, guid: 6b3ea21628b951b4484f9555a6917541, type: 3}
   - id: siren_bell
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: d2808f74c54b94a47b1efa84ddc262ec, type: 3}
   - id: squid_ink_pots
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 715f80ac4a7258b4797a126c0988033e, type: 3}
   - id: parrot_squadron
     sprite: {fileID: 21300000, guid: e5a83067829735446969caca026ea1a4, type: 3}
   - id: monkey_gunners
@@ -93,11 +93,11 @@ MonoBehaviour:
   - id: rusted_shackle
     sprite: {fileID: 21300000, guid: ef20c2646b5c70243a5586d682ed027c, type: 3}
   - id: chain_locker
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: c1896427521468343ab5f990ef0acab5, type: 3}
   - id: siren_scale
     sprite: {fileID: 21300000, guid: ed9d81e6301f2814a9467e68cb129a72, type: 3}
   - id: cuttlefish_bone
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: be960efe00a93af4bb4cf71fefc9e990, type: 3}
   - id: whale_oil_barrel
     sprite: {fileID: 21300000, guid: 0f83caaa65bf45f409c320f6539ae1b5, type: 3}
   - id: powder_horn_of_the_line
@@ -148,13 +148,13 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: ea824fe6cbc6331459e429afdb54b4b3, type: 3}
   logbooks:
   - id: admiral
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: e851ae039bdda2147aee1c97d112d9cf, type: 3}
   - id: carpenters_notes
     sprite: {fileID: 21300000, guid: 06d345d49ba997e419fb921c07c6fc84, type: 3}
   - id: cartographers_folio
     sprite: {fileID: 21300000, guid: 06ec14538a77e864395549b72ab53829, type: 3}
   - id: extra_hands
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 01ec89d7529d56d449b47aca8e04a7d0, type: 3}
   - id: fortune
     sprite: {fileID: 21300000, guid: e2fbd850085f8cc468bdfa103710446d, type: 3}
   - id: gunnery_manual

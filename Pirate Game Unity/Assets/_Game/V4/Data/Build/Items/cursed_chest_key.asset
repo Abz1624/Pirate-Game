@@ -20,7 +20,7 @@ MonoBehaviour:
   description: +9% damage. Evolves Cursed Doubloons into Pirate King's Hoard at weapon
     level 5.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 44
   collectionOrder: 44

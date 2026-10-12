@@ -16,7 +16,7 @@ MonoBehaviour:
   schemaVersion: 1
   balanceVersion: saltwind-playtest-r10
   logbookId: extra_hands
-  displayName: Extra Hands
+  displayName: Echo Arsenal
   stat: 9
   perLevelAdditive: 1
   perLevelMultiplicative: 1

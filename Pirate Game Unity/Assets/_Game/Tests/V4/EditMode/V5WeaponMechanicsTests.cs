@@ -346,6 +346,10 @@ namespace RoguePirates.V4.Tests
                 var evo = evolutions.Single(e => e.baseWeapon != null && e.baseWeapon.weaponId == id);
                 Assert.AreEqual(ConfigEnums.EvolutionEffect.Empowered, evo.effect, id);
                 Assert.IsTrue(items.TryGetValue(evo.requiredItemId, out var item), $"{evo.evolutionId} needs {evo.requiredItemId}");
+                // Hackathon (13 Oct, owner): content with no icon is out of every offer pool (V4HudM6Tests.
+                // OfferedContent_AllHasAnIcon); the Cursed Chest Key has none, so Pirate King's Hoard is unreachable for now
+                // (its data is kept).
+                if (V4HudM6Tests.DisabledForMissingIcon.Contains(item.itemId)) { Assert.IsFalse(item.inChestPool || item.inLevelUpPool, item.itemId); continue; }
                 Assert.IsTrue(item.inChestPool, $"{item.itemId} drops from chests (ChestEconomy only rolls evolution items in its pool)");
                 Assert.IsTrue(icons.Item(item.itemId) != null || !string.IsNullOrWhiteSpace(item.displayName), $"{item.itemId} has an icon or a name (playtest round 7)");
             }

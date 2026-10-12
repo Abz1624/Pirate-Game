@@ -164,6 +164,18 @@ namespace RoguePirates.V4.Editor
         {
             var catalog = AssetDatabase.LoadAssetAtPath<IconCatalog>(ResourcesFolder + "/V4IconCatalog.asset");
             if (catalog == null) { log.Add("Icons: no catalog"); return; }
+            // Hackathon (13 Oct): new weapons and items get their catalog entry here (one per content id), so their icon
+            // file in Demo/Art/Icons is picked up as soon as the content exists.
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" }))
+            {
+                var id = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid))?.weaponId;
+                if (!string.IsNullOrEmpty(id) && catalog.weapons.All(e => e.id != id)) catalog.weapons.Add(new IconCatalog.Entry { id = id });
+            }
+            foreach (var guid in AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" }))
+            {
+                var id = AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(guid))?.itemId;
+                if (!string.IsNullOrEmpty(id) && catalog.items.All(e => e.id != id)) catalog.items.Add(new IconCatalog.Entry { id = id });
+            }
             int w = 0, i = 0;
             for (var k = 0; k < catalog.weapons.Count; k++)
             {
