@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 07:45 IST",
+ "updated": "12 Oct, 08:13 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Every server feature passed a live devnet end-to-end test with two real wallets. Game screens in progress.",
+ "headline": "In the game now: wallet login, 1v1 SOL wagers, Captain Marrow, the daily race and weekly rewards. Islands, raids and the marketplace screens are being built.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -14,49 +14,49 @@
    "name": "Islands: claim, base building, RUM",
    "detail": "Claim mints an Island NFT; RUM store fills over time; vault keeps 60%; defences make raids harder.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "done"
   },
   {
    "name": "Raids vs the AI captain",
    "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "done"
   },
   {
    "name": "AI captain",
    "detail": "Named AI opponent ship on the PvP bot: 1v1 opponent and island defender.",
    "server": "n/a",
-   "unity": "building",
+   "unity": "done",
    "chain": "n/a"
   },
   {
    "name": "Daily island race",
    "detail": "One seeded course per day; fastest time to 100 kills; daily board.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "n/a"
   },
   {
    "name": "Weekly kill leaderboard + SOL rewards",
    "detail": "Top places paid in devnet SOL from the treasury; owner-triggered payout for the demo.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
    "name": "1v1 PvP with SOL wagers",
    "detail": "Both deposit the stake to escrow; the winner is paid 2x; vs the AI captain the house matches the stake.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
    "name": "Island NFT marketplace",
    "detail": "List (NFT to escrow), buy with SOL, cancel; the server swaps.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "done"
   },
   {
@@ -74,11 +74,11 @@
   ],
   [
    "09:30-13:00",
-   "Server features; 1v1 wagers, AI captain, daily race, rewards in Unity"
+   "Server features (done 07:40); wagers, AI captain, daily race, rewards in the game (done 08:13)"
   ],
   [
    "13:00-16:00",
-   "Islands and marketplace in Unity; deploy the API"
+   "Islands, raids and marketplace screens (building); API deployed (done)"
   ],
   [
    "16:00-17:30",
@@ -149,6 +149,10 @@
   [
    "07:45",
    "Live devnet end-to-end test: 8 of 8 passed with two wallets (sign-in, island claims with NFT mints, a won raid with a 0.01 SOL wager paid 2x, an island sold through escrow and the NFT moved on chain, a wager refund, weekly rewards paid, daily race entries). Report: plan/hackathon/devnet-smoke.md. To clean before the demo: test runs on the weekly board and this week already marked paid."
+  ],
+  [
+   "08:13",
+   "Game: 1v1 stake picker and deposit (a real 0.01 SOL wager vs Captain Marrow settled on devnet; a refund paid on leave), Captain Marrow (banner, name over his ship, barks), the daily race (seeded voyage, kills/100 HUD, entry + board), wallets and SOL rewards on the leaderboard. EditMode 750/750."
   ]
  ]
 }
