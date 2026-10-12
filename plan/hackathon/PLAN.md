@@ -58,3 +58,10 @@ only. The public build is made at the very end (session downloads off then).
 Scope is very large for one day; every feature is built to its happy path. Devnet faucet limits (the treasury needs
 devnet SOL); public devnet RPC rate limits; wallet behaviour differences between WebGL and Android (MWA); one Unity
 Editor for all Unity work.
+
+## Known limits (owner, 12 Oct round 2)
+
+- Staked 1v1 vs Captain Marrow stays on for the devnet demo. The bot is simulated and reported by the human player's
+  client, so a modified client could fake the bot's sinking and win the house's 2x payout. Fix after the hackathon: the
+  server runs the bot, or bot matches carry no stake.
+- Practice raids on your own island pay nothing (no RUM fee, no loot, no voyage Rum).
