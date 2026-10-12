@@ -1,5 +1,19 @@
 # Your TODOs — V5 (updated 1 Oct)
 
+# Now (13 Oct): hackathon art (branch hackathon-demo)
+
+- [ ] Weapon art mapping: tell me which art goes on which weapon (some weapons were renamed). My guesses:
+      Maelstrom Charge art -> `maelstrom_charge`; Mortar Barrage art -> `mortar`; Tidal Aura + fish bell -> `siren_bell`.
+      Also say whether the not-yet-wired prefabs (Broadside Battery, Deck Cannons, Flamethrower, Flying Cutlasses, Harpoon
+      Gun / Harpoon, Grapeshot) and the weapons with no art yet (Lightning Mast, Long Nine, Powder Kegs, Swivel Guns) should
+      get art. Asset locations (under `Pirate Game Unity/Assets/`): `GameObject/Guns/Maelstrom Charge.prefab` +
+      `GameObject/Guns/MaelstromCharge/`; `GameObject/Guns/Mortar Barrage.prefab` + `GameObject/Guns/MortarBarrage/Prefabs/`
+      + `GameObject/Guns/VFX/Mortar_Explosion_VFX.prefab` (launcher `GameObject/Guns/Mortar.prefab`);
+      `GameObject/Guns/TidalAura/TidalAura_VFX.prefab`; `GameObject/fish_bell.prefab` + `Mesh/Cursed/bell/fish_bell.fbx`.
+- [ ] Check the art in the Editor: `Assets/_Game/Scenes/V4/Hackathon_ArtShowcase.unity` (Play), or V4Boot > Set Sail.
+- [ ] Art team: Kraken_Crown `Kraken.mat` white emission (pale in game); CutthroatSkiff wake trail has no material; ship
+      textures are 2048 px (WebGL caps at 1024).
+
 # Now (11 Oct): M9b closing, M9c next
 
 - [ ] Ram jolt (online): your ship can jolt 1 to 2.6 m when an enemy rams it. The server's knockback isn't predicted on
