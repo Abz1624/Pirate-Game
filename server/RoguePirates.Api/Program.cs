@@ -57,6 +57,7 @@ builder.Services.AddScoped<RoguePirates.Api.Hackathon.DailyRaceService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.IslandService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.RaidService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.MarketService>();
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.DemoResetService>();
 
 builder.Services.AddCors();
 builder.Services.AddOptions<CorsOptions>().Configure<IServiceProvider>((o, sp) =>

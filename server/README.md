@@ -542,6 +542,34 @@ stays `funded` with `payout.status:"failed"`: `POST /api/raids/{id}/settle` retr
 4. `POST /api/market/{id}/cancel` (seller, `active` only) returns the NFT -> `cancelled`; on failure `cancelling` with
    `error` (call cancel again).
 
+### Hackathon: demo reset (owner tool)
+
+Code: `Hackathon/DemoResetService.cs`. Removes test wallets' data from a live API before a demo (for example the devnet
+smoke test's wallets A and B, whose 4000- and 1500-kill runs top the week's board).
+
+`POST /api/admin/demo/reset` (X-Admin-Key; `503 admin_off` without `ADMIN_KEY`, `403 not_admin` with a wrong key)
+`{"wallets":["DcUm...","3cm6..."],"clearWeeklyRewards":true,"weekStart":"2026-10-12","dryRun":false}`.
+`dryRun` defaults to **true** (counts only, nothing written); send `"dryRun":false` to delete. At most 50 wallets;
+`400 nothing_to_reset` with no wallets and no `clearWeeklyRewards`. For the players signed in with the listed wallets
+it deletes, in one transaction:
+- their `Runs` with their `RunLogs` and `RunVerdicts`, all their `WeeklyBests` (every week), and their `DailyRaceEntries`;
+- `Raids` where they are the attacker or defender, or on an island being released;
+- their islands (`Islands` + `IslandBuildings` rows; the world slots are free again). The Island NFTs are **not**
+  touched on chain: they stay in the wallets. An island with an open market listing (`active`, `paid`, `cancelling`:
+  NFT in escrow or a trade in progress) is skipped and listed in `skippedIslands`;
+- closed (`sold` / `cancelled`) market listings they sold or bought, or of a released island.
+
+With `clearWeeklyRewards:true` it also deletes every `WeeklyRewards` row of `weekStart` (any date, snapped to its Monday;
+default the current week). The `Payout` rows stay as history. A deleted week is no longer "recorded", so it can be paid
+again: by the hourly job once it is the previous week, or by `POST /api/admin/rewards/weekly`; anyone still in the top
+places is then paid again (the old payouts are not counted). Players, sessions, deposits, wagers and payouts are never
+deleted, and RUM balances are not reset.
+
+-> `{"dryRun","wallets":[{"wallet","found","playerId","name"}],"deleted":{"runs","runLogs","runVerdicts","weeklyBests",
+"dailyRaceEntries","raids","islands","islandBuildings","marketListings","weeklyRewards"},"releasedIslands":[{"id","name",
+"slot","nftMint"}],"skippedIslands":[{"id","name","slot","reason":"listing_open","listingStatus"}],
+"weeklyRewards":null | {"weekStart","rows","payoutsKept"},"notes":[...]}`.
+
 ## 1v1 match protocol (relay)
 
 Applies when `hostMode` is `"relay"`. Both clients simulate their own ship, weapons and the PvP damage rules locally;

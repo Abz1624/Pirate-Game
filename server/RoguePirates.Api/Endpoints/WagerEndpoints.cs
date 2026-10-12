@@ -49,6 +49,14 @@ public static class WagerEndpoints
             RequireAdmin(ctx, settings);
             return Results.Ok(new { wagers = await wagers.SweepAsync() });
         });
+
+        // owner-only: removes test wallets' data (runs, bests, race entries, raids, islands, closed listings) and,
+        // optionally, one week's WeeklyRewards rows before a demo. dryRun defaults to true (counts only).
+        app.MapPost("/api/admin/demo/reset", async (HttpContext ctx, DemoResetRequest? req, ApiSettings settings, DemoResetService reset) =>
+        {
+            RequireAdmin(ctx, settings);
+            return Results.Ok(await reset.ResetAsync(req ?? new DemoResetRequest(null, null, null, null)));
+        });
     }
 
     static void RequireAdmin(HttpContext ctx, ApiSettings settings)
