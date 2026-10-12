@@ -90,6 +90,48 @@ namespace RoguePirates.Hackathon
             return (null, "The raid result could not be sent.");
         }
 
+        /// <summary>Hackathon (12 Oct): a conquest raid's result (the server decides won / partial / lost).</summary>
+        public static async Task<(RaidResult result, string error)> ReportConquest(string raidId, bool guardianSunk, int minuteReached, int seconds)
+        {
+            var body = new ConquestResultRequest { won = guardianSunk, guardianSunk = guardianSunk, minuteReached = Mathf.Clamp(minuteReached, 0, 16), seconds = Mathf.Clamp(seconds, 1, 1020) };
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                var r = await Client.Post<RaidResult>("/api/raids/" + raidId + "/result", body, Token);
+                if (r.Ok && r.Data != null) return (r.Data, null);
+                if (r.Outcome != ApiOutcome.Offline) return (null, Error("raid result", r));
+                await Awaitable.WaitForSecondsAsync(2f);
+            }
+            return (null, "The raid result could not be sent.");
+        }
+
+        // ---------------------------------------------------------------- defence designs
+
+        public static async Task<(DefenceCatalog catalog, string error)> DefenceCatalog()
+        {
+            await OnlineService.EnsureConnected();
+            var r = await Client.Get<DefenceCatalog>("/api/defence/catalog", Token);
+            return r.Ok && r.Data != null && r.Data.kinds != null ? (r.Data, null) : (null, Error("defence catalog", r));
+        }
+
+        public static async Task<(IslandDefenceView view, string error)> Defence(string islandId)
+        {
+            var r = await Client.Get<IslandDefenceView>("/api/islands/" + islandId + "/defence", Token);
+            return r.Ok && r.Data != null && r.Data.design != null ? (r.Data, null) : (null, Error("defence", r));
+        }
+
+        /// <summary>Saves a design (owner). On invalid_defence, <c>problems</c> lists every rejected field.</summary>
+        public static async Task<(IslandDefenceView view, string error, DefenceProblem[] problems)> SaveDefence(string islandId, DefenceDesign design)
+        {
+            var r = await Client.Send<IslandDefenceView>("PUT", "/api/islands/" + islandId + "/defence", design, Token, 0);
+            if (r.Ok && r.Data != null) return (r.Data, null, null);
+            DefenceProblem[] problems = null;
+            if (r.ErrorCode == "invalid_defence" && !string.IsNullOrEmpty(r.Body))
+            {
+                try { problems = JsonUtility.FromJson<DefenceErrorBody>(r.Body)?.errors; } catch (Exception) { }
+            }
+            return (null, r.ErrorCode == "invalid_defence" ? "The server rejected the design." : Error("save defence", r), problems);
+        }
+
         public static async Task<(RaidResult result, string error)> SettleRaid(string raidId)
         {
             var r = await Client.Post<RaidResult>("/api/raids/" + raidId + "/settle", null, Token);

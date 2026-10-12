@@ -27,6 +27,8 @@ namespace RoguePirates.V4.Spawning
         EncounterExecutor _encounters;
         TimelineTriggers _triggers;
         FlowDirector _flow;
+        RaidSpawner _raid;
+        bool _raidRun; // Hackathon (12 Oct): this voyage runs an island raid's designed defence (RaidSchedule)
         readonly HashSet<string> _skipped = new HashSet<string>();
         readonly HashSet<string> _manual = new HashSet<string>();
         bool _running;
@@ -55,6 +57,7 @@ namespace RoguePirates.V4.Spawning
             _storm = new StormPhase(_s);
             _encounters = new EncounterExecutor(_s, _executor, () => _scripted != null && _scripted.ArenaActive);
             _flow = new FlowDirector(_s, _executor, _ambient);
+            _raid = new RaidSpawner(_s, _executor);
             context.Events.TickPublished += OnEvents;
             if (context.Config != null) context.Config.ConfigChanged += OnConfigChanged;
         }
@@ -72,6 +75,8 @@ namespace RoguePirates.V4.Spawning
             _overtime.BeginRun();
             _storm.BeginRun();
             _flow.BeginRun();
+            _raidRun = RaidSchedule.Active && !PvpMode && !LabMode;
+            if (_raidRun) _raid.BeginRun();
             ApplyExperiment();
             _running = true;
         }
@@ -137,6 +142,11 @@ namespace RoguePirates.V4.Spawning
             if (PvpMode) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded || !run.IsGameplayActive) return;
+            if (_raidRun)
+            {
+                if (_s.Placement.Ready) _raid.Tick(run.ElapsedSeconds);
+                return;
+            }
             _scripted.PollArena();
             _flow.Observe(run.ElapsedSeconds, _scripted.ArenaActive);
             var live = _s.Timeline;
@@ -174,7 +184,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Overtime spawns, in V3OvertimeDirector's slot (before the run clock advances).</summary>
         public void TickOvertime(float dt)
         {
-            if (!_running || LabMode || PvpMode) return;
+            if (!_running || LabMode || PvpMode || _raidRun) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused) return;
             _scripted.PollArena();
@@ -185,7 +195,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>The storm's warning, start and contraction, in V3SaltwindStormDirector's slot.</summary>
         public void TickStorm(float dt)
         {
-            if (!_running || PvpMode) return;
+            if (!_running || PvpMode || _raidRun) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded) return;
             _storm.Tick(FirstActive(p => p.isStorm));
@@ -194,7 +204,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Focus spawns and pulses, in V3PressureBeatDirector's slot.</summary>
         public void TickBeats(float dt)
         {
-            if (!_running || PvpMode) return;
+            if (!_running || PvpMode || _raidRun) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || !run.IsGameplayActive) return;
             _scripted.Tick(dt, LabMode);
@@ -203,7 +213,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Storm edge damage, in V3StormEdgeDamage's slot on the ship.</summary>
         public void TickStormEdge(float dt)
         {
-            if (!_running || PvpMode) return;
+            if (!_running || PvpMode || _raidRun) return;
             var run = _s.Run;
             if (!run.Exists || run.IsRunEnded || run.IsPaused) return;
             _storm.TickEdge(dt, FirstActive(p => p.isStorm));

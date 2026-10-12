@@ -425,9 +425,11 @@ namespace RoguePirates.Hackathon.UI
             }
 
             // Defence and shield.
-            var d = me.defence ?? new IslandDefence();
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>Defence</b></color>   {HackathonRules.CaptainName} guards it   difficulty {d.difficulty}/7\n" +
-                                    $"hull x{d.hullMultiplier:0.##}   +{d.extraWaves} waves   guns lv {d.weaponLevel}", 25);
+            IslandUi.TextRow(_list, $"<color=#ffd166><b>Defence</b></color>   {HackathonRules.CaptainName} guards it with your design: 15 one-minute waves and the guardian. " +
+                                    "Raiders must sink the guardian to conquer it.", 25);
+            var islandId = me.islandId;
+            var islandName = me.name;
+            IslandUi.ButtonRowOf(_list, ("Design defences", () => OpenDefence(islandId, islandName)))[0].interactable = !me.listed;
             _shieldPrefix = "<color=#ffd166><b>Shield</b></color>   ";
             _shield = IslandUi.TextRow(_list, _shieldPrefix, 25);
             _shieldUntil = OnlineRules.ParseUtc(me.shieldUntil);
@@ -560,12 +562,10 @@ namespace RoguePirates.Hackathon.UI
                 0f, 26, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
             cell.textWrappingMode = TextWrappingModes.Normal;
 
-            var d = island.defence ?? new IslandDefence();
-            var target = IslandRules.RaidTargetKills(d.difficulty, d.hullMultiplier);
             var exposed = island.rum != null ? island.rum.exposed : 0;
             IslandUi.TextRow(_list, $"<color=#ffd166><b>Defender: {HackathonRules.CaptainName}</b></color>, {HackathonRules.CaptainTitle}\n" +
-                                    $"Difficulty {d.difficulty}/7   hull x{d.hullMultiplier:0.##}   +{d.extraWaves} waves   guns lv {d.weaponLevel}\n" +
-                                    $"<b>Raid:</b> sink {target} of his fleet within {IslandRules.Clock(IslandRules.RaidTimeLimitSeconds)}. Half of that is a partial win.", 25);
+                                    "<b>Conquest:</b> survive the island's designed waves (15 minutes) and sink its guardian, the Barnacle King. " +
+                                    "Reaching the guardian's minute without sinking it is a partial win.", 25);
             IslandUi.TextRow(_list, $"<color=#ffd166><b>Loot</b></color>   exposed RUM {exposed}   win <color=#7fd68b>{exposed * 25 / 100}</color>   partial {exposed * 25 / 200}   " +
                                     $"\n<color=#9aa4ad>Fee {IslandRules.RaidFeeRum} RUM (you have {(_mine != null ? _mine.rum : 0)}). A raided island gets a 4 h shield.</color>", 25);
 
@@ -611,6 +611,17 @@ namespace RoguePirates.Hackathon.UI
             RaidHud.Begin(raid);
             MenuServices.BeginSaltwindExperiment();
             SceneManager.LoadScene(V4SceneNames.SaltwindRun);
+        }
+
+        DefencePanel _defence;
+        /// <summary>The defence designer (Hackathon, 12 Oct); created on first use.</summary>
+        public DefencePanel Defence => _defence;
+
+        public void OpenDefence(string islandId, string islandName)
+        {
+            if (_defence == null) { _defence = DefencePanel.Create(transform.parent); _defence.Closed = Open; }
+            gameObject.SetActive(false); // the designer covers the Islands screen; Close comes back here
+            _defence.Open(islandId, islandName);
         }
 
         // ---------------------------------------------------------------- history

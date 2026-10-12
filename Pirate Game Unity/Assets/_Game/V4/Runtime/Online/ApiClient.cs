@@ -26,6 +26,8 @@ namespace RoguePirates.V4.Online
         public T Data;
         public string ErrorCode;
         public string Message;
+        /// <summary>Hackathon (12 Oct): the raw error body of a rejected request (detailed validation errors).</summary>
+        public string Body;
 
         public bool Ok => Outcome == ApiOutcome.Ok;
         /// <summary>Not configured or not reachable: the online features show "Offline".</summary>
@@ -113,6 +115,7 @@ namespace RoguePirates.V4.Online
                     case UnityWebRequest.Result.ProtocolError:
                         result.Outcome = request.responseCode >= 500 ? ApiOutcome.ServerError : ApiOutcome.Rejected;
                         ReadError(text, result);
+                        result.Body = text;
                         if (string.IsNullOrEmpty(result.Message)) result.Message = $"HTTP {request.responseCode}";
                         break;
                     default: // ConnectionError (also timeouts and CORS on WebGL), DataProcessingError

@@ -314,10 +314,19 @@ namespace RoguePirates.V4.Presentation.Hud
                     for (var c = icon.childCount - 1; c >= 0; c--) Destroy(icon.GetChild(c).gameObject);
                     icon.sizeDelta = t.isBoss ? new Vector2(20f, 20f) : new Vector2(15f, 15f);
                     MinimapMarkerGraphics.Apply(icon, (MinimapMarkerGraphics.GlyphKind)kind);
+                    // Hackathon (12 Oct, owner): bosses must stand out: a larger glyph over a pulsing gold halo.
+                    icon.localScale = Vector3.one * (t.isBoss ? BossIconScale : 1f);
+                    if (t.isBoss) AddBossHalo(icon);
                     DisableRaycasts(icon);
                     _threatKinds[i] = kind;
                 }
                 Place(icon, t.position, size);
+                if (t.isBoss)
+                {
+                    icon.SetSiblingIndex(_iconRoot.childCount - 1); // over the dots and other icons (the ship goes last below)
+                    if (icon.childCount > 0 && icon.GetChild(0).name == "BossHalo")
+                        icon.GetChild(0).localScale = Vector3.one * (1f + 0.22f * Mathf.Sin(Time.unscaledTime * 6f));
+                }
             }
 
             var ship = _views.Ship;
@@ -328,6 +337,22 @@ namespace RoguePirates.V4.Presentation.Hud
                 if (f.sqrMagnitude > 0.01f) _player.localRotation = Quaternion.Euler(0f, 0f, 180f - Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg); // the glyph points down
                 _player.SetAsLastSibling();
             }
+        }
+
+        const float BossIconScale = 2.2f;
+
+        static void AddBossHalo(RectTransform icon)
+        {
+            var go = new GameObject("BossHalo", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(icon, false);
+            go.transform.SetAsFirstSibling();
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(22f, 22f);
+            var img = go.GetComponent<Image>();
+            img.sprite = MinimapUiSprites.Circle;
+            img.color = new Color(1f, 0.82f, 0.3f, 0.55f);
+            img.raycastTarget = false;
         }
 
         void Place(RectTransform icon, Vector3 world, Vector2 mapSize)

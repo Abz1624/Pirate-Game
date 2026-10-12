@@ -109,7 +109,7 @@ namespace RoguePirates.V4.Stage
             // Demo: an open sea, no points of interest (the beacon discovery shares this layout, so it sees none either).
             if (DemoMode.NoPointsOfInterest && layout?.pois != null) layout.pois.Clear();
             // Playtest (2 Oct, owner): with the boss rising on its own (14:00) there is no Treasury Beacon on the stage.
-            if (DemoMode.AutoBossSeconds > 0f && layout?.pois != null) layout.pois.RemoveAll(p => p.type == POIType.BossBeacon);
+            if (AutoBossAt > 0f && layout?.pois != null) layout.pois.RemoveAll(p => p.type == POIType.BossBeacon);
             _layout = layout;
             var n = layout?.pois != null ? layout.pois.Count : 0;
             _used = new bool[n];
@@ -736,7 +736,7 @@ namespace RoguePirates.V4.Stage
             }
             if (_bossArriving) return true;
             // Playtest (2 Oct 2026): the boss comes at the auto-boss time (14:00); the beacon cannot call it earlier.
-            var at = DemoMode.AutoBossSeconds;
+            var at = AutoBossAt;
             if (!ignoreTimeGate && at > 0f && _run != null && _run.ElapsedSeconds < at)
             {
                 var left = Mathf.CeilToInt(at - _run.ElapsedSeconds);
@@ -756,11 +756,14 @@ namespace RoguePirates.V4.Stage
         }
 
         // The boss rises out of a whirlpool that swirls on screen for a moment first (demo, 30 Sep 2026; kept for V5):
-        // after a beacon summon, or on its own at a run time when that switch is set (DemoMode.AutoBossSeconds).
+        // after a beacon summon, or on its own at a run time when that switch is set (AutoBossAt).
         bool _bossArriving;
         float _bossArrivalTimer;
         Vector3 _bossArrivalPoint;
         const float BossArrivalDistance = 11f;
+
+        /// <summary>The auto-boss time: an island raid's guardian minute (Hackathon, 12 Oct) or the demo switch.</summary>
+        static float AutoBossAt => RoguePirates.V4.Spawning.RaidSchedule.Active ? RoguePirates.V4.Spawning.RaidSchedule.GuardianSeconds : DemoMode.AutoBossSeconds;
 
         void BeginBossArrival()
         {
@@ -776,7 +779,7 @@ namespace RoguePirates.V4.Stage
             if (_bossSummoned || _bossDefeated || _run == null) return;
             if (!_bossArriving)
             {
-                var at = DemoMode.AutoBossSeconds;
+                var at = AutoBossAt;
                 if (at <= 0f || _run.ElapsedSeconds < at || _ship == null || !_ship.Exists) return;
                 BeginBossArrival();
                 return;

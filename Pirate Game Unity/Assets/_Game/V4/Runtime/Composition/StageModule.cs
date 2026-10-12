@@ -79,6 +79,7 @@ namespace RoguePirates.V4.Composition
             context.Register<IInteractionPromptView>(Interaction);
             context.Register<IInteractionTouch>(Interaction);
             context.Register<IBossView>(Boss);
+            context.Replace<IBossControl>(enemyWorld.Contracts); // Hackathon (12 Oct): the raid HUD reads the guardian's hull
             context.Register<IPoiMarkerView>(Module); // M14.12: the marker presenter
         }
 

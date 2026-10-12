@@ -69,7 +69,7 @@ namespace RoguePirates.Hackathon
     public sealed class RaidStart
     {
         public string raidId; public string islandId; public string islandName; public string startedAt; public string expiresAt;
-        public long feePaid; public long rum; public DefenderConfig defender; public RaidLoot loot;
+        public long feePaid; public long rum; public DefenderConfig defender; public RaidLoot loot; public RaidDefence defence;
     }
 
 
@@ -79,7 +79,7 @@ namespace RoguePirates.Hackathon
     public sealed class RaidResult
     {
         public string raidId; public string result; public long rumLooted; public long rum; public int seconds;
-        public string defenderShieldUntil;
+        public string defenderShieldUntil; public int guardianMinute; public int minuteReached; public bool guardianSunk;
     }
 
     [Serializable] public sealed class RaidParty { public string playerId; public string name; public string wallet; }
