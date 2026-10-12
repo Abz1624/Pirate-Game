@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 07:42 IST",
+ "updated": "12 Oct, 07:45 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Server live on devnet; wallet login works in the game. Now building wagers, the AI captain, daily race and rewards in the game, plus a live devnet end-to-end test.",
+ "headline": "Every server feature passed a live devnet end-to-end test with two real wallets. Game screens in progress.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -15,14 +15,14 @@
    "detail": "Claim mints an Island NFT; RUM store fills over time; vault keeps 60%; defences make raids harder.",
    "server": "done",
    "unity": "todo",
-   "chain": "pending"
+   "chain": "done"
   },
   {
    "name": "Raids vs the AI captain",
    "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.",
    "server": "done",
    "unity": "todo",
-   "chain": "pending"
+   "chain": "done"
   },
   {
    "name": "AI captain",
@@ -43,21 +43,21 @@
    "detail": "Top places paid in devnet SOL from the treasury; owner-triggered payout for the demo.",
    "server": "done",
    "unity": "building",
-   "chain": "pending"
+   "chain": "done"
   },
   {
    "name": "1v1 PvP with SOL wagers",
    "detail": "Both deposit the stake to escrow; the winner is paid 2x; vs the AI captain the house matches the stake.",
    "server": "done",
    "unity": "building",
-   "chain": "pending"
+   "chain": "done"
   },
   {
    "name": "Island NFT marketplace",
    "detail": "List (NFT to escrow), buy with SOL, cancel; the server swaps.",
    "server": "done",
    "unity": "todo",
-   "chain": "pending"
+   "chain": "done"
   },
   {
    "name": "Builds",
@@ -101,6 +101,10 @@
   {
    "done": false,
    "text": "Solana Mobile device ready for the APK (wallet set to devnet)"
+  },
+  {
+   "done": false,
+   "text": "Before the demo: I clear the test data (test runs on the weekly board, this week's reward record) so the demo starts clean"
   }
  ],
  "wallets": [
@@ -141,6 +145,10 @@
   [
    "07:42",
    "Game: MagicBlock Solana Unity SDK added; Connect Wallet on the main menu (Phantom on desktop, Mobile Wallet Adapter on Android, a test wallet in the Editor); sign-in verified against the server; EditMode 744/744. Editor test wallet funded with 0.5 SOL from the treasury."
+  ],
+  [
+   "07:45",
+   "Live devnet end-to-end test: 8 of 8 passed with two wallets (sign-in, island claims with NFT mints, a won raid with a 0.01 SOL wager paid 2x, an island sold through escrow and the NFT moved on chain, a wager refund, weekly rewards paid, daily race entries). Report: plan/hackathon/devnet-smoke.md. To clean before the demo: test runs on the weekly board and this week already marked paid."
   ]
  ]
 }
