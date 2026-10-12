@@ -16,6 +16,13 @@ namespace RoguePirates.V4.Presentation.Online
     {
         public const string Pending = "Weekly rank: sending...";
 
+        /// <summary>Hackathon hook (12 Oct): when it returns a line, the run is not sent and that line is shown instead
+        /// (a practice raid). Null (the default) changes nothing.</summary>
+        public static Func<string> SkipReason;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => SkipReason = null;
+
         /// <summary>The request for the run the views show (null when there is no run).</summary>
         public static RunSubmitRequest Build(IRunViews views)
         {
@@ -75,6 +82,10 @@ namespace RoguePirates.V4.Presentation.Online
         /// <summary>Submits the run in the background and calls <paramref name="line"/> with the text to show.</summary>
         public static async void Submit(IRunViews views, Action<string> line)
         {
+            // Hackathon (12 Oct, owner): a practice raid on your own island is not submitted (no rank, no RUM).
+            string skip = null;
+            try { skip = SkipReason?.Invoke(); } catch (Exception e) { Debug.LogWarning("RunSubmitter: " + e.Message); }
+            if (!string.IsNullOrEmpty(skip)) { line?.Invoke(skip); return; }
             RunSubmission result;
             try { result = await OnlineService.SubmitRun(Build(views)); }
             catch (Exception e)

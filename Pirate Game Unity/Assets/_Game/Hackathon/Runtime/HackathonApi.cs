@@ -37,21 +37,26 @@ namespace RoguePirates.Hackathon
         /// <summary>
         /// Pays the stake from the connected wallet to the treasury with the wager's memo, then has the server verify it.
         /// A transfer the server cannot see yet (409 tx_not_confirmed) is retried for about 30 s; the signature is kept so
-        /// a later retry does not pay twice.
+        /// a later retry does not pay twice. <c>sent</c> is true once a transfer exists (from now or from an earlier try):
+        /// the caller must then never say that no SOL was taken. <c>refunded</c>: the server refused the seat and refunds
+        /// the transfer (409 deposit_refunded; the error is the server's reason).
         /// </summary>
-        public static async Task<(WagerView wager, string error)> Deposit(WagerView w, Action<string> progress)
+        public static async Task<(WagerView wager, string error, bool sent, bool refunded)> Deposit(WagerView w, Action<string> progress)
         {
-            if (w == null || !w.Exists) return (null, "This lobby has no stake.");
+            if (w == null || !w.Exists) return (null, "This lobby has no stake.", false, false);
             var session = Web3Session.Instance;
-            if (!session.WalletConnected) return (null, "Connect your wallet (Wallet button, top of the menu) to deposit.");
-            if (string.IsNullOrEmpty(w.treasury)) return (null, "The server has no treasury address for this wager.");
+            if (!session.WalletConnected) return (null, "Connect your wallet (Wallet button, top of the menu) to deposit.", false, false);
+            if (string.IsNullOrEmpty(w.treasury)) return (null, "The server has no treasury address for this wager.", false, false);
 
             var signature = PendingDeposit(w.lobbyId);
             if (string.IsNullOrEmpty(signature))
             {
+                // The wallet may be finishing something else (a balance read, a sign-in): wait briefly instead of failing.
+                for (var i = 0; i < 40 && session.Busy; i++) await Awaitable.WaitForSecondsAsync(0.25f);
+                if (session.Busy) return (null, "The wallet is still busy with another request. Press Pay deposit to try again.", false, false);
                 progress?.Invoke("Approve the " + HackathonRules.Sol(w.stakeLamports) + " transfer in your wallet...");
                 var (sig, error) = await session.TransferSol(w.treasury, HackathonRules.LamportsToSol(w.stakeLamports), string.IsNullOrEmpty(w.memo) ? "wager:" + w.lobbyId : w.memo);
-                if (error != null) return (null, error);
+                if (error != null) return (null, error, false, false);
                 signature = sig;
                 RememberDeposit(w.lobbyId, signature);
             }
@@ -60,7 +65,7 @@ namespace RoguePirates.Hackathon
             {
                 progress?.Invoke(attempt == 0 ? "Sent. The server is checking the deposit on devnet..." : "Waiting for devnet to confirm the deposit...");
                 var r = await Client.Post<LobbyWithWager>("/api/wagers/" + w.lobbyId + "/deposit", new WagerDepositRequest { signature = signature }, Token);
-                if (r.Ok) { RememberDeposit(w.lobbyId, null); return (r.Data?.wager, null); }
+                if (r.Ok) { RememberDeposit(w.lobbyId, null); return (r.Data?.wager, null, true, false); }
                 if (r.ErrorCode == "tx_not_confirmed" || r.Outcome == ApiOutcome.Offline)
                 {
                     await Awaitable.WaitForSecondsAsync(2.5f);
@@ -70,13 +75,18 @@ namespace RoguePirates.Hackathon
                 {
                     RememberDeposit(w.lobbyId, null);
                     var (again, _) = await GetWager(w.lobbyId);
-                    return (again, null);
+                    return (again, null, true, false);
                 }
-                // A transfer the server refuses for good (wrong memo, too little) is not retried with the same signature.
-                if (r.ErrorCode != null && r.ErrorCode != "tx_not_confirmed") RememberDeposit(w.lobbyId, null);
-                return (null, Error("deposit", r));
+                if (r.ErrorCode == "deposit_refunded")
+                {
+                    // The server recorded the transfer and refunds it (seat no longer valid): done with this signature.
+                    RememberDeposit(w.lobbyId, null);
+                    return (null, string.IsNullOrEmpty(r.Message) ? "The deposit could not be used and is being refunded to your wallet." : r.Message, true, true);
+                }
+                // Any other refusal keeps the signature: "Check deposit" can ask again without paying twice.
+                return (null, Error("deposit", r), true, false);
             }
-            return (null, "Devnet has not confirmed the transfer yet. Press Check deposit in a few seconds (you will not pay twice).");
+            return (null, "Devnet has not confirmed the transfer yet. Press Check deposit in a few seconds (you will not pay twice).", true, false);
         }
 
         static string _pendingLobby, _pendingSig;
@@ -145,6 +155,7 @@ namespace RoguePirates.Hackathon
                 case "amount_too_low": return "The transfer was smaller than the stake.";
                 case "already_started": return "The match already started.";
                 case "wager_closed": return "This wager is closed.";
+                case "deposit_refunded": return string.IsNullOrEmpty(r.Message) ? "The deposit is being refunded to your wallet." : r.Message;
                 case "not_in_lobby": return "You are not seated in this lobby.";
                 case "seed_mismatch": return "This run was not on today's race course.";
                 case "target_not_reached": return "The race needs 100 kills.";

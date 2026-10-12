@@ -90,5 +90,18 @@ namespace RoguePirates.Hackathon
 
         /// <summary>The race goal reached: the kills and the target (a target of 0 counts as 100).</summary>
         public static bool RaceFinished(int kills, int target) => kills >= (target > 0 ? target : 100);
+
+        /// <summary>The hub message after a bundled deposit did not go through. Once a transfer was sent it never says that
+        /// no SOL was taken: a refused transfer is being refunded; an unconfirmed one stays in the lobby (Check deposit).</summary>
+        public static string DepositFailureLine(bool host, string stake, bool sent, bool refunded, string reason)
+        {
+            var who = host ? "Match cancelled" : "Left the match";
+            reason = string.IsNullOrEmpty(reason) ? null : reason.Trim().TrimEnd('.');
+            if (refunded)
+                return $"{who}: the {stake} deposit could not be used" + (reason != null ? $" ({reason})" : string.Empty) + ". Your refund is on the way to your wallet.";
+            if (sent)
+                return $"Your {stake} transfer was sent but is not confirmed yet" + (reason != null ? $" ({reason})" : string.Empty) + ". Stay here and press Check deposit; you will not pay twice.";
+            return $"{who}: the {stake} deposit was not made" + (reason != null ? $" ({reason})" : string.Empty) + ". No SOL was taken.";
+        }
     }
 }

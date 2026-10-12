@@ -56,6 +56,37 @@ namespace RoguePirates.Hackathon.Tests
         }
 
         [Test]
+        public void PracticeRaid_PaysNoRum_AndIsNotSubmitted_ARealRaidIs()
+        {
+            var practice = new RoguePirates.V4.Rewards.RewardModule();
+            UI.RaidHud.ApplyPracticeRules(practice, true);
+            Assert.IsTrue(practice.LabMode);
+            Assert.AreEqual(0, practice.Settle("practice-run", true), "a practice raid settles no voyage Rum");
+            Assert.IsTrue(UI.RaidHud.PracticeActive);
+            Assert.AreEqual(UI.RaidHud.PracticeRunLine, UI.RaidHud.SkipLine(), "the run is not sent (no server RUM, no rank)");
+
+            var real = new RoguePirates.V4.Rewards.RewardModule();
+            UI.RaidHud.ApplyPracticeRules(real, false);
+            Assert.IsFalse(real.LabMode);
+            Assert.IsFalse(UI.RaidHud.PracticeActive);
+            Assert.IsNull(UI.RaidHud.SkipLine());
+        }
+
+        [Test]
+        public void DepositFailureLine_NeverSaysNoSolTakenOnceATransferWasSent()
+        {
+            Assert.AreEqual("Match cancelled: the 0.01 SOL deposit was not made (User rejected). No SOL was taken.",
+                HackathonRules.DepositFailureLine(true, "0.01 SOL", false, false, "User rejected."));
+            var refunded = HackathonRules.DepositFailureLine(false, "0.01 SOL", true, true, "This wager is cancelled. Your deposit was refunded to your wallet.");
+            StringAssert.StartsWith("Left the match: the 0.01 SOL deposit could not be used", refunded);
+            StringAssert.Contains("refund is on the way", refunded);
+            StringAssert.DoesNotContain("No SOL was taken", refunded);
+            var pending = HackathonRules.DepositFailureLine(false, "0.01 SOL", true, false, null);
+            StringAssert.Contains("Check deposit", pending);
+            StringAssert.DoesNotContain("No SOL was taken", pending);
+        }
+
+        [Test]
         public void IsDefaultName_MatchesTheServersCaptainPlusFourAddressCharacters()
         {
             Assert.IsTrue(Web3Rules.IsDefaultName("Captain 7xKX"));

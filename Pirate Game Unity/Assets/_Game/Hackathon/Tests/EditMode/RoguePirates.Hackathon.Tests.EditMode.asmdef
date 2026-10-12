@@ -4,6 +4,7 @@
     "references": [
         "RoguePirates.Hackathon",
         "RoguePirates.V4",
+        "RoguePirates.V4.Presentation",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

@@ -186,41 +186,43 @@ namespace RoguePirates.Hackathon.UI
         /// <summary>After a first wallet sign-in: "Name your captain" (skippable). Drawn above the wallet panel.</summary>
         void BuildNamePrompt(Transform canvas)
         {
+            // The root is the full-screen blocker (dims and blocks the menu); the panel is its child, so it draws on top of
+            // the blocker and keeps its own colour.
             var go = new GameObject("HackathonNamePrompt", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(canvas, false);
             _prompt = (RectTransform)go.transform;
-            _prompt.anchorMin = new Vector2(0.22f, 0.31f);
-            _prompt.anchorMax = new Vector2(0.78f, 0.69f);
+            _prompt.anchorMin = Vector2.zero;
+            _prompt.anchorMax = Vector2.one;
             _prompt.offsetMin = _prompt.offsetMax = Vector2.zero;
-            go.GetComponent<Image>().color = PanelColor;
+            go.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
             SettingsPanel.DrawOnTop(go, 250);
-            var blocker = new GameObject("Blocker", typeof(RectTransform), typeof(Image));
-            blocker.transform.SetParent(_prompt, false);
-            var brt = (RectTransform)blocker.transform;
-            brt.anchorMin = new Vector2(-2f, -2f);
-            brt.anchorMax = new Vector2(3f, 3f);
-            brt.offsetMin = brt.offsetMax = Vector2.zero;
-            blocker.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
+            var panelGo = new GameObject("Panel", typeof(RectTransform), typeof(Image));
+            panelGo.transform.SetParent(_prompt, false);
+            var panel = (RectTransform)panelGo.transform;
+            panel.anchorMin = new Vector2(0.22f, 0.31f);
+            panel.anchorMax = new Vector2(0.78f, 0.69f);
+            panel.offsetMin = panel.offsetMax = Vector2.zero;
+            panelGo.GetComponent<Image>().color = PanelColor;
 
             var y = 20f;
-            TextIn(StripIn(_prompt, "Title", ref y, 64f), "Title", "Name your captain", 42, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one, true);
-            var intro = TextIn(StripIn(_prompt, "Intro", ref y, 72f), "Intro",
+            TextIn(StripIn(panel, "Title", ref y, 64f), "Title", "Name your captain", 42, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one, true);
+            var intro = TextIn(StripIn(panel, "Intro", ref y, 72f), "Intro",
                 "Other captains see this name on the leaderboards, in 1v1 lobbies and on your island. You can change it later in the wallet panel.",
                 26, TextAlignmentOptions.TopLeft, TextColor, Vector2.zero, Vector2.one);
             intro.textWrappingMode = TextWrappingModes.Normal;
-            var field = StripIn(_prompt, "Name", ref y, Row);
+            var field = StripIn(panel, "Name", ref y, Row);
             var fh = field.gameObject.AddComponent<HorizontalLayoutGroup>();
             fh.childControlWidth = fh.childControlHeight = true;
             _promptName = Input(field, "3 to 16 letters, digits, spaces, _ or -", 16);
             _promptName.onSubmit.AddListener(_ => SavePromptName());
-            var buttons = StripIn(_prompt, "Buttons", ref y, Row);
+            var buttons = StripIn(panel, "Buttons", ref y, Row);
             var h = buttons.gameObject.AddComponent<HorizontalLayoutGroup>();
             h.spacing = 12f;
             h.childControlWidth = h.childControlHeight = true;
             h.childForceExpandWidth = true;
             _promptSave = Flex(SettingsPanel.CreateButton(buttons, "Save name", SavePromptName));
             _promptSkip = Flex(SettingsPanel.CreateButton(buttons, "Skip for now", SkipNamePrompt));
-            _promptMessage = TextIn(StripIn(_prompt, "Message", ref y, 48f), "Message", string.Empty, 24, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
+            _promptMessage = TextIn(StripIn(panel, "Message", ref y, 48f), "Message", string.Empty, 24, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
             _promptMessage.textWrappingMode = TextWrappingModes.Normal;
             go.SetActive(false);
         }

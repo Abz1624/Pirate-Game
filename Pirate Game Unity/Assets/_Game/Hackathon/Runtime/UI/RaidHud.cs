@@ -62,13 +62,35 @@ namespace RoguePirates.Hackathon.UI
             _pending = null;
             LastResult = null;
             LastRaid = null;
+            PracticeActive = false;
         }
+
+        /// <summary>The voyage running now is a practice raid (owner, 12 Oct: it pays no Rum at all).</summary>
+        public static bool PracticeActive { get; private set; }
+
+        /// <summary>The results line of a practice raid (it is not sent to the leaderboard).</summary>
+        public const string PracticeRunLine = "Practice raid: not ranked, no RUM.";
+
+        /// <summary>The run submitter's skip hook: the practice line during a practice raid, else null (submit).</summary>
+        public static string SkipLine() => PracticeActive ? PracticeRunLine : null;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
         {
             V4Game.RunStarted -= OnRun;
             V4Game.RunStarted += OnRun;
+            RoguePirates.V4.Presentation.Online.RunSubmitter.SkipReason = SkipLine;
+        }
+
+        /// <summary>
+        /// A practice raid pays no Rum (owner, 12 Oct): the voyage's own Rum settlement is off (the reward module's no-Rum
+        /// mode, as in a 1v1) and the run is not submitted (no server RUM, no weekly rank). A real raid or a normal voyage
+        /// switches both back on.
+        /// </summary>
+        public static void ApplyPracticeRules(RoguePirates.V4.Rewards.RewardModule rewards, bool practice)
+        {
+            PracticeActive = practice;
+            if (practice && rewards != null) rewards.LabMode = true;
         }
 
         static void OnRun(V4Game game)
@@ -78,8 +100,12 @@ namespace RoguePirates.Hackathon.UI
             if (raid == null || game == null || game.IsPvp || game.RunLog == null)
             {
                 RaidSchedule.Clear(); // never let a schedule reach a normal voyage
+                PracticeActive = false;
                 return;
             }
+            RoguePirates.V4.Rewards.IRumView rumView = null;
+            if (game.Context != null) game.Context.TryGet(out rumView);
+            ApplyPracticeRules(rumView as RoguePirates.V4.Rewards.RewardModule, raid.practice);
             var hud = game.gameObject.AddComponent<RaidHud>();
             hud._game = game;
             hud._raid = raid;
