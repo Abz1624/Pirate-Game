@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 14:04 IST",
+ "updated": "12 Oct, 14:42 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "1v1 wager vs Captain Marrow works on the Seeker. Adding: raids as base conquest of a player-designed defence (15-minute wave plan + guardian boss), the boss teleport fix, and a cheap minimap.",
+ "headline": "Boss teleport fixed and the minimap is back; the defence designer is live on the server. Now: the designer screen and conquest raids in the game (until 16:15), then the rebuild.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -21,14 +21,14 @@
    "name": "Raids vs the AI captain",
    "detail": "Conquer another player's island: survive its designed waves and sink its guardian boss; a win loots 25% of the exposed RUM; 4 h shield. No SOL stake.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "done"
   },
   {
    "name": "Island defence designer",
    "detail": "Each island is a roguelike level its owner designs: a 15-minute timeline in 1-minute windows, a points budget per window (grows each minute and with defences), enemy picks with costs, a guardian boss and its arrival minute; presets. Raiders must survive the waves and sink the guardian.",
-   "server": "building",
-   "unity": "todo",
+   "server": "done",
+   "unity": "building",
    "chain": "n/a"
   },
   {
@@ -75,9 +75,9 @@
   },
   {
    "name": "Fixes: boss teleport, minimap",
-   "detail": "The Barnacle King teleported mid-fight (suspected: the leash moving bosses); the minimap returns as a one-time snapshot with live icons on top (no per-frame rendering).",
+   "detail": "Barnacle King teleport: crowds spawning on the boss (e.g. the miniboss pack) pushed it up to 10 m in one frame; bosses and minibosses now hold their ground (regression test). Minimap: one-time snapshot of the islands plus live icons, top right.",
    "server": "n/a",
-   "unity": "building",
+   "unity": "done",
    "chain": "n/a"
   }
  ],
@@ -187,6 +187,10 @@
   [
    "14:04",
    "Owner test: 1v1 wager vs Captain Marrow worked on the phone. New requests: raids conquer the base (waves + guardian boss), player-designed island defences (15 x 1-minute windows with budgets), Barnacle King teleport bug, minimap via a one-time snapshot. Server designer and the Unity fixes started."
+  ],
+  [
+   "14:42",
+   "Fixed: the Barnacle King teleport (the overlap pass let a spawning crowd shove the boss ~10 m in one frame; not the leash). Minimap back as a one-time snapshot with 10 Hz icons. Defence designer live on the server (15 windows, budgets, costs, guardian, presets). EditMode 761/761; server 206."
   ]
  ]
 }
