@@ -61,7 +61,9 @@ namespace RoguePirates.V4.Editor
                 {
                     var (id, model, creature, swim) = (f[1], f[2], f[3] == "creature", f.Length > 4 ? f[4] : null);
                     if (!config.TryGetValue(id, out var old) || old == null) { log.Add("Enemy " + id + ": no config model, skipped"); continue; }
-                    var prefab = BuildEnemy(scene, id, model, old, creature, swim, log);
+                    // Owner, 13 Oct: a ship whose deck sat at or under the water at the old draft is lifted (metres).
+                    var lift = f.Length > 5 && float.TryParse(f[5], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var l) ? l : 0f;
+                    var prefab = BuildEnemy(scene, id, model, old, creature, swim, lift, log);
                     if (prefab != null) enemies.Add(new ArtEnemyModel { enemyId = id, model = prefab });
                 }
                 juice.enemyArtModels = enemies.ToArray();
@@ -108,7 +110,7 @@ namespace RoguePirates.V4.Editor
             return result;
         }
 
-        static GameObject BuildEnemy(UnityEngine.SceneManagement.Scene scene, string id, string modelPath, GameObject old, bool creature, string swimClip, List<string> log)
+        static GameObject BuildEnemy(UnityEngine.SceneManagement.Scene scene, string id, string modelPath, GameObject old, bool creature, string swimClip, float lift, List<string> log)
         {
             var source = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
             if (source == null) { log.Add("Enemy " + id + ": missing " + modelPath); return null; }
@@ -130,7 +132,7 @@ namespace RoguePirates.V4.Editor
             model.transform.localScale *= ratio;
             model.transform.localPosition *= ratio;
             b = Bounds(root.transform, model.transform);
-            var offset = new Vector3(oldBounds.center.x - b.center.x, creature ? oldBounds.center.y - b.center.y : oldBounds.min.y - b.min.y, oldBounds.center.z - b.center.z);
+            var offset = new Vector3(oldBounds.center.x - b.center.x, creature ? oldBounds.center.y - b.center.y : oldBounds.min.y - b.min.y + lift, oldBounds.center.z - b.center.z);
             model.transform.localPosition += offset;
 
             // The old model's wake (trails, foam) and cannon smoke, where they were on it (the presenters drive them).
@@ -163,7 +165,7 @@ namespace RoguePirates.V4.Editor
             var path = ArtFolder + "/Enemies/" + root.name + ".prefab";
             var saved = PrefabUtility.SaveAsPrefabAsset(root, path);
             var after = Bounds(root.transform, model.transform);
-            log.Add($"Enemy {id}: {source.name} x{ratio:F2}, size {after.size:F2} (was {oldBounds.size:F2}, {old.name}), {copied} wake/smoke parts, {Tris(model)} tris -> {path}");
+            log.Add($"Enemy {id}: {source.name} x{ratio:F2}, lift {lift:F2}, size {after.size:F2} (was {oldBounds.size:F2}, {old.name}), {copied} wake/smoke parts, {Tris(model)} tris -> {path}");
             Object.DestroyImmediate(root);
             Object.DestroyImmediate(oldCopy);
             return saved;

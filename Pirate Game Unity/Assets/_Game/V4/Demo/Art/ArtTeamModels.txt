@@ -1,21 +1,22 @@
 # Hackathon (12 Oct): which content id draws which art-team model (read by Tools/Rogue Pirates/Demo/Wire Art Team
 # Models (hackathon), HackathonArtWiring; the ids live here, not in V4 code). One entry per line, fields split by ;:
-#   enemy;<enemy or variant id>;<model asset>;ship or creature;<swim clip name, creatures only>
+#   enemy;<enemy or variant id>;<model asset>;ship or creature;<swim clip name, creatures only>;<lift in metres, optional>
+#     (lift: raises a ship whose deck sat at or under the water at its old model's draft; owner, 13 Oct)
 #   projectile;<weapon id>   (the chainshot art as the weapon's projectile)
 #   lob;<weapon id>          (the ink pot art lobbed at the weapon's predicted-area shells)
 enemy;boarding_barge;Assets/3D Models/Enemies/ships/BOARDING BARGE/BOARDING_BARGE.fbx;ship;
 enemy;bomb_ketch;Assets/3D Models/Enemies/ships/BOMB_KETCH/BOOMB_KETCH.fbx;ship;
-enemy;cutthroat_skiff;Assets/GameObject/CutthroatSkiff.prefab;ship;
-enemy;deckhand_dinghy;Assets/3D Models/Enemies/ships/deckhand dinghy/small_boat.fbx;ship;
+enemy;cutthroat_skiff;Assets/GameObject/CutthroatSkiff.prefab;ship;;0.2
+enemy;deckhand_dinghy;Assets/3D Models/Enemies/ships/deckhand dinghy/small_boat.fbx;ship;;0.1
 enemy;drowned_harrier;Assets/3D Models/Enemies/ships/drowned_harrier/drowned_harrrier.fbx;ship;
 enemy;drowned_pursuer;Assets/3D Models/Enemies/ships/drowned_pursuer/drowned_pursuer.fbx;ship;
-enemy;gunner_cog;Assets/3D Models/Enemies/ships/GUNNER_COG/GUNNER_COG.fbx;ship;
-enemy;needle_sloop;Assets/3D Models/Enemies/ships/needle_slop/needle_slop.fbx;ship;
-enemy;net_cutter;Assets/3D Models/Enemies/ships/net cutter/net cutter.fbx;ship;
+enemy;gunner_cog;Assets/3D Models/Enemies/ships/GUNNER_COG/GUNNER_COG.fbx;ship;;0.15
+enemy;needle_sloop;Assets/3D Models/Enemies/ships/needle_slop/needle_slop.fbx;ship;;0.2
+enemy;net_cutter;Assets/3D Models/Enemies/ships/net cutter/net cutter.fbx;ship;;0.2
 enemy;powder_barge;Assets/3D Models/Enemies/ships/powder barge/POWDER BARGE.prefab;ship;
-enemy;ram_raider;Assets/3D Models/Enemies/ships/ram_raider/ram_raider.fbx;ship;
+enemy;ram_raider;Assets/3D Models/Enemies/ships/ram_raider/ram_raider.fbx;ship;;0.1
 enemy;repair_tender;Assets/3D Models/Enemies/ships/REPAIR TENDER/REPAIR TENDER.fbx;ship;
-enemy;shield_frigate;Assets/3D Models/Enemies/ships/shield_frigate/shield_frigate.fbx;ship;
+enemy;shield_frigate;Assets/3D Models/Enemies/ships/shield_frigate/shield_frigate.fbx;ship;;0.15
 enemy;elite_hammerhead;Assets/3D Models/Enemies/Hammer_Shark_Crown/Hammer_Shark_Crown.fbx;creature;Shark_Armature|Swim
 enemy;elite_kraken_spawn;Assets/3D Models/Enemies/Kraken_Crown/Kraken_Crown.fbx;creature;Bone|Armature_Swim
 projectile;chainshot
