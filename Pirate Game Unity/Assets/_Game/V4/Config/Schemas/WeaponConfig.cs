@@ -54,7 +54,7 @@ namespace RoguePirates.V4.Config
     /// as data. Presentation only; nothing here changes gameplay.
     /// </summary>
     /// <summary>V5 M8z (7 Oct): a weapon's coloured stand-in model (presentation only).</summary>
-    public enum WeaponPlaceholderLook { None, Parrots, MonkeyGunners, Anchors, Lanterns, Doubloons }
+    public enum WeaponPlaceholderLook { None, Parrots, MonkeyGunners, Anchors, Lanterns, Doubloons, Maces }
 
     [Serializable]
     public sealed class WeaponEffectsVisual
@@ -135,6 +135,24 @@ namespace RoguePirates.V4.Config
         [Min(0f)] public float perTargetIntervalSeconds;
         [Tooltip("V5 M4b: > 0 = each blade is a beam from the ship to orbitRadius, made of this many hit spheres (the Lighthouse Lantern); 0 = one sphere per blade.")]
         [Min(0)] public int beamSegments;
+    }
+
+    /// <summary>
+    /// Hackathon (12 Oct, owner: "a chained cannonball that is thrown at an enemy ... hits the enemy and comes back but has
+    /// a chain attached ... max 4 at once"): each attack throws chained iron maces at distinct enemies; each flies out,
+    /// hits what it touches on the way (each enemy once a throw) and is reeled back to the ship. The Anchor Flail.
+    /// </summary>
+    [Serializable]
+    public sealed class MaceBlock
+    {
+        [Tooltip("Most maces one attack throws (base quantity + milestones + evolutions, capped here).")] [Min(1)] public int maxPerAttack = 4;
+        [Tooltip("Metres a second on the way out.")] [Min(0.1f)] public float outSpeed = 24f;
+        [Tooltip("Metres a second while it is reeled back.")] [Min(0.1f)] public float returnSpeed = 28f;
+        [Tooltip("Hit radius of the ball (x size), added to the enemy's radius.")] [Min(0f)] public float hitRadius = 1.1f;
+        [Tooltip("The ball flies this high above the water.")] public float height = 0.6f;
+        public float damageMultiplier = 1f;
+        [Tooltip("Each hit pushes the enemy this far away from the ship (x the Knockback card; 0 = no push).")] [Min(0f)] public float knockbackMeters = 1.5f;
+        [Tooltip("A throw that has not reached its target after this many seconds turns back.")] [Min(0.1f)] public float maxOutSeconds = 0.8f;
     }
 
     /// <summary>A forward flame stream that runs, then recharges (Flamethrower).</summary>
@@ -311,12 +329,14 @@ namespace RoguePirates.V4.Config
         public AuraBlock aura = new AuraBlock();
         public PredictedAreaBlock predictedArea = new PredictedAreaBlock();
         public SummonBlock summon = new SummonBlock();
+        [Tooltip("Hackathon: chained maces thrown and reeled back (ChainedMace behavior, the Anchor Flail).")] public MaceBlock mace = new MaceBlock();
         [Tooltip("Effect looks (M6, presentation only).")] public WeaponEffectsVisual visual = new WeaponEffectsVisual();
 
         /// <summary>V5 M8z (8 Oct, close): a milestone's echoes repeat this behavior's firing (not an orbit's or a flame
         /// stream's: they never stop firing). The weapon manager, the director and the validator share this rule.</summary>
         public static bool Echoes(ConfigEnums.WeaponBehavior behavior) =>
-            behavior != ConfigEnums.WeaponBehavior.Orbit && behavior != ConfigEnums.WeaponBehavior.ConeStream;
+            behavior != ConfigEnums.WeaponBehavior.Orbit && behavior != ConfigEnums.WeaponBehavior.ConeStream
+            && behavior != ConfigEnums.WeaponBehavior.ChainedMace; // Hackathon: a throw waits for its maces to come back
 
         public override void Validate(ConfigValidationReport report)
         {

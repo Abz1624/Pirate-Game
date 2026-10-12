@@ -27,7 +27,7 @@ namespace RoguePirates.V4.Presentation.Weapons
     /// level) and, through the hazard ring presenter, the timed mortar ring. Not here: the flame stream
     /// (FlameStreamPresenter).</para>
     /// </summary>
-    public sealed class WeaponVfxPresenter : MonoBehaviour, IWeaponEffects, RoguePirates.V4.Enemies.IEnemyEffects
+    public sealed partial class WeaponVfxPresenter : MonoBehaviour, IWeaponEffects, RoguePirates.V4.Enemies.IEnemyEffects
     {
         // V3 JuiceVfxBroker: splashes within 1.35 m and 0.14 s of the last one merge into it.
         const float SplashMergeRadius = 1.35f;
@@ -183,6 +183,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             SyncBlades();
             SyncOrbitModels();
+            SyncMaces(); // Hackathon (12 Oct): the Anchor Flail's chained maces (WeaponVfxPresenter.Maces.cs)
         }
 
         /// <summary>Ends timed effects (V3 VfxAutoReturn / Destroy(go, t)): scaled time, starting the frame after spawn.</summary>
@@ -238,35 +239,78 @@ namespace RoguePirates.V4.Presentation.Weapons
         string _aimedWeapon;
         int _aimedFrame = -1;
 
+        // Hackathon (12 Oct, owner: "a few gold coins (that we use in keg pickup) fly from the ship and hit the enemies"):
+        // each strike throws a few of the gold barrel's coins (the juice settings' gold pickup model at its flying scale)
+        // from the ship in a low arc to the struck enemy; there they glance off, fall and go back to the pool.
         struct Coin
         {
             public View View;
             public Vector3 Velocity;
             public float Left;
+            public Vector3 From, To;
+            /// <summary>Flight time so far (negative = still waiting at the ship), the flight's length and arc height.</summary>
+            public float T, Flight, Arc;
+            public bool Landed, Splash;
         }
 
-        const int CoinsPerStrike = 5;
+        const int CoinsPerStrike = 3;
         const float CoinGravity = 24f;
+        const float CoinFlightSpeed = 34f;
+        const float CoinStagger = 0.05f;
         readonly List<Coin> _coins = new List<Coin>();
         public int CoinCount => _coins.Count;
+
+        /// <summary>Coins still on their way from the ship (tests).</summary>
+        public int CoinsInFlight
+        {
+            get { var n = 0; foreach (var c in _coins) if (!c.Landed) n++; return n; }
+        }
+
+        /// <summary>A coin's position (tests).</summary>
+        public Vector3 CoinPosition(int index) => _coins[index].View.Go != null ? _coins[index].View.Go.transform.position : Vector3.zero;
+
+        /// <summary>The keg pickup's gold coin (the juice settings' gold pickup model), else the coloured placeholder.</summary>
+        GameObject CoinModel(out float scale)
+        {
+            if (_settings != null && _settings.goldPickupPrefab != null)
+            {
+                scale = _settings.goldFlyingCoinScale;
+                return _settings.goldPickupPrefab;
+            }
+            scale = 1f;
+            return WeaponPlaceholderModels.Coin(_pools != null ? _pools.Staging : null);
+        }
 
         // V5 M8z (7 Oct): the coins are the weapon's data (visual.placeholderLook), not its id.
         bool StrikeIsDoubloons() => _aimedFrame == Time.frameCount && VisualOf(_aimedWeapon)?.placeholderLook == WeaponPlaceholderLook.Doubloons;
 
         void CoinBurst(Vector3 position, float radius)
         {
-            var coin = WeaponPlaceholderModels.Coin(_pools != null ? _pools.Staging : null);
-            var spread = Mathf.Clamp(radius, 1f, 4f) * 1.4f;
-            var start = Mathf.Repeat(position.x * 37f + position.z * 11f, 360f); // no random draw (the presenter draws none)
+            var coin = CoinModel(out var scale);
+            var target = position;
+            target.y = 0.7f;
+            var from = _ship != null && _ship.Exists ? _ship.Position + Vector3.up * 1.1f : target + Vector3.up * 4f;
+            var flat = target - from;
+            flat.y = 0f;
+            var dist = flat.magnitude;
+            var dir = dist > 0.01f ? flat / dist : Vector3.forward;
+            var side = Vector3.Cross(Vector3.up, dir);
+            var flight = Mathf.Clamp(dist / CoinFlightSpeed, 0.12f, 0.4f);
+            var arc = 0.8f + dist * 0.12f;
             for (var i = 0; i < CoinsPerStrike; i++)
             {
-                var angle = (start + i * (360f / CoinsPerStrike)) * Mathf.Deg2Rad;
-                var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
-                var go = Spawn(KindCoin, coin, position + Vector3.up * 0.4f + outward * 0.3f, Quaternion.Euler(0f, angle * Mathf.Rad2Deg, 0f), 1f, out var pooled);
+                // A small fan, no random draw (the presenter draws none): middle, left, right.
+                var lateral = (i == 0 ? 0f : i % 2 == 1 ? -1f : 1f) * 0.45f * ((i + 1) / 2);
+                var go = Spawn(KindCoin, coin, from, Quaternion.LookRotation(dir, Vector3.up), scale, out var pooled);
                 if (go == null) break;
-                _coins.Add(new Coin { View = new View { Go = go, Pooled = pooled }, Velocity = outward * spread + Vector3.up * 7.5f, Left = 0.75f });
+                var prep = Prepare(go);
+                if (!prep.Done) { StripPhysics(go); prep.Done = true; }
+                _coins.Add(new Coin
+                {
+                    View = new View { Go = go, Pooled = pooled }, From = from + side * lateral * 0.3f, To = target + side * lateral,
+                    T = -i * CoinStagger, Flight = flight, Arc = arc, Left = 0.45f, Splash = i == 0,
+                });
             }
-            WaterSplash(position);
         }
 
         void TickCoins(float dt)
@@ -274,16 +318,36 @@ namespace RoguePirates.V4.Presentation.Weapons
             for (var i = _coins.Count - 1; i >= 0; i--)
             {
                 var c = _coins[i];
-                c.Left -= dt;
                 var go = c.View.Go;
-                if (c.Left <= 0f || go == null)
+                if (go == null) { _coins.RemoveAt(i); ReleaseView(c.View); continue; }
+                var t = go.transform;
+                if (!c.Landed)
+                {
+                    // In flight: from the ship to the enemy in a low arc, spinning.
+                    c.T += dt;
+                    var k = Mathf.Clamp01(c.T / Mathf.Max(0.01f, c.Flight));
+                    t.position = Vector3.Lerp(c.From, c.To, k) + Vector3.up * (c.Arc * 4f * k * (1f - k));
+                    t.rotation = Quaternion.Euler(0f, 1080f * dt, 0f) * t.rotation;
+                    if (k >= 1f)
+                    {
+                        // The hit: it glances off the enemy and falls.
+                        c.Landed = true;
+                        var back = c.From - c.To;
+                        back.y = 0f;
+                        c.Velocity = (back.sqrMagnitude > 0.0001f ? back.normalized : Vector3.zero) * 2.5f + Vector3.up * 5f;
+                        if (c.Splash) WaterSplash(c.To);
+                    }
+                    _coins[i] = c;
+                    continue;
+                }
+                c.Left -= dt;
+                if (c.Left <= 0f)
                 {
                     _coins.RemoveAt(i);
                     ReleaseView(c.View);
                     continue;
                 }
                 c.Velocity.y -= CoinGravity * dt;
-                var t = go.transform;
                 var p = t.position + c.Velocity * dt;
                 if (p.y < 0.05f) { p.y = 0.05f; c.Velocity = Vector3.zero; }
                 t.position = p;
@@ -706,6 +770,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             ReleaseBlades(0);
             foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
             _orbitModels.Clear();
+            ClearMaces();
         }
 
         void OnDestroy()
@@ -1075,7 +1140,8 @@ namespace RoguePirates.V4.Presentation.Weapons
                 }
                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
                     EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
-                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, WeaponPlaceholderModels.Coin(staging), CoinsPerStrike * 3);
+                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _), CoinsPerStrike * 8); // Hackathon: a chain of strikes
+                if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace) PrewarmMaces(Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
             }
             foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
         }

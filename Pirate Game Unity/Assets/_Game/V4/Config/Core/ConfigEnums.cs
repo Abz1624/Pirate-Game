@@ -19,7 +19,7 @@ namespace RoguePirates.V4.Config
         /// <summary>V4 weapon firing logic (M5); a V3 pattern plus the id checks WeaponController made.</summary>
         /// <summary>Aim overlay shape (the O-key debug overlay, M6). ByTargeting = chosen from pattern and targeting as V3 did.</summary>
         public enum AimShape { ByTargeting = 0, PredictedArea = 1, TargetFan = 2, ForwardFan = 3, StrikeDisc = 4 }
-        public enum WeaponBehavior { Projectile = 0, Fan = 1, Orbit = 2, ConeStream = 3, Trail = 4, Mine = 5, AreaStrike = 6, Aura = 7, PredictedArea = 8, Summon = 9 }
+        public enum WeaponBehavior { Projectile = 0, Fan = 1, Orbit = 2, ConeStream = 3, Trail = 4, Mine = 5, AreaStrike = 6, Aura = 7, PredictedArea = 8, Summon = 9, ChainedMace = 10 }
         /// <summary>What an evolution changes in its base weapon's behavior.</summary>
         /// <summary>The hit and kill effect a weapon's hits play (V3 CombatVfxController: cannon weapons a cannon impact, powder kegs nothing).</summary>
         public enum WeaponHitEffect { Standard = 0, CannonImpact = 1, None = 2 }

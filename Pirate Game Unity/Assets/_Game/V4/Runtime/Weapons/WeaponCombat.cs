@@ -273,6 +273,8 @@ namespace RoguePirates.V4.Weapons
         public readonly List<Whirlpool> Whirlpools = new List<Whirlpool>();
         /// <summary>V5 M8z (7 Oct, Q20): firings still to repeat (a milestone's echoes: the Siren Bell's second pulse).</summary>
         public readonly List<PendingEcho> Echoes = new List<PendingEcho>();
+        /// <summary>Hackathon (12 Oct): chained maces in flight (the Anchor Flail).</summary>
+        public readonly List<ChainedMace> Maces = new List<ChainedMace>();
         public readonly List<Vector3> LaneHitScratch = new List<Vector3>();
         public readonly List<int> LaneIndexScratch = new List<int>();
         public float OrbitVolleyTimer;
@@ -411,6 +413,7 @@ namespace RoguePirates.V4.Weapons
             FollowUps.Clear();
             Whirlpools.Clear();
             Echoes.Clear();
+            Maces.Clear();
         }
     }
 }

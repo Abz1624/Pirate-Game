@@ -14,18 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.anchor_flail
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m4
+  balanceVersion: hackathon-mace
   weaponId: anchor_flail
   displayName: Anchor Flail
-  description: A heavy anchor swings around the ship, battering and shoving foes.
-  behaviorLine: Swings around the ship
-  pattern: 2
-  behavior: 2
-  targeting: 5
+  description: Throws a chained iron mace at a foe; it smashes through and is reeled
+    back to the ship.
+  behaviorLine: Throws chained maces that come back
+  pattern: 0
+  behavior: 10
+  targeting: 0
   tags: []
-  baseDamage: 16.12
-  baseCooldown: 0.75
-  range: 6
+  baseDamage: 20
+  baseCooldown: 0.9
+  range: 9
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
@@ -68,8 +69,8 @@ MonoBehaviour:
   goldPerKillRunCap: 0
   milestones:
   - level: 4
-    extraQuantity: 0
-    sizeMultiplier: 1.1428572
+    extraQuantity: 1
+    sizeMultiplier: 1
     extraSlow: 0
     durationMultiplier: 1
     extraPierce: 0
@@ -77,7 +78,7 @@ MonoBehaviour:
     extraSlowSeconds: 0
     echoes: 0
     echoDelaySeconds: 0.35
-    description: a wider swing (+0.5 m reach)
+    description: a second mace each throw
   - level: 8
     extraQuantity: 1
     sizeMultiplier: 1
@@ -88,18 +89,18 @@ MonoBehaviour:
     extraSlowSeconds: 0
     echoes: 0
     echoDelaySeconds: 0.35
-    description: another anchor
+    description: a third mace each throw
   - level: 12
-    extraQuantity: 0
+    extraQuantity: 1
     sizeMultiplier: 1
     extraSlow: 0
     durationMultiplier: 1
     extraPierce: 0
-    spinMultiplier: 1.1666666
+    spinMultiplier: 1
     extraSlowSeconds: 0
     echoes: 0
     echoDelaySeconds: 0.35
-    description: a faster swing (+25 degrees a second)
+    description: a fourth mace each throw
   projectileVisual:
     prefab: {fileID: 3274285418519690880, guid: a56db32405bb24ee290e68352d967ccd, type: 3}
     scaleMultiplier: 1
@@ -222,6 +223,15 @@ MonoBehaviour:
     shotSpeed: 0
     shotSize: 0.3
     maxAlive: 0
+  mace:
+    maxPerAttack: 4
+    outSpeed: 24
+    returnSpeed: 28
+    hitRadius: 1.1
+    height: 0.6
+    damageMultiplier: 1
+    knockbackMeters: 1.5
+    maxOutSeconds: 0.8
   visual:
     cannonMuzzle: 0
     fallbackMuzzleScale: 1
@@ -230,11 +240,11 @@ MonoBehaviour:
     aimMinAreaRadius: 2
     firePulseSeconds: 0.18
     firePulseFades: 0
-    orbitRingTinted: 1
+    orbitRingTinted: 0
     orbitRingColor: {r: 1, g: 0.88, b: 0.28, a: 1}
     summonModel: {fileID: 0}
     summonModelScale: 0.42
-    orbitModel: {fileID: 1709254077376921, guid: 4483cd566c4a75e4d803a5b06ef28387, type: 3}
-    orbitModelScale: 1.3
-    placeholderLook: 3
+    orbitModel: {fileID: 0}
+    orbitModelScale: 1
+    placeholderLook: 6
     noHitHighlight: 0

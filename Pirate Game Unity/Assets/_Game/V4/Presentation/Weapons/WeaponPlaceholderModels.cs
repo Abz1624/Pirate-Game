@@ -63,6 +63,9 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>A gold coin (the Cursed Doubloons' strike).</summary>
         public static GameObject Coin(Transform staging) => Get("Placeholder_Doubloon", BuildCoin, staging);
 
+        /// <summary>Hackathon (12 Oct): a spiked iron ball (the Anchor Flail's chained mace).</summary>
+        public static GameObject Mace(Transform staging) => Get("Placeholder_Mace", BuildMace, staging);
+
         static GameObject Get(string name, Func<GameObject> build, Transform staging)
         {
             if (_root == null)
@@ -169,6 +172,25 @@ namespace RoguePirates.V4.Presentation.Weapons
             Part(root.transform, PrimitiveType.Cylinder, Gold, Vector3.zero, new Vector3(0.7f, 0.04f, 0.7f), new Vector3(90f, 0f, 0f), 1.3f);
             return root;
         }
+
+        static GameObject BuildMace()
+        {
+            var root = new GameObject();
+            Part(root.transform, PrimitiveType.Sphere, Iron, Vector3.zero, Vector3.one * 0.95f, Vector3.zero, 0.2f); // the ball
+            // Six spikes along the axes and eight on the diagonals (small cubes turned to stand out of the ball).
+            var axes = new[] { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back,
+                new Vector3(1, 1, 1), new Vector3(-1, 1, 1), new Vector3(1, -1, 1), new Vector3(-1, -1, 1),
+                new Vector3(1, 1, -1), new Vector3(-1, 1, -1), new Vector3(1, -1, -1), new Vector3(-1, -1, -1) };
+            foreach (var a in axes)
+            {
+                var d = a.normalized;
+                Part(root.transform, PrimitiveType.Cube, SpikeIron, d * 0.52f, new Vector3(0.16f, 0.16f, 0.32f), Quaternion.LookRotation(d).eulerAngles, 0.25f);
+            }
+            Part(root.transform, PrimitiveType.Sphere, SpikeIron, new Vector3(0f, 0f, -0.55f), new Vector3(0.22f, 0.22f, 0.12f), Vector3.zero, 0.2f); // the chain's ring
+            return root;
+        }
+
+        static readonly Color SpikeIron = new Color(0.5f, 0.52f, 0.58f);
 
         static void Part(Transform parent, PrimitiveType type, Color color, Vector3 position, Vector3 scale, Vector3 euler, float emission)
         {

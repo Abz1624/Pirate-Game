@@ -279,34 +279,18 @@ namespace RoguePirates.V4.Tests
         static float Angle(Vector3 p) => Mathf.Atan2(p.x, p.z) * Mathf.Rad2Deg;
 
         [Test]
-        public void AnchorFlail_WiderSwing_AnotherAnchor_FasterSwing()
+        public void AnchorFlail_OneMaceAThrow_ThenTwoThreeAndFourAtRanks4_8_12()
         {
-            (int anchors, float reach) At(int level)
+            // Hackathon (12 Oct, owner): the flail throws chained maces, 1 a throw at rank 1, at most 4.
+            int Thrown(int level)
             {
                 using var rig = new Rig("anchor_flail", level);
-                rig.Manager.TickOrbitPositions(0.1f);
-                var hits = rig.Manager.OrbitHitsOf(rig.Slot);
-                var p = hits[0].Position;
-                return (hits.Count, new Vector2(p.x, p.z).magnitude);
+                for (var i = 0; i < 6; i++) rig.Enemies.Add(new Vector3(-5f + 2f * i, 0f, 5f));
+                rig.Manager.Tick(Dt);
+                return rig.Manager.Maces.Count;
             }
-            var r3 = At(3);
-            var r4 = At(4);
-            Assert.AreEqual(r3.reach + 0.5f, r4.reach, 0.01f, "rank 4: +0.5 m reach");
-            Assert.AreEqual(At(7).anchors + 1, At(8).anchors, "rank 8: another anchor");
-
-            using (var rig = new Rig("anchor_flail", 11))
-            {
-                var spin = rig.Weapon.orbit.angularSpeedDegrees;
-                rig.Manager.TickOrbitPositions(3f);
-                var a3 = rig.Manager.OrbitHitsOf(rig.Slot)[0].Position;
-                rig.Loadout.Level = 12;
-                rig.Manager.TickOrbitPositions(3f);
-                var b3 = rig.Manager.OrbitHitsOf(rig.Slot)[0].Position;
-                Assert.Less(Vector3.Distance(a3, b3), 0.01f, "rank 12 reached mid-run: the anchors speed up where they are (no jump)");
-                rig.Manager.TickOrbitPositions(3.2f);
-                var b4 = rig.Manager.OrbitHitsOf(rig.Slot)[0].Position;
-                Assert.AreEqual(Mathf.Repeat((spin + 25f) * 0.2f, 360f), Mathf.Repeat(Angle(b4) - Angle(b3), 360f), 0.5f, "rank 12: +25 degrees a second");
-            }
+            var expected = new[] { 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4 };
+            for (var level = 1; level <= 12; level++) Assert.AreEqual(expected[level - 1], Thrown(level), $"rank {level}");
         }
 
         [Test]

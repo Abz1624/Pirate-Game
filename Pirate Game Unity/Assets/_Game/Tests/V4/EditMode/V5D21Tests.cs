@@ -230,7 +230,8 @@ namespace RoguePirates.V4.Tests
                 withCard.Add(w.weaponId);
                 // The behaviours that read KnockbackMult: an Orbit's or an Aura's knockbackMeters.
                 var knocks = (w.behavior == ConfigEnums.WeaponBehavior.Orbit && w.orbit.knockbackMeters > 0f)
-                             || (w.behavior == ConfigEnums.WeaponBehavior.Aura && w.aura.knockbackMeters > 0f);
+                             || (w.behavior == ConfigEnums.WeaponBehavior.Aura && w.aura.knockbackMeters > 0f)
+                             || (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace && w.mace.knockbackMeters > 0f); // Hackathon (12 Oct)
                 Assert.IsTrue(knocks, $"{w.weaponId} offers the Knockback card but does not knock back");
             }
             Debug.Log("[V5 D21 Q17] Knockback card on: " + string.Join(", ", withCard));

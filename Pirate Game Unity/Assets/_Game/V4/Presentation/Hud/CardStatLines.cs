@@ -33,6 +33,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 case ConfigEnums.WeaponBehavior.Trail: return c.trail.damageMultiplier;
                 case ConfigEnums.WeaponBehavior.Mine: return c.mine.blastDamageMultiplier;
                 case ConfigEnums.WeaponBehavior.Aura: return c.aura.damageMultiplier;
+                case ConfigEnums.WeaponBehavior.ChainedMace: return c.mace.damageMultiplier; // Hackathon (12 Oct)
                 default: return 1f;
             }
         }

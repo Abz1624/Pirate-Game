@@ -133,8 +133,9 @@ namespace RoguePirates.V4.Tests
             public readonly List<(object key, string id)> Entries = new List<(object, string)>();
             public float Knockback = 1f, Cooldown = 1f;
             public string Evolution;
+            public int Level = 1;
             public int Count => Entries.Count;
-            public LoadoutEntry Get(int i) => new LoadoutEntry { Key = Entries[i].key, WeaponId = Entries[i].id, EvolutionId = Evolution, Level = 1, DamageBonus = 1f,
+            public LoadoutEntry Get(int i) => new LoadoutEntry { Key = Entries[i].key, WeaponId = Entries[i].id, EvolutionId = Evolution, Level = Level, DamageBonus = 1f,
                 CooldownMult = Cooldown, SpeedMult = 1f, SizeMult = 1f, DurationMult = 1f, KnockbackMult = Knockback };
             public void Mirror(int i, in LoadoutMirror state) { }
         }
@@ -399,31 +400,100 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(bell.aura.slowFraction + e.extraSlow, rig.Enemies.Slows[0].fraction, 1e-5f, "and slows harder");
         }
 
-        [Test]
-        public void TheAnchorFlail_HitsEachEnemyOncePerInterval_AndKnocksBack_AndItsCooldownCardsShortenIt()
+        // ---- Hackathon (12 Oct, owner): the Anchor Flail throws chained maces that come back --------------------------
+
+        static Rig FlailRig(int level, params Vector3[] enemies)
         {
-            int Hits(float cooldownMult)
+            var rig = new Rig();
+            foreach (var e in enemies) rig.Enemies.Add(e);
+            rig.Loadout.Level = level;
+            rig.Loadout.Entries.Add((new object(), "anchor_flail"));
+            rig.Manager.SyncLoadout();
+            return rig;
+        }
+
+        [Test]
+        public void TheAnchorFlail_IsAChainedMace_NotAnOrbit()
+        {
+            using var rig = new Rig();
+            var flail = rig.Weapon("anchor_flail");
+            Assert.AreEqual(ConfigEnums.WeaponBehavior.ChainedMace, flail.behavior);
+            Assert.AreEqual(4, flail.mace.maxPerAttack, "owner: at most 4 at once");
+            Assert.AreEqual(1, flail.baseQuantity, "owner: 1 a throw to start");
+            foreach (var text in new[] { flail.description, flail.behaviorLine }.Concat(flail.milestones.Select(m => m.description)))
+                StringAssert.DoesNotContain("—", text, "no em dashes in UI text");
+        }
+
+        [Test]
+        public void TheAnchorFlail_ThrowsOneMacePerLevelStep_AtDistinctEnemies()
+        {
+            var enemies = Enumerable.Range(0, 6).Select(i => new Vector3(-5f + 2f * i, 0f, 5f)).ToArray();
+            foreach (var (level, count) in new[] { (1, 1), (3, 1), (4, 2), (7, 2), (8, 3), (11, 3), (12, 4) })
             {
-                using var rig = new Rig();
-                var flail = rig.Weapon("anchor_flail");
-                Assert.IsNotNull(flail.visual.orbitModel, "drawn with its own model, not the cutlass blades");
-                flail.orbit.hitRadius = 100f; // the anchor touches the enemy all the time
-                rig.Loadout.Entries.Add((new object(), "anchor_flail"));
-                rig.Loadout.Cooldown = cooldownMult; // as a Cooldown card
-                rig.Manager.SyncLoadout();
-                rig.Enemies.Add(new Vector3(3f, 0f, 0f));
-                const float dt = 1f / 60f;
-                for (var f = 0; f < 180; f++) // 3 s
-                {
-                    rig.Manager.TickOrbitPositions(f * dt);
-                    rig.Manager.Tick(dt);
-                }
-                Assert.AreEqual(rig.Enemies.Hits.Count, rig.Enemies.Knocks.Count, "every hit shoves");
-                Assert.IsTrue(rig.Enemies.Knocks.All(k => Mathf.Approximately(k.meters, flail.orbit.knockbackMeters)));
-                return rig.Enemies.Hits.Count;
+                using var rig = FlailRig(level, enemies);
+                rig.Manager.Tick(1f / 60f);
+                var maces = rig.Manager.Maces;
+                Assert.AreEqual(count, maces.Count, $"rank {level}: {count} a throw");
+                Assert.AreEqual(count, maces.Select(m => m.TargetIndex).Distinct().Count(), $"rank {level}: each mace at a different enemy");
             }
-            Assert.AreEqual(Mathf.CeilToInt(3f / 0.75f), Hits(1f), "once per 0.75 s");
-            Assert.Greater(Hits(0.5f), Hits(1f), "a Cooldown card shortens the per-target interval");
+            using (var few = FlailRig(12, new Vector3(0f, 0f, 5f)))
+            {
+                few.Manager.Tick(1f / 60f);
+                Assert.AreEqual(4, few.Manager.Maces.Count, "with one enemy all four still fly (at it)");
+            }
+        }
+
+        [Test]
+        public void TheAnchorFlail_FliesOut_HitsOnce_AndIsReeledBack_BeforeTheNextThrow()
+        {
+            using var rig = FlailRig(1, new Vector3(0f, 0f, 7f));
+            var flail = rig.Weapon("anchor_flail");
+            const float dt = 1f / 60f;
+            rig.Manager.Tick(dt);
+            Assert.AreEqual(1, rig.Manager.Maces.Count);
+            var mace = rig.Manager.Maces[0];
+            var farthest = 0f;
+            var frames = 0;
+            while (rig.Manager.Maces.Count > 0 && frames < 300)
+            {
+                farthest = Mathf.Max(farthest, new Vector2(mace.Position.x, mace.Position.z).magnitude);
+                rig.Manager.Tick(dt);
+                frames++;
+            }
+            Assert.AreEqual(0, rig.Manager.Maces.Count, "the mace came back to the ship");
+            Assert.Greater(farthest, 7f - 0.8f - flail.mace.hitRadius - 0.01f, "it reached the enemy");
+            CollectionAssert.AreEqual(new[] { 0 }, rig.Enemies.Hits, "one hit a throw, though it touched the enemy for several frames, out and back");
+            Assert.AreEqual(1, rig.Enemies.Knocks.Count, "the hit shoves");
+            Assert.AreEqual(flail.mace.knockbackMeters, rig.Enemies.Knocks[0].meters, 1e-4f);
+            Assert.Less(frames * dt, 1.2f, "out and back well within a second or so");
+
+            // The next throw waits for the cooldown and goes again.
+            for (var f = 0; f < 120; f++) rig.Manager.Tick(dt);
+            Assert.GreaterOrEqual(rig.Enemies.Hits.Count, 2, "it throws again");
+        }
+
+        [Test]
+        public void TheAnchorFlail_NoNewThrowWhileItsMacesAreOut()
+        {
+            using var rig = FlailRig(1, new Vector3(0f, 0f, 8.5f));
+            rig.Weapon("anchor_flail").mace.outSpeed = 2f; // a very slow mace, out longer than the cooldown
+            rig.Manager.SyncLoadout();
+            for (var f = 0; f < 90; f++)
+            {
+                rig.Manager.Tick(1f / 60f);
+                Assert.LessOrEqual(rig.Manager.Maces.Count, 1, "one throw at a time");
+            }
+        }
+
+        [Test]
+        public void TheAnchorFlail_HitsEnemiesAlongItsPath_EachOnceAThrow()
+        {
+            // Rank 4: two maces, one at the near enemy and one at the far one behind it; the far one's mace passes the near one.
+            using var rig = FlailRig(4, new Vector3(0f, 0f, 3.5f), new Vector3(0f, 0f, 8f));
+            for (var f = 0; f < 45; f++) rig.Manager.Tick(1f / 60f); // one throw (the next one comes after the 0.9 s cooldown)
+            Assert.AreEqual(0, rig.Manager.Maces.Count, "both back");
+            Assert.AreEqual(2, rig.Enemies.Hits.Count(h => h == 0), "the near enemy: its own mace and the far mace on the way out");
+            Assert.AreEqual(1, rig.Enemies.Hits.Count(h => h == 1), "the far enemy: once");
         }
 
         /// <summary>Review (M4): each Empowered evolution must change its weapon in play, not only in its numbers.</summary>
@@ -431,17 +501,22 @@ namespace RoguePirates.V4.Tests
         public void EveryEmpoweredEvolution_ChangesItsWeaponInPlay()
         {
             using var rig = new Rig();
-            // Kraken Chain: a second anchor.
+            // Kraken Chain (Hackathon, 12 Oct: the flail throws at most 4 maces, so it makes them heavier, not more).
+            rig.Enemies.Add(new Vector3(0f, 0f, 6f));
             rig.Loadout.Entries.Add((new object(), "anchor_flail"));
             rig.Manager.SyncLoadout();
-            rig.Manager.TickOrbitPositions(0f);
-            // V5 M8z (7 Oct, I8z.5): the playtest gave the flail more anchors; the evolution's rule is one more, not "two".
-            var plain = rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]).Count;
-            Assert.GreaterOrEqual(plain, 1);
+            rig.Manager.Tick(1f / 60f);
+            var plain = rig.Manager.Maces[0];
+            var (plainRadius, plainPush, plainBonus) = (plain.HitRadius, plain.Knockback, plain.DamageBonus);
+            rig.Manager.ClearInFlight();
             rig.Loadout.Evolution = "kraken_chain";
             rig.Manager.SyncLoadout();
-            rig.Manager.TickOrbitPositions(0f);
-            Assert.Greater(rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]).Count, plain, "Kraken Chain swings another anchor");
+            rig.Manager.Slots[0].CooldownTimer = 0f; // throw again now
+            rig.Manager.Tick(1f / 60f);
+            var heavy = rig.Manager.Maces[0];
+            Assert.Greater(heavy.HitRadius, plainRadius, "Kraken Chain: a bigger mace");
+            Assert.Greater(heavy.Knockback, plainPush, "Kraken Chain: shoves further");
+            Assert.Greater(heavy.DamageBonus, plainBonus, "Kraken Chain: hits harder");
         }
 
         /// <summary>Shots of the first volley or burst (the target is far enough that none lands before it ends).</summary>

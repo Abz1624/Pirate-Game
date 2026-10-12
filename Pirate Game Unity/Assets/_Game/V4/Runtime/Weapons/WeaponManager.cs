@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Weapons
         IReadOnlyList<OrbitBehavior.HitSphere> OrbitHits { get; }
         /// <summary>V5 M4: where a given Orbit weapon's blades are (each Orbit weapon has its own).</summary>
         IReadOnlyList<OrbitBehavior.HitSphere> OrbitHitsOf(WeaponSlot slot) => OrbitHits;
+        /// <summary>Hackathon (12 Oct): the chained maces in flight (the Anchor Flail); presentation draws ball and chain.</summary>
+        IReadOnlyList<ChainedMace> Maces => System.Array.Empty<ChainedMace>();
         /// <summary>V5 M5 Leviathan Heart: a telegraphed blast on the densest crowd within 20 m.</summary>
         void ItemPulse(string ledgerId, float damage, float radius, float telegraphSeconds) { }
     }
@@ -53,6 +55,7 @@ namespace RoguePirates.V4.Weapons
         readonly MineBehavior _mine;
         readonly AreaStrikeBehavior _strike;
         readonly SummonBehavior _summon;
+        readonly ChainedMaceBehavior _mace;
 
         public WeaponManager(WeaponCombat combat, IWeaponLoadout loadout, IRunStatus run, ConfigSetRuntime config)
         {
@@ -67,6 +70,7 @@ namespace RoguePirates.V4.Weapons
             _mine = new MineBehavior(combat);
             _strike = new AreaStrikeBehavior(combat);
             _summon = new SummonBehavior(combat);
+            _mace = new ChainedMaceBehavior(combat);
             if (combat.Projectiles != null) combat.Projectiles.HitAdjust = combat.Healthy; // V5 M5
             _behaviors = new Dictionary<Behavior, WeaponBehavior>
             {
@@ -80,6 +84,7 @@ namespace RoguePirates.V4.Weapons
                 [Behavior.Aura] = new AuraBehavior(combat),
                 [Behavior.PredictedArea] = new PredictedAreaBehavior(combat),
                 [Behavior.Summon] = _summon,
+                [Behavior.ChainedMace] = _mace,
             };
         }
 
@@ -91,6 +96,9 @@ namespace RoguePirates.V4.Weapons
         public IReadOnlyList<OrbitBehavior.HitSphere> OrbitHitsOf(WeaponSlot slot) => _orbit.HitsOf(slot);
         /// <summary>The orbit behaviour (tests).</summary>
         public OrbitBehavior OrbitBehavior => _orbit;
+        public IReadOnlyList<ChainedMace> Maces => _c.Maces;
+        /// <summary>The chained mace behaviour (tests).</summary>
+        public ChainedMaceBehavior Mace => _mace;
 
         WeaponRulesConfig Rules => _c.Rules();
 
@@ -122,6 +130,7 @@ namespace RoguePirates.V4.Weapons
             TickDelayedStrikes(dt);
             TickWhirlpools(dt);
             _summon.TickSkiffs(dt);
+            _mace.TickMaces(dt); // Hackathon (12 Oct): before the throws, so a mace back this frame frees the next throw
             _fan.TickFollowUps(dt);
             TickEchoes(dt);
             var itemAttackSpeed = _c.Mods.ItemAttackSpeedMultiplier;

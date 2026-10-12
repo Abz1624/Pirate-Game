@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m4
   evolutionId: kraken_chain
   displayName: Kraken Chain
-  description: A second anchor; both swing wider and hit harder.
+  description: Heavier maces that hit harder, wider and shove further.
   baseWeapon: {fileID: 11400000, guid: 2d1afaa7856968640853c318381e5f9e, type: 2}
   requiredItemId: rusted_shackle
   effect: 7
@@ -64,7 +64,7 @@ MonoBehaviour:
     delayedDamageMultiplier: 0.55
     delayedProcMultiplier: 0.5
   empower:
-    extraQuantity: 1
+    extraQuantity: 0
     damageMultiplier: 1.3
     cooldownMultiplier: 1
     sizeMultiplier: 1.25
