@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 12:28 IST",
+ "updated": "12 Oct, 13:43 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Wallet login and island claim work on the Seeker. Owner decision: SOL wagers only in 1v1; raids have no stake. Removing raid stakes and rebuilding.",
+ "headline": "Rebuilt and installed: raids without stakes, full wallet address with copy. Desktop at localhost:8090 and the APK on the Seeker are current. Remaining: your test pass, then the demo reset.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -21,7 +21,7 @@
    "name": "Raids vs the AI captain",
    "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield. No SOL stake (owner, 12 Oct): wagers are only in 1v1.",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
@@ -63,7 +63,7 @@
    "name": "Builds",
    "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
    "server": "n/a",
-   "unity": "building",
+   "unity": "done",
    "chain": "n/a"
   }
  ],
@@ -169,6 +169,10 @@
   [
    "12:28",
    "APK installed on the Seeker (USB): wallet sign-in via Mobile Wallet Adapter worked (Captain wd8i), 1 devnet SOL sent to the phone wallet, island claim worked. The phone restarted once: a system update (boot reason reboot,ota), not the game. Owner: no stakes on raids; SOL wagers only in 1v1. Removing raid stakes, adding a full address + copy button, rebuilding WebGL and the APK."
+  ],
+  [
+   "13:43",
+   "Raids without SOL stake (game + server, deployed); wallet panel shows the full address with Copy and explorer buttons; WebGL desktop (120 MB) and APK (148.5 MB) rebuilt; the APK reinstalled on the Seeker (signed in, ~58 fps). Server 198, EditMode 758 pass."
   ]
  ]
 }
