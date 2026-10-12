@@ -92,6 +92,12 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DefenceJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DefenceUpdatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("LastAccrualAt")
                         .HasColumnType("TEXT");
 
@@ -557,8 +563,17 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("GuardianMinute")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool?>("GuardianSunk")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("IslandId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("MinuteReached")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Result")
                         .IsRequired()

@@ -467,7 +467,7 @@ guests). Errors are `{"error","message"}` as everywhere. Optional env `PUBLIC_AP
 
 **Economy** (V5 D19(1) as changed by D24): an island brews RUM into its own storage; **60% goes to the vault** (never
 raidable), 40% is **exposed**. A won raid takes **25% of the exposed RUM** (12.5% on a partial win) and gives the island
-a **4-hour shield**; attacking never ends your own shield. Raid fee **25 RUM**. Voyages: `POST /api/runs` adds
+a **4-hour shield**; attacking never ends your own shield. Raid fee **25 RUM**. An island is raidable by one attacker at a time for up to 20 minutes. Voyages: `POST /api/runs` adds
 `kills / 10` RUM (rounded down) for wallet players and returns `rumEarned`.
 
 | Building (`kind`) | Levels | Upgrade cost (RUM) to level 1/2/3/4/5 | Effect |
@@ -503,18 +503,25 @@ Errors: `403 not_your_island`, `409 island_listed`, `400 invalid_kind`, `409 max
 
 **Raids.** Raids have **no SOL stake** (owner, 12 Oct: SOL wagers are only in 1v1 PvP); the only cost is the RUM fee.
 `POST /api/raids/start` `{"islandId"}` ->
-`{"raidId","islandId","islandName","startedAt","expiresAt","feePaid":25,"rum","defender":{...},"loot":{"exposedRum","ifWon","ifPartial","lootPercent":25},"wager":null}`.
+`{"raidId","islandId","islandName","startedAt","expiresAt","feePaid":25,"rum","defender":{...},"defence":{...},"loot":{"exposedRum","ifWon","ifPartial","lootPercent":25},"wager":null}`.
+`defence` is the island's level (see **Island defence designs** below):
+`{"isCustom","seed","timeLimitSeconds":960,"windowSeconds":60,"design":{"windows":[...15],"guardian":{...}}}`.
 The **defender config** for the AI-captain fight:
-`{"captainId":"ai_captain","captainName":"Captain Marrow","seed","hullMultiplier","extraWaves","weaponLevel","cannonTower","walls","difficulty":1-7,"timeLimitSeconds":300}`.
+`{"captainId":"ai_captain","captainName":"Captain Marrow","seed","hullMultiplier","extraWaves","weaponLevel","cannonTower","walls","difficulty":1-7,"timeLimitSeconds":960}` (kept for older clients).
 Errors: `400 own_island`, `409 island_shielded`, `409 island_listed`, `409 raid_in_progress`, `400 insufficient_rum`,
 `400 raid_stakes_off` (any `stakeLamports` > 0), `400 invalid_stake` (negative). Starting a new raid abandons your own
 unfinished one.
 
-`POST /api/raids/{id}/result` `{"won":true,"partial":false,"seconds":95,"runLog":null}` (within **10 minutes** of the
-start; `seconds` 1..360 and not more than the time since the start) ->
-`{"raidId","result":"won|partial|lost","rumLooted","rum","seconds","defenderShieldUntil","wager"}`.
-Errors: `409 raid_expired` (marked `abandoned`), `409 raid_finished`, `400 invalid_seconds`, `403 not_your_raid`.
-`runLog` is accepted and not checked yet.
+`POST /api/raids/{id}/result` `{"won":true,"guardianSunk":true,"minuteReached":9,"seconds":520,"runLog":null}` (within
+**20 minutes** of the start; `seconds` 1..1020 (the 16-minute fight + 60 s grace) and not more than the time since the
+start; `minuteReached` 0..16, the last one-minute window reached) ->
+`{"raidId","result":"won|partial|lost","rumLooted","rum","seconds","guardianMinute","minuteReached","guardianSunk","defenderShieldUntil","wager"}`.
+The attacker must **conquer** the island: **won** = `guardianSunk:true`; **partial** = reached the guardian's minute
+(`minuteReached >= guardianMinute`, the minute in the design the raid started with) without sinking it; **lost**
+otherwise. Older clients that send neither `guardianSunk` nor `minuteReached` keep the old rule (`won`, `partial` flags).
+Errors: `409 raid_expired` (marked `abandoned`), `409 raid_finished`, `400 invalid_seconds`, `400 invalid_minute`,
+`400 invalid_result` (`guardianSunk` with `minuteReached` before the guardian's minute), `403 not_your_raid`.
+`runLog` is accepted and not checked yet. `GET /api/raids/mine` rows also carry `guardianMinute`, `minuteReached`, `guardianSunk`.
 
 `POST /api/raids/{id}/wager` (the old raid stake deposit) -> `410 raid_stakes_off`. Raids staked before stakes were
 switched off still settle as before, so no deposit is lost: their `wager` is
@@ -525,6 +532,48 @@ unfunded one is cancelled at the result. If the payout fails the wager stays `fu
 
 `GET /api/raids/mine` -> `{"attacks":[row],"defences":[row]}`, row
 `{"raidId","islandId","islandName","attacker":{"playerId","name","wallet"},"defender":{...},"result","rumLooted","seconds","startedAt","finishedAt","wager"}`.
+
+**Island defence designs** (migration `AddIslandDefence`; code `Hackathon/DefenceService.cs`, numbers in
+`IslandRules`). Each island is a roguelike level its owner designs: a **15-minute timeline of 15 one-minute windows**
+(window `m` starts at `(m-1)*60` s), each a list of `{kind, count}`, plus a **guardian boss** and the minute it arrives
+(2..15, default 5; it arrives at the start of that window). A raid conquers the island by surviving the waves and sinking
+the guardian. Islands without a saved design use the **default design** (a ramp from fodder to shooters to elites, the
+Barnacle King at minute 5), so every raid has one; a saved design that no longer validates also falls back to it.
+
+Budget per window: `floor((20 + 6*minute) * (100 + 15*(cannonTower + walls)) / 100)` points (26, 32, ... 110 on a bare
+island; x1.9 with both buildings at 3). Validation: every window's cost <= its budget, counts 0..60, known kinds only,
+each kind once per window, minutes 1..15 once each (missing windows are empty), a known guardian, guardian minute 2..15.
+
+| Cost | Kinds (ids as in the game's `V4/Data` Enemies and Variants) |
+|---|---|
+| 1 | `deckhand_dinghy`, `swordfish` (fodder) |
+| 2 | `rammer_raft`, `cutthroat_skiff`, `hammerhead`, `shark` (melee) |
+| 3 | `cannonboat`, `needle_sloop` (shooters), `bomb_boat` (bomber), `manta_ray` (melee) |
+| 4 | `gunner_cog` (shooter), `bomb_ketch` (bomber), `boarding_barge` (heavy) |
+| 5 | `kraken_spawn` (heavy) |
+| 12 | `elite_hammerhead`, `elite_kraken_spawn` (elites) |
+| 30 | `reef_crab_miniboss` (miniboss) |
+
+Guardian bosses: `barnacle_king` (the Saltwind boss; the only boss in the game data today, the default).
+
+Design JSON (PUT body, and `design` in every view, where each window also has `startSecond`, `cost`, `budget` and the
+guardian `displayName`, `arrivesAtSecond`; those extra fields are ignored on PUT):
+`{"windows":[{"minute":1,"enemies":[{"kind":"deckhand_dinghy","count":12}]},...],"guardian":{"kind":"barnacle_king","minute":5}}`.
+
+- `GET /api/defence/catalog` -> `{"windows":15,"windowSeconds":60,"maxCount":60,"raidTimeLimitSeconds":960,
+  "budget":{"base":20,"perMinute":6,"percentPerBuildingLevel":15,"buildings":["cannon_tower","walls"],"formula","baseBudgets":[15]},
+  "guardianMinute":{"min":2,"max":15,"default":5},"kinds":[{"kind","displayName","role","cost"}],
+  "bosses":[{"kind","displayName","isDefault"}],"defaultGuardian","defaultDesign":design,
+  "presets":[{"id":"swarm|gunline|elite_guard","name":"Swarm|Gunline|Elite guard","description","design"}]}`.
+  Presets and the default fit the base budgets, so they are valid on every island (PUT a preset's `design` as is).
+- `GET /api/islands/{id}/defence` (anyone; auth optional) -> `{"islandId","islandName","isMine","isCustom","updatedAt",
+  "cannonTower","walls","budgetBonusPercent","budgets":[15],"design","costs":{"<kind>":cost},"kinds","bosses","maxCount","guardianMinute"}`.
+- `PUT /api/islands/{id}/defence` (owner, wallet) with the design -> the same view. Errors: `403 not_your_island`,
+  `409 island_listed`, `404 island_not_found`, and `400 invalid_defence` with every problem:
+  `{"error":"invalid_defence","message","errors":[{"minute":1|null,"field":"windows[0].enemies[1].count","code","message"}]}`,
+  codes `over_budget`, `unknown_kind`, `invalid_count`, `duplicate_kind`, `duplicate_minute`, `invalid_minute`,
+  `too_many_windows`, `invalid_window`, `unknown_guardian`, `invalid_guardian_minute`, `missing_design` (`minute` is null
+  for problems outside a window).
 
 **Market** (treasury = escrow). Listing view:
 `{"listingId","status":"active|paid|sold|cancelling|cancelled","priceLamports","priceSol","nftMint","memo":"buy:<listingId>","treasury",

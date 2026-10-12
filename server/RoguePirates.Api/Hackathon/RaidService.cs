@@ -7,7 +7,7 @@ namespace RoguePirates.Api.Hackathon;
 
 /// <summary>
 /// Hackathon raids: a fight against an island's AI-captain defender. Start (not your own island, not shielded, not
-/// listed, one raid at a time per island, a RUM fee), then the client reports the result within 10 minutes. A win loots
+/// listed, one raid at a time per island, a RUM fee), then the client reports the result within 20 minutes (a 16-minute fight + grace). A win loots
 /// 25% of the exposed RUM (half on a partial win) and shields the island for 4 hours; attacking never touches the
 /// attacker's own shield (D24). Raids have no SOL stake (owner, 12 Oct: SOL wagers are only in 1v1 PvP): a start with
 /// stakeLamports &gt; 0 and the old /wager deposit are refused with raid_stakes_off. Raids staked before that keep their
@@ -38,7 +38,7 @@ public sealed class RaidService
 
     public static string Memo(Guid raidId) => "raid:" + raidId;
 
-    /// <summary>Marks started raids older than 10 minutes abandoned; their unfunded wagers are cancelled and funded ones
+    /// <summary>Marks started raids older than the raid timeout (20 minutes) abandoned; their unfunded wagers are cancelled and funded ones
     /// are kept by the house (an abandoned raid is a loss).</summary>
     public async Task ExpireStaleAsync()
     {
@@ -87,10 +87,13 @@ public sealed class RaidService
                 await AbandonAsync(old);
             var rum = await _islands.AddRumAsync(player.Id, -IslandRules.RaidFeeRum);
             IslandService.Accrue(s, now);
+            int ct = s.LevelOf(IslandRules.CannonTower), walls = s.LevelOf(IslandRules.Walls);
+            var (design, customDesign) = DefenceService.EffectiveDesign(island, ct, walls);
             var raid = new Raid
             {
                 Id = Guid.NewGuid(), AttackerPlayerId = player.Id, IslandId = islandId, DefenderPlayerId = island.OwnerPlayerId,
                 Result = Raid.Started, Seed = Random.Shared.Next(1, int.MaxValue), CreatedAt = now,
+                GuardianMinute = design.Guardian!.Minute,
             };
             _db.Raids.Add(raid);
             await _db.SaveChangesAsync();
@@ -102,7 +105,13 @@ public sealed class RaidService
             {
                 raidId = raid.Id, islandId, islandName = island.Name, startedAt = now, expiresAt = now + IslandRules.RaidTimeout,
                 feePaid = IslandRules.RaidFeeRum, rum,
-                defender = IslandRules.Defender(s.LevelOf(IslandRules.CannonTower), s.LevelOf(IslandRules.Walls), raid.Seed),
+                defender = IslandRules.Defender(ct, walls, raid.Seed),
+                // the island's level: survive the 15 designed one-minute windows and sink the guardian (AddIslandDefence)
+                defence = new
+                {
+                    isCustom = customDesign, seed = raid.Seed, timeLimitSeconds = IslandRules.RaidTimeLimitSeconds,
+                    windowSeconds = IslandRules.DefenceWindowSeconds, design = DefenceService.DesignView(design, ct, walls),
+                },
                 loot = new { exposedRum = exposed, ifWon = Loot(exposed, false), ifPartial = Loot(exposed, true), lootPercent = IslandRules.RaidLootPercent },
                 wager = (object?)null, // raids have no SOL stake (kept in the JSON for older clients)
             };
@@ -132,7 +141,18 @@ public sealed class RaidService
 
     // ---------- result ----------
 
-    public async Task<object> ResultAsync(Player player, Guid raidId, bool won, bool partial, int seconds)
+    /// <summary>The raid's outcome. With <paramref name="guardianSunk"/> or <paramref name="minuteReached"/> (clients since
+    /// AddIslandDefence): won = the guardian was sunk; partial = the attacker reached the guardian's minute without sinking
+    /// it; lost otherwise. Without them (older clients) the won/partial flags decide.</summary>
+    public static string Outcome(bool won, bool partial, bool? guardianSunk, int? minuteReached, int guardianMinute)
+    {
+        if (guardianSunk == null && minuteReached == null) return won ? (partial ? Partial : Raid.Won) : Raid.Lost;
+        if (guardianSunk == true) return Raid.Won;
+        return (minuteReached ?? 0) >= guardianMinute ? Partial : Raid.Lost;
+    }
+
+    public async Task<object> ResultAsync(Player player, Guid raidId, bool won, bool partial, int seconds,
+        bool? guardianSunk = null, int? minuteReached = null)
     {
         IslandService.RequireWallet(player);
         Raid raid;
@@ -148,16 +168,27 @@ public sealed class RaidService
             {
                 await AbandonAsync(raid);
                 await _db.SaveChangesAsync();
-                throw new ApiException(409, "raid_expired", "This raid expired (results are taken for 10 minutes after the start).");
+                throw new ApiException(409, "raid_expired", $"This raid expired (results are taken for {IslandRules.RaidTimeout.TotalMinutes:0} minutes after the start).");
             }
             var elapsed = (now - raid.CreatedAt).TotalSeconds;
-            if (seconds < 1 || seconds > IslandRules.RaidTimeLimitSeconds + 60 || seconds > elapsed + 5)
-                throw new ApiException(400, "invalid_seconds", $"seconds must be 1..{IslandRules.RaidTimeLimitSeconds + 60} and not longer than the time since the raid started.");
+            const int maxSeconds = IslandRules.RaidTimeLimitSeconds + IslandRules.RaidGraceSeconds;
+            if (seconds < 1 || seconds > maxSeconds || seconds > elapsed + 5)
+                throw new ApiException(400, "invalid_seconds", $"seconds must be 1..{maxSeconds} and not longer than the time since the raid started.");
+            if (minuteReached is < 0 or > IslandRules.DefenceWindows + 1)
+                throw new ApiException(400, "invalid_minute", $"minuteReached must be 0..{IslandRules.DefenceWindows + 1}.");
+            var guardianMinute = raid.GuardianMinute ?? IslandRules.GuardianMinuteDefault;
+            if (guardianSunk == true && minuteReached is { } mr && mr < guardianMinute)
+                throw new ApiException(400, "invalid_result", $"The guardian arrives in minute {guardianMinute}; it cannot be sunk by minute {mr}.");
+            var outcome = Outcome(won, partial, guardianSunk, minuteReached, guardianMinute);
 
             wager = raid.WagerId == null ? null : await _db.Wagers.FirstAsync(w => w.Id == raid.WagerId);
             await using var tx = await _db.Database.BeginTransactionAsync();
             raid.FinishedAt = now;
             raid.Seconds = seconds;
+            raid.GuardianSunk = guardianSunk;
+            raid.MinuteReached = minuteReached;
+            won = outcome != Raid.Lost;
+            partial = outcome == Partial;
             if (won)
             {
                 var s = await _islands.LoadAsync(raid.IslandId);
@@ -192,6 +223,7 @@ public sealed class RaidService
         return new
         {
             raidId = raid.Id, result = raid.Result, rumLooted = raid.RumLooted, rum, seconds = raid.Seconds,
+            guardianMinute = raid.GuardianMinute, minuteReached = raid.MinuteReached, guardianSunk = raid.GuardianSunk,
             defenderShieldUntil = island.ShieldUntil,
             wager = WagerView(wager, raid.Id, payout),
         };
@@ -271,6 +303,7 @@ public sealed class RaidService
             attacker = new { playerId = r.AttackerPlayerId, name = players.GetValueOrDefault(r.AttackerPlayerId)?.Name, wallet = players.GetValueOrDefault(r.AttackerPlayerId)?.wallet },
             defender = new { playerId = r.DefenderPlayerId, name = players.GetValueOrDefault(r.DefenderPlayerId)?.Name, wallet = players.GetValueOrDefault(r.DefenderPlayerId)?.wallet },
             result = r.Result, rumLooted = r.RumLooted, seconds = r.Seconds, startedAt = r.CreatedAt, finishedAt = r.FinishedAt,
+            guardianMinute = r.GuardianMinute, minuteReached = r.MinuteReached, guardianSunk = r.GuardianSunk,
             wager = r.WagerId is { } wid && wagers.TryGetValue(wid, out var w)
                 ? new { wagerId = w.Id, stakeLamports = w.StakeLamports, status = w.Status, payoutSignature = w.PayoutSig }
                 : null,

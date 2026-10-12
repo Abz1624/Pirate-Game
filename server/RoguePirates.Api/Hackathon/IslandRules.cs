@@ -36,8 +36,12 @@ public static class IslandRules
     public const int RaidLootPercent = 25;
     public static readonly TimeSpan ShieldAfterRaid = TimeSpan.FromHours(4);
     public const long RaidFeeRum = 25;
-    public static readonly TimeSpan RaidTimeout = TimeSpan.FromMinutes(10);
-    public const int RaidTimeLimitSeconds = 300;
+    /// <summary>Results are taken this long after the start (the 16-minute fight + grace); then the raid is abandoned.</summary>
+    public static readonly TimeSpan RaidTimeout = TimeSpan.FromMinutes(20);
+    /// <summary>The raid fight's length: the 15 designed one-minute windows + one minute to finish the guardian.</summary>
+    public const int RaidTimeLimitSeconds = 960;
+    /// <summary>Reported seconds may run this far over the time limit (loading, lag).</summary>
+    public const int RaidGraceSeconds = 60;
     public const string NftSymbol = "RPISL";
     public const string DefenderCaptainId = "ai_captain";
     public const string DefenderCaptainName = "Captain Marrow";
@@ -83,6 +87,61 @@ public static class IslandRules
         CannonTower: cannonTower, Walls: walls,
         Difficulty: 1 + cannonTower + walls,         // 1..7, for the UI
         TimeLimitSeconds: RaidTimeLimitSeconds);
+
+    // ---------- island defence designs (AddIslandDefence; owner 12 Oct: each island is a roguelike level) ----------
+
+    /// <summary>The design is a 15-minute timeline of one-minute windows.</summary>
+    public const int DefenceWindows = 15, DefenceWindowSeconds = 60;
+    /// <summary>Most units of one kind in one window.</summary>
+    public const int DefenceMaxCount = 60;
+    /// <summary>A window's budget: (20 + 6 x minute) x (1 + 15% per cannon_tower and walls level).</summary>
+    public const int DefenceBudgetBase = 20, DefenceBudgetPerMinute = 6, DefenceBudgetPercentPerLevel = 15;
+    /// <summary>The guardian boss arrives at the start of this window (2..15, default 5).</summary>
+    public const int GuardianMinuteMin = 2, GuardianMinuteMax = 15, GuardianMinuteDefault = 5;
+
+    /// <summary>An enemy kind a defence window can field (ids as in the game's V4/Data Enemies and Variants).</summary>
+    public sealed record DefenceKind(string Kind, string DisplayName, string Role, int Cost);
+
+    /// <summary>The enemy cost table (points per unit). Roles: fodder 1, melee/rammers 2, shooters and bombers 3-4,
+    /// heavies 4-5, elites 12, the Reef Crab miniboss 30.</summary>
+    public static readonly IReadOnlyList<DefenceKind> DefenceKinds = new DefenceKind[]
+    {
+        new("deckhand_dinghy", "Deckhand Dinghy", "fodder", 1),
+        new("swordfish", "Swordfish", "fodder", 1),
+        new("rammer_raft", "Rammer Raft", "melee", 2),
+        new("cutthroat_skiff", "Cutthroat Skiff", "melee", 2),
+        new("hammerhead", "Hammerhead", "melee", 2),
+        new("shark", "Shark", "melee", 2),
+        new("cannonboat", "Cannonboat", "shooter", 3),
+        new("needle_sloop", "Needle Sloop", "shooter", 3),
+        new("bomb_boat", "Bomb Boat", "bomber", 3),
+        new("manta_ray", "Manta Ray", "melee", 3),
+        new("gunner_cog", "Gunner Cog", "shooter", 4),
+        new("bomb_ketch", "Bomb Ketch", "bomber", 4),
+        new("boarding_barge", "Boarding Barge", "heavy", 4),
+        new("kraken_spawn", "Kraken Spawn", "heavy", 5),
+        new("elite_hammerhead", "Elite Hammerhead", "elite", 12),
+        new("elite_kraken_spawn", "Elite Kraken Spawn", "elite", 12),
+        new("reef_crab_miniboss", "Reef Crab", "miniboss", 30),
+    };
+
+    static readonly Dictionary<string, DefenceKind> DefenceKindById = DefenceKinds.ToDictionary(k => k.Kind);
+    public static DefenceKind? FindDefenceKind(string kind) => DefenceKindById.GetValueOrDefault(kind);
+    public static int DefenceCost(string kind) => DefenceKindById[kind].Cost;
+
+    /// <summary>A guardian boss (the game's bosses; barnacle_king is the Saltwind boss).</summary>
+    public sealed record GuardianBoss(string Kind, string DisplayName);
+    public static readonly IReadOnlyList<GuardianBoss> GuardianBosses = new GuardianBoss[] { new("barnacle_king", "Barnacle King") };
+    public const string DefaultGuardian = "barnacle_king";
+    public static GuardianBoss? FindGuardian(string kind) => GuardianBosses.FirstOrDefault(b => b.Kind == kind);
+
+    /// <summary>The budget bonus in percent from the island's defence buildings.</summary>
+    public static int DefenceBonusPercent(int cannonTower, int walls) =>
+        DefenceBudgetPercentPerLevel * (Math.Max(0, cannonTower) + Math.Max(0, walls));
+
+    /// <summary>Window <paramref name="minute"/>'s (1..15) budget in points.</summary>
+    public static int DefenceBudget(int minute, int cannonTower = 0, int walls = 0) =>
+        (DefenceBudgetBase + DefenceBudgetPerMinute * minute) * (100 + DefenceBonusPercent(cannonTower, walls)) / 100;
 
     /// <summary>The fixed world map: 24 named islands.</summary>
     public static readonly IReadOnlyList<IslandSlot> Slots = new IslandSlot[]

@@ -34,12 +34,12 @@ public sealed class FlakyRpc : ISolanaRpc
 /// <summary>Hackathon islands: claim and NFT mint, RUM accrual, collect, build, raids (no SOL stake; old staked raids still settle) and the market.</summary>
 public sealed class IslandTests
 {
-    sealed record Wallet(Account Account, string Token, HttpClient Http)
+    internal sealed record Wallet(Account Account, string Token, HttpClient Http)
     {
         public string Key => Account.PublicKey.Key;
     }
 
-    static (ApiHost host, FlakyRpc rpc, Account treasury) NewHost(bool treasuryOn = true)
+    internal static (ApiHost host, FlakyRpc rpc, Account treasury) NewHost(bool treasuryOn = true)
     {
         var rpc = new FlakyRpc();
         var treasury = new Account();
@@ -53,7 +53,7 @@ public sealed class IslandTests
         return (host, rpc, treasury);
     }
 
-    static async Task<Wallet> SignInAsync(ApiHost host)
+    internal static async Task<Wallet> SignInAsync(ApiHost host)
     {
         var account = new Account();
         var anon = host.Anon();
@@ -66,25 +66,25 @@ public sealed class IslandTests
         return new Wallet(account, token, host.As(token));
     }
 
-    static async Task<JsonElement> Ok(HttpResponseMessage res)
+    internal static async Task<JsonElement> Ok(HttpResponseMessage res)
     {
         Assert.True(res.IsSuccessStatusCode, $"{(int)res.StatusCode}: {await res.Content.ReadAsStringAsync()}");
         return await res.ReadJson();
     }
 
-    static async Task AssertError(HttpResponseMessage res, HttpStatusCode status, string code)
+    internal static async Task AssertError(HttpResponseMessage res, HttpStatusCode status, string code)
     {
         var body = await res.Content.ReadAsStringAsync();
         Assert.True(status == res.StatusCode, $"expected {(int)status} {code}, got {(int)res.StatusCode}: {body}");
         Assert.Equal(code, JsonDocument.Parse(body).RootElement.GetProperty("error").GetString());
     }
 
-    static async Task<JsonElement> ClaimAsync(Wallet w, string name = "Tortuga") =>
+    internal static async Task<JsonElement> ClaimAsync(Wallet w, string name = "Tortuga") =>
         await Ok(await w.Http.PostAsJsonAsync("/api/islands/claim", new { name }));
 
-    static async Task<long> RumAsync(Wallet w) => (await Ok(await w.Http.GetAsync("/api/islands/mine"))).GetProperty("rum").GetInt64();
+    internal static async Task<long> RumAsync(Wallet w) => (await Ok(await w.Http.GetAsync("/api/islands/mine"))).GetProperty("rum").GetInt64();
 
-    static async Task EarnRumAsync(Wallet w, int kills) =>
+    internal static async Task EarnRumAsync(Wallet w, int kills) =>
         await Ok(await w.Http.PostAsJsonAsync("/api/runs", new { kills, runSeconds = 1200, level = 10 }));
 
     static string Deposit(FakeSolanaRpc rpc, string from, string to, long lamports, string? memo = null)
@@ -332,7 +332,7 @@ public sealed class IslandTests
     }
 
     [Fact]
-    public async Task Raid_ExpiresAfter10Minutes()
+    public async Task Raid_ExpiresAfter20Minutes()
     {
         var (host, _, _) = NewHost();
         using var _h = host;
@@ -341,7 +341,7 @@ public sealed class IslandTests
         var id = (await ClaimAsync(owner)).GetProperty("islandId").GetGuid();
         await EarnRumAsync(raider, 600);
         var raidId = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }))).GetProperty("raidId").GetGuid();
-        host.Clock.Advance(TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(1));
+        host.Clock.Advance(TimeSpan.FromMinutes(20) + TimeSpan.FromSeconds(1));
         await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 100 }), HttpStatusCode.Conflict, "raid_expired");
         var history = await Ok(await raider.Http.GetAsync("/api/raids/mine"));
         Assert.Equal("abandoned", history.GetProperty("attacks")[0].GetProperty("result").GetString());

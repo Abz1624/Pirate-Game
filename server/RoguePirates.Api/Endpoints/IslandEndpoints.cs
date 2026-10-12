@@ -7,7 +7,10 @@ public sealed record ClaimIslandRequest(string? Name);
 public sealed record BuildRequest(string? Kind);
 public sealed record RaidStartRequest(Guid IslandId, long? StakeLamports);
 /// <summary><c>RunLog</c> is accepted and ignored for now (no raid run checks in the demo).</summary>
-public sealed record RaidResultRequest(bool Won, bool? Partial, int Seconds, System.Text.Json.JsonElement? RunLog = null);
+/// <summary>Since AddIslandDefence: <c>GuardianSunk</c> and <c>MinuteReached</c> decide the result (won = guardian sunk;
+/// partial = reached the guardian's minute without sinking it; else lost). Without them the old won/partial flags apply.</summary>
+public sealed record RaidResultRequest(bool Won, bool? Partial, int Seconds, System.Text.Json.JsonElement? RunLog = null,
+    bool? GuardianSunk = null, int? MinuteReached = null);
 public sealed record SignatureRequest(string? Signature);
 public sealed record MarketListRequest(Guid IslandId, long PriceLamports, string? Signature);
 
@@ -41,6 +44,15 @@ public static class IslandEndpoints
         app.MapPost("/api/islands/{id:guid}/build", async (HttpContext ctx, Guid id, BuildRequest req, PlayerAuth auth, IslandService islands) =>
             Results.Ok(await islands.BuildAsync(await auth.RequireAsync(ctx), id, req.Kind, islands.PublicBase(ctx))));
 
+        // ---- defence designs (AddIslandDefence) ----
+        app.MapGet("/api/defence/catalog", () => Results.Ok(DefenceService.Catalog()));
+
+        app.MapGet("/api/islands/{id:guid}/defence", async (HttpContext ctx, Guid id, PlayerAuth auth, DefenceService defence) =>
+            Results.Ok(await defence.GetAsync(id, (await auth.TryGetAsync(ctx))?.Id)));
+
+        app.MapPut("/api/islands/{id:guid}/defence", async (HttpContext ctx, Guid id, DefenceDesign req, PlayerAuth auth, DefenceService defence) =>
+            Results.Ok(await defence.PutAsync(await auth.RequireAsync(ctx), id, req)));
+
         app.MapGet("/static/islands/{slot:int}.png", (int slot) =>
             slot < 0 || slot >= IslandRules.Slots.Count
                 ? Results.NotFound()
@@ -58,7 +70,7 @@ public static class IslandEndpoints
         });
 
         app.MapPost("/api/raids/{id:guid}/result", async (HttpContext ctx, Guid id, RaidResultRequest req, PlayerAuth auth, RaidService raids) =>
-            Results.Ok(await raids.ResultAsync(await auth.RequireAsync(ctx), id, req.Won, req.Partial ?? false, req.Seconds)));
+            Results.Ok(await raids.ResultAsync(await auth.RequireAsync(ctx), id, req.Won, req.Partial ?? false, req.Seconds, req.GuardianSunk, req.MinuteReached)));
 
         app.MapPost("/api/raids/{id:guid}/settle", async (HttpContext ctx, Guid id, PlayerAuth auth, RaidService raids) =>
             Results.Ok(await raids.SettleAsync(await auth.RequireAsync(ctx), id)));

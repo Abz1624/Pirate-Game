@@ -56,6 +56,7 @@ builder.Services.AddScoped<RoguePirates.Api.Hackathon.DailyRaceService>();
 // Hackathon: islands (RUM, buildings, Island NFTs), raids and the island NFT marketplace (Endpoints/IslandEndpoints.cs).
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.IslandService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.RaidService>();
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.DefenceService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.MarketService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.DemoResetService>();
 
@@ -128,6 +129,15 @@ app.Use(async (ctx, next) =>
     {
         ctx.Response.StatusCode = ex.Status;
         await ctx.Response.WriteAsJsonAsync(new { error = ex.Code, message = ex.Message });
+    }
+    catch (RoguePirates.Api.Hackathon.DefenceInvalidException ex) when (!ctx.Response.HasStarted)
+    {
+        ctx.Response.StatusCode = 400;
+        await ctx.Response.WriteAsJsonAsync(new
+        {
+            error = "invalid_defence", message = ex.Message,
+            errors = ex.Errors.Select(e => new { minute = e.Minute, field = e.Field, code = e.Code, message = e.Message }),
+        });
     }
 });
 

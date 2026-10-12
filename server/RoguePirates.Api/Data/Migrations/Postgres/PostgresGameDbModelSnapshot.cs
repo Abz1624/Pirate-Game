@@ -101,6 +101,12 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DefenceJson")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DefenceUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("LastAccrualAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -574,8 +580,17 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("GuardianMinute")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("GuardianSunk")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("IslandId")
                         .HasColumnType("uuid");
+
+                    b.Property<int?>("MinuteReached")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Result")
                         .IsRequired()

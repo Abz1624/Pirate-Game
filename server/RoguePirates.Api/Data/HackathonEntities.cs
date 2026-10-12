@@ -158,6 +158,10 @@ public sealed class Island
     public string? MintError { get; set; }
     /// <summary>No raids until then (set for 4 hours after a successful raid).</summary>
     public DateTime? ShieldUntil { get; set; }
+    // ---- AddIslandDefence ----
+    /// <summary>The owner's defence design (JSON: 15 one-minute windows + the guardian boss); null = the default design.</summary>
+    public string? DefenceJson { get; set; }
+    public DateTime? DefenceUpdatedAt { get; set; }
 }
 
 /// <summary>A structure on an island (rum_store, vault, defences, ...).</summary>
@@ -189,6 +193,13 @@ public sealed class Raid
     public Guid DefenderPlayerId { get; set; }
     /// <summary>The fight's length the client reported.</summary>
     public int? Seconds { get; set; }
+    // ---- AddIslandDefence ----
+    /// <summary>The guardian boss's arrival minute in the design the raid started with (null: a raid from before designs).</summary>
+    public int? GuardianMinute { get; set; }
+    /// <summary>The last one-minute window the attacker reached (reported with the result).</summary>
+    public int? MinuteReached { get; set; }
+    /// <summary>Whether the attacker reported sinking the guardian.</summary>
+    public bool? GuardianSunk { get; set; }
 }
 
 /// <summary>An island NFT listed on the escrow marketplace.</summary>
