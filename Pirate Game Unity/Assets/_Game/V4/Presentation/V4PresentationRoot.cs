@@ -18,6 +18,7 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter Hud { get; private set; }
         public RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter SaltWindHud { get; private set; }
         public RoguePirates.V4.Presentation.Hud.MinimapPresenter Minimap { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.SnapshotMinimapPresenter SnapshotMinimap { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActivePresenter CaptainActive { get; private set; }
         public RoguePirates.V4.Presentation.Hud.ItemRewardPresenter ItemReward { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter CaptainActiveEffect { get; private set; }
@@ -378,6 +379,13 @@ namespace RoguePirates.V4.Presentation
                 if (SaltWindHud != null && Minimap != null) Minimap.FollowTarget = SaltWindHud.ArtMinimap;
                 // Playtest (3 Oct, owner): no minimap for now (the art's frame hides in the HUD presenter).
                 if (SaltWindHud != null && Minimap != null) Minimap.gameObject.SetActive(false);
+                // Hackathon (12 Oct, owner): the minimap is back, drawn the cheap way (a one-time snapshot of the islands
+                // plus icons at 10 Hz) in place of the old fog-of-war map.
+                if (SaltWindHud != null && runCanvas != null)
+                {
+                    SnapshotMinimap = RoguePirates.V4.Presentation.Hud.SnapshotMinimapPresenter.Create(runCanvas.transform);
+                    SnapshotMinimap.Bind(views);
+                }
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
                 // Playtest (3 Oct): an item won from a chest is shown with its icon, name and effect.
                 ItemReward = RoguePirates.V4.Presentation.Hud.ItemRewardPresenter.Create(authored.transform);

@@ -277,6 +277,23 @@ namespace RoguePirates.V4.Enemies
 
         public bool IsKnownDefinition(int definitionIndex) => At(definitionIndex) != null;
 
+        public int CopyEnemyPositions(Vector3[] into)
+        {
+            if (into == null) return 0;
+            var defs = Defs;
+            var agents = _sim.Agents;
+            var n = 0;
+            for (var i = 0; i < agents.Length && n < into.Length; i++)
+            {
+                if (!agents[i].active || agents[i].remote || agents[i].focus) continue;
+                var d = agents[i].definitionIndex;
+                var def = defs != null && d >= 0 && d < defs.Length ? defs[d] : null;
+                if (def == null || def.isBoss || def.isMiniboss) continue;
+                into[n++] = agents[i].position;
+            }
+            return n;
+        }
+
         public EnemyTier TierOf(int definitionIndex) =>
             IsKnownDefinition(definitionIndex) ? EnemyTierLogic.ResolveTier(Defs[definitionIndex]) : EnemyTier.Soldier;
     }

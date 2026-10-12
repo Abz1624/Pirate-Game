@@ -186,6 +186,9 @@ namespace RoguePirates.V4.Views
         /// <summary>Tier of an enemy definition (Spawned events carry the definition index).</summary>
         EnemyTier TierOf(int definitionIndex);
         bool IsKnownDefinition(int definitionIndex);
+        /// <summary>Hackathon minimap: the live ordinary enemies' positions (no boss, miniboss or focus unit; no 1v1
+        /// opponent), at most <c>into.Length</c>; the count written. No allocation.</summary>
+        int CopyEnemyPositions(Vector3[] into) => 0;
     }
 
     public struct NamedValue

@@ -292,6 +292,14 @@ namespace RoguePirates.V4.Enemies
         /// pairs in the same order as walking every slot, so the result is unchanged).</summary>
         int[] _activeSlots = new int[64];
 
+        /// <summary>Hackathon (12 Oct): who gives way in an overlap: 2 boss, 1 miniboss, 0 everything else.</summary>
+        int OverlapWeight(in EnemyUnit e)
+        {
+            if (e.isBoss) return 2;
+            var def = _definitions != null && e.definitionIndex >= 0 && e.definitionIndex < _definitions.Length ? _definitions[e.definitionIndex] : null;
+            return def == null ? 0 : def.isBoss ? 2 : def.isMiniboss ? 1 : 0;
+        }
+
         void ResolveAgentOverlaps()
         {
             var count = 0;
@@ -324,6 +332,17 @@ namespace RoguePirates.V4.Enemies
                         else
                             push = new Vector3((self.id % 2 == 0 ? 1f : -1f) * minDist * 0.5f, 0f, 0f);
 
+                        // Hackathon (12 Oct, owner on the Seeker: "the Barnacle King randomly teleported"): a heavier enemy
+                        // (boss over miniboss over the rest) is never pushed by a lighter one; the lighter takes the whole
+                        // separation. Splitting it let a pack (or a miniboss) spawned on the boss shove it ~10 m in one frame.
+                        var selfWeight = OverlapWeight(self);
+                        var otherWeight = OverlapWeight(other);
+                        if (selfWeight != otherWeight)
+                        {
+                            if (selfWeight < otherWeight) self.position += ClipIslandPush(self.position, push * 2f);
+                            else other.position += ClipIslandPush(other.position, -push * 2f);
+                            continue;
+                        }
                         // Neither is shoved onto an island; what one cannot take, the other does.
                         var selfPush = ClipIslandPush(self.position, push);
                         var otherPush = ClipIslandPush(other.position, -push - (push - selfPush));

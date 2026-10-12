@@ -715,5 +715,60 @@ namespace RoguePirates.V4.Tests
             Assert.AreNotEqual(phase, state.phase, $"{id}: {phase} ended within 600 steps");
             return seconds;
         }
+
+        /// <summary>Hackathon (12 Oct, owner on the Seeker: "the Barnacle King randomly teleported" when a miniboss came):
+        /// the boss is never moved by the leash, however far it is kited, and its position is continuous frame to frame
+        /// (no step longer than its own fastest move) while a Reef Crab miniboss rises on top of it and a pack crowds it.</summary>
+        [Test]
+        public void Boss_NeverLeashed_AndMovesContinuously_WhenKitedAndAMinibossArrives()
+        {
+            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            using var profilePort = new RoguePirates.V4.Ports.StageProfilePort(config);
+            StageBalanceProfileContext.BeginRun(profilePort.Profile);
+            var w = Make(config);
+            w.V4.LeashConfig = () => config.Single<RunConfig>();
+            var king = System.Array.FindIndex(w.Defs, d => d != null && d.isBoss);
+            var crab = System.Array.FindIndex(w.Defs, d => d != null && d.isMiniboss);
+            var dinghy = System.Array.FindIndex(w.Defs, d => d != null && d.id == "deckhand_dinghy");
+            Assert.GreaterOrEqual(king, 0); Assert.GreaterOrEqual(crab, 0); Assert.GreaterOrEqual(dinghy, 0);
+            var ship = Vector3.zero;
+            w.ShipB.transform.position = ship;
+            var boss = w.V4.Spawn(king, new Vector3(0f, 0f, 11f)); // the Beacon's arrival point, 11 m ahead
+            var bossId = w.V4.Agents[boss].id;
+            var report = new System.Text.StringBuilder();
+            var last = w.V4.Agents[boss].position;
+            var maxStep = 0f; var maxFrame = -1; var farthest = 0f;
+            var bossSpeed = w.V4.Agents[boss].moveSpeed;
+            // The fastest the boss moves on its own: its charge (speed x the charge multiplier, at most 4x) and the boss
+            // director's forced velocity; a 1.5 m margin per frame for island depenetration.
+            var allowed = bossSpeed * 4f * Dt + 1.5f;
+            for (var frame = 0; frame < 60 * 40; frame++)
+            {
+                // Kite: sail away at 11 m/s for 10 s (the boss falls 80+ m behind), circle back, then fight it.
+                if (frame < 600) ship += new Vector3(11f * Dt, 0f, 0f);
+                else if (frame < 900) ship += new Vector3(-11f * Dt, 0f, 0f);
+                w.ShipB.transform.position = ship;
+                IFrameUntil.SetValue(w.ShipB.Damage, -1f);
+                if (frame == 300 || frame == 1000)
+                {
+                    // The Reef Crab (ring 22 m around the ship) and a pack, all landing on the boss.
+                    var bp = w.V4.Agents[boss].position;
+                    w.V4.Spawn(crab, bp + new Vector3(0.3f, 0f, 0.2f), EliteAffix.Rich);
+                    for (var k = 0; k < 12; k++) w.V4.Spawn(dinghy, bp + Quaternion.Euler(0f, k * 30f, 0f) * Vector3.forward * 0.5f);
+                }
+                w.V4.Tick(Dt, ship, w.ShipB.Damage);
+                Assert.IsTrue(w.V4.Agents[boss].active && w.V4.Agents[boss].id == bossId, "the boss stays in its slot");
+                var now = w.V4.Agents[boss].position;
+                var step = new Vector2(now.x - last.x, now.z - last.z).magnitude;
+                if (step > maxStep) { maxStep = step; maxFrame = frame; }
+                if (step > allowed) report.Append($"frame {frame}: boss jumped {step:0.00} m from {last} to {now} (ship {ship}, dist {Vector3.Distance(now, ship):0.0}); ");
+                farthest = Mathf.Max(farthest, new Vector2(now.x - ship.x, now.z - ship.z).magnitude);
+                last = now;
+            }
+            Assert.Greater(farthest, RunConfig.EnemyLeashDistanceDefault + 20f, "the boss was kited well past the leash distance");
+            Debug.Log($"[hackathon boss teleport] max step {maxStep:0.000} m at frame {maxFrame}, allowed {allowed:0.000}, leash moves {w.V4.LeashRelocations}; {report}");
+            Assert.AreEqual(0, report.Length, report.ToString());
+        }
     }
 }
