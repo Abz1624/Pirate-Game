@@ -1,11 +1,41 @@
 fileFormatVersion: 2
-guid: 0e4881b8226834611897a66688f37801
+guid: 530fdb1350bac43a08510fecf864b330
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BOARDING_BARGE_Orange
+    second: {fileID: 2100000, guid: 23e7d8c6fb567453e80970ed05a1739b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Barrel_Painted
+    second: {fileID: 2100000, guid: d755cd117b3414d4191742c103736d2f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rope_Painted
+    second: {fileID: 2100000, guid: a06ea217b01dc428aa9f063647105a2b, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BOARDING+BARGE_basecolor_orange_planks
+    second: {fileID: 2800000, guid: a131c0149641a40b395f52e5977315e7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Barrel_basecolor
+    second: {fileID: 2800000, guid: cf20494a88b6e4f2688b17b6861e8701, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Rope_basecolor
+    second: {fileID: 2800000, guid: 9b68cfc8c788a4030a556634853b82b6, type: 3}
   materials:
-    materialImportMode: 0
+    materialImportMode: 2
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -34,15 +64,15 @@ ModelImporter:
   meshes:
     lODScreenPercentages: []
     globalScale: 1
-    meshCompression: 2
+    meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
     importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
-    importCameras: 0
-    importLights: 0
+    importCameras: 1
+    importLights: 1
     nodeNameCollisionStrategy: 1
     fileIdsGeneration: 2
     swapUVChannels: 0
@@ -79,7 +109,7 @@ ModelImporter:
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
   referencedClips: []
-  importAnimation: 0
+  importAnimation: 1
   humanDescription:
     serializedVersion: 3
     human: []
