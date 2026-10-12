@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 07:26 IST",
+ "updated": "12 Oct, 07:37 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "On-chain basics proven on devnet: deposit, payout, Island NFT mint and transfer. Server features and wallet login in progress.",
+ "headline": "All server features built and deployed to Railway (devnet). Now: a live devnet end-to-end test, and wallet login in the game.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -13,14 +13,14 @@
   {
    "name": "Islands: claim, base building, RUM",
    "detail": "Claim mints an Island NFT; RUM store fills over time; vault keeps 60%; defences make raids harder.",
-   "server": "building",
+   "server": "done",
    "unity": "todo",
    "chain": "pending"
   },
   {
    "name": "Raids vs the AI captain",
    "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.",
-   "server": "building",
+   "server": "done",
    "unity": "todo",
    "chain": "pending"
   },
@@ -34,28 +34,28 @@
   {
    "name": "Daily island race",
    "detail": "One seeded course per day; fastest time to 100 kills; daily board.",
-   "server": "building",
+   "server": "done",
    "unity": "todo",
    "chain": "n/a"
   },
   {
    "name": "Weekly kill leaderboard + SOL rewards",
    "detail": "Top places paid in devnet SOL from the treasury; owner-triggered payout for the demo.",
-   "server": "building",
+   "server": "done",
    "unity": "todo",
    "chain": "pending"
   },
   {
    "name": "1v1 PvP with SOL wagers",
    "detail": "Both deposit the stake to escrow; the winner is paid 2x; vs the AI captain the house matches the stake.",
-   "server": "building",
+   "server": "done",
    "unity": "todo",
    "chain": "pending"
   },
   {
    "name": "Island NFT marketplace",
    "detail": "List (NFT to escrow), buy with SOL, cancel; the server swaps.",
-   "server": "building",
+   "server": "done",
    "unity": "todo",
    "chain": "pending"
   },
@@ -129,6 +129,14 @@
   [
    "07:26",
    "Devnet proven: 0.01 SOL deposit verified, payout back, Island NFT minted (1-of-1, Metaplex metadata + master edition) and moved out of escrow. About 0.018 SOL per island mint."
+  ],
+  [
+   "07:33",
+   "Server: islands (claim + NFT mint, RUM store/vault/defences, building), raids vs the AI captain (loot, 4 h shield, optional SOL wager) and the escrow marketplace done; 197 server tests pass. Railway settings for the treasury prepared."
+  ],
+  [
+   "07:37",
+   "Server: 1v1 SOL wagers (incl. house-matched vs the AI captain), weekly SOL rewards, daily race done; all server features deployed to Railway (devnet, treasury enabled). 197 server tests pass. Live devnet end-to-end test started."
   ]
  ]
 }
