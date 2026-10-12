@@ -189,8 +189,8 @@ namespace RoguePirates.Hackathon.UI
             var go = new GameObject("HackathonNamePrompt", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(canvas, false);
             _prompt = (RectTransform)go.transform;
-            _prompt.anchorMin = new Vector2(0.22f, 0.28f);
-            _prompt.anchorMax = new Vector2(0.78f, 0.74f);
+            _prompt.anchorMin = new Vector2(0.22f, 0.31f);
+            _prompt.anchorMax = new Vector2(0.78f, 0.69f);
             _prompt.offsetMin = _prompt.offsetMax = Vector2.zero;
             go.GetComponent<Image>().color = PanelColor;
             SettingsPanel.DrawOnTop(go, 250);
