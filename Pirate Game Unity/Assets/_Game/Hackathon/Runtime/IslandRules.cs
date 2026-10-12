@@ -161,6 +161,30 @@ namespace RoguePirates.Hackathon
         public static string KeyStats(long ratePerHour, DefenceRecord r) =>
             $"{ratePerHour} RUM per hour   Defence: {DefenceRecordLine(r)}";
 
+        /// <summary>The raid clock time a guardian set for <paramref name="minute"/> arrives: the start of that minute
+        /// (minute 5 is 4:00).</summary>
+        public static string GuardianArrival(int minute) => Clock(Math.Max(0, minute - 1) * 60);
+
+        /// <summary>The designer's guardian label: "Minute 5 (arrives 4:00)".</summary>
+        public static string GuardianMinuteLabel(int minute) => $"Minute {minute} (arrives {GuardianArrival(minute)})";
+
+        /// <summary>The raid HUD's always-visible guardian line. Before the arrival: "Guardian: Barnacle King rises at 4:00
+        /// (in 1:23)"; at the time but not spawned yet: rising now; once up: "Guardian is up: sink it to win" with its hull;
+        /// up then gone (diving): it will surface again.</summary>
+        public static string GuardianLine(string name, double raidSeconds, double arrivesAtSecond, bool everUp, float hull01)
+        {
+            if (string.IsNullOrEmpty(name)) name = "Barnacle King";
+            if (hull01 >= 0f) return $"Guardian is up: sink it to win ({Math.Max(1, (int)Math.Ceiling(hull01 * 100f))}% hull)";
+            if (everUp) return $"Guardian: {name} is diving. Stay close, he will surface again";
+            if (raidSeconds < arrivesAtSecond)
+                return $"Guardian: {name} rises at {Clock(arrivesAtSecond)} (in {Clock(arrivesAtSecond - raidSeconds)})";
+            return $"Guardian: {name} is rising now";
+        }
+
+        /// <summary>The start-of-raid notice: no beacon, the guardian rises on his own at the set time.</summary>
+        public static string GuardianNotice(string name, double arrivesAtSecond) =>
+            $"No beacon here: the {(string.IsNullOrEmpty(name) ? "Barnacle King" : name)} rises on his own at {Clock(arrivesAtSecond)}. Sink him to win.";
+
         /// <summary>A practice raid's verdict for the island's owner.</summary>
         public static string PracticeVerdict(bool guardianSunk, int minuteReached, int guardianMinute)
         {

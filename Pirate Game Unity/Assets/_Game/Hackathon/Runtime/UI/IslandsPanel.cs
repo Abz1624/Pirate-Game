@@ -572,6 +572,7 @@ namespace RoguePirates.Hackathon.UI
             IslandUi.TextRow(_list, $"<color=#ffd166><b>Key stats</b></color>   {IslandRules.KeyStats(island.rum != null ? island.rum.ratePerHour : 0, island.defenceRecord)}", 25);
             IslandUi.TextRow(_list, $"<color=#ffd166><b>Defender: {HackathonRules.CaptainName}</b></color>, {HackathonRules.CaptainTitle}\n" +
                                     "<b>Conquest:</b> survive the island's designed waves (15 minutes) and sink its guardian, the Barnacle King. " +
+                                    "There is no beacon: he rises on his own at the minute the owner set (the raid HUD counts down to it). " +
                                     "Reaching the guardian's minute without sinking it is a partial win.", 25);
             IslandUi.TextRow(_list, $"<color=#ffd166><b>Loot</b></color>   exposed RUM {exposed}   win <color=#7fd68b>{exposed * 25 / 100}</color>   partial {exposed * 25 / 200}   " +
                                     $"\n<color=#9aa4ad>Fee {IslandRules.RaidFeeRum} RUM (you have {(_mine != null ? _mine.rum : 0)}). A raided island gets a 4 h shield.</color>", 25);

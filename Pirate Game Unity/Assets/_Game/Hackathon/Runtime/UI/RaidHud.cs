@@ -91,7 +91,7 @@ namespace RoguePirates.Hackathon.UI
         RaidStart _raid;
         DefenceDesign _design;
         float _wallStart;
-        TextMeshProUGUI _goal, _clock, _wave, _bark, _resultTitle, _resultText;
+        TextMeshProUGUI _goal, _guardian, _clock, _wave, _bark, _resultTitle, _resultText;
         RectTransform _barkBox, _resultBox, _hullBack;
         Image _hullFill;
         IBossControl _bosses;
@@ -127,12 +127,14 @@ namespace RoguePirates.Hackathon.UI
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            var box = Box(go.transform, "Raid", new Vector2(0.5f, 1f), new Vector2(0f, -146f), new Vector2(860f, 150f), new Color(0.06f, 0.1f, 0.16f, 0.85f));
+            var box = Box(go.transform, "Raid", new Vector2(0.5f, 1f), new Vector2(0f, -146f), new Vector2(900f, 196f), new Color(0.06f, 0.1f, 0.16f, 0.85f));
             box.GetComponent<Image>().raycastTarget = false;
-            _goal = HackUi.TextAt(box, "Goal", string.Empty, 24, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.72f), Vector2.one, true);
-            _clock = HackUi.TextAt(box, "Clock", string.Empty, 30, TextAlignmentOptions.Center, HackUi.TextColor, new Vector2(0f, 0.38f), new Vector2(1f, 0.74f));
+            _goal = HackUi.TextAt(box, "Goal", string.Empty, 24, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.79f), Vector2.one, true);
+            // Always visible (owner, 12 Oct): when the guardian rises (no beacon in a raid), with a live countdown.
+            _guardian = HackUi.TextAt(box, "Guardian", string.Empty, 25, TextAlignmentOptions.Center, new Color(1f, 0.6f, 0.5f, 1f), new Vector2(0.02f, 0.57f), new Vector2(0.98f, 0.8f));
+            _clock = HackUi.TextAt(box, "Clock", string.Empty, 30, TextAlignmentOptions.Center, HackUi.TextColor, new Vector2(0f, 0.3f), new Vector2(1f, 0.58f));
             _clock.fontStyle = FontStyles.Bold;
-            _wave = HackUi.TextAt(box, "Wave", string.Empty, 21, TextAlignmentOptions.Center, HackUi.Dim, new Vector2(0.02f, 0.04f), new Vector2(0.98f, 0.38f));
+            _wave = HackUi.TextAt(box, "Wave", string.Empty, 21, TextAlignmentOptions.Center, HackUi.Dim, new Vector2(0.02f, 0.03f), new Vector2(0.98f, 0.3f));
             _goal.text = _raid.practice ? $"PRACTICE: TEST {_raid.islandName}'S DEFENCES   no fee, no loot" : $"CONQUER {_raid.islandName}   sink the guardian";
             _hullBack = Box(box, "Hull", new Vector2(0.5f, 0f), new Vector2(0f, -30f), new Vector2(640f, 22f), new Color(0f, 0f, 0f, 0.6f));
             _hullBack.pivot = new Vector2(0.5f, 1f);
@@ -148,7 +150,7 @@ namespace RoguePirates.Hackathon.UI
             _hullFill.raycastTarget = false;
             _hullBack.gameObject.SetActive(false);
 
-            _barkBox = Box(go.transform, "Bark", new Vector2(0.5f, 1f), new Vector2(0f, -340f), new Vector2(900f, 80f), new Color(0.35f, 0.07f, 0.06f, 0.82f));
+            _barkBox = Box(go.transform, "Bark", new Vector2(0.5f, 1f), new Vector2(0f, -384f), new Vector2(900f, 80f), new Color(0.35f, 0.07f, 0.06f, 0.82f));
             _barkBox.GetComponent<Image>().raycastTarget = false;
             _bark = HackUi.TextAt(_barkBox, "Text", string.Empty, 27, TextAlignmentOptions.Center, HackUi.TextColor, Vector2.zero, Vector2.one);
             _bark.margin = new Vector4(16f, 4f, 16f, 4f);
@@ -162,7 +164,9 @@ namespace RoguePirates.Hackathon.UI
             HackUi.Button(_resultBox, _raid.practice ? "Back to my island" : "Return to port", () => V4Game.GoToMenu(), new Vector2(0.27f, 0.05f), new Vector2(0.73f, 0.22f));
             _resultBox.gameObject.SetActive(false);
 
-            Say(_raid.practice ? $"A drill on {_raid.islandName}, Captain? Let us see if yer defences hold." : $"Ye dare raid {_raid.islandName}? Fifteen minutes of my finest, and then the Barnacle King!", 5f);
+            Say((_raid.practice ? $"A drill on {_raid.islandName}, Captain? Let us see if yer defences hold. " : $"Ye dare raid {_raid.islandName}? ") +
+                IslandRules.GuardianNotice("Barnacle King", GuardianSeconds), 8f);
+            _guardian.text = IslandRules.GuardianLine("Barnacle King", 0, GuardianSeconds, false, -1f);
         }
 
         static RectTransform Box(Transform parent, string name, Vector2 anchor, Vector2 pos, Vector2 size, Color color)
@@ -236,12 +240,8 @@ namespace RoguePirates.Hackathon.UI
             if (_guardianHull >= 0f) ((RectTransform)_hullFill.transform).anchorMax = new Vector2(_guardianHull, 1f);
 
             var timeText = (left <= 60 ? "<color=#ff8c73>" : string.Empty) + IslandRules.Clock(left) + (left <= 60 ? "</color>" : string.Empty);
-            string guardian;
-            if (_guardianHull >= 0f) guardian = $"Guardian: <color=#ff8c73>{Mathf.CeilToInt(_guardianHull * 100f)}% hull</color>";
-            else if (_guardianUp) guardian = "Guardian: <color=#ffd166>diving</color>";
-            else if (_raidSeconds < guardianAt) guardian = $"Guardian arrives at {IslandRules.Clock(guardianAt)}";
-            else guardian = "Guardian: <color=#ff8c73>rising</color>";
-            _clock.text = $"Minute <color=#ffd166>{minute}/15</color>   {guardian}   {timeText}";
+            _guardian.text = IslandRules.GuardianLine("Barnacle King", _raidSeconds, guardianAt, _guardianUp, _guardianHull);
+            _clock.text = $"Minute <color=#ffd166>{minute}/15</color>   Time left {timeText}";
             _wave.text = WaveLine(minute);
 
             if (minute != _lastMinute)
@@ -249,7 +249,7 @@ namespace RoguePirates.Hackathon.UI
                 if (_lastMinute > 0 && minute > 1 && (minute - 1) * 60f != guardianAt && minute % 2 == 0) Say(WaveTaunts[(minute / 2) % WaveTaunts.Length]);
                 _lastMinute = minute;
             }
-            if (!_saidWarn && !_guardianUp && _raidSeconds >= guardianAt - 15f) { _saidWarn = true; Say("Feel that? The Barnacle King stirs beneath ye!", 4f); }
+            if (!_saidWarn && !_guardianUp && _raidSeconds >= guardianAt - 15f) { _saidWarn = true; Say("Feel that? The Barnacle King rises in 15 seconds, on his own. No beacon can stop him!", 5f); }
             if (!_saidHalfHull && _guardianHull >= 0f && _guardianHull < 0.5f) { _saidHalfHull = true; Say("No! Not my King! Fire everything!", 4f); }
             if (!_saidLate && left <= 60) { _saidLate = true; Say("The tide turns, whelp. One more minute and the island keeps its crown."); }
 

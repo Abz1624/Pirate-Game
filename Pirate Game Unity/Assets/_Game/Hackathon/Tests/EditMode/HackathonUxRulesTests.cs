@@ -36,6 +36,26 @@ namespace RoguePirates.Hackathon.Tests
         }
 
         [Test]
+        public void GuardianClockText_MinuteFiveArrivesAtFourMinutes()
+        {
+            Assert.AreEqual("4:00", IslandRules.GuardianArrival(5));
+            Assert.AreEqual("1:00", IslandRules.GuardianArrival(2));
+            Assert.AreEqual("14:00", IslandRules.GuardianArrival(15));
+            Assert.AreEqual("Minute 5 (arrives 4:00)", IslandRules.GuardianMinuteLabel(5));
+        }
+
+        [Test]
+        public void GuardianLine_CountsDown_ThenRising_ThenUp_ThenDiving()
+        {
+            Assert.AreEqual("Guardian: Barnacle King rises at 4:00 (in 1:23)", IslandRules.GuardianLine("Barnacle King", 157, 240, false, -1f));
+            Assert.AreEqual("Guardian: Barnacle King rises at 4:00 (in 4:00)", IslandRules.GuardianLine(null, 0, 240, false, -1f));
+            Assert.AreEqual("Guardian: Barnacle King is rising now", IslandRules.GuardianLine("Barnacle King", 240, 240, false, -1f));
+            Assert.AreEqual("Guardian is up: sink it to win (64% hull)", IslandRules.GuardianLine("Barnacle King", 300, 240, true, 0.635f));
+            StringAssert.StartsWith("Guardian: Barnacle King is diving", IslandRules.GuardianLine("Barnacle King", 320, 240, true, -1f));
+            Assert.AreEqual("No beacon here: the Barnacle King rises on his own at 4:00. Sink him to win.", IslandRules.GuardianNotice("Barnacle King", 240));
+        }
+
+        [Test]
         public void IsDefaultName_MatchesTheServersCaptainPlusFourAddressCharacters()
         {
             Assert.IsTrue(Web3Rules.IsDefaultName("Captain 7xKX"));

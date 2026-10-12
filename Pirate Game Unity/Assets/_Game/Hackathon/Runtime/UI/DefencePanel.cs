@@ -175,7 +175,7 @@ namespace RoguePirates.Hackathon.UI
             var g = _design.guardian;
             var guardianName = BossName(g.kind);
             var grow = HackUi.Row(_list, IslandUi.ButtonRow, IslandUi.MineTint);
-            var gcell = HackUi.Cell(grow, $"<b>Guardian: {guardianName}</b>\n<size=85%>arrives at minute {g.minute} ({IslandRules.Clock((g.minute - 1) * 60)})</size>", 0f, 25, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
+            var gcell = HackUi.Cell(grow, $"<b>Guardian: {guardianName}</b>\n<size=85%>{IslandRules.GuardianMinuteLabel(g.minute)}. No beacon: he rises on his own then.</size>", 0f, 25, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
             gcell.textWrappingMode = TextWrappingModes.Normal;
             IslandUi.RowButton(grow, "Earlier", () => GuardianMinute(-1), 150f).interactable = g.minute > 2;
             IslandUi.RowButton(grow, "Later", () => GuardianMinute(1), 150f).interactable = g.minute < DefenceRules.Windows;
@@ -197,7 +197,7 @@ namespace RoguePirates.Hackathon.UI
             var guardianHere = _design.guardian.minute == minute;
             var head = HackUi.Row(_list, IslandUi.ButtonRow, over ? new Color(0.6f, 0.12f, 0.1f, 0.45f) : new Color(1f, 1f, 1f, 0.08f));
             var title = $"<b>Minute {minute}</b>  <size=80%><color=#9aa4ad>{IslandRules.Clock((minute - 1) * 60)}</color></size>" +
-                        (guardianHere ? "  <color=#ffd166>+ guardian</color>" : string.Empty);
+                        (guardianHere ? $"  <color=#ffd166>+ guardian (arrives {IslandRules.GuardianArrival(minute)})</color>" : string.Empty);
             HackUi.Cell(head, title, 0f, 26, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
             var m = minute;
             IslandUi.RowButton(head, _openPicker == minute ? "Done" : "Add enemy", () => { _openPicker = _openPicker == m ? -1 : m; Render(); }, 230f);
