@@ -1,13 +1,13 @@
 {
- "updated": "12 Oct, 07:37 IST",
+ "updated": "12 Oct, 07:42 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "All server features built and deployed to Railway (devnet). Now: a live devnet end-to-end test, and wallet login in the game.",
+ "headline": "Server live on devnet; wallet login works in the game. Now building wagers, the AI captain, daily race and rewards in the game, plus a live devnet end-to-end test.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
    "detail": "Sign-in with Solana: the wallet signs a one-time message; profile keyed by wallet; email optional. Desktop: Phantom. Android: Solana Mobile Wallet Adapter (Seed Vault).",
    "server": "done",
-   "unity": "building",
+   "unity": "done",
    "chain": "done"
   },
   {
@@ -28,28 +28,28 @@
    "name": "AI captain",
    "detail": "Named AI opponent ship on the PvP bot: 1v1 opponent and island defender.",
    "server": "n/a",
-   "unity": "todo",
+   "unity": "building",
    "chain": "n/a"
   },
   {
    "name": "Daily island race",
    "detail": "One seeded course per day; fastest time to 100 kills; daily board.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "n/a"
   },
   {
    "name": "Weekly kill leaderboard + SOL rewards",
    "detail": "Top places paid in devnet SOL from the treasury; owner-triggered payout for the demo.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "pending"
   },
   {
    "name": "1v1 PvP with SOL wagers",
    "detail": "Both deposit the stake to escrow; the winner is paid 2x; vs the AI captain the house matches the stake.",
    "server": "done",
-   "unity": "todo",
+   "unity": "building",
    "chain": "pending"
   },
   {
@@ -137,6 +137,10 @@
   [
    "07:37",
    "Server: 1v1 SOL wagers (incl. house-matched vs the AI captain), weekly SOL rewards, daily race done; all server features deployed to Railway (devnet, treasury enabled). 197 server tests pass. Live devnet end-to-end test started."
+  ],
+  [
+   "07:42",
+   "Game: MagicBlock Solana Unity SDK added; Connect Wallet on the main menu (Phantom on desktop, Mobile Wallet Adapter on Android, a test wallet in the Editor); sign-in verified against the server; EditMode 744/744. Editor test wallet funded with 0.5 SOL from the treasury."
   ]
  ]
 }
