@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 10:28 IST",
+ "updated": "12 Oct, 12:28 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Both builds are ready: desktop WebGL (served at localhost:8090) and the Android APK for Solana Mobile. Next: your test with Phantom and the phone, then the demo reset.",
+ "headline": "Wallet login and island claim work on the Seeker. Owner decision: SOL wagers only in 1v1; raids have no stake. Removing raid stakes and rebuilding.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -19,9 +19,9 @@
   },
   {
    "name": "Raids vs the AI captain",
-   "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield; optional SOL wager.",
+   "detail": "Attack another player's island; a win loots 25% of the exposed RUM; 4 h shield. No SOL stake (owner, 12 Oct): wagers are only in 1v1.",
    "server": "done",
-   "unity": "done",
+   "unity": "building",
    "chain": "done"
   },
   {
@@ -63,7 +63,7 @@
    "name": "Builds",
    "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
    "server": "n/a",
-   "unity": "done",
+   "unity": "building",
    "chain": "n/a"
   }
  ],
@@ -93,10 +93,6 @@
   {
    "done": false,
    "text": "Test the desktop build in Chrome with Phantom (devnet): http://localhost:8090/"
-  },
-  {
-   "done": false,
-   "text": "Install the APK on the Solana Mobile device (USB + adb, or copy and side-load) and send me the phone wallet address for devnet SOL"
   },
   {
    "done": true,
@@ -169,6 +165,10 @@
   [
    "10:28",
    "Builds done: desktop WebGL (120 MB download; menu loads, Connect Wallet opens the Phantom/Solflare chooser) and Android APK (148 MB, IL2CPP ARM64, Mobile Wallet Adapter included, debug key). No phone was connected, so the APK is not installed yet."
+  ],
+  [
+   "12:28",
+   "APK installed on the Seeker (USB): wallet sign-in via Mobile Wallet Adapter worked (Captain wd8i), 1 devnet SOL sent to the phone wallet, island claim worked. The phone restarted once: a system update (boot reason reboot,ota), not the game. Owner: no stakes on raids; SOL wagers only in 1v1. Removing raid stakes, adding a full address + copy button, rebuilding WebGL and the APK."
   ]
  ]
 }
