@@ -123,6 +123,22 @@ public sealed class IslandService
 
     // ---------- views ----------
 
+    /// <summary>Each island's defence record: (raids it held, finished raids against it). Islands without raids are left out.</summary>
+    public async Task<Dictionary<Guid, (int defended, int raids)>> DefenceRecordsAsync(ICollection<Guid> islandIds)
+    {
+        if (islandIds.Count == 0) return new();
+        var rows = await _db.Raids.AsNoTracking().Where(r => islandIds.Contains(r.IslandId) && r.Result != Raid.Started)
+            .GroupBy(r => new { r.IslandId, r.Result }).Select(g => new { g.Key.IslandId, g.Key.Result, Count = g.Count() }).ToListAsync();
+        return rows.GroupBy(r => r.IslandId).ToDictionary(g => g.Key,
+            g => (g.Where(r => IslandRules.Defended(r.Result)).Sum(r => r.Count), g.Sum(r => r.Count)));
+    }
+
+    public async Task<object> DefenceRecordAsync(Guid islandId)
+    {
+        var (defended, raids) = (await DefenceRecordsAsync(new[] { islandId })).GetValueOrDefault(islandId);
+        return IslandRules.DefenceRecord(defended, raids);
+    }
+
     public async Task<object> ViewAsync(IslandState s, Guid? viewerId, string baseUrl)
     {
         var i = s.Island;
@@ -132,10 +148,11 @@ public sealed class IslandService
             .Where(l => l.IslandId == i.Id && LockedListingStatuses.Contains(l.Status)).Select(l => new { l.Id, l.PriceLamports, l.Status })
             .FirstOrDefaultAsync();
         var raiding = await RaidInProgressAsync(i.Id);
-        return View(s, owner?.Name, owner?.WalletAddress, listing?.Id, listing?.PriceLamports, raiding, viewerId, baseUrl);
+        return View(s, owner?.Name, owner?.WalletAddress, listing?.Id, listing?.PriceLamports, raiding, viewerId, baseUrl,
+            await DefenceRecordAsync(i.Id));
     }
 
-    object View(IslandState s, string? ownerName, string? ownerWallet, Guid? listingId, long? price, bool raiding, Guid? viewerId, string baseUrl)
+    object View(IslandState s, string? ownerName, string? ownerWallet, Guid? listingId, long? price, bool raiding, Guid? viewerId, string baseUrl, object record)
     {
         var i = s.Island;
         var now = _clock.UtcNow;
@@ -170,6 +187,8 @@ public sealed class IslandService
                 kind = k, level = s.LevelOf(k), maxLevel = IslandRules.MaxLevel(k), nextCost = IslandRules.NextCost(k, s.LevelOf(k)),
             }),
             defence = new { def.HullMultiplier, def.ExtraWaves, def.WeaponLevel, def.Difficulty, cannonTower = cannon, walls },
+            // the island's defence record (raids it held / finished raids against it; "No raids yet" when none)
+            defenceRecord = record,
             shieldUntil = shielded ? i.ShieldUntil : null,
             shielded,
             listed,
@@ -305,6 +324,7 @@ public sealed class IslandService
         var since = now - IslandRules.RaidTimeout;
         var raiding = (await _db.Raids.AsNoTracking().Where(r => r.Result == Raid.Started && r.CreatedAt > since)
             .Select(r => r.IslandId).ToListAsync()).ToHashSet();
+        var records = await DefenceRecordsAsync(ids);
 
         var views = islands.OrderBy(i => i.Slot).Select(i =>
         {
@@ -312,7 +332,8 @@ public sealed class IslandService
             Accrue(s, now); // for display only (not saved)
             var o = owners.GetValueOrDefault(i.OwnerPlayerId);
             var l = listings.FirstOrDefault(x => x.IslandId == i.Id);
-            return View(s, o?.Name, o?.WalletAddress, l?.Id, l?.PriceLamports, raiding.Contains(i.Id), viewerId, baseUrl);
+            return View(s, o?.Name, o?.WalletAddress, l?.Id, l?.PriceLamports, raiding.Contains(i.Id), viewerId, baseUrl,
+                records.TryGetValue(i.Id, out var rec) ? IslandRules.DefenceRecord(rec.defended, rec.raids) : IslandRules.DefenceRecord(0, 0));
         }).ToList();
         var bySlot = islands.ToDictionary(i => i.Slot, i => i.Id);
         return new
@@ -393,6 +414,8 @@ public sealed class IslandService
         var s = await LoadAsync(islandId);
         var slot = IslandRules.Slots[s.Island.Slot];
         var image = ImageUrl(baseUrl, s.Island.Slot);
+        var (defended, raids) = (await DefenceRecordsAsync(new[] { islandId })).GetValueOrDefault(islandId);
+        var success = IslandRules.SuccessPercent(defended, raids);
         return new
         {
             name = "Rogue Island: " + s.Island.Name,
@@ -411,6 +434,9 @@ public sealed class IslandService
                 new { trait_type = "Vault", value = s.LevelOf(IslandRules.Vault) },
                 new { trait_type = "Cannon Tower", value = s.LevelOf(IslandRules.CannonTower) },
                 new { trait_type = "Walls", value = s.LevelOf(IslandRules.Walls) },
+                new { trait_type = "Rum Per Hour", value = (object)IslandRules.RatePerHour(s.LevelOf(IslandRules.RumStore)) },
+                new { trait_type = "Raids Defended", value = (object)$"{defended} of {raids}" },
+                new { trait_type = "Defence Success", value = success is { } p ? (object)$"{p}%" : "No raids yet" },
             },
             properties = new { category = "image", files = new[] { new { uri = image, type = "image/png" } } },
         };

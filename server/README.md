@@ -482,8 +482,12 @@ a **4-hour shield**; attacking never ends your own shield. Raid fee **25 RUM**. 
 "nft":{"status":"pending|minted","mint","mintSignature","error","explorerUrl","metadataUrl","imageUrl"},
 "rum":{"exposed","vault","total","cap","ratePerHour","vaultPercent":60,"lastAccrualAt"},
 "buildings":[{"kind","level","maxLevel","nextCost"}],"defence":{"hullMultiplier","extraWaves","weaponLevel","difficulty","cannonTower","walls"},
-"shieldUntil","shielded","listed","listingId","priceLamports","raidInProgress","raidable","createdAt"}`.
+"shieldUntil","shielded","listed","listingId","priceLamports","raidInProgress","raidable","createdAt",
+"defenceRecord":{"raidsAgainst","defended","fallen","successPercent":0-100|null,"label"}}`.
 `x`,`y` are on a 1000x1000 world map; `raidable` = not yours, not shielded, not listed, nobody raiding it.
+`defenceRecord` (12 Oct): finished raids against the island (`won`, `partial`, `lost`, `abandoned`; started raids do not
+count); `defended` = the raider lost or abandoned; `successPercent` = defended * 100 / raidsAgainst rounded down, `null`
+and `label:"No raids yet"` with none. The record belongs to the island (it survives a sale).
 
 `POST /api/islands/claim` `{"name":"Tortuga"}` (3-16 chars) -> island view. One island per player (`409
 already_has_island`; buying more on the market is allowed); a random free slot of the 24 (`409 world_full`). Mints the
@@ -495,6 +499,8 @@ or the mint fails, the island is still created with `nft.status:"pending"` and `
 `GET /api/islands` (auth optional, sets `isMine`) -> `{"mapWidth":1000,"mapHeight":1000,"slots":[{"slot","name","region","x","y","islandId|null"}],"freeSlots","islands":[view]}`.
 `GET /api/islands/{id}` -> island view. `GET /api/islands/{id}/metadata.json` -> Metaplex JSON
 `{"name","symbol","description","image","external_url","attributes":[{"trait_type","value"}],"properties":{"category","files"}}`.
+Attributes: Location, Region, Slot, Level, Rum Store, Vault, Cannon Tower, Walls, `Rum Per Hour` (number),
+`Raids Defended` ("3 of 4") and `Defence Success` ("75%" or "No raids yet").
 `GET /static/islands/{slot}.png` -> a generated 256x256 placeholder picture.
 
 `POST /api/islands/{id}/collect` (owner) -> `{"collected","fromStore","fromVault","rum","island"}` (all of the island's
@@ -510,7 +516,13 @@ The **defender config** for the AI-captain fight:
 `{"captainId":"ai_captain","captainName":"Captain Marrow","seed","hullMultiplier","extraWaves","weaponLevel","cannonTower","walls","difficulty":1-7,"timeLimitSeconds":960}` (kept for older clients).
 Errors: `400 own_island`, `409 island_shielded`, `409 island_listed`, `409 raid_in_progress`, `400 insufficient_rum`,
 `400 raid_stakes_off` (any `stakeLamports` > 0), `400 invalid_stake` (negative). Starting a new raid abandons your own
-unfinished one.
+unfinished one. The start JSON also has `"practice":false`.
+
+`POST /api/raids/practice` `{"islandId"}` (owner only, 12 Oct: "test your island's defences") -> the same JSON as a start
+with `"practice":true`, `"raidId":null`, `"expiresAt":null`, `"feePaid":0` and zero loot; `defence` is the island's saved
+design with a fresh seed. Nothing is charged or stored (no RUM fee, no raid row, no shield, no loot, no record), so there
+is no result to report. Allowed while the island is listed or shielded. Errors: `403 not_your_island`, `404 island_not_found`,
+`403 wallet_required`.
 
 `POST /api/raids/{id}/result` `{"won":true,"guardianSunk":true,"minuteReached":9,"seconds":520,"runLog":null}` (within
 **20 minutes** of the start; `seconds` 1..1020 (the 16-minute fight + 60 s grace) and not more than the time since the
@@ -577,7 +589,7 @@ guardian `displayName`, `arrivesAtSecond`; those extra fields are ignored on PUT
 
 **Market** (treasury = escrow). Listing view:
 `{"listingId","status":"active|paid|sold|cancelling|cancelled","priceLamports","priceSol","nftMint","memo":"buy:<listingId>","treasury",
-"island":{"islandId","name","slot","slotName","region","level","levels","ratePerHour"},"seller":{"playerId","name","wallet","walletShort"},"buyer",
+"island":{"islandId","name","slot","slotName","region","level","levels","ratePerHour","defenceRecord"},"seller":{"playerId","name","wallet","walletShort"},"buyer",
 "escrowSignature","paymentSignature","transferSignature","payoutSignature","transferExplorerUrl","payoutExplorerUrl","error","createdAt","closedAt"}`.
 
 1. Sell: the client sends the island NFT (SPL transfer, amount 1) from the seller's wallet to `treasury` (from

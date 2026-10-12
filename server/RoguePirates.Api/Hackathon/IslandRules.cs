@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO.Compression;
+using RoguePirates.Api.Data;
 
 namespace RoguePirates.Api.Hackathon;
 
@@ -174,6 +175,24 @@ public static class IslandRules
 
     public static string ShortWallet(string? wallet) =>
         string.IsNullOrEmpty(wallet) ? "" : wallet.Length <= 10 ? wallet : wallet[..4] + "..." + wallet[^4..];
+
+    // ---------- defence record (owner, 12 Oct: buyers see how well an island holds) ----------
+
+    /// <summary>A finished raid the island held: the attacker lost or abandoned it (an abandoned raid is a loss).</summary>
+    public static bool Defended(string result) => result is Raid.Lost or Raid.Abandoned;
+
+    /// <summary>A raid that counts for the record: finished (won, partial, lost or abandoned). Started raids do not count.</summary>
+    public static bool Finished(string result) => result != Raid.Started;
+
+    /// <summary>The defence success rate in whole percent (rounded down), or null with no finished raids yet.</summary>
+    public static int? SuccessPercent(int defended, int raids) => raids <= 0 ? null : defended * 100 / raids;
+
+    /// <summary>The island's defence record as the API shows it.</summary>
+    public static object DefenceRecord(int defended, int raids) => new
+    {
+        raidsAgainst = raids, defended, fallen = raids - defended, successPercent = SuccessPercent(defended, raids),
+        label = SuccessPercent(defended, raids) is { } p ? $"{p}% ({defended} of {raids} raids defended)" : "No raids yet",
+    };
 
     // ---------- placeholder NFT image (one PNG per slot, generated once) ----------
 

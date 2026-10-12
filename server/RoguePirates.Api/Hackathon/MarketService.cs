@@ -46,10 +46,11 @@ public sealed class MarketService
         var island = l.IslandId == null ? null : await _islands.TryLoadAsync(l.IslandId.Value);
         var ids = new[] { l.SellerPlayerId, l.BuyerPlayerId ?? Guid.Empty };
         var players = await _db.Players.AsNoTracking().Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
-        return View(l, island, players);
+        var record = island == null ? null : await _islands.DefenceRecordAsync(island.Island.Id);
+        return View(l, island, players, record);
     }
 
-    object View(MarketListing l, IslandState? island, IReadOnlyDictionary<Guid, Player> players)
+    object View(MarketListing l, IslandState? island, IReadOnlyDictionary<Guid, Player> players, object? record)
     {
         object? Who(Guid? id) => id is { } g && players.TryGetValue(g, out var p)
             ? new { playerId = p.Id, name = p.Name, wallet = p.WalletAddress, walletShort = IslandRules.ShortWallet(p.WalletAddress) }
@@ -65,6 +66,7 @@ public sealed class MarketService
                 islandId = island.Island.Id, name = island.Island.Name, slot = island.Island.Slot, slotName = slot!.Name, region = slot.Region,
                 level = island.Island.Level, levels = island.Levels,
                 ratePerHour = IslandRules.RatePerHour(island.LevelOf(IslandRules.RumStore)),
+                defenceRecord = record,
             },
             seller = Who(l.SellerPlayerId), buyer = Who(l.BuyerPlayerId),
             escrowSignature = l.EscrowSig, paymentSignature = l.PaymentSig, transferSignature = l.TransferSig, payoutSignature = l.PayoutSig,

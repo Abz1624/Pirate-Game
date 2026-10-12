@@ -6,6 +6,7 @@ namespace RoguePirates.Api.Endpoints;
 public sealed record ClaimIslandRequest(string? Name);
 public sealed record BuildRequest(string? Kind);
 public sealed record RaidStartRequest(Guid IslandId, long? StakeLamports);
+public sealed record RaidPracticeRequest(Guid IslandId);
 /// <summary><c>RunLog</c> is accepted and ignored for now (no raid run checks in the demo).</summary>
 /// <summary>Since AddIslandDefence: <c>GuardianSunk</c> and <c>MinuteReached</c> decide the result (won = guardian sunk;
 /// partial = reached the guardian's minute without sinking it; else lost). Without them the old won/partial flags apply.</summary>
@@ -61,6 +62,10 @@ public static class IslandEndpoints
         // ---- raids ----
         app.MapPost("/api/raids/start", async (HttpContext ctx, RaidStartRequest req, PlayerAuth auth, RaidService raids) =>
             Results.Ok(await raids.StartAsync(await auth.RequireAsync(ctx), req.IslandId, req.StakeLamports)));
+
+        // practice raid on your own island (no fee, no record, no loot): the same start JSON with practice = true
+        app.MapPost("/api/raids/practice", async (HttpContext ctx, RaidPracticeRequest req, PlayerAuth auth, RaidService raids) =>
+            Results.Ok(await raids.PracticeAsync(await auth.RequireAsync(ctx), req.IslandId)));
 
         // Raid stakes are off (SOL wagers are only in 1v1): 410 raid_stakes_off.
         app.MapPost("/api/raids/{id:guid}/wager", async (HttpContext ctx, Guid id, PlayerAuth auth) =>

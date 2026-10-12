@@ -114,9 +114,42 @@ public sealed class RaidService
                 },
                 loot = new { exposedRum = exposed, ifWon = Loot(exposed, false), ifPartial = Loot(exposed, true), lootPercent = IslandRules.RaidLootPercent },
                 wager = (object?)null, // raids have no SOL stake (kept in the JSON for older clients)
+                practice = false,
             };
         }
         finally { IslandLocks.Economy.Release(); }
+    }
+
+    // ---------- practice (owner, 12 Oct: "test your island's defences") ----------
+
+    /// <summary>A practice raid on the caller's own island with its saved design: the same start JSON as a real raid
+    /// (defence design, seed, guardian minute) but nothing is stored or charged: no RUM fee, no raid row, no loot, no
+    /// shield, no result to report (raidId is null). Allowed while listed or shielded (it changes nothing).</summary>
+    public async Task<object> PracticeAsync(Player player, Guid islandId)
+    {
+        IslandService.RequireWallet(player);
+        var s = await _islands.LoadAsync(islandId);
+        var island = s.Island;
+        if (island.OwnerPlayerId != player.Id) throw new ApiException(403, "not_your_island", "You can only test the defences of your own island.");
+        int ct = s.LevelOf(IslandRules.CannonTower), walls = s.LevelOf(IslandRules.Walls);
+        var (design, customDesign) = DefenceService.EffectiveDesign(island, ct, walls);
+        var now = _clock.UtcNow;
+        var seed = Random.Shared.Next(1, int.MaxValue);
+        var rum = await _db.Players.AsNoTracking().Where(p => p.Id == player.Id).Select(p => p.Rum).FirstAsync();
+        return new
+        {
+            raidId = (Guid?)null, islandId, islandName = island.Name, startedAt = now, expiresAt = (DateTime?)null,
+            feePaid = 0L, rum,
+            defender = IslandRules.Defender(ct, walls, seed),
+            defence = new
+            {
+                isCustom = customDesign, seed, timeLimitSeconds = IslandRules.RaidTimeLimitSeconds,
+                windowSeconds = IslandRules.DefenceWindowSeconds, design = DefenceService.DesignView(design, ct, walls),
+            },
+            loot = new { exposedRum = 0L, ifWon = 0L, ifPartial = 0L, lootPercent = 0 },
+            wager = (object?)null,
+            practice = true,
+        };
     }
 
     static long Loot(long exposed, bool partial) => partial ? exposed * IslandRules.RaidLootPercent / 200 : exposed * IslandRules.RaidLootPercent / 100;
