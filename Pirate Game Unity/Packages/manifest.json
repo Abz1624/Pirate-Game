@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.solana.unity_sdk": "https://github.com/magicblock-labs/Solana.Unity-SDK.git#bd0d30f648ed2368c0775e8c2eecd578eb6e4999",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.11",
     "com.unity.cloud.gltfast": "6.14.1",
