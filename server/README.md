@@ -50,6 +50,15 @@ dotnet test server/RoguePirates.Api.Tests
 | `TREASURY_SECRET_KEY` | unset | Hackathon: treasury/escrow keypair, base58 64-byte secret or a solana-keygen JSON array. Never logged or returned. Unset: endpoints that need it answer 503 `treasury_off`. |
 | `SIWS_DOMAIN` | `roguepirates.fun` | Hackathon: domain in the sign-in message. |
 | `ADMIN_KEY` | unset | Hackathon: owner key for `/api/admin/*` (header `X-Admin-Key`). Unset: 503 `admin_off`. |
+| `WAGER_MAX_LAMPORTS` | `500000000` | Hackathon: the 1v1 stake cap (0.5 SOL); the minimum is 0.001 SOL. |
+| `WEEKLY_REWARD_SOL` | `0.5,0.3,0.2` | Hackathon: weekly kills board rewards in SOL, 1st place first (at most 10 places). |
+| `WEEKLY_REWARD_CHECKED_ONLY` | `false` | Hackathon: `true` = only runs that passed the run checks win weekly rewards. |
+| `WEEKLY_REWARD_MAP` | `saltwind` | Hackathon: the board the automatic weekly payout pays. |
+| `WEEKLY_REWARDS_AUTO` | `true` | Hackathon: `false` turns off the background job that pays the previous week. |
+| `WEEKLY_REWARDS_INTERVAL_MINUTES` | `60` | Hackathon: how often that job runs (first run one interval after startup). |
+| `DAILY_RACE_SALT` | fixed default | Hackathon: salt for the daily race seed (HMAC-SHA256 of the UTC date). |
+| `DAILY_RACE_MAP` | `saltwind` | Hackathon: the daily race map. |
+| `DAILY_RACE_TARGET_KILLS` | `100` | Hackathon: kills to reach in the daily race. |
 
 No secrets live in code. The schema is managed with EF Core migrations, applied on startup (an empty database gets
 every table; the database the old `EnsureCreated` built is baselined first, keeping its data). How to add a migration
@@ -365,6 +374,173 @@ Payout `status`: `pending`, `sent`, `failed`, `unconfirmed` (sent but not confir
 
 Owner tools (header `X-Admin-Key: <ADMIN_KEY>`): `POST /api/admin/payouts` `{"wallet","lamports","reason"}` -> payout
 view; `POST /api/admin/airdrop` `{"wallet":null,"lamports":1000000000}` (devnet faucet; default the treasury).
+
+### Hackathon: 1v1 SOL wagers (devnet)
+
+Code: `Hackathon/WagerService.cs`, `Endpoints/WagerEndpoints.cs`. Both players need a wallet profile; stakes are
+0.001..0.5 SOL (`WAGER_MAX_LAMPORTS`). Errors are the usual `{"error","message"}`.
+
+1. **Stake.** `POST /api/lobbies` `{"public":false,"stakeLamports":10000000}` creates a staked lobby (`400 invalid_stake`,
+   `400 wallet_required`, `503 treasury_off`). Or, host only, before any deposit: `POST /api/wagers/{lobbyId}`
+   `{"stakeLamports":N}` (0 removes the stake) -> lobby JSON (`409 wager_locked` after a deposit, `403 not_host`).
+2. **Deposit.** Each human seat sends a SOL transfer of at least `stakeLamports` from its wallet to `wager.treasury` with
+   the memo `wager.memo` (`wager:<lobbyId>`), then `POST /api/wagers/{lobbyId}/deposit` `{"signature":"<base58>"}`
+   -> lobby JSON. Same checks and errors as `/api/deposits/verify` (`409 tx_not_confirmed`: retry in a few seconds;
+   `memo_mismatch`, `amount_too_low`, ...) plus `404 no_wager`, `403 not_in_lobby`, `409 already_deposited`,
+   `409 already_started`, `409 wager_closed`. The same signature again is idempotent.
+3. **Start.** The match starts only when both seats are ready **and** the stake is funded (the second deposit or the
+   last "ready" starts it, as before). Against the practice bot / AI captain (`POST /api/lobbies/{id}/bot`) only the
+   host deposits; the house matches the stake.
+4. **Result.** When the match is decided (relay referee: sunk, time, forfeit; or the two reports) the winner is paid
+   `potLamports` = 2x stake from the treasury. Draw, disputed or abandoned match: every deposit is refunded. Vs the
+   house: a host win pays 2x, a loss keeps the stake (`result:"house_won"`). A guest leaving before the start gets
+   their deposit back (the wager returns to `awaiting_deposits`); a lobby closed or expired before the start refunds
+   everything. Settlement runs right after the match ends and every `SWEEP_SECONDS`; failed payouts (e.g. an empty
+   treasury) are retried each minute, up to 10 times, never paid twice.
+
+Every lobby JSON (HTTP and WebSocket, `GET /api/lobbies/{id}`) now has `wager` (null without a stake):
+
+```json
+"wager": {
+  "wagerId": "...", "kind": "pvp", "lobbyId": "...", "matchId": null,
+  "stakeLamports": 10000000, "stakeSol": 0.01, "potLamports": 20000000, "vsHouse": false,
+  "status": "awaiting_deposits | funded | settled | refunded | cancelled", "funded": false,
+  "result": null, "memo": "wager:<lobbyId>", "treasury": "<treasury address>", "cluster": "devnet",
+  "host":  { "playerId": "...", "deposited": true,  "signature": "..." },
+  "guest": { "playerId": "...", "house": false, "deposited": false, "signature": null },
+  "winnerPlayerId": null, "payoutSignature": null,
+  "payouts": [ { "payoutId", "wallet", "lamports", "sol", "reason": "wager_win | wager_refund", "refId", "status", "signature", "explorerUrl", "createdAt", "sentAt" } ],
+  "createdAt": "...", "settledAt": null
+}
+```
+
+`result`: null while open, `paid_winner`, `house_won`, `refunded`, `cancelled`. `GET /api/lobbies/public` entries gain
+`stakeLamports` (null without a stake). `GET /api/wagers/{lobbyId}` (public) -> the same `wager` object (`404 no_wager`);
+`GET /api/wagers/mine` (auth) -> `{"wagers":[...]}` (last 20). Owner: `POST /api/admin/wagers/sweep` runs the settlement
+pass now -> `{"wagers":N}`.
+
+### Hackathon: weekly kill leaderboard SOL rewards
+
+Code: `Hackathon/RewardService.cs`. The top places of a week's kills board (map `saltwind`) win devnet SOL
+(`WEEKLY_REWARD_SOL`, default 0.5 / 0.3 / 0.2). Only wallet profiles are eligible: the places go to the best wallet
+players in board order (a guest above them is skipped); `WEEKLY_REWARD_CHECKED_ONLY=true` also needs a checked run.
+A week is recorded once (`WeeklyRewards`) and each reward is paid once; failed payouts are retried. A background job
+pays the previous week (hourly, `WEEKLY_REWARDS_AUTO`).
+
+`POST /api/admin/rewards/weekly` (X-Admin-Key) `{"weekStart":"2026-10-05","dryRun":false,"mapId":null}` (all optional;
+default the previous week; any date is snapped to its Monday; the current week can be paid for the demo, a future one
+is `400 future_week`) -> the rewards view; `dryRun:true` shows the winners without writing or paying.
+
+`GET /api/rewards/weekly?weekStart=&mapId=` (public; default the previous week) ->
+`{"weekStart","weekEnd","mapId","dryRun","alreadyRecorded","checkedOnly","table":[{"rank","lamports","sol"}],
+"winners":[{"rank","playerId","name","tag","wallet","walletShort","kills","runSeconds","checked","lamports","sol","payout":<payout view or null>}]}`.
+
+`GET /api/leaderboard/weekly` and `/previous` entries gain `wallet` (shortened `AbCd...WxYz`, null for guests) and
+`reward` (`{"lamports","sol","status","signature"}` or null).
+
+### Hackathon: daily island race
+
+Code: `Hackathon/DailyRaceService.cs`. One race per UTC day: everyone plays the same seed on the same map and races to
+`targetKills` (100) kills; fastest time wins. The seed is HMAC-SHA256(`DAILY_RACE_SALT`, `yyyy-MM-dd`).
+
+`GET /api/race/daily` (optional auth) -> `{"race":{"raceId","date":"2026-10-12","seed","mapId","targetKills","goal",
+"opensAt","closesAt","serverNow"},"entries":N,"me":null | {"rank","timeSeconds","timeMs","attempts","verdict","submittedAt"}}`.
+Start the run with `race.seed` on `race.mapId`; stop the clock at `targetKills` kills.
+
+`POST /api/race/daily/entry` (auth) `{"date":"2026-10-12","seed":123,"timeSeconds":118.4,"kills":100,"level":12,"clientVersion":null,"log":null}`
+-> `{"accepted":true,"improved","race":{...},"verdict","checked","best":{"rank","timeSeconds","timeMs","attempts","verdict","submittedAt"}}`.
+One best time per player and day (a slower time only counts an attempt). `date` defaults to today; yesterday's race
+takes entries for 30 minutes after midnight. `log` (optional, the same run log as `POST /api/runs`; send `level` with
+it) is scored by the run checks in shadow mode: `verdict` is `pass`, `flagged`, `log_rejected`, `seed_mismatch`, ...
+or null without a log; it never refuses the entry. Errors: `400 seed_mismatch`, `400 target_not_reached`,
+`422 implausible_time` (under 10 s for 100 kills or over 7200 s), `400 race_not_open`, `409 race_closed`, `400 invalid_date`.
+
+`GET /api/race/daily/board?date=&limit=50` (optional auth) -> `{"race":{...},"total","entries":[{"rank","playerId","name",
+"tag","wallet","timeSeconds","timeMs","attempts","verdict","checked","submittedAt"}],"me":{...}|null}`.
+
+### Hackathon: islands, RUM, raids, island NFT market (Solana devnet)
+
+Code: `Endpoints/IslandEndpoints.cs`, `Hackathon/IslandRules.cs` (every number), `IslandService.cs`, `RaidService.cs`,
+`MarketService.cs`; migration `AddHackathonIslands`. Every write needs a **wallet** profile (`403 wallet_required` for
+guests). Errors are `{"error","message"}` as everywhere. Optional env `PUBLIC_API_URL` (e.g.
+`https://api.roguepirates.fun`) is the base of the NFT metadata/image URLs; without it the request's host is used.
+
+**Economy** (V5 D19(1) as changed by D24): an island brews RUM into its own storage; **60% goes to the vault** (never
+raidable), 40% is **exposed**. A won raid takes **25% of the exposed RUM** (12.5% on a partial win) and gives the island
+a **4-hour shield**; attacking never ends your own shield. Raid fee **25 RUM**. Voyages: `POST /api/runs` adds
+`kills / 10` RUM (rounded down) for wallet players and returns `rumEarned`.
+
+| Building (`kind`) | Levels | Upgrade cost (RUM) to level 1/2/3/4/5 | Effect |
+|---|---|---|---|
+| `rum_store` | 1-5 | -, 300, 700, 1500, 3000 | 120/180/260/360/500 RUM per hour; storage cap 480/900/1600/2600/4000 |
+| `vault` | 1-3 | -, 400, 1000 | cap x1 / x1.5 / x2 |
+| `cannon_tower` | 0-3 | 250, 600, 1400 | defender: +1 extra wave per level, weapon level 1/3/5/7 |
+| `walls` | 0-3 | 200, 500, 1200 | defender hull x1.0 / 1.25 / 1.5 / 1.75 |
+
+**Island view** (returned by most island calls):
+`{"islandId","name","slot","slotName","region","x","y","level","owner":{"playerId","name","wallet","walletShort"},"isMine",
+"nft":{"status":"pending|minted","mint","mintSignature","error","explorerUrl","metadataUrl","imageUrl"},
+"rum":{"exposed","vault","total","cap","ratePerHour","vaultPercent":60,"lastAccrualAt"},
+"buildings":[{"kind","level","maxLevel","nextCost"}],"defence":{"hullMultiplier","extraWaves","weaponLevel","difficulty","cannonTower","walls"},
+"shieldUntil","shielded","listed","listingId","priceLamports","raidInProgress","raidable","createdAt"}`.
+`x`,`y` are on a 1000x1000 world map; `raidable` = not yours, not shielded, not listed, nobody raiding it.
+
+`POST /api/islands/claim` `{"name":"Tortuga"}` (3-16 chars) -> island view. One island per player (`409
+already_has_island`; buying more on the market is allowed); a random free slot of the 24 (`409 world_full`). Mints the
+Island NFT to your wallet (name `Rogue Island: <name>`, symbol `RPISL`, uri = the metadata URL). If the treasury is off
+or the mint fails, the island is still created with `nft.status:"pending"` and `nft.error`.
+`POST /api/islands/{id}/mint` (owner) retries -> island view; `502 mint_failed`, `409 already_minted`, `503 treasury_off`.
+
+`GET /api/islands/mine` (auth) -> `{"rum":<balance>,"islands":[view]}`.
+`GET /api/islands` (auth optional, sets `isMine`) -> `{"mapWidth":1000,"mapHeight":1000,"slots":[{"slot","name","region","x","y","islandId|null"}],"freeSlots","islands":[view]}`.
+`GET /api/islands/{id}` -> island view. `GET /api/islands/{id}/metadata.json` -> Metaplex JSON
+`{"name","symbol","description","image","external_url","attributes":[{"trait_type","value"}],"properties":{"category","files"}}`.
+`GET /static/islands/{slot}.png` -> a generated 256x256 placeholder picture.
+
+`POST /api/islands/{id}/collect` (owner) -> `{"collected","fromStore","fromVault","rum","island"}` (all of the island's
+RUM, vault included, to your balance). `POST /api/islands/{id}/build` `{"kind":"walls"}` (owner) -> `{"kind","level","cost","rum","island"}`.
+Errors: `403 not_your_island`, `409 island_listed`, `400 invalid_kind`, `409 max_level`, `400 insufficient_rum`.
+
+**Raids.** `POST /api/raids/start` `{"islandId","stakeLamports":null}` -> 
+`{"raidId","islandId","islandName","startedAt","expiresAt","feePaid":25,"rum","defender":{...},"loot":{"exposedRum","ifWon","ifPartial","lootPercent":25},"wager":null|{...}}`.
+The **defender config** for the AI-captain fight:
+`{"captainId":"ai_captain","captainName":"Captain Marrow","seed","hullMultiplier","extraWaves","weaponLevel","cannonTower","walls","difficulty":1-7,"timeLimitSeconds":300}`.
+Errors: `400 own_island`, `409 island_shielded`, `409 island_listed`, `409 raid_in_progress`, `400 insufficient_rum`,
+`400 invalid_stake`, `503 treasury_off` (wager only). Starting a new raid abandons your own unfinished one.
+
+`POST /api/raids/{id}/result` `{"won":true,"partial":false,"seconds":95,"runLog":null}` (within **10 minutes** of the
+start; `seconds` 1..360 and not more than the time since the start) ->
+`{"raidId","result":"won|partial|lost","rumLooted","rum","seconds","defenderShieldUntil","wager"}`.
+Errors: `409 raid_expired` (marked `abandoned`), `409 raid_finished`, `400 invalid_seconds`, `403 not_your_raid`.
+`runLog` is accepted and not checked yet.
+
+Optional **SOL wager** (vs the house): start with `stakeLamports` 1,000,000..500,000,000; `wager` is
+`{"wagerId","stakeLamports","status":"awaiting_deposits|funded|settled|cancelled","memo":"raid:<raidId>","treasury","payoutIfWon","depositSignature","payout"}`.
+Send the stake to `treasury` with the memo, then `POST /api/raids/{id}/wager` `{"signature"}` -> `{"raidId","wager"}`
+(deposit errors as `/api/deposits/verify`). Full win pays **2x** (`raid_win`), partial win refunds the stake
+(`raid_refund`), loss or expiry keeps it; an unfunded wager is cancelled at the result. If the payout fails the wager
+stays `funded` with `payout.status:"failed"`: `POST /api/raids/{id}/settle` retries (never pays twice).
+
+`GET /api/raids/mine` -> `{"attacks":[row],"defences":[row]}`, row
+`{"raidId","islandId","islandName","attacker":{"playerId","name","wallet"},"defender":{...},"result","rumLooted","seconds","startedAt","finishedAt","wager"}`.
+
+**Market** (treasury = escrow). Listing view:
+`{"listingId","status":"active|paid|sold|cancelling|cancelled","priceLamports","priceSol","nftMint","memo":"buy:<listingId>","treasury",
+"island":{"islandId","name","slot","slotName","region","level","levels","ratePerHour"},"seller":{"playerId","name","wallet","walletShort"},"buyer",
+"escrowSignature","paymentSignature","transferSignature","payoutSignature","transferExplorerUrl","payoutExplorerUrl","error","createdAt","closedAt"}`.
+
+1. Sell: the client sends the island NFT (SPL transfer, amount 1) from the seller's wallet to `treasury` (from
+   `GET /api/treasury`), then `POST /api/market/list` `{"islandId","priceLamports","signature"}` (price
+   1,000,000..100,000,000,000) -> listing (`active`). The island is locked (no raids, collect or build). Errors:
+   `403 not_your_island`, `409 nft_not_minted`, `409 already_listed`, `400 nft_not_received`, `409 signature_used`, `400 invalid_price`.
+2. `GET /api/market` -> `{"treasury","cluster","listings":[listing]}` (active); `GET /api/market/{id}`; `GET /api/market/mine` (as seller or buyer).
+3. Buy: send `priceLamports` to `treasury` with memo `buy:<listingId>`, then `POST /api/market/{id}/buy`
+   `{"signature"}` -> listing. The server moves the NFT to the buyer, the island to the buyer, and pays the seller.
+   `status:"sold"` when all is done; `status:"paid"` with `error` when a step failed: `POST /api/market/{id}/complete`
+   (buyer or seller) finishes it (re-sending the same buy also works). Errors: `409 listing_not_active` (do not pay),
+   `400 own_listing`, deposit errors (`amount_too_low`, `memo_mismatch`, `tx_not_confirmed`, ...).
+4. `POST /api/market/{id}/cancel` (seller, `active` only) returns the NFT -> `cancelled`; on failure `cancelling` with
+   `error` (call cancel again).
 
 ## 1v1 match protocol (relay)
 

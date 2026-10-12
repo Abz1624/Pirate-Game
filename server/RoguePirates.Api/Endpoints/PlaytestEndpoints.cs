@@ -55,8 +55,13 @@ public static class PlaytestEndpoints
             Results.Ok(await runs.LeaderboardAsync(WeekMath.WeekStart(clock.UtcNow).AddDays(-7), mapId, limit, await auth.TryGetAsync(ctx))));
 
         // ---- lobbies ----
-        app.MapPost("/api/lobbies", async (HttpContext ctx, CreateLobbyRequest? req, PlayerAuth auth, LobbyService lobbies) =>
-            Results.Json(await lobbies.CreateAsync(await auth.RequireAsync(ctx), req?.Public ?? false), statusCode: 201));
+        app.MapPost("/api/lobbies", async (HttpContext ctx, CreateLobbyRequest? req, PlayerAuth auth, LobbyService lobbies, Hackathon.WagerService wagers) =>
+        {
+            var host = await auth.RequireAsync(ctx);
+            // hackathon: an optional SOL stake (wallet profiles; 0.001..0.5 SOL)
+            if (req?.StakeLamports is { } stake and not 0) wagers.ValidateStake(host, stake);
+            return Results.Json(await lobbies.CreateAsync(host, req?.Public ?? false, req?.StakeLamports), statusCode: 201);
+        });
 
         app.MapGet("/api/lobbies/public", async (LobbyService lobbies) => Results.Ok(await lobbies.ListPublicAsync()));
 
@@ -84,8 +89,14 @@ public static class PlaytestEndpoints
         app.MapGet("/api/lobbies/{id:guid}", async (HttpContext ctx, Guid id, PlayerAuth auth, LobbyService lobbies) =>
             Results.Ok(await lobbies.GetAsync(id, await auth.RequireAsync(ctx))));
 
-        app.MapPut("/api/lobbies/{id:guid}/status", async (HttpContext ctx, Guid id, LobbyStatusRequest req, PlayerAuth auth, LobbyService lobbies) =>
-            Results.Ok(await lobbies.UpdateStatusAsync(id, await auth.RequireAsync(ctx), req)));
+        app.MapPut("/api/lobbies/{id:guid}/status", async (HttpContext ctx, Guid id, LobbyStatusRequest req, PlayerAuth auth, LobbyService lobbies,
+            IServiceScopeFactory scopes, ILogger<LobbyService> log) =>
+        {
+            var state = await lobbies.UpdateStatusAsync(id, await auth.RequireAsync(ctx), req);
+            // hackathon: a seat leaving (or the lobby closing) refunds wager deposits in the background
+            if ((req.Status ?? "").Trim().Equals(SeatStates.Left, StringComparison.OrdinalIgnoreCase)) Hackathon.WagerService.Kick(scopes, id, log);
+            return Results.Ok(state);
+        });
 
         // WebSocket: pushes the full lobby state (same JSON as GET /api/lobbies/{id}) on connect and on every change.
         // Browsers cannot set headers on WebSockets, so the token comes in the query string (kept out of request logs).

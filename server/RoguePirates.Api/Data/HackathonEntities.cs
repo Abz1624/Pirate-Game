@@ -149,6 +149,15 @@ public sealed class Island
     public DateTime LastAccrualAt { get; set; }
     public int Level { get; set; } = 1;
     public DateTime CreatedAt { get; set; }
+    // ---- AddHackathonIslands ----
+    /// <summary>The world-map slot (0-based index into IslandRules.Slots). Unique.</summary>
+    public int Slot { get; set; }
+    /// <summary>pending (not minted yet, or the mint failed: retry), minted.</summary>
+    public string NftStatus { get; set; } = "pending";
+    /// <summary>The last mint error, when the mint failed.</summary>
+    public string? MintError { get; set; }
+    /// <summary>No raids until then (set for 4 hours after a successful raid).</summary>
+    public DateTime? ShieldUntil { get; set; }
 }
 
 /// <summary>A structure on an island (rum_store, vault, defences, ...).</summary>
@@ -175,6 +184,11 @@ public sealed class Raid
     public int Seed { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
+    // ---- AddHackathonIslands ----
+    /// <summary>The island's owner when the raid started (defence history survives a sale).</summary>
+    public Guid DefenderPlayerId { get; set; }
+    /// <summary>The fight's length the client reported.</summary>
+    public int? Seconds { get; set; }
 }
 
 /// <summary>An island NFT listed on the escrow marketplace.</summary>
@@ -199,4 +213,7 @@ public sealed class MarketListing
     public string? PayoutSig { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
+    // ---- AddHackathonIslands ----
+    /// <summary>The last error of a half-done trade (buy or cancel); cleared when it completes.</summary>
+    public string? Error { get; set; }
 }

@@ -79,6 +79,7 @@ public sealed partial class RunService
         var now = _clock.UtcNow;
         var week = WeekMath.WeekStart(now);
         RunVerdict verdict;
+        long rumEarned = 0; // hackathon: RUM for wallet players
 
         await GameLocks.Runs.WaitAsync();
         try
@@ -108,6 +109,12 @@ public sealed partial class RunService
                 verdict = _checks.Score(run, log?.Json, header?.BuildId, header?.ConfigHash, now, rejected?.Code);
                 _db.RunVerdicts.Add(verdict);
                 await _db.SaveChangesAsync();
+                // hackathon: wallet players earn RUM from voyages (kills / 10), added atomically
+                if (player.WalletAddress != null && Hackathon.IslandRules.RumForRun(req.Kills) is > 0 and var rum)
+                {
+                    await _db.Players.Where(p => p.Id == player.Id).ExecuteUpdateAsync(u => u.SetProperty(p => p.Rum, p => p.Rum + rum));
+                    rumEarned = rum;
+                }
                 await tx.CommitAsync(); // the run, its log and its verdict together
             }
 
@@ -140,6 +147,7 @@ public sealed partial class RunService
                 @checked = verdict.Status == Verdicts.Pass,
                 verdict = verdict.Status,
                 logRejected = rejected?.Code,
+                rumEarned,
                 weeklyBest = new { kills = best.Kills, runSeconds = best.RunSeconds, level = best.Level, captain = best.Captain },
             };
         }
@@ -161,14 +169,20 @@ public sealed partial class RunService
                           from v in vs.DefaultIfEmpty()
                           where b.WeekStart == weekStart && b.MapId == map
                           orderby b.Kills descending, b.RunSeconds, b.AchievedAt, b.Id
-                          select new { b.PlayerId, p.Name, b.Kills, b.RunSeconds, b.Level, b.Captain, Checked = v != null && v.Status == Verdicts.Pass })
+                          select new { b.PlayerId, p.Name, b.Kills, b.RunSeconds, b.Level, b.Captain, Checked = v != null && v.Status == Verdicts.Pass, p.WalletAddress })
             .Take(take)
             .ToListAsync();
+        // hackathon: the player's wallet (shortened) and their weekly SOL reward, if any
+        var rewards = await Hackathon.RewardService.ByPlayerAsync(_db, weekStart, map);
 
         var entries = rows.Select((r, i) => new
         {
             rank = i + 1, playerId = r.PlayerId, name = r.Name, tag = PlayerTags.For(r.PlayerId),
             kills = r.Kills, runSeconds = r.RunSeconds, level = r.Level, captain = r.Captain, @checked = r.Checked,
+            wallet = r.WalletAddress == null ? null : Hackathon.PayoutOnce.Short(r.WalletAddress),
+            reward = rewards.TryGetValue(r.PlayerId, out var rw)
+                ? new { lamports = rw.lamports, sol = rw.lamports / (double)Solana.SolanaService.LamportsPerSol, status = rw.status, signature = rw.signature }
+                : null,
         }).ToList();
 
         object? meView = null;

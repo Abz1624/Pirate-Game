@@ -558,6 +558,8 @@ public sealed class MatchRelay
         };
         lock (room) room.EndMessage = msg;
         await _broadcaster.PublishAsync(room.LobbyId, J(msg), close: false);
+        // hackathon: settle the lobby's SOL wager, if any (in the background: payouts wait for chain confirmation)
+        RoguePirates.Api.Hackathon.WagerService.Kick(_scopes, room.LobbyId, _log);
     }
 
     // ---------------------------------------------------------------- clock

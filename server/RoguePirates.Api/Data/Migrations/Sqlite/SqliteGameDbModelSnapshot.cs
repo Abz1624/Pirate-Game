@@ -98,6 +98,10 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<int>("Level")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("MintError")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("MintSig")
                         .HasMaxLength(88)
                         .HasColumnType("TEXT");
@@ -111,6 +115,11 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .HasMaxLength(44)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("NftStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("OwnerPlayerId")
                         .HasColumnType("TEXT");
 
@@ -120,12 +129,21 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<long>("RumVault")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("ShieldUntil")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Slot")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NftMint")
                         .IsUnique();
 
                     b.HasIndex("OwnerPlayerId");
+
+                    b.HasIndex("Slot")
+                        .IsUnique();
 
                     b.ToTable("Islands");
                 });
@@ -239,6 +257,10 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EscrowSig")
@@ -529,6 +551,9 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("DefenderPlayerId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("TEXT");
 
@@ -543,6 +568,9 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<long>("RumLooted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("Seconds")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Seed")
                         .HasColumnType("INTEGER");
 
@@ -552,6 +580,8 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.HasKey("Id");
 
                     b.HasIndex("AttackerPlayerId");
+
+                    b.HasIndex("DefenderPlayerId");
 
                     b.HasIndex("IslandId");
 

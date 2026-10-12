@@ -9,7 +9,8 @@ public sealed record SubmitRunRequest(
     int Kills, int RunSeconds, int Level, string? Captain, string? MapId, string? BuildHash, string? ClientVersion,
     System.Text.Json.JsonElement? Log = null);
 
-public sealed record CreateLobbyRequest(bool Public);
+/// <param name="StakeLamports">Hackathon: an optional SOL stake for a 1v1 wager (see WagerService).</param>
+public sealed record CreateLobbyRequest(bool Public, long? StakeLamports = null);
 public sealed record JoinLobbyRequest(string? Code);
 public sealed record DraftDto(List<string>? Weapons, List<string>? Logbooks);
 public sealed record LobbyStatusRequest(string? Status, DraftDto? Draft);

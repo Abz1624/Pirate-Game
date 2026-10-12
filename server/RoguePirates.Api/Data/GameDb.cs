@@ -199,6 +199,15 @@ public abstract class GameDb : DbContext
             e.Property(x => x.TransferSig).HasMaxLength(Sig);
             e.Property(x => x.PayoutSig).HasMaxLength(Sig);
         });
+        // ---- Hackathon islands, raids, market (AddHackathonIslands) ----
+        b.Entity<Island>(e =>
+        {
+            e.HasIndex(x => x.Slot).IsUnique();
+            e.Property(x => x.NftStatus).HasMaxLength(16);
+            e.Property(x => x.MintError).HasMaxLength(256);
+        });
+        b.Entity<Raid>(e => e.HasIndex(x => x.DefenderPlayerId));
+        b.Entity<MarketListing>(e => e.Property(x => x.Error).HasMaxLength(256));
 
         // Every timestamp is UTC. SQLite hands DateTimes back with Kind=Unspecified and Npgsql refuses
         // non-UTC values for timestamptz, so pin the kind on the way in and out.

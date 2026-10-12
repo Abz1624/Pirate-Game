@@ -22,9 +22,12 @@ public sealed class LobbyService
     readonly ApiSettings _settings;
     readonly LobbyBroadcaster _broadcaster;
     readonly MatchRelay _relay;
+    readonly RoguePirates.Api.Solana.SolanaService _sol;
 
-    public LobbyService(GameDb db, IClock clock, ApiSettings settings, LobbyBroadcaster broadcaster, MatchRelay relay)
+    public LobbyService(GameDb db, IClock clock, ApiSettings settings, LobbyBroadcaster broadcaster, MatchRelay relay,
+        RoguePirates.Api.Solana.SolanaService sol)
     {
+        _sol = sol;
         _db = db;
         _clock = clock;
         _settings = settings;
@@ -41,7 +44,8 @@ public sealed class LobbyService
 
     public string InviteUrl(string code) => _settings.PlayUrl + (_settings.PlayUrl.Contains('?') ? "&" : "?") + "join=" + code;
 
-    public async Task<object> CreateAsync(Player host, bool isPublic)
+    /// <param name="stakeLamports">Hackathon: an optional SOL stake (validated by WagerService.ValidateStake first).</param>
+    public async Task<object> CreateAsync(Player host, bool isPublic, long? stakeLamports = null)
     {
         await GameLocks.Lobby.WaitAsync();
         try
@@ -61,6 +65,7 @@ public sealed class LobbyService
                 HostStatus = SeatStates.Joined, CreatedAt = now, UpdatedAt = now, LastActivityAt = now,
             };
             _db.Lobbies.Add(lobby);
+            if (stakeLamports is > 0) _db.Wagers.Add(Hackathon.WagerService.NewForLobby(lobby.Id, host.Id, stakeLamports.Value, now));
             await _db.SaveChangesAsync();
             return await BuildStateAsync(lobby);
         }
@@ -80,11 +85,17 @@ public sealed class LobbyService
                           select new { l.Id, l.Code, l.CreatedAt, l.LastActivityAt, HostId = p.Id, p.Name, p.Rating })
             .Take(50)
             .ToListAsync();
+        // hackathon: the SOL stake of each listed lobby (null without one)
+        var ids = rows.Select(r => r.Id).ToList();
+        var stakes = (await _db.Wagers.Where(w => w.LobbyId != null && ids.Contains(w.LobbyId.Value) && w.Status != Wager.Cancelled)
+                .Select(w => new { LobbyId = w.LobbyId!.Value, w.StakeLamports, w.CreatedAt }).ToListAsync())
+            .GroupBy(w => w.LobbyId).ToDictionary(g => g.Key, g => g.OrderByDescending(w => w.CreatedAt).First().StakeLamports);
         return new
         {
             lobbies = rows.Select(r => new
             {
                 lobbyId = r.Id, code = r.Code, inviteUrl = InviteUrl(r.Code), createdAt = r.CreatedAt,
+                stakeLamports = stakes.TryGetValue(r.Id, out var stake) ? stake : (long?)null,
                 expiresAt = r.LastActivityAt + IdleTimeout,
                 host = new { playerId = r.HostId, name = r.Name, tag = PlayerTags.For(r.HostId), rating = r.Rating },
             }),
@@ -209,7 +220,8 @@ public sealed class LobbyService
                     throw new ApiException(400, "draft_required", "Send your draft (6 weapons, 6 logbooks) before you are ready.");
                 SetSeat(lobby, isHost, status, draftJson);
 
-                var starts = lobby.Status == LobbyStates.Full && lobby.HostStatus == SeatStates.Ready && lobby.GuestStatus == SeatStates.Ready;
+                var starts = lobby.Status == LobbyStates.Full && lobby.HostStatus == SeatStates.Ready && lobby.GuestStatus == SeatStates.Ready
+                             && await Hackathon.WagerService.MayStartAsync(_db, lobby); // hackathon: a staked lobby waits for both deposits
                 if (starts) await StartMatchAsync(lobby);
 
                 var result = await SaveAndPublishAsync(lobby);
@@ -245,7 +257,7 @@ public sealed class LobbyService
             lobby.GuestStatus = SeatStates.Ready;
             lobby.GuestDraftJson = JsonSerializer.Serialize(PracticeBot.Draft, Json);
             lobby.Status = LobbyStates.Full;
-            var starts = lobby.HostStatus == SeatStates.Ready;
+            var starts = lobby.HostStatus == SeatStates.Ready && await Hackathon.WagerService.MayStartAsync(_db, lobby);
             if (starts) await StartMatchAsync(lobby);
             var result = await SaveAndPublishAsync(lobby);
             if (starts) await _relay.AnnounceAsync(lobby.Id);
@@ -255,6 +267,18 @@ public sealed class LobbyService
         {
             GameLocks.Lobby.Release();
         }
+    }
+
+    /// <summary>Hackathon: after a wager change (stake, deposit), publishes the lobby and starts the match when both seats
+    /// are ready and the stake is funded. Caller holds <see cref="GameLocks.Lobby"/>.</summary>
+    public async Task<object> OnWagerChangedAsync(Lobby lobby)
+    {
+        var starts = lobby.Status == LobbyStates.Full && lobby.HostStatus == SeatStates.Ready && lobby.GuestStatus == SeatStates.Ready
+                     && await Hackathon.WagerService.MayStartAsync(_db, lobby);
+        if (starts) await StartMatchAsync(lobby);
+        var result = await SaveAndPublishAsync(lobby);
+        if (starts) await _relay.AnnounceAsync(lobby.Id);
+        return result;
     }
 
     /// <summary>End of the countdown: "starting" becomes "in_match" (called by the relay clock).</summary>
@@ -524,6 +548,8 @@ public sealed class LobbyService
             createdAt = lobby.CreatedAt, updatedAt = lobby.UpdatedAt,
             expiresAt = lobby.Status is LobbyStates.Waiting or LobbyStates.Full ? lobby.LastActivityAt + IdleTimeout : (DateTime?)null,
             seats,
+            // hackathon: the SOL stake on this lobby (null without one); see WagerService.ViewAsync
+            wager = await Hackathon.WagerService.LobbyViewAsync(_db, lobby, _sol.TreasuryAddress, _sol.Cluster),
             match = lobby.MatchId == null ? null : new
             {
                 matchId = lobby.MatchId, seed = lobby.Seed, matchServer = lobby.MatchServer,

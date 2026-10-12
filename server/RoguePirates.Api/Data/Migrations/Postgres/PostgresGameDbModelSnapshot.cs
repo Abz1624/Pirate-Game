@@ -107,6 +107,10 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
+                    b.Property<string>("MintError")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<string>("MintSig")
                         .HasMaxLength(88)
                         .HasColumnType("character varying(88)");
@@ -120,6 +124,11 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                         .HasMaxLength(44)
                         .HasColumnType("character varying(44)");
 
+                    b.Property<string>("NftStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<Guid>("OwnerPlayerId")
                         .HasColumnType("uuid");
 
@@ -129,12 +138,21 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<long>("RumVault")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime?>("ShieldUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Slot")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NftMint")
                         .IsUnique();
 
                     b.HasIndex("OwnerPlayerId");
+
+                    b.HasIndex("Slot")
+                        .IsUnique();
 
                     b.ToTable("Islands");
                 });
@@ -251,6 +269,10 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("EscrowSig")
                         .HasMaxLength(88)
@@ -546,6 +568,9 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("DefenderPlayerId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -560,6 +585,9 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<long>("RumLooted")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("Seconds")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Seed")
                         .HasColumnType("integer");
 
@@ -569,6 +597,8 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.HasKey("Id");
 
                     b.HasIndex("AttackerPlayerId");
+
+                    b.HasIndex("DefenderPlayerId");
 
                     b.HasIndex("IslandId");
 

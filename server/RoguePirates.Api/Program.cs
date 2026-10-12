@@ -47,6 +47,16 @@ builder.Services.AddSingleton<RoguePirates.Api.Solana.ISolanaRpc>(sp => new Rogu
 builder.Services.AddSingleton<RoguePirates.Api.Solana.SolanaService>();
 builder.Services.AddScoped<RoguePirates.Api.Solana.WalletAuthService>();
 builder.Services.AddScoped<RoguePirates.Api.Solana.LedgerService>();
+// Hackathon: 1v1 SOL wagers (+ sweeper), weekly leaderboard rewards (+ job), the daily race.
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.WagerService>();
+builder.Services.AddHostedService<RoguePirates.Api.Hackathon.WagerSweeper>();
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.RewardService>();
+builder.Services.AddHostedService<RoguePirates.Api.Hackathon.WeeklyRewardJob>();
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.DailyRaceService>();
+// Hackathon: islands (RUM, buildings, Island NFTs), raids and the island NFT marketplace (Endpoints/IslandEndpoints.cs).
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.IslandService>();
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.RaidService>();
+builder.Services.AddScoped<RoguePirates.Api.Hackathon.MarketService>();
 
 builder.Services.AddCors();
 builder.Services.AddOptions<CorsOptions>().Configure<IServiceProvider>((o, sp) =>
@@ -141,6 +151,8 @@ app.Use(async (ctx, next) =>
 
 app.MapPlaytestApi();
 app.MapHackathonApi();
+app.MapWagerApi();
+app.MapIslandApi();
 
 app.Run();
 
