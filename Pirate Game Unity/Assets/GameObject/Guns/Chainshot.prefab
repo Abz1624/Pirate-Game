@@ -10418,7 +10418,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4302629334798246686}
-  - component: {fileID: 8377039202816409527}
   m_Layer: 0
   m_Name: Chainshot
   m_TagString: Untagged
@@ -10445,61 +10444,6 @@ Transform:
   - {fileID: 5397800836311381771}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8377039202816409527
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6893027913178370355}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0cbd7065afdc4013b740146122d0e21, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.ChainshotVfx
-  projectile: {fileID: 1200584452120824674}
-  spinPlane: {fileID: 6567021343343419587}
-  spin: {fileID: 6510257253736305994}
-  ballA: {fileID: 723768012983117218}
-  ballB: {fileID: 8935568754612032212}
-  outerRing: {fileID: 5697086354791990959}
-  bodyRenderers:
-  - {fileID: 4551859788480302382}
-  - {fileID: 5306441272885646251}
-  - {fileID: 4688534223940015760}
-  - {fileID: 5959180306853935008}
-  - {fileID: 1437067797229088291}
-  trails:
-  - {fileID: 7811934202376401574}
-  - {fileID: 1327361650288479468}
-  muzzleLeft: {fileID: 5035151300924006144}
-  muzzleRight: {fileID: 182736750126610682}
-  muzzleFxLeft: {fileID: 5780962779252065518}
-  muzzleFxRight: {fileID: 9155179357544975046}
-  impactRing: {fileID: 3273937539549663082}
-  impactSparks: {fileID: 2802627504136564681}
-  autoFire: 1
-  cooldown: 1.6
-  range: 14
-  targetTag: Enemy
-  fireWithoutTargets: 1
-  targetHeightOffset: 0.5
-  speed: 10
-  arcHeightBase: 1
-  arcHeightPerUnit: 0.17
-  spinSpeed: 1150
-  spinTilt: 14
-  openTime: 0.3
-  closedScale: 0.55
-  ballTumble: 60
-  hitRadius: 1.1
-  sparksPerHit: 8
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
-  onStrike:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &6962553489181298829
 GameObject:
   m_ObjectHideFlags: 0
@@ -10790,11 +10734,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4044625135789424, guid: ef74f398500e2b94591b4c8d63afe328, type: 3}
   m_PrefabInstance: {fileID: 5781506511810325879}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5780962779252065518 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1709254077376921, guid: ef74f398500e2b94591b4c8d63afe328, type: 3}
-  m_PrefabInstance: {fileID: 5781506511810325879}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &9154597104296518495
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10867,10 +10806,5 @@ PrefabInstance:
 --- !u!4 &9152993399272244783 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4044625135789424, guid: ef74f398500e2b94591b4c8d63afe328, type: 3}
-  m_PrefabInstance: {fileID: 9154597104296518495}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &9155179357544975046 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1709254077376921, guid: ef74f398500e2b94591b4c8d63afe328, type: 3}
   m_PrefabInstance: {fileID: 9154597104296518495}
   m_PrefabAsset: {fileID: 0}

@@ -329,7 +329,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2366261669025049038}
-  - component: {fileID: 1060631163129394650}
   m_Layer: 0
   m_Name: Maelstrom Charge
   m_TagString: Untagged
@@ -353,71 +352,6 @@ Transform:
   - {fileID: 3458217865423231315}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1060631163129394650
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1755463470567207376}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4184b534e733a42928e2a4e175101248, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.MaelstromChargeVfx
-  strikeRoot: {fileID: 3458217865423231315}
-  bolt: {fileID: 5481664261145361194}
-  boltCore: {fileID: 3115531530779333030}
-  branch: {fileID: 4530019978863458191}
-  branch2: {fileID: 6553171445975327828}
-  boltHalo: {fileID: 3753646108791014018}
-  impactGlow: {fileID: 5112843142844981117}
-  whirlpool: {fileID: 2013830741670687965}
-  whirlpoolRenderer: {fileID: 763044115673141511}
-  flash: {fileID: 936266059996465495}
-  ring: {fileID: 0}
-  splash: {fileID: 3222821940054238719}
-  autoFire: 1
-  cooldown: 5
-  range: 15
-  targetTag: Enemy
-  manualTarget: {fileID: 0}
-  fireWithoutTargets: 1
-  previewDistance: 8
-  waterHeight: 0
-  whirlpoolRadius: 2.6
-  pullRadius: 4.2
-  pullSpeed: 3.2
-  swirlSpeed: 1.8
-  whirlpoolLife: 3
-  openTime: 0.3
-  implodeTime: 0.35
-  spinSpeed: 0.75
-  surfaceLift: 0.04
-  applyDamage: 1
-  damagePerTick: 10
-  tickInterval: 0.5
-  damageRadius: 3
-  strikeDamage: 15
-  boltHeight: 13
-  boltLean: 4.5
-  boltSegments: 8
-  boltJag: 1.05
-  boltHold: 0.28
-  boltFade: 0.2
-  boltFlicker: 0.3
-  onStrike:
-    m_PersistentCalls:
-      m_Calls: []
-  onTick:
-    m_PersistentCalls:
-      m_Calls: []
-  onImplode:
-    m_PersistentCalls:
-      m_Calls: []
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &3158316675425496877
 GameObject:
   m_ObjectHideFlags: 0

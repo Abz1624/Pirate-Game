@@ -180,6 +180,45 @@ namespace RoguePirates.V4.Foundation.Data
         [Tooltip("Demo: HUD margin from the screen edges on phones (fraction of the screen height), on top of the safe area, for rounded corners.")]
         [Range(0f, 0.1f)] public float mobileHudEdgeMargin = 0.035f;
 
+        // Hackathon (12 Oct, owner: "based on it please update things"): the art team's models from the gameplay branch
+        // (3D Models/Enemies, GameObject/Guns), as art-only prefabs built by Tools/Rogue Pirates/Demo/Wire Art Team Models
+        // (HackathonArtWiring). Presentation only: the enemy and weapon configs (and so the config hash) stay as they were;
+        // an empty slot keeps the old model or placeholder.
+        [Header("Art Team Models (hackathon)")]
+        [Tooltip("Per enemy or variant id: the model drawn instead of the config's (same footprint, hull on the water line, facing +Z).")]
+        public ArtEnemyModel[] enemyArtModels;
+        [Tooltip("Per weapon id: a projectile model drawn instead of the config's, and a model lobbed at a predicted-area shell's ring.")]
+        public ArtWeaponModel[] weaponArtModels;
+        [Tooltip("The Anchor Flail's anchor (drawn at each chained mace; its ChainAttach child is where the chain meets it).")]
+        public GameObject maceArtModel;
+        [Tooltip("One chain link (drawn instanced along the mace chain; unit length along +Z).")]
+        public GameObject maceChainLinkModel;
+        [Min(0.05f)] public float maceChainLinkSpacing = 0.34f;
+        [Tooltip("The Lighthouse Lantern's lantern (orbit placeholder look Lanterns).")]
+        public GameObject lanternArtModel;
+        [Tooltip("The Parrot Squadron's parrot (summon placeholder look Parrots).")]
+        public GameObject parrotArtModel;
+        [Tooltip("The Monkey Gunners' monkey buccaneer (summon placeholder look MonkeyGunners).")]
+        public GameObject monkeyArtModel;
+
+        /// <summary>The art team's model for an enemy or variant id (null: the config's model).</summary>
+        public GameObject EnemyArtModel(string enemyId)
+        {
+            if (string.IsNullOrEmpty(enemyId) || enemyArtModels == null) return null;
+            for (var i = 0; i < enemyArtModels.Length; i++)
+                if (enemyArtModels[i] != null && enemyArtModels[i].model != null && enemyArtModels[i].enemyId == enemyId) return enemyArtModels[i].model;
+            return null;
+        }
+
+        /// <summary>The art team's models for a weapon id (null: none).</summary>
+        public ArtWeaponModel WeaponArt(string weaponId)
+        {
+            if (string.IsNullOrEmpty(weaponId) || weaponArtModels == null) return null;
+            for (var i = 0; i < weaponArtModels.Length; i++)
+                if (weaponArtModels[i] != null && weaponArtModels[i].weaponId == weaponId) return weaponArtModels[i];
+            return null;
+        }
+
         [Header("Player Feedback")]
         public Color playerDamageFlashColor = new(1f, 0.25f, 0.2f, 1f);
         [Range(0.05f, 0.5f)] public float playerDamageFlashDuration = 0.12f;
@@ -202,5 +241,28 @@ namespace RoguePirates.V4.Foundation.Data
 
             return false;
         }
+    }
+
+    /// <summary>Hackathon (12 Oct): an enemy or variant id and the art team's model for it.</summary>
+    [Serializable]
+    public sealed class ArtEnemyModel
+    {
+        public string enemyId;
+        public GameObject model;
+    }
+
+    /// <summary>Hackathon (12 Oct): a weapon id and the art team's models for it (presentation only).</summary>
+    [Serializable]
+    public sealed class ArtWeaponModel
+    {
+        public string weaponId;
+        [Tooltip("Drawn instead of the config's projectile model (its own colours, no tint).")]
+        public GameObject projectileModel;
+        [Min(0.05f)] public float projectileScale = 1f;
+        [Tooltip("A model lobbed from the ship to each predicted-area shell's ring, landing as the shell lands (the Squid Ink Pots' pot).")]
+        public GameObject lobModel;
+        [Min(0.05f)] public float lobScale = 1f;
+        [Min(0f)] public float lobArcHeight = 5f;
+        [Min(1)] public int lobPrewarm = 6;
     }
 }

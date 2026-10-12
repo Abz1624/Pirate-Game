@@ -156,5 +156,62 @@ namespace RoguePirates.V4.Tests
             _presenter.SyncMaces();
             Assert.AreEqual(0, _presenter.MaceCount);
         }
+            [Test]
+        public void TheArtTeamsAnchor_FliesOnItsChainLinks_FromTheShip()
+        {
+            var settings = AssetDatabase.LoadAssetAtPath<DemoJuiceSettings>("Assets/_Game/Resources/DemoJuiceSettings.asset");
+            Assert.IsNotNull(settings.maceArtModel, "the art team's anchor (HackathonArtWiring)");
+            Assert.IsNotNull(settings.maceArtModel.transform.Find("ChainAttach"), "with the point its chain meets");
+            Assert.IsNotNull(settings.maceChainLinkModel, "and their chain link");
+            var weapons = new FakeWeapons();
+            var ship = new FakeShipView { Pos = Vector3.zero };
+            _presenter.Bind(_pools, weapons, ship, settings);
+            var flail = ScriptableObject.CreateInstance<WeaponConfig>();
+            flail.weaponId = "test_flail";
+            flail.behavior = ConfigEnums.WeaponBehavior.ChainedMace;
+            _owned.Add(flail);
+            _presenter.PrewarmModels(new[] { flail });
+            var pooled = _pools.Has(WeaponVfxPresenter.KeyPrefix + "mace/" + settings.maceArtModel.name);
+            Assert.IsTrue(pooled, "the anchor is pooled at bind");
+
+            weapons.MaceList.Add(new ChainedMace { Position = new Vector3(0f, 0.6f, 8f) });
+            _presenter.SyncMaces();
+            Assert.AreEqual(1, _presenter.MaceCount);
+            Assert.Less(Vector3.Distance(_presenter.MacePosition(0), weapons.MaceList[0].Position), 0.001f, "the anchor is where the simulation put the mace");
+            var (shipEnd, anchorEnd) = _presenter.ChainEnds(0);
+            Assert.Less(Vector3.Distance(new Vector3(shipEnd.x, 0f, shipEnd.z), ship.Pos), 0.001f, "the chain starts at the ship");
+            Assert.Less(anchorEnd.z, weapons.MaceList[0].Position.z, "and ends at the anchor's ring, on the ship's side of it");
+            if (SystemInfo.supportsInstancing)
+                Assert.Greater(_presenter.ChainLinksDrawn, 10, "drawn as the art team's links");
+        }
+
+        [Test]
+        public void AnInkPotShell_LobsTheArtTeamsPot_LandingWithTheShell()
+        {
+            var settings = ScriptableObject.CreateInstance<DemoJuiceSettings>();
+            _owned.Add(settings);
+            var pot = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            _owned.Add(pot);
+            settings.weaponArtModels = new[] { new ArtWeaponModel { weaponId = "test_ink", lobModel = pot, lobArcHeight = 5f, lobPrewarm = 3 } };
+            var weapons = new FakeWeapons();
+            var ship = new FakeShipView { Pos = Vector3.zero };
+            _presenter.Bind(_pools, weapons, ship, settings);
+            _presenter.PrewarmModels(new[] { Weapon("test_ink", WeaponPlaceholderLook.None), Weapon("test_mortar", WeaponPlaceholderLook.None) });
+            Assert.IsTrue(_pools.Has(WeaponVfxPresenter.KeyPrefix + "lob/" + pot.name), "the pot is pooled before the run");
+
+            _presenter.Aimed("test_mortar", Vector3.forward, Vector3.forward * 10f, true);
+            _presenter.TimedRing(Vector3.forward * 10f, 2f, 1f);
+            Assert.AreEqual(0, _presenter.LobCount, "a weapon without a lob model throws nothing");
+
+            _presenter.Aimed("test_ink", Vector3.forward, Vector3.forward * 10f, true);
+            _presenter.TimedRing(Vector3.forward * 10f, 2f, 1f);
+            Assert.AreEqual(1, _presenter.LobCount);
+            _presenter.Tick(0.5f);
+            var mid = _presenter.LobPosition(0);
+            Assert.AreEqual(5f, mid.z, 0.6f, "halfway there at half the shell's time");
+            Assert.Greater(mid.y, 4f, "in an arc");
+            _presenter.Tick(0.6f);
+            Assert.AreEqual(0, _presenter.LobCount, "gone when the shell lands");
+        }
     }
 }

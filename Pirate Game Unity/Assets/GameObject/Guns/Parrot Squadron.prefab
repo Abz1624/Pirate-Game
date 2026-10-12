@@ -45818,7 +45818,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5617091554468473259}
-  - component: {fileID: 6318480219290070751}
   m_Layer: 0
   m_Name: Parrot Squadron
   m_TagString: Untagged
@@ -45849,91 +45848,6 @@ Transform:
   - {fileID: 2751311932582474139}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6318480219290070751
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4913627067335667308}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a87513b5e5f46489cafb837481e9c49d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.ParrotSquadronVfx
-  launchPoint: {fileID: 3985340638447381778}
-  autoFire: 1
-  cooldown: 1.5
-  manualTarget: {fileID: 0}
-  targetTag: Enemy
-  range: 22
-  fireWithoutTargets: 1
-  previewDistance: 14
-  cruiseHeight: 3.2
-  flySpeed: 9
-  attackStandoff: 6.5
-  attackDrift: 0.6
-  followSmoothing: 0.22
-  launchStagger: 0.07
-  launchTime: 0.45
-  exitSpeed: 13
-  exitClimb: 2.2
-  exitTurn: 25
-  exitFadeDelay: 0.45
-  exitFadeTime: 0.8
-  exitEndScale: 0.75
-  opaqueMaterials:
-  - {fileID: 2100000, guid: 261ae287a989f42c68a5fc3b020b3350, type: 2}
-  - {fileID: 2100000, guid: ae1dcfbfa60e34571a2740b346886325, type: 2}
-  - {fileID: 2100000, guid: 17d0b7f1c5f6d46a9ab59054d7c2b69e, type: 2}
-  - {fileID: 2100000, guid: 1d1f5ce9362db48419d47dffa025143e, type: 2}
-  - {fileID: 2100000, guid: 6c4410751f0144a6daebfbd19f3606a8, type: 2}
-  - {fileID: 2100000, guid: 82d7df379a2984464acba0f97283a796, type: 2}
-  - {fileID: 2100000, guid: ae607650382534f3e8a6332cd94104f5, type: 2}
-  - {fileID: 2100000, guid: 9c8e59e3ea37b43238fb43db8474c82a, type: 2}
-  fadeMaterials:
-  - {fileID: 2100000, guid: 99c8b0b200b0c41dd9ccb22b594e4744, type: 2}
-  - {fileID: 2100000, guid: 39a4c90db455b43e3b63e86f816798f9, type: 2}
-  - {fileID: 2100000, guid: 89207434066534842be6d894da09c159, type: 2}
-  - {fileID: 2100000, guid: bd4a4a79c7b7f413ba6ec7f068cbda70, type: 2}
-  - {fileID: 2100000, guid: 6a45bcc9d6d7f450191dc157d26e583c, type: 2}
-  - {fileID: 2100000, guid: ec58d03020f964a12be8a0027da380ce, type: 2}
-  - {fileID: 2100000, guid: 3b582703d3e034645aefea6fcbcfdd12, type: 2}
-  - {fileID: 2100000, guid: b31a2de008b534c4cae187502f4d80e1, type: 2}
-  slotSpacing: 1.7
-  rowDepth: 1.4
-  heightJitter: 0.35
-  flapSpeed: 16
-  flapAngle: 38
-  hoverFlapBoost: 1.35
-  bobAmount: 0.12
-  bankAngle: 28
-  shotsPerParrot: 3
-  shotInterval: 0.42
-  shotSpread: 2.2
-  ballSpeed: 13
-  ballCarry: 0.4
-  ballArcHeight: 0.6
-  recoilDistance: 0.12
-  recoilRecover: 0.18
-  ballMesh: {fileID: 4300000, guid: 101d6390e801c432a962b7c3857bc70c, type: 2}
-  ballMaterial: {fileID: 2100000, guid: 2db23736310b54d6f8553ffb0fc44d62, type: 2}
-  ballScale: 0.26
-  ballTrailMaterial: {fileID: 2100000, guid: 6156864fd92bbbe4a8de00c0f5f01ebf, type: 2}
-  ballTrailTime: 0.4
-  ballTrailWidth: 0.16
-  impactSplashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
-  impactSplashScale: 0.45
-  hitRadius: 1.4
-  onFire:
-    m_PersistentCalls:
-      m_Calls: []
-  onImpact:
-    m_PersistentCalls:
-      m_Calls: []
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &5022219491121583646
 GameObject:
   m_ObjectHideFlags: 0

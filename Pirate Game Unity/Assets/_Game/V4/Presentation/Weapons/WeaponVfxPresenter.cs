@@ -192,6 +192,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             TickSinking(dt);
             TickCoins(dt);
             TickPulses(dt);
+            TickLobs(dt); // Hackathon art pass: the ink pots in flight (WeaponVfxPresenter.Lobs.cs)
             for (var i = _timed.Count - 1; i >= 0; i--)
             {
                 var t = _timed[i];
@@ -498,6 +499,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         public void AreaTelegraph(Vector3 position, float radius)
         {
             if (_settings == null) return;
+            TryLob(position, MortarWindupSeconds); // Hackathon art pass: the aimed weapon's lob model, if it has one
             position.y = 0.15f;
             var scale = MortarTelegraphScaleForRadius(radius, _settings.mortarTelegraphScale);
             var lifetime = MortarWindupSeconds + 0.12f;
@@ -518,6 +520,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>The timed landing ring (R-27 fix: it fills over the shell's real delay), drawn by the hazard ring presenter.</summary>
         public void TimedRing(Vector3 position, float radius, float seconds)
         {
+            TryLob(position, seconds); // Hackathon art pass: the aimed weapon's lob model (the ink pot), landing with the shell
             if (HazardRings != null) HazardRings.ShowTimedRing(position, radius, seconds);
         }
 
@@ -691,7 +694,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
             // Playtest (3 Oct, owner): a cannon asset standing in for a summon (the parrots' cannonball, the monkeys'
             // cannon barrel) is drawn as the weapon's coloured placeholder instead.
-            var model = config != null ? WeaponPlaceholderModels.Summon(config.visual.placeholderLook, config.visual.summonModel, _pools != null ? _pools.Staging : null) : null;
+            var model = config != null ? WeaponPlaceholderModels.Summon(config.visual.placeholderLook, config.visual.summonModel, _pools != null ? _pools.Staging : null, _settings) : null;
             if (model == null) return SkiffSpawned(position, forward);
             forward.y = 0f;
             if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
@@ -771,12 +774,14 @@ namespace RoguePirates.V4.Presentation.Weapons
             foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
             _orbitModels.Clear();
             ClearMaces();
+            ClearLobs();
         }
 
         void OnDestroy()
         {
             Clear();
             if (_pulseMaterial != null) Destroy(_pulseMaterial);
+            if (_linkMaterial != null) Destroy(_linkMaterial); // Hackathon art pass: the chain links' instancing copy
         }
 
         // ---- Orbit blades ---------------------------------------------------------------------------------------
@@ -895,7 +900,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             {
                 var slot = slots[s];
                 if (slot == null || slot.Config == null || slot.Config.behavior != ConfigEnums.WeaponBehavior.Orbit) continue;
-                var model = WeaponPlaceholderModels.Orbit(slot.Config.visual.placeholderLook, slot.Config.visual.orbitModel, _pools != null ? _pools.Staging : null); // Playtest (3 Oct, owner)
+                var model = WeaponPlaceholderModels.Orbit(slot.Config.visual.placeholderLook, slot.Config.visual.orbitModel, _pools != null ? _pools.Staging : null, _settings); // Playtest (3 Oct, owner)
                 if (model == null) continue;
                 var hits = _weapons.OrbitHitsOf(slot);
                 if (hits == null || hits.Count == 0) continue; // paused: they stay where they are
@@ -1133,16 +1138,17 @@ namespace RoguePirates.V4.Presentation.Weapons
             {
                 if (w?.visual == null) continue;
                 var staging = _pools.Staging;
-                var orbitModel = WeaponPlaceholderModels.Orbit(w.visual.placeholderLook, w.visual.orbitModel, staging); // Playtest (3 Oct, owner)
+                var orbitModel = WeaponPlaceholderModels.Orbit(w.visual.placeholderLook, w.visual.orbitModel, staging, _settings); // Playtest (3 Oct, owner)
                 if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && orbitModel != null)
                 {
                     var need = 2 * Mathf.Max(1, w.orbit.baseBlades) * Mathf.Max(1, w.orbit.beamSegments) + 2;
                     orbit[orbitModel] = orbit.TryGetValue(orbitModel, out var n) ? Mathf.Max(n, need) : need;
                 }
                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
-                    EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
+                    EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging, _settings), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
                 if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _), CoinsPerStrike * 8); // Hackathon: a chain of strikes
                 if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace) PrewarmMaces(Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
+                PrewarmLob(w.weaponId); // Hackathon art pass: a lob model (the ink pot) is pooled before the run
             }
             foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
         }

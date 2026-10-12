@@ -170,6 +170,7 @@ MonoBehaviour:
   barrelVerticalScale: 0.75
   pickupWaterSurfaceY: 0
   barrelSubmergedFraction: 0.15
+  barrelSparkles: 0
   xpBarrelPickupScale: 1.05
   xpFlyingGemScale: 0.6375
   infamyColor: {r: 0.2, g: 0.95, b: 1, a: 1}
@@ -209,6 +210,58 @@ MonoBehaviour:
   vfxGraphFallbackPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   vfxGraphFallbackScale: 3
   mobileHudEdgeMargin: 0.035
+  enemyArtModels:
+  - enemyId: boarding_barge
+    model: {fileID: 7916550590683555807, guid: 566bfebeb9fe4b84185ac11e55b1f54c, type: 3}
+  - enemyId: bomb_ketch
+    model: {fileID: 6282039350857139025, guid: f486cb76234b46b45b5057d22d155f98, type: 3}
+  - enemyId: cutthroat_skiff
+    model: {fileID: 9036837326585693491, guid: 196ba33422c9c2a4b9814f93057b5a4d, type: 3}
+  - enemyId: deckhand_dinghy
+    model: {fileID: 2822556608512148171, guid: c2e8c5125f092e243840a0dd8905956b, type: 3}
+  - enemyId: drowned_harrier
+    model: {fileID: 7071181979564009114, guid: 64d56023baa97f2418b7a58169a7e411, type: 3}
+  - enemyId: drowned_pursuer
+    model: {fileID: 6738500363682127243, guid: e7e6cc810a4b57442957ae9230212cd8, type: 3}
+  - enemyId: gunner_cog
+    model: {fileID: 1616686578783924500, guid: 4ddc0a4341b36c646bdd021edf0c31ff, type: 3}
+  - enemyId: needle_sloop
+    model: {fileID: 8612718581059802316, guid: e0cfc016d8960a74db67c272117d281c, type: 3}
+  - enemyId: net_cutter
+    model: {fileID: 809441280416291724, guid: c959514f531b47c4cae12a6d14e93c67, type: 3}
+  - enemyId: powder_barge
+    model: {fileID: 6500268297341119898, guid: 01061c81db876184096bb5632351f59f, type: 3}
+  - enemyId: ram_raider
+    model: {fileID: 3517520600991370507, guid: 39cc99376a1b63e40af0ff81bac15d25, type: 3}
+  - enemyId: repair_tender
+    model: {fileID: 8166148981548844619, guid: 9c481db412da8874a8698ca2222eb7d6, type: 3}
+  - enemyId: shield_frigate
+    model: {fileID: 4704201698063328920, guid: 5e84541b8b990234fac3ed4abb94d0c6, type: 3}
+  - enemyId: elite_hammerhead
+    model: {fileID: 1124763297115316911, guid: 40563a9d211053e4ab8411c80a9c7bda, type: 3}
+  - enemyId: elite_kraken_spawn
+    model: {fileID: 636850794098053522, guid: 689a435967bd8474a855c76af13a5338, type: 3}
+  weaponArtModels:
+  - weaponId: chainshot
+    projectileModel: {fileID: 3517796911559959033, guid: 55b995c1442ac56488bf39d745ce1db1, type: 3}
+    projectileScale: 1.8
+    lobModel: {fileID: 0}
+    lobScale: 1
+    lobArcHeight: 5
+    lobPrewarm: 6
+  - weaponId: squid_ink_pots
+    projectileModel: {fileID: 0}
+    projectileScale: 1
+    lobModel: {fileID: 8777761438978319073, guid: b7c23a451d78a464db2a0504e68ee04c, type: 3}
+    lobScale: 1.6
+    lobArcHeight: 5
+    lobPrewarm: 8
+  maceArtModel: {fileID: 7327257062731971526, guid: b56b0f4f55b39b94fb367a22233a08fe, type: 3}
+  maceChainLinkModel: {fileID: 4759975526659659605, guid: cd191fbea2630c94fbd95e0edc77fda8, type: 3}
+  maceChainLinkSpacing: 0.34
+  lanternArtModel: {fileID: 7354813063047134523, guid: a446c0e9266b0394f9da9808c98e6bb7, type: 3}
+  parrotArtModel: {fileID: 1489545702341141883, guid: a789721c353e3874780fe5d38db49e2e, type: 3}
+  monkeyArtModel: {fileID: 2983249407123813491, guid: a80e4880ddf1edd45ac22f7c3c0e2ea4, type: 3}
   playerDamageFlashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   playerDamageFlashDuration: 0.12
   damageHighlightDuration: 0.14

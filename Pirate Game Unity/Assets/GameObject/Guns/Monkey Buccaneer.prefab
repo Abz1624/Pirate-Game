@@ -73,7 +73,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6074495787392659654}
-  - component: {fileID: 910686523458485381}
   m_Layer: 0
   m_Name: Monkey Buccaneer
   m_TagString: Untagged
@@ -97,49 +96,6 @@ Transform:
   - {fileID: 5829178121330401031}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &910686523458485381
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7795487453679357628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5c4efbe49f9a47acbda2ad50e9dd72c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.MonkeyBuccaneerVfx
-  visuals: {fileID: 5829178121330401031}
-  muzzle: {fileID: 2867482404555946256}
-  surfaceOnStart: 1
-  surfaceTime: 0.45
-  surfaceDepth: 0.9
-  sailInCircle: 0
-  circleRadius: 6.5
-  circleSpeed: 0.55
-  bobHeight: 0.06
-  bobSpeed: 2.1
-  rollDegrees: 3
-  autoFire: 1
-  cooldown: 0.6
-  range: 10
-  manualTarget: {fileID: 0}
-  targetTag: Enemy
-  spawnDummyTargets: 1
-  dummyCount: 1
-  dummyDistance: 7
-  turnSpeed: 600
-  projectilePrefab: {fileID: 7836255817071307116, guid: 00e79e7cf55e34082a44dbce82256ab6, type: 3}
-  projectileScale: 0.3
-  shotColor: {r: 1, g: 0.55, b: 0.15, a: 1}
-  projectileSpeed: 16
-  arcHeight: 0.8
-  muzzleVfxPrefab: {fileID: 1709254077376921, guid: ef74f398500e2b94591b4c8d63afe328, type: 3}
-  muzzleScale: 0.7
-  impactVfxPrefab: {fileID: 5021453304944166231, guid: ef5eb902e84e07b47b07fabe204d36a1, type: 3}
-  impactScale: 0.6
-  recoilDistance: 0.45
-  recoilPitch: 9
 --- !u!1001 &7598630135246952621
 PrefabInstance:
   m_ObjectHideFlags: 0

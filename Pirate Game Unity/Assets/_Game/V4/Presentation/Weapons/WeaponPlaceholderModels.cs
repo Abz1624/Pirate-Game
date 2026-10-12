@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Foundation.Data;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -27,10 +28,13 @@ namespace RoguePirates.V4.Presentation.Weapons
         public static bool IsCannonStandIn(GameObject model) =>
             model == null || model.name.IndexOf("Cannon", StringComparison.OrdinalIgnoreCase) >= 0;
 
-        /// <summary>The summon model to draw: the placeholder when the data's model is a cannon stand-in, else the data's.</summary>
-        public static GameObject Summon(WeaponPlaceholderLook look, GameObject dataModel, Transform staging)
+        /// <summary>The summon model to draw: the placeholder when the data's model is a cannon stand-in, else the data's.
+        /// Hackathon (12 Oct): the art team's parrot or monkey buccaneer (<paramref name="art"/>) before the coloured stand-in.</summary>
+        public static GameObject Summon(WeaponPlaceholderLook look, GameObject dataModel, Transform staging, DemoJuiceSettings art = null)
         {
             if (!IsCannonStandIn(dataModel)) return dataModel;
+            if (art != null && look == WeaponPlaceholderLook.Parrots && art.parrotArtModel != null) return art.parrotArtModel;
+            if (art != null && look == WeaponPlaceholderLook.MonkeyGunners && art.monkeyArtModel != null) return art.monkeyArtModel;
             return look switch
             {
                 WeaponPlaceholderLook.Parrots => Get("Placeholder_Parrot", BuildParrot, staging),
@@ -39,10 +43,12 @@ namespace RoguePirates.V4.Presentation.Weapons
             };
         }
 
-        /// <summary>The orbit model to draw: the placeholder when the data's model is a cannon stand-in, else the data's.</summary>
-        public static GameObject Orbit(WeaponPlaceholderLook look, GameObject dataModel, Transform staging)
+        /// <summary>The orbit model to draw: the placeholder when the data's model is a cannon stand-in, else the data's.
+        /// Hackathon (12 Oct): the art team's lantern (<paramref name="art"/>) before the coloured stand-in.</summary>
+        public static GameObject Orbit(WeaponPlaceholderLook look, GameObject dataModel, Transform staging, DemoJuiceSettings art = null)
         {
             if (dataModel == null || !IsCannonStandIn(dataModel)) return dataModel; // no model: drawn as cutlass blades
+            if (art != null && look == WeaponPlaceholderLook.Lanterns && art.lanternArtModel != null) return art.lanternArtModel;
             return look switch
             {
                 WeaponPlaceholderLook.Anchors => Get("Placeholder_Anchor", BuildAnchor, staging),
@@ -63,8 +69,10 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>A gold coin (the Cursed Doubloons' strike).</summary>
         public static GameObject Coin(Transform staging) => Get("Placeholder_Doubloon", BuildCoin, staging);
 
-        /// <summary>Hackathon (12 Oct): a spiked iron ball (the Anchor Flail's chained mace).</summary>
-        public static GameObject Mace(Transform staging) => Get("Placeholder_Mace", BuildMace, staging);
+        /// <summary>Hackathon (12 Oct): a spiked iron ball (the Anchor Flail's chained mace), or the art team's anchor
+        /// (<paramref name="art"/>) when set.</summary>
+        public static GameObject Mace(Transform staging, DemoJuiceSettings art = null) =>
+            art != null && art.maceArtModel != null ? art.maceArtModel : Get("Placeholder_Mace", BuildMace, staging);
 
         static GameObject Get(string name, Func<GameObject> build, Transform staging)
         {

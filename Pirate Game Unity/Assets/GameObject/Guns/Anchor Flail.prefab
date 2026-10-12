@@ -14977,7 +14977,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1714955805282299866}
-  - component: {fileID: 1066780960208400659}
   m_Layer: 0
   m_Name: Anchor_SternPort
   m_TagString: Untagged
@@ -15003,68 +15002,6 @@ Transform:
   - {fileID: 72430399931482338}
   m_Father: {fileID: 5954950466891773752}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1066780960208400659
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3106322071950426426}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26f6bcdfac02246cfa9c6064cb71cdcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.AnchorFlailVfx
-  anchor: {fileID: 5916229985159334777}
-  chainAttach: {fileID: 1193917985506524075}
-  chainOrigin: {fileID: 4777646335076536150}
-  linkMesh: {fileID: 4300000, guid: ba7ceeaaef2934b96a20bd808c6d73af, type: 2}
-  linkGlowMesh: {fileID: 4300000, guid: 30b7c7f05228b48ac9059bc97105bab8, type: 2}
-  linkMaterial: {fileID: 2100000, guid: a4d2220a19bd44fbcb74dedc9a66bce2, type: 2}
-  linkGlowMaterial: {fileID: 2100000, guid: f444c828bd86949de9dd0072d79e8ccb, type: 2}
-  hitSparks: {fileID: 6904486127611772855}
-  hitRing: {fileID: 2466844847473499890}
-  lashTrail: {fileID: 291781384046574184}
-  autoFire: 1
-  cooldown: 1.9
-  range: 9
-  targetTag: Enemy
-  fireWithoutTargets: 1
-  targetHeightOffset: 0.4
-  overshoot: 0.8
-  useSector: 1
-  sectorLocalDir: {x: -1, y: 0, z: -1}
-  sectorHalfAngle: 50
-  fireDelay: 0.3
-  windupTime: 0
-  windupPullback: 24
-  extendTime: 0.46
-  impactTime: 0.24
-  impactSettle: 0.35
-  retractTime: 0.4
-  sweepWidth: 2.2
-  whipBend: 0.8
-  whipLift: 0.5
-  lashRoll: 30
-  impactPunch: 0.2
-  hitRadius: 1.3
-  sparksPerHit: 6
-  restLocalPosition: {x: -1.45, y: 0.4, z: -0.75}
-  restLocalForward: {x: -0.3, y: -0.5, z: 1}
-  restLocalUp: {x: -1, y: 0.8, z: 0}
-  restSwayDegrees: 6
-  restSag: 0.2
-  hideWhenIdle: 1
-  emergePortion: 0.25
-  linkPitch: 0.2
-  linkScale: 0.99
-  maxLinks: 120
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
-  onStrike:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &3228535146390785636
 GameObject:
   m_ObjectHideFlags: 0
@@ -20119,7 +20056,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 649215336775287397}
-  - component: {fileID: 6742562874132397406}
   m_Layer: 0
   m_Name: Anchor_SternStarboard
   m_TagString: Untagged
@@ -20145,68 +20081,6 @@ Transform:
   - {fileID: 688078541225270714}
   m_Father: {fileID: 5954950466891773752}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6742562874132397406
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3565433126934746540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26f6bcdfac02246cfa9c6064cb71cdcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.AnchorFlailVfx
-  anchor: {fileID: 6488255573244170609}
-  chainAttach: {fileID: 5284928216385784357}
-  chainOrigin: {fileID: 3277034377239344564}
-  linkMesh: {fileID: 4300000, guid: ba7ceeaaef2934b96a20bd808c6d73af, type: 2}
-  linkGlowMesh: {fileID: 4300000, guid: 30b7c7f05228b48ac9059bc97105bab8, type: 2}
-  linkMaterial: {fileID: 2100000, guid: a4d2220a19bd44fbcb74dedc9a66bce2, type: 2}
-  linkGlowMaterial: {fileID: 2100000, guid: f444c828bd86949de9dd0072d79e8ccb, type: 2}
-  hitSparks: {fileID: 7537822259344265169}
-  hitRing: {fileID: 8843824581223572329}
-  lashTrail: {fileID: 4342794174270934206}
-  autoFire: 1
-  cooldown: 1.9
-  range: 9
-  targetTag: Enemy
-  fireWithoutTargets: 1
-  targetHeightOffset: 0.4
-  overshoot: 0.8
-  useSector: 1
-  sectorLocalDir: {x: 1, y: 0, z: -1}
-  sectorHalfAngle: 50
-  fireDelay: 0.15
-  windupTime: 0
-  windupPullback: 24
-  extendTime: 0.46
-  impactTime: 0.24
-  impactSettle: 0.35
-  retractTime: 0.4
-  sweepWidth: 2.2
-  whipBend: 0.8
-  whipLift: 0.5
-  lashRoll: 30
-  impactPunch: 0.2
-  hitRadius: 1.3
-  sparksPerHit: 6
-  restLocalPosition: {x: 1.45, y: 0.4, z: -0.75}
-  restLocalForward: {x: 0.3, y: -0.5, z: 1}
-  restLocalUp: {x: 1, y: 0.8, z: 0}
-  restSwayDegrees: 6
-  restSag: 0.2
-  hideWhenIdle: 1
-  emergePortion: 0.25
-  linkPitch: 0.2
-  linkScale: 0.99
-  maxLinks: 120
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
-  onStrike:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &4376014352869672311
 GameObject:
   m_ObjectHideFlags: 0
@@ -25594,7 +25468,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 134053746285743286}
-  - component: {fileID: 2286128840122829005}
   m_Layer: 0
   m_Name: Anchor_BowStarboard
   m_TagString: Untagged
@@ -25620,68 +25493,6 @@ Transform:
   - {fileID: 8550232791302601425}
   m_Father: {fileID: 5954950466891773752}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2286128840122829005
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6199241563748902398}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26f6bcdfac02246cfa9c6064cb71cdcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.AnchorFlailVfx
-  anchor: {fileID: 6708612695770790235}
-  chainAttach: {fileID: 1489584369033524970}
-  chainOrigin: {fileID: 3727624572833770966}
-  linkMesh: {fileID: 4300000, guid: ba7ceeaaef2934b96a20bd808c6d73af, type: 2}
-  linkGlowMesh: {fileID: 4300000, guid: 30b7c7f05228b48ac9059bc97105bab8, type: 2}
-  linkMaterial: {fileID: 2100000, guid: a4d2220a19bd44fbcb74dedc9a66bce2, type: 2}
-  linkGlowMaterial: {fileID: 2100000, guid: f444c828bd86949de9dd0072d79e8ccb, type: 2}
-  hitSparks: {fileID: 5900184982587788768}
-  hitRing: {fileID: 7871721322263875380}
-  lashTrail: {fileID: 8543504020265435220}
-  autoFire: 1
-  cooldown: 1.9
-  range: 9
-  targetTag: Enemy
-  fireWithoutTargets: 1
-  targetHeightOffset: 0.4
-  overshoot: 0.8
-  useSector: 1
-  sectorLocalDir: {x: 1, y: 0, z: 1}
-  sectorHalfAngle: 50
-  fireDelay: 0
-  windupTime: 0
-  windupPullback: 24
-  extendTime: 0.46
-  impactTime: 0.24
-  impactSettle: 0.35
-  retractTime: 0.4
-  sweepWidth: 2.2
-  whipBend: 0.8
-  whipLift: 0.5
-  lashRoll: 30
-  impactPunch: 0.2
-  hitRadius: 1.3
-  sparksPerHit: 6
-  restLocalPosition: {x: 1.4, y: 0.35, z: 0.35}
-  restLocalForward: {x: 0.3, y: -0.5, z: -1}
-  restLocalUp: {x: 1, y: 0.8, z: 0}
-  restSwayDegrees: 6
-  restSag: 0.2
-  hideWhenIdle: 1
-  emergePortion: 0.25
-  linkPitch: 0.2
-  linkScale: 0.99
-  maxLinks: 120
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
-  onStrike:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &6288040086736134148
 GameObject:
   m_ObjectHideFlags: 0
@@ -25781,7 +25592,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6458644528001187147}
-  - component: {fileID: 5022230232460871746}
   m_Layer: 0
   m_Name: Anchor_BowPort
   m_TagString: Untagged
@@ -25807,68 +25617,6 @@ Transform:
   - {fileID: 5260327801241866353}
   m_Father: {fileID: 5954950466891773752}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5022230232460871746
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6336708438523351173}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26f6bcdfac02246cfa9c6064cb71cdcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.AnchorFlailVfx
-  anchor: {fileID: 4861747623616500391}
-  chainAttach: {fileID: 3222064839902974943}
-  chainOrigin: {fileID: 3488557219821814727}
-  linkMesh: {fileID: 4300000, guid: ba7ceeaaef2934b96a20bd808c6d73af, type: 2}
-  linkGlowMesh: {fileID: 4300000, guid: 30b7c7f05228b48ac9059bc97105bab8, type: 2}
-  linkMaterial: {fileID: 2100000, guid: a4d2220a19bd44fbcb74dedc9a66bce2, type: 2}
-  linkGlowMaterial: {fileID: 2100000, guid: f444c828bd86949de9dd0072d79e8ccb, type: 2}
-  hitSparks: {fileID: 1802073297261001546}
-  hitRing: {fileID: 7444812312911537274}
-  lashTrail: {fileID: 4284024949068923211}
-  autoFire: 1
-  cooldown: 1.9
-  range: 9
-  targetTag: Enemy
-  fireWithoutTargets: 1
-  targetHeightOffset: 0.4
-  overshoot: 0.8
-  useSector: 1
-  sectorLocalDir: {x: -1, y: 0, z: 1}
-  sectorHalfAngle: 50
-  fireDelay: 0.45
-  windupTime: 0
-  windupPullback: 24
-  extendTime: 0.46
-  impactTime: 0.24
-  impactSettle: 0.35
-  retractTime: 0.4
-  sweepWidth: 2.2
-  whipBend: 0.8
-  whipLift: 0.5
-  lashRoll: 30
-  impactPunch: 0.2
-  hitRadius: 1.3
-  sparksPerHit: 6
-  restLocalPosition: {x: -1.4, y: 0.35, z: 0.35}
-  restLocalForward: {x: -0.3, y: -0.5, z: -1}
-  restLocalUp: {x: -1, y: 0.8, z: 0}
-  restSwayDegrees: 6
-  restSag: 0.2
-  hideWhenIdle: 1
-  emergePortion: 0.25
-  linkPitch: 0.2
-  linkScale: 0.99
-  maxLinks: 120
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
-  onStrike:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &6386383603645404018
 GameObject:
   m_ObjectHideFlags: 0

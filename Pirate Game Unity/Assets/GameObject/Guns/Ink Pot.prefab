@@ -99,7 +99,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 474323137752794586}
-  - component: {fileID: 6253251934140901825}
   m_Layer: 0
   m_Name: Ink Pot
   m_TagString: Untagged
@@ -126,95 +125,6 @@ Transform:
   - {fileID: 8949646699621846920}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6253251934140901825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1271767630443563417}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a93e30e5a7f5849359eef01527eaff43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.InkPotVfx
-  launcher: {fileID: 487584975638773451}
-  shotRoot: {fileID: 7224478260487768214}
-  pot: {fileID: 3570275801932949299}
-  shards:
-  - {fileID: 6043287842781539441}
-  - {fileID: 8890686951392309856}
-  - {fileID: 1497884564744330374}
-  - {fileID: 2874388226521536148}
-  cork: {fileID: 8252119864940342987}
-  inkSpill: {fileID: 2053118339706598555}
-  splash: {fileID: 178507150143877043}
-  slick: {fileID: 5388595243205006946}
-  editorPreview: {fileID: 6715668535568499753}
-  autoFire: 1
-  cooldown: 3
-  range: 15
-  targetTag: Enemy
-  manualTarget: {fileID: 0}
-  fireWithoutTargets: 1
-  previewDistance: 8
-  waterHeight: 0
-  potScale: 0.9
-  flightTime: 0.95
-  arcHeight: 4.5
-  burstHeight: 1.1
-  rockDegrees: 26
-  spinSpeed: 240
-  playbackSpeed: 1
-  burstDuration: 0.95
-  corkSpeed: 5
-  corkSpin: 900
-  shardSpeed: 1.6
-  shardOpenDegrees: 65
-  spillGrowTime: 0.16
-  slickDelay: 0.3
-  poolRadius: 1.8
-  rimWidth: 0.12
-  poolDuration: 3.5
-  fadeTime: 0.6
-  spreadTime: 0.35
-  edgeWobble: 0
-  inkColor: {r: 0.012, g: 0.006, b: 0.02, a: 1}
-  rimColor: {r: 0.62, g: 0.3, b: 1, a: 1}
-  sheenColor: {r: 0.22, g: 0.08, b: 0.38, a: 1}
-  sheenStrength: 0.2
-  rimPulseSpeed: 5
-  rimPulseAmount: 0.5
-  waterRings: 1
-  ringAlpha: 0.6
-  ringSpeed: 0.55
-  snapToSurface: 1
-  surfaceMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  maxDropDistance: 40
-  alignToSurface: 1
-  surfaceLift: 0.03
-  applyDamage: 1
-  impactDamage: 20
-  impactRadius: 2
-  tickDamage: 5
-  tickInterval: 0.5
-  heroPose: 0
-  heroTime: 0.3
-  heroSpin: 18
-  onLaunch:
-    m_PersistentCalls:
-      m_Calls: []
-  onBurst:
-    m_PersistentCalls:
-      m_Calls: []
-  onSlickEnd:
-    m_PersistentCalls:
-      m_Calls: []
-  onHit:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &1553425701741431274
 GameObject:
   m_ObjectHideFlags: 0

@@ -59,6 +59,15 @@ namespace RoguePirates.V4.Presentation.Weapons
                 scale *= profile.ScaleOrOne;
                 if (profile.useTint) color = profile.tint;
             }
+            // Hackathon art pass (12 Oct): the art team's projectile model for this weapon (the chainshot), in its own
+            // colours; prewarmed by the pool catalog with the weapon's other projectile views.
+            var art = ArtProjectile(_settings, weaponId);
+            if (art != null)
+            {
+                prefab = art.projectileModel;
+                scale *= art.projectileScale;
+                placeholder = art.projectileModel;
+            }
 
             var key = KeyFor(prefab);
             if (key == null) return -1;
@@ -114,6 +123,13 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         ProjectileVisual VisualOf(string weaponId) => ConfigOf(weaponId)?.projectileVisual;
+
+        /// <summary>Hackathon art pass: the art team's projectile model for a weapon (null: none).</summary>
+        public static ArtWeaponModel ArtProjectile(DemoJuiceSettings settings, string weaponId)
+        {
+            var art = settings != null ? settings.WeaponArt(weaponId) : null;
+            return art != null && art.projectileModel != null ? art : null;
+        }
 
         WeaponConfig ConfigOf(string weaponId)
         {

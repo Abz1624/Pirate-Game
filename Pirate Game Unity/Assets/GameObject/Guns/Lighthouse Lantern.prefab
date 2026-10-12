@@ -15043,7 +15043,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5804565105486325031}
-  - component: {fileID: 3978883443416115084}
   m_Layer: 0
   m_Name: Lighthouse Lantern
   m_TagString: Untagged
@@ -15071,69 +15070,6 @@ Transform:
   - {fileID: 4423354703009614832}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3978883443416115084
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8420864243745542992}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d0d41605ae474dbe9e4267c07265e8c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.LighthouseLanternVfx
-  lanternHead: {fileID: 5234118182005243284}
-  lightSource: {fileID: 7908367731719796698}
-  glassRenderer: {fileID: 6313720279774918939}
-  beamMaterial: {fileID: 2100000, guid: b7a47ede02c1946f4a6f1ec36ec55076, type: 2}
-  trailMaterial: {fileID: 2100000, guid: f612c4b707a7f4db59f3bef5e1200b26, type: 2}
-  sweepMaterial: {fileID: 2100000, guid: 0a9ff9d54aca7468ab4948f96e1c0491, type: 2}
-  burnPuff: {fileID: 2078292929838741473}
-  burnRing: {fileID: 4092998391745237255}
-  range: 11
-  beamAngle: 37.7
-  rotationSpeed: 94.2
-  beamHeight: -2.83
-  originHalfWidth: 0.12
-  coreWidth: 0.169
-  beamAlpha: 1
-  endBrightness: 0.24
-  beamSegments: 4
-  volumeCone: {fileID: 3035981742215061077}
-  volumeLight: {fileID: 1839802214865607571}
-  volumeColor: {r: 1, g: 0.525, b: 0, a: 0.039}
-  volumeOpacity: 2.34
-  volumeLightIntensity: 7.07
-  nearRadius: 0.32
-  haloAlpha: 0.465
-  trailDegrees: 170
-  trailWidth: 1
-  trailAlpha: 0.47
-  trailStartOffset: -6.9
-  trailFadeIn: 17.1
-  trailFalloff: 1.78
-  sweepDegrees: 0
-  sweepAlpha: 0
-  targetTag: Enemy
-  burnInterval: 0.53
-  targetRadius: 0.8
-  guaranteeFullTurn: 1
-  applyDamage: 1
-  damagePerBurn: 12
-  puffParticles: 6
-  tintTargets: 1
-  burnTint: {r: 1, g: 0.42, b: 0.1, a: 0}
-  tintTime: 0.64
-  afterburnTime: 0.8
-  afterburnRate: 12
-  destroyOnKill: 1
-  killDelay: 0.25
-  glassEmission: {r: 1, g: 0.76, b: 0.32, a: 0}
-  flicker: 0
-  onBurn:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1001 &7681522370148756440
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15267,16 +15203,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 109bee5ac5be34a44942f8301b49d6f5, type: 3}
---- !u!108 &1839802214865607571 stripped
-Light:
-  m_CorrespondingSourceObject: {fileID: 8291819298366976075, guid: 109bee5ac5be34a44942f8301b49d6f5, type: 3}
-  m_PrefabInstance: {fileID: 7681522370148756440}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &3035981742215061077 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4664540274794575245, guid: 109bee5ac5be34a44942f8301b49d6f5, type: 3}
-  m_PrefabInstance: {fileID: 7681522370148756440}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5579972401725728461 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2876169244489714965, guid: 109bee5ac5be34a44942f8301b49d6f5, type: 3}

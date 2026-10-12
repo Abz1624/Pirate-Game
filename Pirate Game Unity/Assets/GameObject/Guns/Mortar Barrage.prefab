@@ -71,7 +71,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 316348249146250584}
-  - component: {fileID: 6043813481020356459}
   m_Layer: 0
   m_Name: Mortar Barrage
   m_TagString: Untagged
@@ -96,42 +95,3 @@ Transform:
   - {fileID: 399614100458091476}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6043813481020356459
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5962428385890997968}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 812ba014190f34fdaac3653cdf97c206, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.MortarBarrageEmitter
-  launchPoint: {fileID: 8701581355726409781}
-  target: {fileID: 399614100458091476}
-  shellPrefab: {fileID: 8537944227872499987, guid: f13774702c98b4a66ac0908d6d8c25fd, type: 3}
-  muzzlePrefab: {fileID: 6563362374715958635, guid: c389fca1f30d84202bfba47869b2ba55, type: 3}
-  impactPrefab: {fileID: 5021453304944166231, guid: a70395ad4d0003a4aa01336fb1c4bc2b, type: 3}
-  splashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
-  telegraphPrefab: {fileID: 4121415595090070111, guid: a34c16df173f24485b2f792c1acaa553, type: 3}
-  shellCount: 3
-  flightSeconds: 1.5
-  launchWindow: 0.45
-  landingSpread: 0.5
-  blastRadius: 7
-  scatter: 1
-  deckSpread: 0.9
-  muzzleEvery: 2
-  shellScale: 1
-  muzzleScale: 1
-  impactScale: 0.45
-  splashScale: 0.85
-  impactHeight: 0.2
-  showTelegraph: 1
-  telegraphColor: {r: 0.92, g: 0.12, b: 0.08, a: 1}
-  telegraphSaturation: 0.19
-  telegraphAlpha: 0.21
-  autoFire: 1
-  autoFireInterval: 2.5
-  fireOnSpace: 1

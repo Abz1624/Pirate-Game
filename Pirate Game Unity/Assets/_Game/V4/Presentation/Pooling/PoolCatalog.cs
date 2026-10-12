@@ -61,7 +61,8 @@ namespace RoguePirates.V4.Presentation.Pooling
             foreach (var w in config.All<WeaponConfig>())
             {
                 if (w.behavior != ConfigEnums.WeaponBehavior.Projectile && w.behavior != ConfigEnums.WeaponBehavior.Fan) continue;
-                Add(w.projectileVisual != null && w.projectileVisual.prefab != null ? w.projectileVisual.prefab : settings != null ? settings.projectilePrefab : null, w.weaponId);
+                var art = Weapons.ProjectileViewPresenter.ArtProjectile(settings, w.weaponId); // Hackathon art pass
+                Add(art != null ? art.projectileModel : w.projectileVisual != null && w.projectileVisual.prefab != null ? w.projectileVisual.prefab : settings != null ? settings.projectilePrefab : null, w.weaponId);
             }
             foreach (var (model, ids) in models)
                 yield return new PoolDefinition(Weapons.ProjectileViewPresenter.KeyFor(model), model, catalog.projectileViewPrewarm, catalog.projectileViewCap,
@@ -75,18 +76,25 @@ namespace RoguePirates.V4.Presentation.Pooling
             var seen = new HashSet<string>();
             var timeline = config.All<WaveTimelineConfig>().FirstOrDefault();
             if (timeline == null) return found;
+            // Hackathon art pass (12 Oct): an enemy drawn with the art team's model is pooled (and prewarmed) as that model.
+            var art = Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings");
+            GameObject Model(string id, GameObject configModel)
+            {
+                var m = art != null ? art.EnemyArtModel(id) : null;
+                return m != null ? m : configModel;
+            }
 
             void AddArchetype(EnemyArchetypeConfig a)
             {
                 if (a == null || !seen.Add(a.enemyId)) return;
                 var r = EnemyStatResolver.Resolve(a);
-                found.Add((a.enemyId, r.visualPrefab, Prewarm(a, catalog)));
+                found.Add((a.enemyId, Model(a.enemyId, r.visualPrefab), Prewarm(a, catalog)));
             }
             void AddVariant(EnemyVariantConfig v)
             {
                 if (v == null || v.baseArchetype == null || !seen.Add(v.variantId)) return;
                 var r = EnemyStatResolver.Resolve(v);
-                found.Add((v.variantId, r.visualPrefab, Prewarm(v.baseArchetype, catalog)));
+                found.Add((v.variantId, Model(v.variantId, r.visualPrefab), Prewarm(v.baseArchetype, catalog)));
             }
 
             foreach (var phase in timeline.phases)

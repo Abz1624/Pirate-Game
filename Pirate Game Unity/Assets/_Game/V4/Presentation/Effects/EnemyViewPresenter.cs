@@ -105,13 +105,22 @@ namespace RoguePirates.V4.Presentation.Effects
         Transform CreateModel(EnemyDefinition def, Vector3 position, float scale, bool elite, int animationSeed)
         {
             if (def == null || _pools == null) return null;
-            var prefab = def.visualPrefab != null ? def.visualPrefab : EnemyVisualFallbackResolver.ResolvePrefab(def);
+            // Hackathon art pass (12 Oct): the art team's model for this enemy or variant id (juice settings), built to the
+            // config model's footprint, facing and water line; it keeps its own colours (each ship type has its own art).
+            var art = _juice != null ? _juice.EnemyArtModel(def.id) : null;
+            var prefab = art != null ? art : def.visualPrefab != null ? def.visualPrefab : EnemyVisualFallbackResolver.ResolvePrefab(def);
             if (prefab != null)
             {
                 var view = Acquire(prefab, position, Quaternion.Euler(0f, def.visualYawOffset, 0f));
                 if (view == null) return null;
                 view.localScale = Vector3.one * (scale * (def.viewSize > 0f ? def.viewSize : 1f));
                 _tint.Record(view); // its own materials, recorded on its first use (before any burn flash)
+                if (art != null)
+                {
+                    EnemyViewAnimation.ApplySpawnVariation(view, animationSeed);
+                    Profiles?.EnemyViewCreated(def.id, view);
+                    return view;
+                }
                 // V5 M3d: a variant's own colours (pooled views share models). Playtest (3 Oct, owner: "most of the ships
                 // were visually the same"): each ship type has its own colour on its sails and flags, and its hull leans
                 // towards it; a creature keeps its data tint. Playtest (3 Oct, owner, round 7): no masthead pennant ("a coloured
