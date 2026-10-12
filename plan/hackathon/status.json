@@ -1,7 +1,7 @@
 {
- "updated": "12 Oct, 08:56 IST",
+ "updated": "12 Oct, 10:28 IST",
  "deadline": "12 Oct, 18:00 IST",
- "headline": "Every demo feature works in the game against the live devnet server. Now building desktop WebGL and the Android APK.",
+ "headline": "Both builds are ready: desktop WebGL (served at localhost:8090) and the Android APK for Solana Mobile. Next: your test with Phantom and the phone, then the demo reset.",
  "features": [
   {
    "name": "Wallet login / sign-up (devnet)",
@@ -63,7 +63,7 @@
    "name": "Builds",
    "detail": "Desktop WebGL and Android APK (Solana Mobile); public build at the end.",
    "server": "n/a",
-   "unity": "building",
+   "unity": "done",
    "chain": "n/a"
   }
  ],
@@ -82,7 +82,7 @@
   ],
   [
    "16:00-17:30",
-   "WebGL desktop + Android APK (started 09:00); devnet end-to-end test with you"
+   "WebGL desktop + Android APK (done 09:4x); devnet end-to-end test with you"
   ],
   [
    "17:30-18:00",
@@ -90,6 +90,14 @@
   ]
  ],
  "needs": [
+  {
+   "done": false,
+   "text": "Test the desktop build in Chrome with Phantom (devnet): http://localhost:8090/"
+  },
+  {
+   "done": false,
+   "text": "Install the APK on the Solana Mobile device (USB + adb, or copy and side-load) and send me the phone wallet address for devnet SOL"
+  },
   {
    "done": true,
    "text": "Phantom on devnet in Chrome"
@@ -157,6 +165,10 @@
   [
    "08:56",
    "Game: islands (world map, claim with a real Island NFT, RUM collect, buildings, shield), raids vs Captain Marrow (a 0.01 SOL stake won and paid 0.02), island market (listed to escrow, cancelled back, two islands bought) all checked on devnet. EditMode 757/757. Builds started."
+  ],
+  [
+   "10:28",
+   "Builds done: desktop WebGL (120 MB download; menu loads, Connect Wallet opens the Phantom/Solflare chooser) and Android APK (148 MB, IL2CPP ARM64, Mobile Wallet Adapter included, debug key). No phone was connected, so the APK is not installed yet."
   ]
  ]
 }
