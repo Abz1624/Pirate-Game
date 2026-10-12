@@ -27,6 +27,12 @@ export default defineRailway(() => {
       ALLOWED_ORIGINS: preserve(),
       DATABASE_URL: preserve(),
       PLAY_URL: preserve(),
+      // Hackathon (12 Oct, devnet): treasury/escrow key, owner admin key, Solana RPC and sign-in domain.
+      TREASURY_SECRET_KEY: preserve(),
+      ADMIN_KEY: preserve(),
+      SOLANA_RPC_URL: preserve(),
+      SOLANA_CLUSTER: preserve(),
+      SIWS_DOMAIN: preserve(),
       // Match server tests (D26) add RP_MATCH_TICKET_SECRET, VOYAGE_SERVER_URL and VOYAGE_MATCH_ID here with preserve()
       // before setting them, and remove them again after the session (M9b's were removed on 11 Oct).
     },
