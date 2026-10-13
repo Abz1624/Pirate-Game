@@ -19,9 +19,11 @@ namespace RoguePirates.Hackathon.UI
     public sealed class DailyRacePanel : MonoBehaviour
     {
         RectTransform _list;
-        TextMeshProUGUI _sub, _me, _status;
+        TextMeshProUGUI _sub, _me, _status, _countdown, _best;
         Button _sail, _close;
         DailyRace _race;
+        DateTime? _closes;
+        float _nextTick;
         int _requests;
         readonly List<GameObject> _rows = new List<GameObject>();
 
@@ -33,51 +35,77 @@ namespace RoguePirates.Hackathon.UI
 
         public static DailyRacePanel Create(Transform canvas)
         {
-            var rt = HackUi.Panel(canvas, "HackathonDailyRace", new Vector2(0.1f, 0.06f), new Vector2(0.9f, 0.94f), 226);
+            var rt = HackUi.Panel(canvas, "HackathonDailyRace", new Vector2(0.02f, 0.02f), new Vector2(0.98f, 0.98f), 226);
+            rt.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
             var panel = rt.gameObject.AddComponent<DailyRacePanel>();
             panel.Build(rt);
             return panel;
         }
 
+        // Column widths shared by the header bar and the rows (0: the captain column takes the rest).
+        const float RankW = 140f, WalletW = 280f, TimeW = 190f, TriesW = 110f;
+
+        /// <summary>Hackathon UI (13 Oct): the owner's "Daily Race" mockup: a parchment scroll with the skull medallion, the
+        /// race clock, a wooden column bar, parchment rows with crowns for the top three, and your best with Set sail.</summary>
         void Build(RectTransform rt)
         {
-            var header = HackUi.TopStrip(rt, "Header", 16f, 80f);
-            HackUi.TextAt(header, "Title", "Daily island race", 44, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.44f, 1f), true);
-            HackUi.Button(header, "Refresh", Refresh, new Vector2(0.45f, 0.05f), new Vector2(0.62f, 0.95f));
-            _sail = HackUi.Button(header, "Set sail", SetSail, new Vector2(0.63f, 0.05f), new Vector2(0.81f, 0.95f));
-            _close = HackUi.Button(header, "Close", Close, new Vector2(0.82f, 0.05f), new Vector2(1f, 0.95f));
+            var c = BoardKit.ScrollSheet(rt);
 
-            var sub = HackUi.TopStrip(rt, "Sub", 104f, 64f);
-            _sub = HackUi.TextAt(sub, "Text", string.Empty, 25, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, Vector2.one);
+            // Header: medallion, title and goal, race clock, Refresh and Close.
+            BoardKit.Medallion(c, -6f, 0f, 116f);
+            BoardKit.Label(BoardKit.Strip(c, "Title", 122f, 2f, 820f, 66f), "DAILY RACE", 60f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, true, 36f);
+            _sub = BoardKit.Label(BoardKit.Strip(c, "Sub", 124f, 68f, 820f, 54f), string.Empty, 24f, BoardKit.InkDim, TextAlignmentOptions.TopLeft, false, 15f);
             _sub.textWrappingMode = TextWrappingModes.Normal;
-            _status = HackUi.StatusBar(rt, 174f, 48f);
 
-            var columns = HackUi.TopStrip(rt, "Columns", 230f, 44f, 32f);
-            var hl = columns.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hl.padding = new RectOffset(16, 12, 0, 0);
-            hl.spacing = 12f;
-            hl.childControlWidth = hl.childControlHeight = true;
-            hl.childForceExpandWidth = false;
-            Cells(columns, HackUi.Dim, 24, "#", "Captain", "Wallet", "Time", "Tries");
+            var clock = BoardKit.TopRight(c, "Clock", 412f, 4f, 390f, 114f);
+            BoardKit.Paint(clock, "Panel_Inset", 2f, new Color(0.93f, 0.86f, 0.72f, 1f));
+            BoardKit.Picture(BoardKit.TopLeft(clock, "Icon", 16f, 22f, 70f, 70f), "Icon_Clock", BoardKit.Ink);
+            BoardKit.Label(BoardKit.Strip(clock, "Caption", 100f, 8f, 10f, 26f), "RACE ENDS IN", 20f, BoardKit.InkDim, TextAlignmentOptions.MidlineLeft, true);
+            _countdown = BoardKit.Label(BoardKit.Strip(clock, "Countdown", 100f, 34f, 10f, 46f), "-", 40f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, true, 22f);
+            BoardKit.Label(BoardKit.Strip(clock, "Utc", 100f, 80f, 10f, 26f), "(00:00 UTC)", 20f, BoardKit.InkDim, TextAlignmentOptions.MidlineLeft);
 
-            var body = HackUi.Area(rt, "Body", Vector2.zero, Vector2.one, new Vector4(24f, 104f, 24f, 278f));
-            _list = HackUi.ScrollList(body, "Scroll", Vector4.zero);
+            BoardKit.KitButton(BoardKit.TopRight(c, "Refresh", 208f, 18f, 196f, 76f), "Refresh", "Icon_Refresh", Refresh, "Btn_Gold", 28f, 34f);
+            _close = BoardKit.KitButton(BoardKit.TopRight(c, "Close", 0f, 18f, 196f, 76f), "Close", "Icon_Close", Close, "Btn_Gold", 28f, 32f);
+            _status = BoardKit.Label(BoardKit.TopRight(c, "Status", 4f, 96f, 400f, 26f), string.Empty, 20f, BoardKit.InkDim, TextAlignmentOptions.MidlineRight, true);
 
-            var footer = HackUi.Area(rt, "Footer", Vector2.zero, new Vector2(1f, 0f), new Vector4(24f, 16f, 24f, 0f));
-            footer.offsetMax = new Vector2(-24f, 88f);
-            footer.gameObject.AddComponent<Image>().color = new Color(1f, 0.82f, 0.4f, 0.12f);
-            _me = HackUi.TextAt(footer, "Me", string.Empty, 28, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, Vector2.one);
-            _me.margin = new Vector4(20f, 0f, 20f, 0f);
+            // Column bar on wood.
+            var bar = BoardKit.Strip(c, "Columns", 0f, 132f, 22f, 56f);
+            BoardKit.Paint(bar, "Header_Wood", 1.6f, null, new Color(0.42f, 0.26f, 0.14f, 1f));
+            BoardKit.Columns(bar);
+            Cells(bar, BoardKit.OnWood, 26f, "#", "Captain", "Wallet", "Time", "Tries");
+
+            // The board.
+            var body = BoardKit.Fill(c, "Body", 0f, 118f, 0f, 194f);
+            _list = BoardKit.Scroll(body, 6f, new RectOffset(0, 0, 2, 4));
+
+            // Footer: your best, your rank and the last race, Set sail.
+            var foot = BoardKit.BottomStrip(c, "Footer", 0f, 0f, 0f, 108f);
+            BoardKit.Line(foot, 0f, 0f, 0f);
+            BoardKit.Picture(BoardKit.TopLeft(foot, "Trophy", 6f, 14f, 84f, 84f), "Icon_Trophy", BoardKit.InkGold);
+            BoardKit.Label(BoardKit.TopLeft(foot, "BestCaption", 100f, 14f, 230f, 28f), "YOUR BEST", 22f, BoardKit.InkDim, TextAlignmentOptions.MidlineLeft, true);
+            _best = BoardKit.Label(BoardKit.TopLeft(foot, "Best", 100f, 42f, 230f, 56f), "-", 46f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, true, 26f);
+            var divider = BoardKit.TopLeft(foot, "Divider", 340f, 20f, 3f, 72f).gameObject.AddComponent<Image>();
+            divider.color = new Color(0.45f, 0.3f, 0.15f, 0.5f);
+            divider.raycastTarget = false;
+            _me = BoardKit.Label(BoardKit.Strip(foot, "Me", 362f, 10f, 470f, 90f), string.Empty, 26f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
             _me.textWrappingMode = TextWrappingModes.Normal;
+            _sail = BoardKit.KitButton(BoardKit.TopRight(foot, "Set sail", 0f, 10f, 440f, 92f), "SET SAIL", "Icon_Ship_Wheel", SetSail, "Btn_Gold", 40f, 60f);
         }
 
         static void Cells(Transform row, Color color, float size, string rank, string name, string wallet, string time, string tries)
         {
-            HackUi.Cell(row, rank, 90f, size, TextAlignmentOptions.MidlineLeft, color);
-            HackUi.Cell(row, name, 0f, size, TextAlignmentOptions.MidlineLeft, color);
-            HackUi.Cell(row, wallet, 220f, size, TextAlignmentOptions.MidlineLeft, color);
-            HackUi.Cell(row, time, 170f, size, TextAlignmentOptions.MidlineRight, color);
-            HackUi.Cell(row, tries, 110f, size, TextAlignmentOptions.MidlineRight, color);
+            BoardKit.TextCell(row, rank, RankW, size, TextAlignmentOptions.MidlineLeft, color, true);
+            BoardKit.TextCell(row, name, 0f, size, TextAlignmentOptions.MidlineLeft, color, true);
+            BoardKit.TextCell(row, wallet, WalletW, size, TextAlignmentOptions.MidlineLeft, color, true);
+            BoardKit.TextCell(row, time, TimeW, size, TextAlignmentOptions.Center, color, true);
+            BoardKit.TextCell(row, tries, TriesW, size, TextAlignmentOptions.Center, color, true);
+        }
+
+        void Update()
+        {
+            if (Time.unscaledTime < _nextTick) return;
+            _nextTick = Time.unscaledTime + 1f;
+            if (_countdown != null && _closes.HasValue) _countdown.text = OnlineRules.Countdown(DateTime.UtcNow, _closes.Value);
         }
 
         public void Open()
@@ -94,7 +122,7 @@ namespace RoguePirates.Hackathon.UI
         {
             var request = ++_requests;
             _status.text = "Loading...";
-            _status.color = HackUi.Dim;
+            _status.color = BoardKit.InkDim;
             _sail.interactable = false;
             try
             {
@@ -103,28 +131,28 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null)
                 {
                     _status.text = "Unavailable";
-                    _status.color = HackUi.Bad;
+                    _status.color = BoardKit.InkBad;
                     _sub.text = error;
                     ClearRows();
                     return;
                 }
                 _race = today.race;
-                var closes = OnlineRules.ParseUtc(_race.closesAt);
-                var left = closes.HasValue ? OnlineRules.Countdown(DateTime.UtcNow, closes.Value) : "-";
-                _sub.text = $"<color=#ffd166>{_race.goal}</color>\nSame course for every captain today. Closes in {left} (00:00 UTC). " +
-                            $"{today.entries} {(today.entries == 1 ? "captain" : "captains")} raced.";
+                _closes = OnlineRules.ParseUtc(_race.closesAt);
+                _countdown.text = _closes.HasValue ? OnlineRules.Countdown(DateTime.UtcNow, _closes.Value) : "-";
+                _sub.text = $"{(_race.goal ?? string.Empty).TrimEnd('.')}. Same course for every captain today. " +
+                            $"<color={BoardKit.GoldHex}>{today.entries} {(today.entries == 1 ? "captain" : "captains")} raced.</color>";
                 _sail.interactable = true;
                 var (board, boardError) = await HackathonApi.RaceBoard(_race.date);
                 if (this == null || request != _requests) return;
-                if (boardError != null) { _status.text = boardError; _status.color = HackUi.Bad; return; }
+                if (boardError != null) { _status.text = boardError; _status.color = BoardKit.InkBad; return; }
                 _status.text = "Online";
-                _status.color = HackUi.Good;
+                _status.color = BoardKit.InkGood;
                 Show(board);
             }
             catch (Exception e)
             {
                 Debug.LogWarning("DailyRacePanel: " + e);
-                if (this != null) { _status.text = "Unavailable"; _status.color = HackUi.Bad; }
+                if (this != null) { _status.text = "Unavailable"; _status.color = BoardKit.InkBad; }
             }
         }
 
@@ -138,25 +166,36 @@ namespace RoguePirates.Hackathon.UI
                 {
                     if (e == null) continue;
                     var mine = !string.IsNullOrEmpty(myId) && e.playerId == myId;
-                    var tint = mine ? new Color(1f, 0.82f, 0.4f, 0.22f) : (e.rank % 2 == 0 ? new Color(1f, 1f, 1f, 0.03f) : new Color(1f, 1f, 1f, 0.07f));
-                    var row = HackUi.Row(_list, 58f, tint);
-                    var color = e.rank == 1 ? HackUi.Gold : HackUi.TextColor;
-                    Cells(row, color, 27, "#" + e.rank, e.name + "<color=#9aa4ad>" + e.tag + "</color>" + (mine ? "  <size=70%>(you)</size>" : string.Empty),
-                        string.IsNullOrEmpty(e.wallet) ? "-" : e.wallet, HackathonRules.RaceTime(e.timeSeconds), e.attempts.ToString());
+                    var tint = mine ? new Color(1f, 0.86f, 0.45f, 1f)
+                        : e.rank == 1 ? new Color(0.93f, 0.76f, 0.42f, 1f)
+                        : e.rank % 2 == 0 ? new Color(0.9f, 0.84f, 0.72f, 1f) : new Color(0.95f, 0.9f, 0.8f, 1f);
+                    var row = BoardKit.Row(_list, 66f, "Panel_Inset", 2.4f, tint);
+                    BoardKit.RankCell(row, e.rank, RankW, 30f, true);
+                    var name = BoardKit.TextCell(row, e.name + $"<color={BoardKit.DimHex}>{e.tag}</color>", 0f, 28f, TextAlignmentOptions.MidlineLeft, BoardKit.Ink, true);
+                    if (mine)
+                    {
+                        name.margin = new Vector4(0f, 0f, 104f, 0f);
+                        BoardKit.Tag((RectTransform)name.transform, "Tag_Green", "YOU", 0f, 92f, 42f, Color.white);
+                    }
+                    BoardKit.TextCell(row, BoardKit.ShortWallet(e.wallet), WalletW, 26f, TextAlignmentOptions.MidlineLeft, BoardKit.InkDim);
+                    BoardKit.TextCell(row, HackathonRules.RaceTime(e.timeSeconds), TimeW, 30f, TextAlignmentOptions.Center, BoardKit.Ink, true);
+                    BoardKit.TextCell(row, e.attempts.ToString(), TriesW, 28f, TextAlignmentOptions.Center, BoardKit.Ink);
                     _rows.Add(row.gameObject);
                 }
             }
             RowCount = _rows.Count;
             if (RowCount == 0)
             {
-                var row = HackUi.Row(_list, 90f, new Color(0f, 0f, 0f, 0f));
-                HackUi.Cell(row, "No times yet today. Set sail and take the top spot!", 0f, 28, TextAlignmentOptions.Center, HackUi.Dim);
+                var row = BoardKit.Row(_list, 96f, null, 1f, null);
+                BoardKit.TextCell(row, "No times yet today. Set sail and take the top spot!", 0f, 30f, TextAlignmentOptions.Center, BoardKit.InkDim);
                 _rows.Add(row.gameObject);
             }
             var last = DailyRaceHud.LastResult;
+            _best.text = board.HasMe ? HackathonRules.RaceTime(board.me.timeSeconds) : "-";
+            BoardKit.SetLabel(_sail, board.HasMe ? "RACE AGAIN" : "SET SAIL");
             if (board.HasMe)
-                _me.text = $"You: <color=#ffd166>#{board.me.rank}</color> of {board.total}   best {HackathonRules.RaceTime(board.me.timeSeconds)}   {board.me.attempts} {(board.me.attempts == 1 ? "try" : "tries")}" +
-                           (last != null ? "\n<size=80%><color=#9aa4ad>" + last + "</color></size>" : string.Empty);
+                _me.text = $"Rank <b>#{board.me.rank}</b> of {board.total}   {board.me.attempts} {(board.me.attempts == 1 ? "try" : "tries")}" +
+                           (last != null ? $"\n<size=85%><color={BoardKit.GoodHex}>{last}</color></size>" : string.Empty);
             else
                 _me.text = OnlineService.Active == null || !Web3Session.Instance.SignedIn
                     ? "Connect a wallet to post your race time."

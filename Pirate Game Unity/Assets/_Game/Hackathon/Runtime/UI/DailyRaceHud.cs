@@ -85,42 +85,41 @@ namespace RoguePirates.Hackathon.UI
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            var box = new GameObject("Race", typeof(RectTransform), typeof(Image));
-            box.transform.SetParent(go.transform, false);
-            var rt = (RectTransform)box.transform;
+            // Hackathon UI (13 Oct): the race strip and the results card on the parchment kit.
+            var rt = BoardKit.Node(go.transform, "Race");
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0f, -146f);
-            rt.sizeDelta = new Vector2(620f, 104f);
-            var img = box.GetComponent<Image>();
-            img.color = new Color(0.06f, 0.1f, 0.16f, 0.82f);
-            img.raycastTarget = false;
-            _goal = HackUi.TextAt(rt, "Goal", string.Empty, 24, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.62f), Vector2.one, true);
-            _clock = HackUi.TextAt(rt, "Clock", string.Empty, 34, TextAlignmentOptions.Center, HackUi.TextColor, new Vector2(0f, 0.2f), new Vector2(1f, 0.66f));
-            _clock.fontStyle = FontStyles.Bold;
-            _result = HackUi.TextAt(rt, "Result", string.Empty, 20, TextAlignmentOptions.Center, HackUi.Dim, Vector2.zero, new Vector2(1f, 0.26f));
+            rt.sizeDelta = new Vector2(640f, 112f);
+            BoardKit.Paint(rt, "Panel_Card", 2.2f, new Color(1f, 1f, 1f, 0.94f), new Color(0.95f, 0.88f, 0.72f, 0.92f));
+            BoardKit.Picture(BoardKit.TopLeft(rt, "Clock", 18f, 22f, 64f, 64f), "Icon_Clock", BoardKit.Ink);
+            _goal = BoardKit.Label(BoardKit.Strip(rt, "Goal", 90f, 10f, 20f, 30f), string.Empty, 22f, BoardKit.InkGold, TextAlignmentOptions.Center, true, 14f);
+            _clock = BoardKit.Label(BoardKit.Strip(rt, "Clock", 90f, 38f, 20f, 42f), string.Empty, 34f, BoardKit.Ink, TextAlignmentOptions.Center, true, 20f);
+            _result = BoardKit.Label(BoardKit.Strip(rt, "Result", 90f, 80f, 20f, 26f), string.Empty, 19f, BoardKit.InkDim, TextAlignmentOptions.Center, false, 12f);
             _goal.text = $"DAILY RACE {_race.date}   Reach {Target} kills";
             _result.text = "Fastest captain today wins the board";
 
             // The race results (shown when the goal is reached; the voyage ends there). A full-screen backdrop over the
             // run's own results screen.
-            var back = new GameObject("RaceResults", typeof(RectTransform), typeof(Image));
-            back.transform.SetParent(go.transform, false);
-            _panel = (RectTransform)back.transform;
-            _panel.anchorMin = Vector2.zero;
-            _panel.anchorMax = Vector2.one;
-            _panel.offsetMin = _panel.offsetMax = Vector2.zero;
-            back.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
-            var card = new GameObject("Card", typeof(RectTransform), typeof(Image));
-            card.transform.SetParent(_panel, false);
-            var crt = (RectTransform)card.transform;
+            _panel = BoardKit.Fill(go.transform, "RaceResults");
+            var back = _panel.gameObject.AddComponent<Image>();
+            back.color = new Color(0f, 0f, 0f, 0.6f);
+            var crt = BoardKit.Node(_panel, "Card");
             crt.anchorMin = crt.anchorMax = new Vector2(0.5f, 0.5f);
-            crt.sizeDelta = new Vector2(900f, 420f);
-            card.GetComponent<Image>().color = new Color(0.06f, 0.1f, 0.16f, 0.97f);
-            HackUi.TextAt(crt, "Title", "Race complete!", 52, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.74f), new Vector2(1f, 0.96f), true);
-            _panelText = HackUi.TextAt(crt, "Text", string.Empty, 30, TextAlignmentOptions.Top, HackUi.TextColor, new Vector2(0.05f, 0.27f), new Vector2(0.95f, 0.74f));
+            crt.sizeDelta = new Vector2(1060f, 620f);
+            var c = BoardKit.ScrollSheet(crt, 110f, 50f, 50f);
+            BoardKit.Medallion(c, 0f, 4f, 116f);
+            BoardKit.Label(BoardKit.Strip(c, "Title", 130f, 14f, 20f, 90f), "RACE COMPLETE!", 64f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, true, 36f);
+            BoardKit.Line(c, 0f, 134f, 0f);
+            BoardKit.Picture(BoardKit.TopLeft(c, "Trophy", 10f, 160f, 120f, 120f), "Icon_Trophy", BoardKit.InkGold);
+            _panelText = BoardKit.Label(BoardKit.Fill(c, "Text", 150f, 120f, 10f, 150f), string.Empty, 32f, BoardKit.Ink, TextAlignmentOptions.TopLeft, false, 18f);
             _panelText.textWrappingMode = TextWrappingModes.Normal;
-            HackUi.Button(crt, "Return to port", () => V4Game.GoToMenu(), new Vector2(0.27f, 0.05f), new Vector2(0.73f, 0.22f));
+            var home = BoardKit.BottomStrip(c, "Return", 0f, 4f, 0f, 96f);
+            home.anchorMin = new Vector2(0.5f, 0f);
+            home.anchorMax = new Vector2(0.5f, 0f);
+            home.sizeDelta = new Vector2(460f, 96f);
+            home.anchoredPosition = new Vector2(0f, 4f);
+            BoardKit.KitButton(home, "Return to port", "Icon_House", () => V4Game.GoToMenu(), "Btn_Gold", 36f, 48f);
             _panel.gameObject.SetActive(false);
         }
 
@@ -135,7 +134,7 @@ namespace RoguePirates.Hackathon.UI
         void RefreshPanel()
         {
             if (_panelText == null) return;
-            var text = $"You reached {Target} kills in <color=#ffd166>{HackathonRules.RaceTime(_finishTime)}</color>.\n{_result.text}";
+            var text = $"You reached {Target} kills in <b><color={BoardKit.GoldHex}>{HackathonRules.RaceTime(_finishTime)}</color></b>.\n{_result.text}";
             if (_rumSettled > 0) text += $"\nRUM earned this voyage: +{_rumSettled}";
             _panelText.text = text;
         }
@@ -156,8 +155,8 @@ namespace RoguePirates.Hackathon.UI
                 ShowResults();
             }
             _clock.text = _finished
-                ? $"<color=#7fd68b>FINISHED</color>  {HackathonRules.RaceTime(_finishTime)}"
-                : $"Kills <color=#ffd166>{Math.Min(kills, Target)}/{Target}</color>   {HackathonRules.RaceTime(time)}";
+                ? $"<color={BoardKit.GoodHex}>FINISHED</color>  {HackathonRules.RaceTime(_finishTime)}"
+                : $"Kills <color={BoardKit.GoldHex}>{Math.Min(kills, Target)}/{Target}</color>   {HackathonRules.RaceTime(time)}";
         }
 
         async void Post(int kills, int level)
@@ -165,7 +164,7 @@ namespace RoguePirates.Hackathon.UI
             if (_posting) return;
             _posting = true;
             _result.text = "Posting your time...";
-            _result.color = HackUi.Gold;
+            _result.color = BoardKit.InkGold;
             try
             {
                 var (data, error) = await HackathonApi.SubmitRace(new RaceEntryRequest
@@ -177,7 +176,7 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null)
                 {
                     _result.text = "Not posted: " + error;
-                    _result.color = HackUi.Bad;
+                    _result.color = BoardKit.InkBad;
                     RefreshPanel();
                     LastResult = $"Your race: {HackathonRules.RaceTime(_finishTime)} (not posted: {error})";
                     return;
@@ -187,13 +186,13 @@ namespace RoguePirates.Hackathon.UI
                 _result.text = data.improved
                     ? $"{rank} on today's board. New personal best!"
                     : $"{rank}. Your best stays {HackathonRules.RaceTime(best != null ? best.timeSeconds : _finishTime)}.";
-                _result.color = HackUi.Good;
+                _result.color = BoardKit.InkGood;
                 RefreshPanel();
                 LastResult = $"Your race: {HackathonRules.RaceTime(_finishTime)}  ({_result.text})";
             }
             catch (Exception e)
             {
-                if (this != null) { _result.text = "Not posted: " + e.Message; _result.color = HackUi.Bad; RefreshPanel(); }
+                if (this != null) { _result.text = "Not posted: " + e.Message; _result.color = BoardKit.InkBad; RefreshPanel(); }
             }
         }
     }
