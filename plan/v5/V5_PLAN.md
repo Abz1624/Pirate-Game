@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 18 (13 Oct): the deep review's fixes landed (server money hotfix, client money path, gameplay); everything the hackathon switched off is back (H8, H9 answered: D30) and M5c's content was done early; weapon visual prefabs; run checks v9; clean full suites at `e851dcd3`; M9h and M9i continue with what is left. rev 17 (13 Oct): the hackathon interlude folded in; M9h and M9i (hackathon carry-over) next, then M9c resumes at S1b; web3 phases re-scoped to harden the hackathon code; questions H1-H14. rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 19 (14 Oct): M9h's server safety work landed and is deployed: H2 answered (keep every value flow on, D31) with each one a switch defaulting on, refused wager deposits refunded, no double Island NFT mint, sessions that expire with revoke-all, treasury bounds (one claim per wallet ever, a daily mint budget, a float with an alarm, the owner's payouts-and-mints report) and rate-limited RPC reads; M9h's automated and owner checks remain. rev 18 (13 Oct): the deep review's fixes landed (server money hotfix, client money path, gameplay); everything the hackathon switched off is back (H8, H9 answered: D30) and M5c's content was done early; weapon visual prefabs; run checks v9; clean full suites at `e851dcd3`; M9h and M9i continue with what is left. rev 17 (13 Oct): the hackathon interlude folded in; M9h and M9i (hackathon carry-over) next, then M9c resumes at S1b; web3 phases re-scoped to harden the hackathon code; questions H1-H14. rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -168,6 +168,7 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D28 | **Owner answers of 10 Oct (M9b re-test)**: the leash moves relocated enemies just outside the camera's view (about 31 m ahead instead of 26 m), as a config value, in normal play and online, so they never pop in on screen; extended 10 Oct: each enemy is placed just outside the view along its own direction from the ship (a configured margin past the view edge). (C) |
 | D29 | **Hackathon demo choices (owner, 12-13 Oct; demo scope, `plan/hackathon/PLAN.md`)**: web3 accounts sign in with their own wallet (SIWS; wallet address as the profile key, email optional) through the MagicBlock Solana Unity SDK; devnet SOL only; SOL is wagered only in 1v1 (the house matches the stake against Captain Marrow) and raids cost only the 25 RUM fee; the AI captain is the PvP bot with a name (1v1 opponent, island defender); Island NFTs with a server-escrow market; on 13 Oct: enemy damage x2, the chained-mace Anchor Flail at the starters' level-1 DPS, the storm edge warning instead of walls, the Signal Buoy off, flamethrower, lighthouse lantern, squid ink pots and siren bell off (`UnlockConfig.disabledWeaponIds`), the Ledger and voyage download buttons hidden, the parchment UI kit. These hold for the current build. Where they conflict with D4, D6, D7, D8 (house-matched stakes and treasury-paid prizes are not player-vs-player wagers and need D8's legal review before any mainnet), M24 or M26 the earlier decision stands until the owner answers H1-H14 (section 9); M9h switches off the value flows the owner chooses in H2. (C for the demo; V5 status pending H1-H14) |
 | D30 | **Owner answers of 13 Oct (after the hackathon; H8, H9)**: everything skipped for the hackathon comes back now: the flamethrower, lighthouse lantern, squid ink pots and siren bell in every pool (`UnlockConfig.disabledWeaponIds` empty), the Cursed Chest Key in the chests, and the four designed items (`devils_match`, `hammerhead_helm`, `queen_annes_fuse`, `storm_in_a_bottle`) and the Chaos Logbook (H8; M5c's content done ahead of M9c, `2182f198`, `abb6ab02`); Captain Ember keeps the flamethrower as her starter (H9, moot now that it is back). Weapons and their VFX are editable per-weapon prefabs (`plan/hackathon/WEAPON-PREFABS.md`); the art still to make is the art team's list (`plan/hackathon/ART-PENDING.md`). This replaces D29's weapon, chest key and Signal Buoy pool switches except the Signal Buoy, which stays off as config (`StageContentConfig.disabledPoiTypes`). (C) |
+| D31 | **Owner answer of 13 Oct (H2): "don't switch off anything for now"**: on the live devnet API SOL stakes between human players (settled on the relay's client-reported sinking), raid loot from a client-reported conquest, island sales carrying the RUM-bought building levels and the store and vault RUM to the SOL buyer, the fixed public daily race salt and free island claims all stay on (weekly prizes stay checked-runs-only and bot matches unstaked, as the 13 Oct hotfix made them). M9h adds each as a server switch that defaults on, so the owner can turn one off on Railway without a code change: `WAGERS_HUMAN_ENABLED`, `RAID_LOOT_ENABLED`, `ISLAND_SALE_CARRIES_RUM` (off = I26.2: the RUM stays with the seller and RUM-bought levels reset), `DAILY_RACE_FIXED_SALT` (off = a secret salt), read back at `GET /api/switches`. Free claims stay on within M9h's treasury bounds (one claim per wallet ever, a daily mint budget, a float with an alarm). The conflicts D29 lists (D4, D6, D8, M24) stand for any mainnet; this holds for devnet until M13b moves the flows onto server sessions. (C) |
 
 ---
 
@@ -766,18 +767,37 @@ Unity hackathon client, gameplay, simulator and content, a full test-suite run w
 - C9h.1 partly: weekly prizes for checked runs only (the hourly job stays on but pays only ended weeks); staked 1v1
   against Captain Marrow off. C9h.3 partly: `server/README.md` updated for the hotfix.
 
+**Status (rev 19, 14 Oct).** Done (server `457cadab`, `0c41dff7`, `f63f859e`, `46603027`, README `5b60789e`; deployed
+13 Oct with `server/deploy.ps1`, live checks in `plan/v5/phase-09h-safety/live-check-2026-10-13.md`):
+- C9h.1, **kept on by owner decision** (H2, D31): SOL stakes between humans, raid loot, island sales carrying RUM and the
+  fixed daily race salt stay on; each is a config flag defaulting on (`WAGERS_HUMAN_ENABLED`, `RAID_LOOT_ENABLED`,
+  `ISLAND_SALE_CARRIES_RUM`, `DAILY_RACE_FIXED_SALT`, preserved in `.railway/railway.ts`), tested on and off, read back at
+  `GET /api/switches`. Off they refuse new stakes and refund new deposits (`409 wagers_off`), loot 0, keep the RUM with the
+  seller and reset RUM-bought levels (I26.2), and derive a secret race salt.
+- The review's open money findings: wager deposits refused after a verified transfer (too small, another memo or none,
+  stakes off) are recorded and refunded once (`wager_refund`, `409 deposit_refunded` saying so; live: 999,000 lamports
+  refunded); Island NFT mints store the mint address, signature and last valid block height before the send and a retry
+  or the sweep checks the chain (mint and metadata accounts, signature status) before any new mint, so a retry never
+  mints twice; wallet sessions expire 30 days after their last use (`SESSION_LIFETIME_DAYS`), `POST
+  /api/auth/sessions/revoke-all`, the guest token rotates on a wallet link (migration `AddSessionExpiry`).
+- C9h.2: one free island claim per wallet ever (`409 island_claim_used`; live: wallet B, which sold its island, is
+  refused), a daily mint budget (`MINT_DAILY_BUDGET` 20, `429 mint_budget`), the treasury float (`TREASURY_MIN_LAMPORTS`
+  2 SOL) with a low alarm (`/api/treasury` `low`, an error log) and a written top-up rule (`server/README.md`),
+  `GET /api/admin/treasury` and `GET /api/admin/report` (migration `AddMintSafety`). Every payout and mint since 12 Oct:
+  `plan/v5/phase-09h-safety/payouts-and-mints-since-12-oct.md` (15 payouts, 2.551 SOL, all sent; 8 mints); no payout is
+  pending or unconfirmed, so the pre-hotfix `unconfirmed` check by hand is closed.
+- The review's read finding: `GET /api/wallet/balance` limited per IP (`RPC_READ_RATE_LIMIT_PER_MINUTE` 30; live: the
+  31st call 429), `/api/treasury` cached 30 s, island and raid reads without the economy lock and without writes.
+- C9h.3 partly: `server/README.md` limits now say devnet SOL moves, with the switches and bounds.
+- Server suite 258/260 (2 devnet skips), run twice.
+
 Remaining in M9h:
-- C9h.1: SOL stakes between humans still settle on the relay's client-reported sinking; raid loot still from a
-  client-reported conquest; island sales still carry RUM-bought levels and the store and vault RUM to the SOL buyer
-  (owner question R1 on the island-value rule); `DAILY_RACE_SALT` still the fixed default. H2 is still the owner's call
-  for these.
-- C9h.2: one island claim per wallet ever, a daily mint budget, a treasury float with a top-up rule and a low-balance
-  alarm; the payouts and mints since 12 Oct listed, including the pre-hotfix `unconfirmed` payouts checked by hand on the
-  explorer.
-- The review's open money findings: wager deposits refused as `amount_too_low` or `memo_mismatch` are not refunded; an
-  island NFT mint retry can mint twice; sessions never expire; one hot key for every treasury role (until M11, D7).
-- C9h.3: the "ui-redesign WIP" stash and fast-forwarding `main` (owner); the GDD Decision log gets D29 and D30.
-- The automated check and the owner check below.
+- One hot key for every treasury role (until M11, D7): bounded as above, not split.
+- C9h.3: the "ui-redesign WIP" stash and fast-forwarding `main` (owner); the GDD Decision log gets D29, D30 and D31.
+- Client follow-ups (M9i): the game client has no sign-out-everywhere button (revoke-all) yet, and shows the server's own
+  message for the new codes (`island_claim_used`, `mint_budget`, `mint_in_flight`, `wagers_off`).
+- The automated check (the switch read-back and the scripted second claim are done live; the full EditMode and PlayMode
+  suites for the gate) and the owner check below.
 
 Automated check: suites green (or retired with reasons); each switch read back from the live API (`/api/rewards/weekly`,
 lobby and wager JSON, raid start, market, race); a scripted claim, mint and sell refused on the second claim.
@@ -1378,10 +1398,10 @@ Owner check: read the audit and decide what is next.
 | Railway WebSocket connections drop | M9b, M13b | Resume within 10 s (D9b.1); snapshot or drain on redeploy (I13b.2) |
 | Art lags content | M4, M5, M14, M25 | Placeholders + the M6 art guide |
 | Mobile browser memory and frame rate | M1, M7, M23 | One enemy cap set on the reference low-end phone in M1 (Q21, Q31); quality tiers reduce effects, never the cap |
-| The hackathon's live devnet API moves SOL on client-reported results (staked bot matches, weekly prizes on shadow-mode runs, raid loot) and one key is treasury, escrow and mint authority | M9h, M11, M13b, M18, M24 | Devnet only; M9h switches off the flows the owner picks (H2) and records every payout since 12 Oct; M11 splits the keys; M13b moves the rest onto server sessions |
+| The hackathon's live devnet API moves SOL on client-reported results (staked bot matches, weekly prizes on shadow-mode runs, raid loot) and one key is treasury, escrow and mint authority | M9h, M11, M13b, M18, M24 | Devnet only; the owner kept every flow on (H2, D31) with a switch each; M9h records every payout and mint since 12 Oct and bounds the treasury; M11 splits the keys; M13b moves the rest onto server sessions |
 | Hackathon code merged without the phase gate (13 Oct commits compile-checked only) regresses the voyage or M9c | M9h, M9c | M9h runs the full suites and the deep review before M9c resumes; fingerprints confirmed on `a5a8be02` |
 | Islands brew RUM every hour (capped per store, not per day), voyage RUM is linear (`kills/10`), and island sales carry RUM-bought value to SOL buyers (D4) | M9h, M10, M26b, M28 | M9h switches sales per H2; M10 flattens and caps voyage RUM; M26b applies I26.2; M28 audits the RUM sources |
-| Island claims are free and the treasury pays each ~0.018 SOL mint; claim, sell, claim again drains it | M9h | One claim per wallet ever, a daily mint budget and a treasury float with an alarm (C9h.2) |
+| Island claims are free and the treasury pays each ~0.018 SOL mint; claim, sell, claim again drains it | M9h | One claim per wallet ever, a daily mint budget and a treasury float with an alarm (C9h.2; done in rev 19) |
 | Island NFTs are standard Token Metadata NFTs: a trade outside the game leaves the game's owner record behind | M26 | Ownership sync in M26; until then the in-game market is the supported path |
 
 ---
@@ -1460,14 +1480,14 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 | Q-A, Q-B, Q-C | Plan rev 11 review: spend limit on the whole workspace; reject at once or shadow mode first; one M9 or a split? | Answered 8 Oct: $15 hard limit and $10 alert on the workspace; shadow mode first, the owner enforces later; split into M9a, M9b, M9c (D23) |
 | H8 | The four weapons switched off for the hackathon (flamethrower, lighthouse lantern, squid ink pots, siren bell): when do they come back? | Answered 13 Oct: now, with everything else skipped (the Cursed Chest Key, the four designed items and the Chaos Logbook) (D30) |
 | H9 | Captain Ember starts with the flamethrower, which was switched off. | Answered 13 Oct: Ember keeps the flamethrower (back in the pools anyway) (D30) |
+| H2 | The live devnet API now (each a switch in M9h): SOL stakes between humans on client-reported sinking; raid loot from a client-reported conquest; island sales carrying RUM-bought levels and the store and vault RUM to the SOL buyer; a fixed daily race salt; free island claims whose mints the treasury pays. | Answered 13 Oct: "don't switch off anything for now"; each is a switch defaulting on, claims bounded (D31) |
 
-Hackathon questions (13 Oct, rev 17; the suggested option first; H8 and H9 answered in rev 18, above). The 11 Oct questions in `plan/v5/OPEN-QUESTIONS.md`
+Hackathon questions (13 Oct, rev 17; the suggested option first; H8 and H9 answered in rev 18 and H2 in rev 19, above). The 11 Oct questions in `plan/v5/OPEN-QUESTIONS.md`
 (M9b close, M9c design M9c-1 to M9c-12) are still open too.
 
 | # | Question | Options (suggested first) |
 |---|---|---|
 | H1 | Wallets going forward: the hackathon used self-custody wallet sign-in; D7 and M11 plan custodial devnet wallets made at email sign-up. | Both: wallet users keep self-custody, email users get custodial wallets (M11 as planned) / self-custody only (M11 drops custody and the fee payer) / custodial only |
-| H2 | The live devnet API now (each a switch in M9h): weekly SOL auto-payout on unchecked runs; staked 1v1 vs Captain Marrow (the bot runs in the player's client); SOL stakes between humans settled on client-reported sinking; raid loot from a client-reported conquest; island sales carrying RUM-bought levels and the store and vault RUM to the SOL buyer; a fixed daily race salt; free island claims whose mints the treasury pays. | In M9h: prizes for checked runs only and the auto job off; bot and human stakes off until M22; raid loot pending until M15; sales reset RUM-bought levels and keep the RUM with the seller; a secret salt; one claim per wallet ever and a daily mint budget / leave all on until M13b (devnet SOL only) |
 | H3 | 1v1 wagers: the winner gets 2x (no 5% rake) and the house matches stakes vs Captain Marrow; M24 says 5% rake and no stakes against AI seats. | M24's rules (5% rake, no house stakes) when M24 hardens wagers; until then unstaked bot matches (H2). Note: house stakes are betting against the operator, outside D8's player-vs-player wagers, and need its legal review before any mainnet / keep the demo rules |
 | H4 | Weekly prizes: devnet SOL from the treasury (hackathon) or capped RUM and titles (M18)? | SOL on devnet for ranked server-session runs only (after M13b), plus titles; a treasury-paid prize pool needs D8's legal review before any mainnet / RUM and titles only |
 | H5 | Islands: keep the hackathon model (24 world-map slots, four buildings, 15 one-minute defence windows, sink the guardian boss to win) as the base for M14-M15 instead of the plan's home-seed sections, 0:00-5:00 schedule and Treasury Beacon? | Keep it and add sockets, structures and decorations on top / go back to the plan's design |
@@ -1483,7 +1503,7 @@ Review questions (13 Oct, rev 18, from the deep review of the hackathon; the sug
 
 | # | Question | Options (suggested first) |
 |---|---|---|
-| R1 | Island value on a SOL sale: today the buyer gets the RUM-bought building levels and the store and vault RUM, which moves RUM value into SOL (D4). | The RUM stays with the seller and RUM-bought levels reset on a sale (I26.2), switched in M9h / sell with RUM-bought levels but keep the RUM with the seller / keep as built on devnet |
+| R1 | Island value on a SOL sale: today the buyer gets the RUM-bought building levels and the store and vault RUM, which moves RUM value into SOL (D4). (Rev 19: the I26.2 rule exists as `ISLAND_SALE_CARRIES_RUM=false`; on per D31 until you choose.) | The RUM stays with the seller and RUM-bought levels reset on a sale (I26.2), switched in M9h / sell with RUM-bought levels but keep the RUM with the seller / keep as built on devnet |
 | R2 | NFT vs database ownership, and royalties: the game's records do not follow an Island NFT traded outside the game; the NFTs carry 0% royalties. | The database follows the chain (ownership sync in M26) and 5% royalties with Metaplex Core (M26) / the database stays the owner record and outside trades are not honoured / keep as built |
 | R3 | Legal review of wagers, house-matched stakes and treasury-paid prizes (D8). | Before any mainnet or real-value prize, per launch region; devnet only until then / now, before more web3 work |
-| R4 | A server-side treasury scan as a safety net: compare the treasury's on-chain transfers with the database (deposits, payouts, mints) and alert on anything unrecorded. | Yes, a scheduled scan with an alert in M9h's treasury bounds / later, in M28 / no |
+| R4 | A server-side treasury scan as a safety net: compare the treasury's on-chain transfers with the database (deposits, payouts, mints) and alert on anything unrecorded. (Rev 19: not built; M9h has the low-float alarm and the owner's report of every recorded payout, mint and deposit.) | Yes, a scheduled scan with an alert in M9h's treasury bounds / later, in M28 / no |

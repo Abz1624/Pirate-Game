@@ -1,4 +1,21 @@
-# Your TODOs — V5 (updated 13 Oct, plan rev 18)
+# Your TODOs — V5 (updated 14 Oct, plan rev 19)
+
+# Now (14 Oct): M9h server safety done and deployed (plan rev 19)
+
+- [x] H2 answered (13 Oct, D31): nothing switched off. Each flow is now a switch that defaults on: `WAGERS_HUMAN_ENABLED`,
+      `RAID_LOOT_ENABLED`, `ISLAND_SALE_CARRIES_RUM`, `DAILY_RACE_FIXED_SALT` (state at `GET /api/switches`).
+- [ ] **Read the M9h server report** in `plan/v5/phase-09h-safety/`: the live checks, every payout (15, 2.551 SOL, all
+      sent) and Island NFT mint (8) since 12 Oct, the treasury (22.6 SOL; float 2 SOL, alarm below it). The top-up rule is
+      in `server/README.md` (top up to at least twice the float the day it reports low).
+- [ ] Optional: to turn a flow off, set its variable to `false` in Railway (api service, Variables) and let it restart;
+      all four are already listed in `.railway/railway.ts`, so an apply keeps them.
+- [ ] **Back up the Railway database** before the next migration. Note: the M9h migrations (AddSessionExpiry,
+      AddMintSafety) went out on 13 Oct without a fresh backup: both add columns; one rotates the own token of wallet
+      profiles (guests that linked a wallet now use their wallet session), one marks island owners and sellers as having
+      used their free claim.
+- [ ] M9h's gate: the full EditMode and PlayMode suites, the independent review, then your check (read the report; one
+      voyage and one unstaked 1v1 vs Captain Marrow on the desktop build).
+
 
 # Now (13 Oct, evening): review fixes landed, content back, suites clean (plan rev 18)
 
@@ -6,19 +23,15 @@
       are back; Ember keeps the flamethrower. Done in `2182f198` and `abb6ab02` (M5c content done early).
 - [x] Deep review of the hackathon: blockers fixed (server money hotfix, client money path, gameplay); clean full run at
       `e851dcd3`: EditMode 835/835, PlayMode 132/134, server 227/229 (`plan/hackathon/review/tests-2026-10-13.md`).
-- [ ] **Answer H2 for what is still live**: SOL stakes between humans (client-reported sinking), raid loot from
-      client-reported raids, island sales carrying RUM-bought levels and RUM to the SOL buyer, the fixed daily race salt,
-      free claims (one per wallet ever and a daily mint budget?). Bot stakes are already off and weekly SOL pays only
-      checked runs.
+- [x] Answer H2 for what is still live: answered 13 Oct, keep everything on (D31; done in rev 19, above).
 - [ ] **Answer H10**: keep enemy damage x2 (then the simulator is re-fitted) or back to x1?
 - [ ] **Answer the review questions** (plan section 9, R1-R4): R1 island value for SOL vs the RUM rule (D4); R2 NFT vs
       database ownership and royalties; R3 legal review of wagers, house stakes and treasury prizes; R4 a server treasury
       scan as a safety net.
 - [ ] **Answer the other open questions**: H1, H3-H7, H11-H14 (plan section 9) and the 11 Oct ones in
       `plan/v5/OPEN-QUESTIONS.md`.
-- [ ] **Check the pre-hotfix `unconfirmed` payouts** on the devnet explorer by hand (payouts sent before the hotfix
-      have no saved signature to reconcile).
-- [ ] **Back up the Railway database** (Postgres) before the next migration.
+- [x] Check the pre-hotfix `unconfirmed` payouts: none left (14 Oct report: every payout since 12 Oct is sent).
+- [ ] Back up the Railway database (moved up: see 14 Oct).
 - [ ] **Device checks**: deposit, buy, list, cancel and an app kill mid-transfer on desktop WebGL and on Android (MWA);
       shop taps on a phone; the pause menu, level-up cards and storm edge warning on a device. Note: the 13 Oct hackathon
       builds answer `outdated_client` under run checks v9; use the next build.

@@ -1,15 +1,15 @@
 {
- "updated": "13 Oct 2026",
- "statusLine": "Plan rev 18 (13 Oct): the deep review's fixes landed (server money hotfix, client money path, gameplay), everything the hackathon switched off is back (the four weapons, the Cursed Chest Key, the four designed items and the Chaos Logbook: M5c content done early), weapons are editable prefabs, run checks v9 are live, and the full suites are clean at e851dcd3. Next: finish M9h (the remaining live-API switches and treasury bounds, the open money findings), then M9i (review findings, device checks, H10, art), then M9c S1b. Your answers needed: H2 (remaining switches), H10, R1-R4, then the rest of H1-H14.",
+ "updated": "14 Oct 2026",
+ "statusLine": "Plan rev 19 (14 Oct): M9h's server safety work is done and deployed. Your H2 answer is recorded (D31: nothing switched off); each live value flow is now a switch that defaults on (GET /api/switches). Refused wager deposits are refunded, an Island NFT mint retry can no longer mint twice, wallet sessions expire after 30 days unused with a sign-out-everywhere call, and the treasury is bounded (one free island per wallet ever, 20 mints a day, a 2 SOL float with an alarm, a report of every payout and mint since 12 Oct). Next: M9h's gate (full Unity suites, the review, your check), then M9i, then M9c S1b. Your answers needed: H10, R1-R4, then the rest of H1-H14.",
  "statusOk": false,
  "facts": [
   [
    "Progress",
-   "M0-M9b done; M9c paused after S1; hackathon merged (rev 17); review fixes and the skipped content back (rev 18); M9h and M9i in progress, then M9c S1b; M5c content done early"
+   "M0-M9b done; M9c paused after S1; hackathon merged (rev 17); review fixes and the skipped content back (rev 18); M9h server safety done and deployed (rev 19), its gate left; then M9i and M9c S1b; M5c content done early"
   ],
   [
    "Tests",
-   "Clean full run 13 Oct (e851dcd3): EditMode 835/835 · PlayMode 132/134 (2 probe skips) · server 227/229 (2 devnet skips)"
+   "Clean full run 13 Oct (e851dcd3): EditMode 835/835 · PlayMode 132/134 (2 probe skips) · server 227/229; M9h server 258/260 (2 devnet skips, 14 Oct)"
   ],
   [
    "Gate",
@@ -17,7 +17,7 @@
   ],
   [
    "Branch",
-   "<code>v5-live-game</code> at <code>e851dcd3</code>+ (hackathon merged at <code>a5a8be02</code>); <code>main</code> at <code>63e6962a</code> (not fast-forwarded); M9c S1b parked on <code>wip/m9c-s1b</code>"
+   "<code>v5-live-game</code> at <code>5b60789e</code>+ (hackathon merged at <code>a5a8be02</code>); <code>main</code> at <code>63e6962a</code> (not fast-forwarded); M9c S1b parked on <code>wip/m9c-s1b</code>"
   ]
  ],
  "phases": {
@@ -87,7 +87,7 @@
   },
   "M9h": {
    "state": "building",
-   "chip": "in progress · review blockers fixed, suites clean; switches and treasury bounds left"
+   "chip": "in progress · server safety done and deployed (rev 19); gate checks left"
   },
   "M9i": {
    "state": "building",
@@ -607,14 +607,19 @@
    "when": "13 Oct",
    "commit": "e851dcd3",
    "what": "<strong>After the hackathon: review fixes and the skipped content back</strong> (plan rev 18). A deep review of the hackathon (server and web3 funds, client, gameplay) and its fixes: the server money hotfix (<code>66ba84ed</code>, <code>76a3f47a</code>, <code>646f9884</code>, <code>b281478a</code>: reserved deposit purposes and a re-check at attach, payouts recorded by signature with a unique index and a reconciler, bot matches unstaked, market refunds, weekly SOL paid once and for checked runs only, refunding status, Railway variables preserved, voyage RUM soft caps 40 per run and 150 per day, admin idempotency and cap, a mainnet guard); the client money path (<code>ff1f033a</code>, <code>b1dfd60f</code>, <code>a6f9d447</code>: sign first and persist pending transfers, retryable vs final answers, wallet timeouts and cancel, raid and race end through the run's end path, the raid schedule once per run); gameplay fixes (<code>abb6ab02</code>: chained mace hits, return timeout and prewarm, the bot's arsenal, the Signal Buoy off as config, tests no longer weakened). Your call (D30, answers H8 and H9): the flamethrower, lighthouse lantern, squid ink pots and siren bell back in every pool and the Cursed Chest Key in the chests (<code>2182f198</code>); Devil's Match, Hammerhead Helm, Queen Anne's Fuse, Storm in a Bottle and the Chaos Logbook added (<code>abb6ab02</code>, M5c content done early). Weapons and their VFX became per-weapon prefabs (<code>86f31c46</code>, <code>392e15c3</code>, <code>plan/hackathon/WEAPON-PREFABS.md</code>); the art still pending is the art team's list (<code>plan/hackathon/ART-PENDING.md</code>, <a href=\"https://claude.ai/artifact/FxC5XjXzQ1nArDTAXtQ3cZ\">page</a>). Full-run fixes (<code>009bdca5</code>: mesh LODs for heavy art models, a headless minimap guard, ArtMotion moved), fingerprints re-frozen (<code>4d0461d6</code>), run checks v9 deployed (<code>0081d65f</code>), <code>e851dcd3</code>. Clean full run: EditMode 835/835, PlayMode 132/134, server 227/229. Still open: human SOL stakes, raid loot and island sales on the live API, the daily race salt, treasury bounds, unrefunded refused wager deposits, a possible double mint on retry, sessions that never expire, device checks."
+  },
+  {
+   "when": "13-14 Oct",
+   "commit": "5b60789e",
+   "what": "<strong>M9h server safety</strong> (plan rev 19). Your H2 answer recorded as D31: nothing is switched off; human SOL stakes, raid loot, island sales carrying RUM and the fixed race salt are now switches that default on (<code>WAGERS_HUMAN_ENABLED</code>, <code>RAID_LOOT_ENABLED</code>, <code>ISLAND_SALE_CARRIES_RUM</code>, <code>DAILY_RACE_FIXED_SALT</code>; <code>GET /api/switches</code>) (<code>457cadab</code>). Wager deposits refused after the transfer (too small, wrong memo) are refunded once (<code>457cadab</code>); sessions expire 30 days after their last use, sign-out-everywhere, the guest token rotates on a wallet link (<code>0c41dff7</code>); one free island per wallet ever, 20 mints a day, a 2 SOL treasury float with an alarm, the owner's treasury view and payouts-and-mints report, and Island NFT mints recorded before the send and checked on chain before any retry (<code>f63f859e</code>); balance reads rate limited, the treasury cached 30 s, island and raid reads lock-free (<code>46603027</code>); README (<code>5b60789e</code>). Server 258/260, run twice. Deployed (migrations AddSessionExpiry and AddMintSafety applied; no fresh database backup was taken); live checks pass: switches read back, a 999,000-lamport short deposit refunded, revoke-all, wallet B's second claim refused, the 31st balance call limited (<code>plan/v5/phase-09h-safety/</code>)."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Answer H2 for what is still live</strong>: SOL stakes between humans (client-reported sinking), raid loot from client-reported raids, island sales carrying RUM to the SOL buyer, the fixed daily race salt, free claims (one per wallet, daily mint budget). Then <strong>H10</strong> (enemy damage x2).",
+   "<strong>Read the M9h server report</strong> (<code>plan/v5/phase-09h-safety/</code>): the switch states (all on, your H2 answer), every payout and mint since 12 Oct, the treasury float (22.6 SOL, float 2 SOL). To turn a flow off, set its variable to <code>false</code> on Railway (list in <code>server/README.md</code>).",
+   "<strong>Answer H10</strong> (enemy damage x2: keep it or back to x1).",
    "<strong>Answer the review questions R1-R4</strong> (plan section 9): island value for SOL vs the RUM rule, NFT vs database ownership and royalties, legal review of wagers, a server treasury scan as a safety net.",
-   "<strong>Check the pre-hotfix <code>unconfirmed</code> payouts</strong> on the devnet explorer by hand.",
-   "<strong>Back up the Railway database</strong> before the next migration.",
+   "<strong>Back up the Railway database</strong> before the next migration (the M9h migrations AddSessionExpiry and AddMintSafety went out on 13 Oct without a fresh backup: both add columns; one rotates the own token of wallet profiles, one marks island owners and sellers as having claimed).",
    "<strong>Device checks</strong>: deposit, buy, list, cancel and an app kill mid-transfer on desktop WebGL and Android MWA; shop taps on a phone; pause menu, level-up cards, storm edge warning.",
    "<strong>Answer H1, H3-H7, H11-H14</strong> and the 11 Oct questions in <code>plan/v5/OPEN-QUESTIONS.md</code>.",
    "<strong>Weapon art mapping and icons</strong>: the list for the art team is <code>plan/hackathon/ART-PENDING.md</code>.",
@@ -627,7 +632,7 @@
    "PvP draft on phones: tapping a card to read it also picks it (later).",
    "Art team: Kraken pale emission, CutthroatSkiff wake without a material, 2048 px ship textures (web cap 1024).",
    "The 13 Oct hackathon builds are <code>outdated_client</code> under run checks v9; the next build fixes it.",
-   "Review leftovers (M9h/M9i): refused wager deposits (<code>amount_too_low</code>, <code>memo_mismatch</code>) not refunded; island NFT mint retry can mint twice; sessions never expire; one hot key for every role; client-reported PvP hull, raid results and race times; NFT vs database ownership; GET rate limits; one shared UI kit (7 copies); bot maces not drawn in PvP; MWA wallets with only <code>sign_and_send</code> unsupported."
+   "Review leftovers (M9i and later): one hot key for every treasury role (until M11); client-reported PvP hull, raid results and race times; NFT vs database ownership; one shared UI kit (7 copies); bot maces not drawn in PvP; MWA wallets with only <code>sign_and_send</code> unsupported; the client has no sign-out-everywhere button. Done in M9h: refused wager deposits refunded, no double mint, sessions expire, GET rate limits."
   ],
   "done": [
    "<strong>Answered H8 and H9</strong> (13 Oct, D30): everything skipped comes back now (four weapons, Cursed Chest Key, four designed items, Chaos Logbook); Ember keeps the flamethrower.",
@@ -643,7 +648,9 @@
    "<strong>V5 questions, round 2</strong> (30 Sep): 16 more decided (D17), personalities defined, the Hunt netcode and reference phone researched.",
    "<strong>V5 questions answered</strong> (30 Sep): 19 decided (D17), the rest explained on this page; the plan reviewed again (rev 5).",
    "<strong>V5 M0 setup</strong> (29 Sep): branch, reviewer agent, plan and research, green baseline.",
-   "Demo round (30 Sep) merged into V5; details in <code>plan/demo/README.md</code>."
+   "Demo round (30 Sep) merged into V5; details in <code>plan/demo/README.md</code>.",
+   "<strong>H2 answered</strong> (13 Oct, D31): nothing switched off; each flow a switch defaulting on (M9h, rev 19).",
+   "<strong>Pre-hotfix <code>unconfirmed</code> payouts</strong>: none left (14 Oct report: all 15 payouts since 12 Oct are sent)."
   ]
  },
  "proof": [
@@ -1234,6 +1241,20 @@
    "check": "Designed items and the Chaos Logbook (abb6ab02): V5DesignedItemsTests; fingerprints re-frozen (4d0461d6)",
    "result": "15/15; each golden passed twice (fresh, then against the new golden) at 1920x1080, only the expected lines moved",
    "evidence": "Pirate Game Unity/Assets/_Game/Tests, plan/v5/goldens/"
+  },
+  {
+   "date": "13 Oct",
+   "phase": "M9h",
+   "check": "Server suite with the M9h safety work (switches, wager refunds, sessions, mint safety, treasury bounds, read limits), run twice",
+   "result": "258/260 both runs (2 devnet skips); 31 new tests in M9hSwitchTests, M9hSessionTests, M9hTreasuryTests, M9hReadLimitTests",
+   "evidence": "server/RoguePirates.Api.Tests"
+  },
+  {
+   "date": "13 Oct",
+   "phase": "M9h",
+   "check": "Live API after the deploy: /health, /api/switches, /api/treasury cache, revoke-all, a short wager deposit, a second claim, admin treasury and report, the balance rate limit",
+   "result": "All as expected; 15 payouts (2.551 SOL, all sent) and 8 mints since 12 Oct; no payout pending or unconfirmed",
+   "evidence": "plan/v5/phase-09h-safety/live-check-2026-10-13.md, plan/v5/phase-09h-safety/payouts-and-mints-since-12-oct.md"
   }
  ],
  "phaseResults": {
