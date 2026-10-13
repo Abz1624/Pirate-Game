@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Online;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static RoguePirates.Hackathon.UI.PvpKit;
 
 namespace RoguePirates.Hackathon.UI
 {
@@ -21,16 +23,37 @@ namespace RoguePirates.Hackathon.UI
     /// devnet has not confirmed it yet does the lobby stay, with "Check deposit" (no second payment);</item>
     /// <item>the hub shows the last wager's result and payout with an explorer link.</item>
     /// </list>
+    /// Hackathon UI (13 Oct, owner's reference pages "PvP", "PvP public lobby", "PvP private lobby"): the hub and the lobby
+    /// are redrawn in the parchment kit (<see cref="PvpKit"/>). The V4 panels stay as the containers and the logic: their
+    /// own controls are hidden and the kit buttons call them (Close, Leave, Copy link / code, Pick build, Ready, Add bot),
+    /// their message lines are kept (moved into the kit layout). The draft screen is unchanged.
     /// </summary>
     public sealed class WagerMenu : MonoBehaviour
     {
+        // Both panels (canvas units; the menu canvas is at least 1920 x 1080 on desktop and phones).
+        static readonly Vector2 PanelSize = new Vector2(1600f, 990f);
+        const float HeadH = 130f;
+
         PvpMenu _pvp;
         RectTransform _hub, _lobby;
         TextMeshProUGUI _hubMessage, _lobbyMessage;
+        string _hubSet, _lobbySet;
         readonly Button[] _stakeButtons = new Button[4];
-        Color _stakeOn = Color.white;
         int _stakeIndex;
         bool _busy;
+
+        // Hub.
+        TMP_InputField _codeInput;
+        RectTransform _publicList;
+        Button _v4Refresh;
+        bool _hubWasOpen, _lobbyWasOpen;
+        int _listVersion;
+
+        // Lobby.
+        TextMeshProUGUI _lobbyTitle, _lobbyTag, _players, _codeBig;
+        RectTransform _codeSection;
+        readonly SeatRow[] _seats = new SeatRow[2];
+        Button _pick, _ready, _addBot, _v4Leave, _v4CopyLink, _v4CopyCode, _v4Pick, _v4Ready, _v4Bot;
 
         RectTransform _banner, _strip, _status;
         TextMeshProUGUI _bannerText, _wagerText, _statusText;
@@ -41,6 +64,13 @@ namespace RoguePirates.Hackathon.UI
         // The last deposit attempt: a transfer exists (sent) / the server is refunding it (refunded) / its error.
         bool _lastSent, _lastRefunded;
         string _lastError;
+
+        sealed class SeatRow
+        {
+            public RectTransform Root;
+            public Image Icon, Dot, Chip, ChipDot, RatingIcon;
+            public TextMeshProUGUI Role, Name, Rating, ChipText;
+        }
 
         public long Stake => HackathonRules.Stakes[_stakeIndex];
         public string WagerLine => _wagerText != null ? _wagerText.text : null;
@@ -65,46 +95,118 @@ namespace RoguePirates.Hackathon.UI
             return menu;
         }
 
+        /// <summary>Re-frames a V4 panel for the kit: fixed size in the middle, its own look and controls hidden (the
+        /// blocker and the message line stay), parchment card under a wood header.</summary>
+        static RectTransform Reframe(RectTransform panel, string title, out TextMeshProUGUI titleText, out RectTransform head)
+        {
+            panel.anchorMin = panel.anchorMax = new Vector2(0.5f, 0.5f);
+            panel.pivot = new Vector2(0.5f, 0.5f);
+            panel.sizeDelta = PanelSize;
+            panel.anchoredPosition = Vector2.zero;
+            var bg = panel.GetComponent<Image>();
+            if (bg != null) bg.color = new Color(0f, 0f, 0f, 0f);
+            for (var i = 0; i < panel.childCount; i++)
+            {
+                var c = panel.GetChild(i);
+                if (c.name != "Blocker" && c.name != "Message") c.gameObject.SetActive(false);
+            }
+            var root = Fill(panel, "HackathonKit");
+            Paint(Fill(root, "Paper", 14f, 0f, 14f, 60f), "Panel_Card", 1f, null, new Color(0.96f, 0.89f, 0.74f, 1f));
+            titleText = Header(root, title, HeadH, out head);
+            return root;
+        }
+
+        static Button V4Button(Transform panel, string path)
+        {
+            var t = panel.Find(path);
+            return t != null ? t.GetComponent<Button>() : null;
+        }
+
+        static void Press(Button b)
+        {
+            if (b != null && b.interactable) b.onClick.Invoke();
+        }
+
         // ---------------------------------------------------------------- hub
 
         void BuildHub()
         {
             _hubMessage = _hub.Find("Message")?.GetComponent<TextMeshProUGUI>();
-            // Make room for the stake row under the host buttons.
-            Shift(_hub, "Join", 88f);
-            Shift(_hub, "PublicHeader", 88f);
-            var body = _hub.Find("Body") as RectTransform;
-            if (body != null) body.offsetMax = new Vector2(body.offsetMax.x, body.offsetMax.y - 88f);
+            _v4Refresh = V4Button(_hub, "PublicHeader/Refresh");
+            var root = Reframe(_hub, "PvP (1v1)", out _, out var head);
+            KitButton(TopRight(head, "Close", 34f, 22f, 230f, 84f), "Close", "Icon_Close", () => _pvp.CloseAll(), "Btn_Gold", 32f, 36f);
 
-            var host = _hub.Find("Host");
-            if (host != null)
-            {
-                Rewire(host, "Host public", () => HostMatch(true));
-                Rewire(host, "Host private", () => HostMatch(false));
-                var bot = Rewire(host, "Play vs bot", ChallengeCaptain);
-                if (bot != null) HackUi.SetLabel(bot, "Vs " + HackathonRules.CaptainName);
-            }
+            // The three ways to play.
+            const float pad = 40f, gap = 16f;
+            var modes = Strip(root, "Modes", pad, 148f, pad, 116f);
+            ModeCard(PvpKit.Cols(modes, "HostPublic", 0f, 1f / 3f, 0f, gap * 0.66f), "Host Public", "Create a lobby for anyone", "Icon_Swords", "Btn_Gold", () => HostMatch(true));
+            ModeCard(PvpKit.Cols(modes, "HostPrivate", 1f / 3f, 2f / 3f, gap * 0.33f, gap * 0.33f), "Host Private", "Create a lobby with a code", "Icon_Lock", "Btn_Parchment", () => HostMatch(false));
+            ModeCard(PvpKit.Cols(modes, "VsCaptain", 2f / 3f, 1f, gap * 0.66f, 0f), "Vs " + HackathonRules.CaptainName, "Fight the legendary pirate", "Icon_Skull_Crossbones", "Btn_Parchment", ChallengeCaptain);
 
-            var row = HackUi.TopStrip(_hub, "HackathonStake", 196f, 72f);
-            var label = HackUi.TextAt(row, "Label", "Stake <size=70%><color=#9aa4ad>(devnet SOL, winner takes the pot)</color></size>", 28,
-                TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, new Vector2(0.36f, 1f));
-            label.textWrappingMode = TextWrappingModes.Normal;
+            // Stake picker.
+            var stake = Strip(root, "HackathonStake", pad, 280f, pad, 92f);
+            Paint(stake, "Panel_Inset", 2f);
+            RowIcon(stake, "Chest_2", 18f, 70f);
+            Label(Strip(stake, "Title", 104f, 8f, 1040f, 44f), "Stake", 36f, Ink, TextAlignmentOptions.BottomLeft, true, 24f);
+            Label(Strip(stake, "Sub", 104f, 50f, 1040f, 34f), "(devnet SOL, winner takes the pot)", 22f, InkDim, TextAlignmentOptions.TopLeft, false, 14f);
             for (var i = 0; i < HackathonRules.Stakes.Length; i++)
             {
                 var index = i;
-                var x0 = 0.37f + i * 0.1575f;
-                _stakeButtons[i] = HackUi.Button(row, HackathonRules.StakeLabel(HackathonRules.Stakes[i]), () => PickStake(index),
-                    new Vector2(x0, 0.06f), new Vector2(x0 + 0.1475f, 0.94f));
+                var rt = TopRight(stake, "Stake" + i, 18f + (3 - i) * 222f, 13f, 208f, 66f);
+                _stakeButtons[i] = KitButton(rt, HackathonRules.StakeLabel(HackathonRules.Stakes[i]), null, () => PickStake(index), "Btn_Parchment", 28f);
             }
-            var first = _stakeButtons[0] != null ? _stakeButtons[0].GetComponent<Image>() : null;
-            if (first != null) _stakeOn = first.color;
-            PickStake(0);
 
-            _hubExplorer = HackUi.Button(_hub, "View payout", () => Open(_hubExplorerUrl), new Vector2(1f, 0f), new Vector2(1f, 0f));
-            var ert = (RectTransform)_hubExplorer.transform;
-            ert.offsetMin = new Vector2(-284f, 22f);
-            ert.offsetMax = new Vector2(-24f, 84f);
+            // Join with a code.
+            var join = Strip(root, "Join", pad, 386f, pad, 92f);
+            Paint(join, "Panel_Inset", 2f);
+            RowIcon(join, "Chest_2", 18f, 70f);
+            var field = Strip(join, "Field", 104f, 12f, 420f, 68f);
+            _codeInput = HackUi.Input(field, "Lobby code (6 letters)", 8);
+            var frt = (RectTransform)_codeInput.transform;
+            frt.anchorMin = Vector2.zero;
+            frt.anchorMax = Vector2.one;
+            frt.offsetMin = frt.offsetMax = Vector2.zero;
+            Paint(frt, "Input_Field", 1f, null, new Color(0.98f, 0.95f, 0.88f, 1f)).raycastTarget = true;
+            foreach (var t in _codeInput.GetComponentsInChildren<TextMeshProUGUI>(true))
+            {
+                if (PvpKit.Font != null) t.font = PvpKit.Font;
+                t.color = t.name == "Placeholder" ? new Color(InkDim.r, InkDim.g, InkDim.b, 0.75f) : Ink;
+            }
+            if (PvpKit.Font != null) _codeInput.fontAsset = PvpKit.Font;
+            _codeInput.characterValidation = TMP_InputField.CharacterValidation.Alphanumeric;
+            _codeInput.onSubmit.AddListener(_ => _pvp.JoinCode(_codeInput.text));
+            KitButton(TopRight(join, "JoinCode", 14f, 10f, 390f, 72f), "Join with code", "Icon_Link", () => _pvp.JoinCode(_codeInput.text), "Btn_Gold", 30f, 38f);
+
+            // Public lobbies.
+            var lobbies = Fill(root, "PublicLobbies", pad, 84f, pad, 494f);
+            Paint(lobbies, "Panel_Inset", 2f);
+            Icon(lobbies, "Icon_Group", 22f, 12f, 50f);
+            Label(Strip(lobbies, "Title", 88f, 10f, 300f, 54f), "Public lobbies", 34f, Ink, TextAlignmentOptions.MidlineLeft, true, 22f);
+            KitButton(TopRight(lobbies, "Refresh", 18f, 10f, 210f, 56f), "Refresh", "Icon_Refresh", RefreshPublic, "Btn_Parchment", 26f, 30f);
+            var cols = Strip(lobbies, "Columns", 20f, 70f, 40f, 30f);
+            Label(PvpKit.Cols(cols, "Code", 0f, 0.16f, 24f), "Code", 22f, InkDim, TextAlignmentOptions.MidlineLeft);
+            Label(PvpKit.Cols(cols, "Host", 0.18f, 0.5f, 30f), "Host", 22f, InkDim, TextAlignmentOptions.MidlineLeft);
+            Label(PvpKit.Cols(cols, "Stake", 0.52f, 0.78f, 52f), "Stake", 22f, InkDim, TextAlignmentOptions.MidlineLeft);
+            _publicList = Scroll(Fill(lobbies, "List", 14f, 10f, 10f, 104f), 6f, new RectOffset(4, 10, 2, 4));
+
+            // The message line (V4's, kept) and the last payout link.
+            var msg = BottomStrip(root, "MessageStrip", pad, 16f, pad, 60f);
+            RowIcon(msg, "Icon_Info", 8f, 34f);
+            var msgText = Fill(msg, "Text", 52f, 0f, 0f, 0f);
+            Adopt(_hubMessage, msgText, 26f, Vector4.zero);
+            _hubExplorer = KitButton(TopRight(msg, "ViewPayout", 0f, 2f, 240f, 56f), "View payout", "Icon_Link", () => Open(_hubExplorerUrl), "Btn_Gold", 24f, 28f);
             _hubExplorer.gameObject.SetActive(false);
+
+            PickStake(0);
+        }
+
+        static void ModeCard(RectTransform rt, string title, string sub, string icon, string style, Action click)
+        {
+            var b = KitButton(rt, null, null, click, style);
+            RowIcon(rt, icon, 26f, 76f);
+            Label(Strip(rt, "Title", 118f, 14f, 14f, 50f), title, 36f, Ink, TextAlignmentOptions.BottomLeft, true, 22f);
+            Label(Strip(rt, "Sub", 118f, 64f, 14f, 36f), sub, 23f, InkDim, TextAlignmentOptions.TopLeft, false, 15f);
+            b.name = title;
         }
 
         public void PickStake(int index)
@@ -114,10 +216,7 @@ namespace RoguePirates.Hackathon.UI
             {
                 var b = _stakeButtons[i];
                 if (b == null) continue;
-                var img = b.GetComponent<Image>();
-                if (img != null) img.color = i == _stakeIndex ? _stakeOn : new Color(_stakeOn.r * 0.45f, _stakeOn.g * 0.45f, _stakeOn.b * 0.45f, 0.9f);
-                var t = b.GetComponentInChildren<TextMeshProUGUI>(true);
-                if (t != null) t.fontStyle = i == _stakeIndex ? FontStyles.Bold : FontStyles.Normal;
+                SetStyle(b, i == _stakeIndex ? "Btn_Gold" : "Btn_Parchment");
             }
             if (_hubMessage != null && _hub.gameObject.activeInHierarchy)
                 HubMessage(Stake > 0
@@ -196,7 +295,57 @@ namespace RoguePirates.Hackathon.UI
         {
             if (_hubMessage == null) return;
             _hubMessage.text = text ?? string.Empty;
-            _hubMessage.color = color;
+            _hubMessage.color = InkFor(color);
+            _hubSet = _hubMessage.text;
+        }
+
+        /// <summary>Refresh: V4's list call (its messages) and the kit list (with each lobby's stake).</summary>
+        void RefreshPublic()
+        {
+            if (_v4Refresh != null) _v4Refresh.onClick.Invoke();
+            FillPublic();
+        }
+
+        async void FillPublic()
+        {
+            if (_publicList == null) return;
+            var version = ++_listVersion;
+            ApiResult<PublicLobbiesResponse> r;
+            try { r = await Session.PublicLobbies(); }
+            catch (Exception) { return; }
+            if (this == null || version != _listVersion) return;
+            Clear(_publicList);
+            if (r == null || !r.Ok || r.Data == null || r.Data.lobbies == null) return;
+            var mine = Session.MyPlayerId;
+            foreach (var l in r.Data.lobbies)
+            {
+                if (l == null || l.host == null) continue;
+                var row = ListRow(_publicList, "Lobby", 66f, "Panel_Inset", 3f, new Color(1f, 0.97f, 0.9f, 1f));
+                var codeCell = PvpKit.Cols(row, "Code", 0f, 0.16f, 8f, 0f);
+                var tag = Fill(codeCell, "Tag", 0f, 9f, 0f, 9f);
+                Paint(tag, "Tag_Tan", 1f, null, new Color(0.88f, 0.78f, 0.6f, 1f));
+                Label(tag, l.code ?? string.Empty, 26f, Ink, TextAlignmentOptions.Center, true, 16f);
+                var host = PvpKit.Cols(row, "Host", 0.18f, 0.52f, 0f, 0f);
+                RowIcon(host, "Dot_Green", 0f, 20f);
+                Label(Fill(host, "Name", 30f), l.host.name + "<color=#7a5a3b>" + l.host.tag + "</color>", 26f, Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
+                var stake = PvpKit.Cols(row, "Stake", 0.52f, 0.78f, 0f, 0f);
+                RowIcon(stake, "Chest_2", 0f, 40f);
+                var stakeText = Label(Fill(stake, "Text", 52f), "...", 26f, Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
+                var own = l.host.playerId == mine;
+                var code = l.code;
+                var b = KitButton(TopRight(row, "Join", 8f, 6f, 200f, 54f), own ? "Yours" : "Join", own ? null : "Icon_Swords", () => _pvp.JoinCode(code), "Btn_Gold", 26f, 30f);
+                b.interactable = !own;
+                LobbyStake(l.lobbyId, stakeText);
+            }
+        }
+
+        static async void LobbyStake(string lobbyId, TextMeshProUGUI text)
+        {
+            (WagerView w, string error) r;
+            try { r = await HackathonApi.GetWager(lobbyId); }
+            catch (Exception) { r = (null, "error"); }
+            if (text == null) return;
+            text.text = r.error != null ? "?" : r.w != null && r.w.Exists ? HackathonRules.Sol(r.w.stakeLamports) : "No stake";
         }
 
         // ---------------------------------------------------------------- lobby
@@ -204,46 +353,149 @@ namespace RoguePirates.Hackathon.UI
         void BuildLobby()
         {
             _lobbyMessage = _lobby.Find("Message")?.GetComponent<TextMeshProUGUI>();
+            _v4Leave = V4Button(_lobby, "Header/Leave");
+            _v4CopyLink = V4Button(_lobby, "Invite/Copy link");
+            _v4CopyCode = V4Button(_lobby, "Invite/Copy code");
+            _v4Pick = V4Button(_lobby, "Actions/Pick build");
+            _v4Ready = V4Button(_lobby, "Actions/Ready");
+            _v4Bot = V4Button(_lobby, "Actions/Add bot");
 
-            // The AI captain's banner (vs the bot only): portrait, name, a line of menace.
-            _banner = HackUi.TopStrip(_lobby, "HackathonCaptainBanner", 500f, 64f);
-            _banner.gameObject.AddComponent<Image>().color = new Color(0.55f, 0.12f, 0.1f, 0.35f);
-            var portrait = new GameObject("Portrait", typeof(RectTransform), typeof(Image));
-            portrait.transform.SetParent(_banner, false);
-            var prt = (RectTransform)portrait.transform;
-            prt.anchorMin = prt.anchorMax = new Vector2(0f, 0.5f);
-            prt.pivot = new Vector2(0f, 0.5f);
-            prt.sizeDelta = new Vector2(60f, 60f);
-            prt.anchoredPosition = new Vector2(6f, 0f);
-            var pimg = portrait.GetComponent<Image>();
-            pimg.preserveAspect = true;
-            pimg.raycastTarget = false;
-            var sprite = CaptainPortrait();
-            if (sprite != null) { pimg.sprite = sprite; pimg.color = new Color(1f, 0.72f, 0.66f, 1f); }
-            else pimg.color = new Color(0f, 0f, 0f, 0f);
-            _bannerText = HackUi.TextAt(_banner, "Text", string.Empty, 26, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, Vector2.one);
-            _bannerText.margin = new Vector4(80f, 0f, 12f, 0f);
-            _bannerText.textWrappingMode = TextWrappingModes.Normal;
+            var root = Reframe(_lobby, "Lobby", out _lobbyTitle, out var head);
+            _lobbyTitle.rectTransform.offsetMax = new Vector2(-900f, _lobbyTitle.rectTransform.offsetMax.y);
+            KitButton(TopRight(head, "Leave", 34f, 22f, 230f, 84f), "Leave", "Icon_Close", () => Press(_v4Leave), "Btn_Gold", 32f, 36f);
+            var tag = TopRight(head, "LobbyTag", 300f, 34f, 360f, 62f);
+            tag.gameObject.AddComponent<Image>().color = new Color(0.16f, 0.09f, 0.04f, 0.75f);
+            _lobbyTag = Label(tag, string.Empty, 28f, OnWood, TextAlignmentOptions.Center, false, 18f);
+
+            const float pad = 40f;
+            Icon(root, "Icon_Group", pad + 6f, 150f, 50f);
+            _players = Label(Strip(root, "Players", pad + 70f, 144f, 700f, 60f), "Players (0 / 2)", 38f, Ink, TextAlignmentOptions.MidlineLeft, true, 24f);
+            Label(TopRight(root, "RatingCol", pad + 470f, 196f, 200f, 28f), "Rating", 22f, InkDim, TextAlignmentOptions.MidlineLeft);
+            Label(TopRight(root, "StatusCol", pad + 12f, 196f, 330f, 28f), "Status", 22f, InkDim, TextAlignmentOptions.Center);
+            _seats[0] = Seat(Strip(root, "HostSeat", pad, 226f, pad, 78f));
+            _seats[1] = Seat(Strip(root, "GuestSeat", pad, 312f, pad, 78f));
+
+            // The middle: lobby code, wager strip, wager status, the AI captain's banner (stacked; hidden ones close up).
+            var middle = Fill(root, "Middle", pad, 186f, pad, 402f);
+            var v = middle.gameObject.AddComponent<VerticalLayoutGroup>();
+            v.spacing = 8f;
+            v.childControlWidth = v.childControlHeight = true;
+            v.childForceExpandHeight = false;
+
+            _codeSection = ListRow(middle, "LobbyCode", 118f, "Panel_Inset", 2f);
+            RowIcon(_codeSection, "Chest_2", 16f, 86f);
+            Label(Strip(_codeSection, "Title", 118f, 14f, 980f, 46f), "Lobby code", 34f, Ink, TextAlignmentOptions.BottomLeft, true, 22f);
+            Label(Strip(_codeSection, "Sub", 118f, 62f, 980f, 36f), "Share this code with a friend to join", 23f, InkDim, TextAlignmentOptions.TopLeft, false, 14f);
+            var box = TopRight(_codeSection, "CodeBox", 576f, 16f, 390f, 86f);
+            Paint(box, "Input_Field", 1f, null, new Color(0.98f, 0.95f, 0.88f, 1f));
+            _codeBig = Label(Fill(box, "Code", 12f, 0f, 84f, 0f), string.Empty, 54f, Ink, TextAlignmentOptions.Center, true, 28f);
+            _codeBig.characterSpacing = 18f;
+            KitButton(TopRight(box, "Copy", 12f, 13f, 60f, 60f), null, "Icon_Copy", () => Press(_v4CopyCode), "Btn_Square_Parchment", 22f, 34f, 2f);
+            KitButton(TopRight(_codeSection, "CopyLink", 296f, 20f, 264f, 78f), "Copy link", "Icon_Link", () => Press(_v4CopyLink), "Btn_Gold", 30f, 36f);
+            KitButton(TopRight(_codeSection, "CopyCode", 16f, 20f, 264f, 78f), "Copy code", "Icon_Copy", () => Press(_v4CopyCode), "Btn_Gold", 30f, 36f);
 
             // The wager strip: stake, pot, both seats' deposits, and the deposit button.
-            _strip = HackUi.TopStrip(_lobby, "HackathonWager", 572f, 76f);
-            _strip.gameObject.AddComponent<Image>().color = new Color(1f, 0.82f, 0.4f, 0.1f);
-            _wagerText = HackUi.TextAt(_strip, "Text", string.Empty, 23, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, new Vector2(0.64f, 1f));
-            _wagerText.margin = new Vector4(14f, 0f, 8f, 0f);
+            _strip = ListRow(middle, "HackathonWager", 84f, "Panel_Inset", 2f, new Color(1f, 0.93f, 0.7f, 1f));
+            RowIcon(_strip, "Chest_2", 14f, 60f);
+            _wagerText = Label(Strip(_strip, "Text", 88f, 4f, 400f, 76f), string.Empty, 24f, Ink, TextAlignmentOptions.MidlineLeft, false, 15f);
             _wagerText.textWrappingMode = TextWrappingModes.Normal;
             // Creating or joining asks for the deposit by itself. This button is the fallback while the seat is unpaid:
             // "Pay deposit" (the automatic prompt was skipped or failed) or "Check deposit" (a sent transfer that devnet has
             // not confirmed yet; never pays twice).
-            _deposit = HackUi.Button(_strip, "Pay deposit", Deposit, new Vector2(0.65f, 0.06f), new Vector2(1f, 0.94f));
+            _deposit = KitButton(TopRight(_strip, "Deposit", 14f, 9f, 370f, 66f), "Pay deposit", "Icon_Upload", Deposit, "Btn_Gold", 27f, 32f);
 
-            _status = HackUi.TopStrip(_lobby, "HackathonWagerStatus", 654f, 52f);
-            _statusText = HackUi.TextAt(_status, "Text", string.Empty, 22, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.76f, 1f));
+            _status = ListRow(middle, "HackathonWagerStatus", 54f, null, 1f);
+            RowIcon(_status, "Icon_Info", 8f, 32f);
+            _statusText = Label(Strip(_status, "Text", 50f, 0f, 230f, 54f), string.Empty, 23f, InkGold, TextAlignmentOptions.MidlineLeft, false, 14f);
             _statusText.textWrappingMode = TextWrappingModes.Normal;
-            _explorer = HackUi.Button(_status, "View tx", () => Open(_explorerUrl), new Vector2(0.78f, 0f), new Vector2(1f, 1f));
+            _explorer = KitButton(TopRight(_status, "ViewTx", 0f, 2f, 214f, 50f), "View tx", "Icon_Link", () => Open(_explorerUrl), "Btn_Parchment", 24f, 26f);
+
+            // The AI captain's banner (vs the bot only): portrait, name, a line of menace.
+            _banner = ListRow(middle, "HackathonCaptainBanner", 120f, "Banner_Maroon", 1.6f, null);
+            var frame = TopLeft(_banner, "Portrait", 22f, 10f, 100f, 100f);
+            Paint(frame, "Slot_Card", 3f, new Color(0.95f, 0.75f, 0.35f, 1f), new Color(0.6f, 0.4f, 0.2f, 1f));
+            var pimg = Fill(frame, "Face", 6f, 6f, 6f, 6f).gameObject.AddComponent<Image>();
+            pimg.preserveAspect = true;
+            pimg.raycastTarget = false;
+            var sprite = CaptainPortrait();
+            if (sprite != null) pimg.sprite = sprite;
+            else pimg.color = new Color(0f, 0f, 0f, 0f);
+            _bannerText = Label(Strip(_banner, "Text", 148f, 8f, 24f, 104f), string.Empty, 30f, OnWood, TextAlignmentOptions.MidlineLeft, false, 16f);
+            _bannerText.textWrappingMode = TextWrappingModes.Normal;
+
+            // Actions.
+            var actions = BottomStrip(root, "Actions", pad, 88f, pad, 90f);
+            _pick = KitButton(PvpKit.Cols(actions, "PickBuild", 0f, 1f / 3f, 0f, 12f), "Pick build", "Icon_Swords", () => Press(_v4Pick), "Btn_Gold", 36f, 52f);
+            _ready = KitButton(PvpKit.Cols(actions, "Ready", 1f / 3f, 2f / 3f, 6f, 6f), "Ready", "Icon_Check", () => Press(_v4Ready), "Btn_Gold", 36f, 46f);
+            _addBot = KitButton(PvpKit.Cols(actions, "AddBot", 2f / 3f, 1f, 12f, 0f), "Add bot", "Icon_User", () => Press(_v4Bot), "Btn_Gold", 36f, 46f);
+
+            var msg = BottomStrip(root, "MessageStrip", pad, 16f, pad, 62f);
+            PvpKit.Line(msg, 0f, 0f, 0f);
+            RowIcon(msg, "Icon_Info", 8f, 34f);
+            Adopt(_lobbyMessage, Fill(msg, "Text", 52f, 0f, 0f, 4f), 26f, Vector4.zero);
 
             _banner.gameObject.SetActive(false);
             _strip.gameObject.SetActive(false);
             _status.gameObject.SetActive(false);
+        }
+
+        static SeatRow Seat(RectTransform rt)
+        {
+            var s = new SeatRow { Root = rt };
+            Paint(rt, "Panel_Inset", 2.4f);
+            s.Icon = RowIcon(rt, "Crown_Gold", 18f, 52f);
+            s.Role = Label(TopLeft(rt, "Role", 84f, 0f, 150f, 78f), "Host", 30f, Ink, TextAlignmentOptions.MidlineLeft, true, 18f);
+            s.Dot = RowIcon(rt, "Dot_Green", 236f, 22f);
+            var name = Strip(rt, "Name", 272f, 0f, 700f, 78f);
+            s.Name = Label(name, "...", 30f, Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+            var rating = TopRight(rt, "Rating", 470f, 0f, 200f, 78f);
+            s.RatingIcon = RowIcon(rating, "Icon_Rating", 0f, 34f);
+            s.Rating = Label(Fill(rating, "Text", 46f), string.Empty, 28f, Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+            var chip = TopRight(rt, "Status", 12f, 9f, 330f, 60f);
+            s.Chip = Paint(chip, "Btn_Gold", 1.3f);
+            s.ChipDot = RowIcon(chip, "Dot_Green", 24f, 24f);
+            s.ChipText = Label(Fill(chip, "Text", 56f, 0f, 12f, 0f), string.Empty, 26f, Ink, TextAlignmentOptions.Center, true, 16f);
+            return s;
+        }
+
+        void SetSeat(SeatRow row, LobbySeat seat, bool host, bool mine)
+        {
+            row.Role.text = host ? "Host" : "Guest";
+            SetSprite(row.Icon, host ? "Crown_Gold" : seat != null && seat.bot ? "Icon_Skull_Crossbones" : "Icon_User", host ? Color.white : Ink);
+            var empty = seat == null || string.IsNullOrEmpty(seat.playerId);
+            row.Dot.enabled = !empty;
+            row.Name.text = empty ? "<color=#7a5a3b>...</color>"
+                : seat.name + "<color=#7a5a3b>" + seat.tag + "</color>" + (seat.bot ? "  <size=75%><color=#7a5a3b>(bot)</color></size>" : string.Empty)
+                  + (mine ? "  <size=75%><color=#7a5a3b>(you)</color></size>" : string.Empty);
+            row.Rating.text = empty ? "<color=#7a5a3b>...</color>" : seat.rating.ToString();
+            row.RatingIcon.color = empty ? new Color(Ink.r, Ink.g, Ink.b, 0.35f) : Ink;
+            var status = empty ? null : seat.status;
+            string chip, dot;
+            switch (status)
+            {
+                case null: chip = "Btn_Parchment"; dot = "Dot_Beige"; row.ChipText.text = "Waiting for player"; break;
+                case "ready": chip = "Btn_Green"; dot = null; row.ChipText.text = "Ready"; break;
+                case "left": chip = "Btn_Red"; dot = "Dot_Red"; row.ChipText.text = "Left"; break;
+                case "drafting": chip = "Btn_Gold"; dot = "Dot_Yellow"; row.ChipText.text = "Picking weapons"; break;
+                case "in_match": chip = "Btn_Gold"; dot = "Dot_Green"; row.ChipText.text = "In the match"; break;
+                case "joined": chip = "Btn_Gold"; dot = "Dot_Green"; row.ChipText.text = "In the lobby"; break;
+                default: chip = "Btn_Gold"; dot = "Dot_Green"; row.ChipText.text = status; break;
+            }
+            SetSprite(row.Chip, chip, Color.white);
+            if (status == "ready") SetSprite(row.ChipDot, "Icon_Check_Green", Color.white);
+            else SetSprite(row.ChipDot, dot, Color.white);
+            row.ChipText.color = empty ? InkDim : Ink;
+            Paint(row.Root, "Panel_Inset", 2.4f, mine ? new Color(1f, 0.9f, 0.62f, 1f) : Color.white);
+        }
+
+        static void SetSprite(Image img, string sprite, Color tint)
+        {
+            if (img == null) return;
+            var s = HackSkin.S(sprite);
+            img.enabled = s != null;
+            if (s == null) return;
+            img.sprite = s;
+            img.color = tint;
         }
 
         static Sprite CaptainPortrait()
@@ -292,6 +544,14 @@ namespace RoguePirates.Hackathon.UI
         {
             var lobbyOpen = _lobby.gameObject.activeInHierarchy;
             var hubOpen = _hub.gameObject.activeInHierarchy;
+            if (hubOpen && !_hubWasOpen) FillPublic();
+            if (lobbyOpen && !_lobbyWasOpen) RefreshLobby();
+            _hubWasOpen = hubOpen;
+            _lobbyWasOpen = lobbyOpen;
+            // V4 writes its own messages without a colour: ink for those.
+            if (_hubMessage != null && _hubMessage.text != _hubSet) { _hubMessage.color = Ink; _hubSet = _hubMessage.text; }
+            if (_lobbyMessage != null && _lobbyMessage.text != _lobbySet) { _lobbyMessage.color = Ink; _lobbySet = _lobbyMessage.text; }
+            if (lobbyOpen) MirrorActions();
             if (!lobbyOpen && !hubOpen) return;
             if (Time.unscaledTime < _nextPoll) return;
             _nextPoll = Time.unscaledTime + 3f;
@@ -303,15 +563,42 @@ namespace RoguePirates.Hackathon.UI
             if (hubOpen) RefreshHub();
         }
 
+        /// <summary>The kit buttons follow V4's (enabled, shown).</summary>
+        void MirrorActions()
+        {
+            if (_pick != null && _v4Pick != null) _pick.interactable = _v4Pick.interactable;
+            if (_ready != null && _v4Ready != null) _ready.interactable = _v4Ready.interactable;
+            if (_addBot != null && _v4Bot != null) _addBot.gameObject.SetActive(_v4Bot.gameObject.activeSelf);
+        }
+
         void RefreshLobby()
         {
             if (_strip == null) return;
             var lobby = Session.Lobby;
-            var inLobby = Session.InLobby;
+            var inLobby = Session.InLobby && lobby != null;
+            if (inLobby)
+            {
+                _lobbyTitle.text = lobby.@public ? "Public Lobby" : "Private Lobby";
+                _lobbyTag.text = "Lobby  " + lobby.code;
+                _codeBig.text = lobby.code;
+                var me = Session.MyPlayerId;
+                var count = 0;
+                for (var i = 0; i < 2; i++)
+                {
+                    var seat = lobby.seats != null && i < lobby.seats.Length ? lobby.seats[i] : null;
+                    if (seat != null && !string.IsNullOrEmpty(seat.playerId)) count++;
+                    SetSeat(_seats[i], seat, i == 0, seat != null && seat.playerId == me);
+                }
+                _players.text = $"Players ({count} / 2)";
+                // The code matters while the lobby waits for a player.
+                _codeSection.gameObject.SetActive(lobby.status == "waiting" || lobby.status == null);
+                MirrorActions();
+            }
+
             var vsCaptain = inLobby && lobby.Guest != null && lobby.Guest.bot;
             _banner.gameObject.SetActive(vsCaptain);
             if (vsCaptain)
-                _bannerText.text = $"<color=#ffd166><b>{HackathonRules.CaptainName}</b></color>  <color=#9aa4ad>{HackathonRules.CaptainTitle}</color>\n" +
+                _bannerText.text = $"<color=#ffd166><b><size=120%>{HackathonRules.CaptainName}</size></b></color>  {HackathonRules.CaptainTitle}\n" +
                                    "<i>\"Sign the articles or feed the sharks, whelp.\"</i>";
 
             var w = inLobby ? HackathonPvp.For(lobby.lobbyId) : null;
@@ -320,15 +607,15 @@ namespace RoguePirates.Hackathon.UI
             _status.gameObject.SetActive(hasWager && (!string.IsNullOrEmpty(_statusText.text) || _explorerUrl != null));
             if (!hasWager) return;
 
-            var me = Session.MyPlayerId;
-            var iAmHost = lobby.hostPlayerId == me;
+            var myId = Session.MyPlayerId;
+            var iAmHost = lobby.hostPlayerId == myId;
             var mySeat = iAmHost ? w.host : w.guest;
             var myDeposited = mySeat != null && mySeat.deposited;
             var stake = HackathonRules.Sol(w.stakeLamports);
             var hostName = lobby.Host != null ? lobby.Host.name : "Host";
             var guestName = lobby.Guest != null ? lobby.Guest.name : "Guest";
             _wagerText.text =
-                $"<color=#ffd166><b>Wager {stake}</b></color> each   Pot <b>{HackathonRules.Sol(w.potLamports)}</b>   <size=80%><color=#9aa4ad>{Status(w)}</color></size>\n" +
+                $"<color=#8c4d05><b>Wager {stake}</b></color> each   Pot <b>{HackathonRules.Sol(w.potLamports)}</b>   <size=80%><color=#7a5a3b>{Status(w)}</color></size>\n" +
                 $"<size=90%>{hostName}: {Mark(w.host != null && w.host.deposited)}{HackathonRules.SeatFunding(w.host, false)}   " +
                 $"{guestName}: {Mark(w.vsHouse || (w.guest != null && w.guest.deposited))}{HackathonRules.SeatFunding(w.guest, w.vsHouse)}</size>";
 
@@ -336,16 +623,16 @@ namespace RoguePirates.Hackathon.UI
             var pending = canDeposit && HackathonApi.HasPendingDeposit(lobby.lobbyId);
             _deposit.gameObject.SetActive(canDeposit && !_busy);
             _deposit.interactable = canDeposit && !_busy;
-            HackUi.SetLabel(_deposit, pending ? "Check deposit" : "Pay deposit " + stake);
+            SetLabel(_deposit, pending ? "Check deposit" : "Pay deposit " + stake);
 
-            var result = HackathonRules.ResultLine(w, me);
+            var result = HackathonRules.ResultLine(w, myId);
             if (result != null && !_busy) SetStatus(result, HackathonRules.ExplorerTx(HackathonRules.PayoutSignature(w)));
             else if (!_busy && w.funded && string.IsNullOrEmpty(_statusText.text)) SetStatus("Stake funded. The match starts when both captains are Ready.", null);
             if (_lobbyMessage != null && canDeposit && _busy && lobby.status != "starting" && lobby.status != "in_match")
                 _lobbyMessage.text = $"Sign the {stake} deposit in your wallet. The match starts when both stakes are in.";
         }
 
-        static string Mark(bool ok) => ok ? "<color=#7fd68b>[paid]</color> " : "<color=#9aa4ad>[ ]</color> ";
+        static string Mark(bool ok) => ok ? "<color=#2b7324>[paid]</color> " : "<color=#7a5a3b>[ ]</color> ";
 
         static string Status(WagerView w)
         {
@@ -363,7 +650,7 @@ namespace RoguePirates.Hackathon.UI
         void SetStatus(string text, string url, bool bad = false)
         {
             _statusText.text = text ?? string.Empty;
-            _statusText.color = bad ? HackUi.Bad : HackUi.Gold;
+            _statusText.color = bad ? InkBad : InkGold;
             _explorerUrl = url;
             _explorer.gameObject.SetActive(!string.IsNullOrEmpty(url));
             var w = Session.InLobby ? HackathonPvp.For(Session.Lobby.lobbyId) : null;
@@ -504,8 +791,8 @@ namespace RoguePirates.Hackathon.UI
                 HubMessage("Last wager: " + result + (HackathonRules.PayoutPending(w) ? " (payout on its way)" : string.Empty), HackUi.Good);
             if (_hubMessage != null)
             {
-                var rt = _hubMessage.rectTransform;
-                rt.offsetMax = new Vector2(_hubExplorerUrl != null ? -300f : -24f, rt.offsetMax.y);
+                var rt = (RectTransform)_hubMessage.rectTransform.parent;
+                rt.offsetMax = new Vector2(_hubExplorerUrl != null ? -256f : 0f, rt.offsetMax.y);
             }
         }
 
@@ -514,24 +801,6 @@ namespace RoguePirates.Hackathon.UI
         static void Open(string url)
         {
             if (!string.IsNullOrEmpty(url)) Application.OpenURL(url);
-        }
-
-        static Button Rewire(Transform parent, string name, Action click)
-        {
-            var t = parent.Find(name);
-            var b = t != null ? t.GetComponent<Button>() : null;
-            if (b == null) return null;
-            b.onClick.RemoveAllListeners();
-            b.onClick.AddListener(() => click());
-            return b;
-        }
-
-        static void Shift(Transform parent, string name, float down)
-        {
-            var rt = parent.Find(name) as RectTransform;
-            if (rt == null) return;
-            rt.offsetMin -= new Vector2(0f, down);
-            rt.offsetMax -= new Vector2(0f, down);
         }
 
         static Transform FindDeep(Transform root, string name)
