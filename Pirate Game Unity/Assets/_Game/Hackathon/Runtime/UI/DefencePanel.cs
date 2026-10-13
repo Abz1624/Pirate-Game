@@ -492,6 +492,9 @@ namespace RoguePirates.Hackathon.UI
             _problems = null;
             Render();
             Status("Loading the design...", HackUi.Dim);
+            // 13 Oct (review): only the latest Open applies its load: a slow load for another island never overwrites
+            // this island's design (or a later save).
+            var request = ++_loadRequests;
             _busy = true;
             RefreshButtons();
             try
@@ -499,23 +502,30 @@ namespace RoguePirates.Hackathon.UI
                 if (_catalog == null)
                 {
                     var (catalog, cerr) = await IslandApi.DefenceCatalog();
-                    if (this == null) return;
+                    if (this == null || request != _loadRequests) return;
                     if (cerr != null) { Status(cerr, HackUi.Bad); return; }
                     _catalog = catalog;
                     _presetDesigns.Clear();
                 }
                 var (view, error) = await IslandApi.Defence(islandId);
-                if (this == null) return;
+                if (this == null || request != _loadRequests || _islandId != islandId) return;
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 Apply(view);
                 Status(view.isCustom ? "Your saved design. Edit a minute, then Save." : "Default design. Pick a preset or edit a minute, then Save.", HackUi.Dim);
             }
+            catch (Exception e)
+            {
+                Debug.LogWarning("DefencePanel.Open: " + e);
+                if (this != null && request == _loadRequests) Status("Could not load the design: " + e.Message, HackUi.Bad);
+            }
             finally
             {
-                _busy = false;
+                if (request == _loadRequests) _busy = false;
                 if (this != null) RefreshButtons();
             }
         }
+
+        int _loadRequests;
 
         void Apply(IslandDefenceView view)
         {
@@ -577,10 +587,13 @@ namespace RoguePirates.Hackathon.UI
             _busy = true;
             RefreshButtons();
             Status("Saving the design...", HackUi.Gold);
+            var islandId = _islandId;
+            var request = _loadRequests;
             try
             {
-                var (view, error, problems) = await IslandApi.SaveDefence(_islandId, DefenceRules.ForSave(_design));
+                var (view, error, problems) = await IslandApi.SaveDefence(islandId, DefenceRules.ForSave(_design));
                 if (this == null) return false;
+                if (_islandId != islandId || request != _loadRequests) return false; // another island opened meanwhile
                 if (error != null)
                 {
                     if (problems != null && problems.Length > 0)
@@ -598,9 +611,15 @@ namespace RoguePirates.Hackathon.UI
                 Status($"Saved. Raiders of {_islandName} now face this design. Press Test defences to try it.", HackUi.Good);
                 return true;
             }
+            catch (Exception e)
+            {
+                Debug.LogWarning("DefencePanel.Save: " + e);
+                if (this != null) Status("Could not save the design: " + e.Message, HackUi.Bad);
+                return false;
+            }
             finally
             {
-                _busy = false;
+                if (request == _loadRequests) _busy = false; // a newer load owns the flag otherwise
                 if (this != null) RefreshButtons();
             }
         }

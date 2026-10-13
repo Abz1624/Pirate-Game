@@ -204,9 +204,17 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             if (!_confirmLeave) { ShowMatch(true); return; }
             if (_leaving) return;
+            // 13 Oct (review): without the run's commands there is no way out from here: stay usable (no stuck flag).
+            var commands = _views?.Commands;
+            if (commands == null) { ShowMatch(false); return; }
             _leaving = true;
             _match.gameObject.SetActive(false);
-            _views?.Commands?.GoToMenu(); // the 1v1's leave path: leaves the match (a forfeit) and returns to the menu
+            try { commands.GoToMenu(); } // the 1v1's leave path: leaves the match (a forfeit) and returns to the menu
+            catch (System.Exception e)
+            {
+                _leaving = false; // the leave did not happen: the button works again
+                Debug.LogException(e);
+            }
         }
 
         /// <summary>Opens the pause menu (pausing the run) or closes it (resuming); nothing while the run waits on a card.
