@@ -207,6 +207,12 @@ committed export) and 841839 (round 2 before the flail fix, export kept in `plan
 simulated the same way and every bound is the higher of theirs and today's, so their runs meet at least their own bounds.
 The older same-bounds hashes are checked against 83779c's export.
 
+Rules v9 (13 Oct, after the hackathon): the four switched-off weapons and the Cursed Chest Key are back in the pools,
+the Art Guide's four designed items and the Chaos Logbook are in, the chained mace has its director coverage and the
+Signal Buoy is off as config (config f88859f9). The rules v8 config (8ea655e3, from commit 72918c94's export) joins
+`MERGED_CONFIGS` with 83779c and 841839, so builds from 12 Oct keep passing. The hackathon builds of 13 Oct (the
+switch-offs and renames, never exported) are not accepted: their runs score `outdated_client`.
+
 Regenerating the rules (after any balance change; `V5PlausibilityRulesTests` fails until then), in
 `plan/playtest/montecarlo`, after exporting `data.json` from the Editor (RoguePirates > V5 > Balance: export the Monte
 Carlo data):

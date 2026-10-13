@@ -1601,7 +1601,7 @@
    ],
    "levelDamageFactor": true,
    "hitsPerFiring": 1,
-   "coverage": 1,
+   "coverage": 1.2,
    "databaseOrder": 50,
    "rum": 120,
    "goldPerKill": 0,
@@ -2686,12 +2686,13 @@
  "logbooks": {
   "admiral": {
    "id": "admiral",
-   "name": "Admiral",
+   "name": "Big Game Hunter",
    "stat": 19,
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "carpenters_notes": {
    "id": "carpenters_notes",
@@ -2700,7 +2701,8 @@
    "add": 20,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "cartographers_folio": {
    "id": "cartographers_folio",
@@ -2709,16 +2711,28 @@
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
+  },
+  "chaos": {
+   "id": "chaos",
+   "name": "Chaos",
+   "stat": -1,
+   "add": 0,
+   "max": 5,
+   "mult": 1,
+   "inPool": true,
+   "randomFrom": ["gunnery_manual", "powder_drill", "oversized_shot", "carpenters_notes", "cartographers_folio", "quartermasters_ledger", "lookouts_glass", "scavengers_net", "navigators_charts", "ironclad", "fortune", "tidecaller", "admiral", "plunderer"]
   },
   "extra_hands": {
    "id": "extra_hands",
-   "name": "Extra Hands",
+   "name": "Echo Arsenal",
    "stat": 9,
    "add": 1,
    "max": 3,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "fortune": {
    "id": "fortune",
@@ -2727,7 +2741,8 @@
    "add": 0.05,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "gunnery_manual": {
    "id": "gunnery_manual",
@@ -2736,7 +2751,8 @@
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "ironclad": {
    "id": "ironclad",
@@ -2745,7 +2761,8 @@
    "add": 3,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "lookouts_glass": {
    "id": "lookouts_glass",
@@ -2754,7 +2771,8 @@
    "add": 0.05,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "navigators_charts": {
    "id": "navigators_charts",
@@ -2763,7 +2781,8 @@
    "add": 0.62,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "oversized_shot": {
    "id": "oversized_shot",
@@ -2772,7 +2791,8 @@
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "plunderer": {
    "id": "plunderer",
@@ -2781,7 +2801,8 @@
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "powder_drill": {
    "id": "powder_drill",
@@ -2790,7 +2811,8 @@
    "add": 0.08,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "quartermasters_ledger": {
    "id": "quartermasters_ledger",
@@ -2799,7 +2821,8 @@
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "scavengers_net": {
    "id": "scavengers_net",
@@ -2808,7 +2831,8 @@
    "add": 1.2,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   },
   "tidecaller": {
    "id": "tidecaller",
@@ -2817,7 +2841,8 @@
    "add": 0.1,
    "max": 5,
    "mult": 1,
-   "inPool": true
+   "inPool": true,
+   "randomFrom": null
   }
  },
  "items": {
@@ -2982,7 +3007,7 @@
   },
   "cuttlefish_bone": {
    "id": "cuttlefish_bone",
-   "name": "Cuttlefish Bone",
+   "name": "Kraken Ink Sack",
    "rarity": 1,
    "inChest": true,
    "mods": [
@@ -3000,6 +3025,16 @@
    ],
    "effects": [
     ["SpawnDensity", 1.1]
+   ]
+  },
+  "devils_match": {
+   "id": "devils_match",
+   "name": "Devil's Match",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    ["IgniteOnHit", 0.2]
    ]
   },
   "double_fuse_cord": {
@@ -3076,6 +3111,17 @@
    ],
    "effects": [
     ["AttackSpeedAfterTurn", 1.12]
+   ]
+  },
+  "hammerhead_helm": {
+   "id": "hammerhead_helm",
+   "name": "Hammerhead Helm",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    ["ReceivedKnockback", 0.2],
+    ["RamDamage", 25]
    ]
   },
   "jolly_roger": {
@@ -3161,6 +3207,16 @@
     [6, 0, 1.065]
    ],
    "effects": []
+  },
+  "queen_annes_fuse": {
+   "id": "queen_annes_fuse",
+   "name": "Queen Anne's Fuse",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    ["KegChainBlast", 0.25]
+   ]
   },
   "reef_carapace": {
    "id": "reef_carapace",
@@ -3285,6 +3341,16 @@
     [10, 0, 1.12]
    ],
    "effects": []
+  },
+  "storm_in_a_bottle": {
+   "id": "storm_in_a_bottle",
+   "name": "Storm in a Bottle",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    ["LightningBurst", 30]
+   ]
   },
   "stormglass": {
    "id": "stormglass",
@@ -3678,7 +3744,7 @@
    "on": false,
    "atMax": 1.2
   },
-  "coverage": [1, 1.6, 1.8, 1.5, 1.2, 1.4, 1.6, 1.3, 1.5, 1],
+  "coverage": [1, 1.6, 1.8, 1.5, 1.2, 1.4, 1.6, 1.3, 1.5, 1, 1.2],
   "evolutionOffense": 1.6
  },
  "armorWorks": true,
@@ -4313,7 +4379,7 @@
    {
     "id": "anchor_flail",
     "name": "Anchor Flail",
-    "type": "10",
+    "type": "Chained mace",
     "tags": [],
     "damage": 12.1,
     "cooldown": 0.9,
@@ -4933,9 +4999,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "8ea655e3d8f8846f901e7e65e0f16ace27ece826a43a5babddb9ba532121001b",
+  "configHash": "f88859f9973cb5e2abd44a681d487b88cea602ecb3f73990ed260b92160f099a",
   "preset": null,
-  "exported": "2026-10-12T16:20:28Z",
+  "exported": "2026-10-13T13:16:26Z",
   "unity": "6000.3.11f1"
  }
 }

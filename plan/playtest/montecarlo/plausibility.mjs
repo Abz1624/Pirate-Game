@@ -41,6 +41,10 @@
 // and today's (MERGED_CONFIGS); the older same-bounds configs are checked against its export. Later the same day the Anchor
 // Flail's level-1 DPS was matched to the other starters (baseDamage 20 -> 12.1): the round 2 build before that (841839)
 // is merged the same way, from its export kept in exports/.
+//
+// Rules v9 (13 Oct, after the hackathon): the content switched off for the hackathon is back (four weapons, the Cursed
+// Chest Key), the Art Guide's four designed items and the Chaos Logbook are in, the chained mace has its director coverage
+// and the Signal Buoy is off through StageContentConfig: new bounds. The rules v8 config (8ea655e3) joins MERGED_CONFIGS.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -317,6 +321,8 @@ const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === '
  * checked against the merged config's export (their bounds equal its own), not against today's.
  */
 export const MERGED_CONFIGS = [
+  { configHash: '8ea655e3d8f8846f901e7e65e0f16ace27ece826a43a5babddb9ba532121001b', export: '72918c94',
+    note: 'Rules v8 config (12 Oct, hackathon round 2 with the Anchor Flail fix): the deployed desktop build of that day. Rules v9 (13 Oct, after the hackathon) bring back the four switched-off weapons, the Cursed Chest Key, the four designed items (Devil\x27s Match, Hammerhead Helm, Queen Anne\x27s Fuse, Storm in a Bottle) and the Chaos Logbook, the chained mace\x27s director coverage and the Signal Buoy off as config; every bound is the higher of its own and today\x27s' },
   { configHash: '841839da62e5725ed09b23c1b7eac0a8d754659ecbf461b9e74fddb7213c9c32', file: 'exports/data-841839da62.json',
     note: 'Hackathon round 2 (12 Oct), before the Anchor Flail\'s level-1 DPS was matched to the other starting weapons (baseDamage 20, 24.4 DPS; now 12.1, 14.8 DPS): the desktop build made that day before the fix. Never committed as data.json, so its export is kept in exports/ (the Editor\'s MonteCarloExport with that asset); every bound is the higher of its own and today\'s' },
   { configHash: '83779c995b73c5dd4fb492586c12bd7e8ff68fc6f8d66db226644d98c5eba527', export: 'b31139ce', sameBoundsBase: true,
