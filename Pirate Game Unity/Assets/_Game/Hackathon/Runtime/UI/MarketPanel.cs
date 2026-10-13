@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,9 +20,11 @@ namespace RoguePirates.Hackathon.UI
     {
         const float HeaderHeight = 130f;
 
-        RectTransform _list;
+        RectTransform _list, _statusStrip;
         TextMeshProUGUI _status, _sub, _balance;
-        Button _close;
+        Button _close, _txButton, _cancelWallet;
+        string _txUrl;
+        bool _resumed;
         TMP_InputField _price;
         MarketView _market, _mine;
         MyIslands _islands;
@@ -60,7 +63,13 @@ namespace RoguePirates.Hackathon.UI
 
             _sub = MarketKit.Label(MarketKit.Strip(card, "Intro", 56f, 58f, 56f, 46f), "Buy and sell island NFTs for devnet SOL. The game's escrow holds a listed NFT until it sells.",
                 30f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 20f);
-            _status = MarketKit.StatusLine(MarketKit.Strip(card, "Status", 50f, 108f, 50f, 58f), 27f);
+            _statusStrip = MarketKit.Strip(card, "Status", 50f, 108f, 50f, 58f);
+            _status = MarketKit.StatusLine(_statusStrip, 27f);
+            // 13 Oct (review): the last transfer's explorer link, and Cancel while the wallet is asked to sign.
+            _txButton = MarketKit.KitButton(MarketKit.TopRight(card, "ViewTx", 50f, 108f, 210f, 58f), "View tx", "Icon_Link", () => { if (_txUrl != null) Application.OpenURL(_txUrl); }, "Btn_Parchment", 24f, 28f);
+            _txButton.gameObject.SetActive(false);
+            _cancelWallet = MarketKit.KitButton(MarketKit.TopRight(card, "CancelWallet", 270f, 108f, 210f, 58f), "Cancel", "Icon_Close", () => Web3Session.Instance.CancelWait(), "Btn_Red", 24f, 28f);
+            _cancelWallet.gameObject.SetActive(false);
             var host = MarketKit.Fill(card, "List", 46f, 34f, 40f, 180f);
             _list = MarketKit.Scroll(host, 14f, new RectOffset(4, 16, 4, 10));
         }
@@ -93,6 +102,34 @@ namespace RoguePirates.Hackathon.UI
             _status.color = MarketKit.InkFor(color);
         }
 
+        /// <summary>The status line with a transfer's explorer link (null hides the button).</summary>
+        void Status(string text, Color color, string signature)
+        {
+            Status(text, color);
+            Tx(signature);
+        }
+
+        void Tx(string signature)
+        {
+            _txUrl = HackathonRules.ExplorerTx(signature);
+            if (_txButton != null) _txButton.gameObject.SetActive(_txUrl != null);
+            LayoutStatus();
+        }
+
+        void LayoutStatus()
+        {
+            if (_statusStrip == null) return;
+            var right = 50f + (_txUrl != null ? 220f : 0f) + (_cancelWallet != null && _cancelWallet.gameObject.activeSelf ? 220f : 0f);
+            _statusStrip.offsetMax = new Vector2(-right, _statusStrip.offsetMax.y);
+        }
+
+        void Update()
+        {
+            if (_cancelWallet == null) return;
+            var show = Web3Session.Instance.CanCancel;
+            if (_cancelWallet.gameObject.activeSelf != show) { _cancelWallet.gameObject.SetActive(show); LayoutStatus(); }
+        }
+
         public async void Refresh()
         {
             var request = ++_requests;
@@ -116,6 +153,12 @@ namespace RoguePirates.Hackathon.UI
                 Status(Web3Session.Instance.SignedIn ? $"{market.listings?.Length ?? 0} {((market.listings?.Length ?? 0) == 1 ? "island" : "islands")} for sale. Escrow {IslandUi.Short(market.treasury)} (devnet)."
                     : "Connect a wallet (top of the menu) to buy or sell.", HackUi.Dim);
                 Render();
+                // A purchase or listing left half way (the app closed, devnet slow): ask the server once, no new transfer.
+                if (!_resumed && Web3Session.Instance.SignedIn && !_busy && (PendingBuys().Count > 0 || PendingLists().Count > 0))
+                {
+                    _resumed = true;
+                    ResumePending();
+                }
             }
             catch (Exception e)
             {
@@ -152,9 +195,45 @@ namespace RoguePirates.Hackathon.UI
                     MarketKit.Chip(MarketKit.Cell(row, "Price", 230f, 92f), HackathonRules.Sol(l.priceLamports), 38f, MarketKit.Ink, true);
                     var listing = l;
                     if (mine) MarketKit.RowButton(row, "Cancel", null, () => Cancel(listing), 220f, 92f, "Btn_Red", 36f);
+                    else if (PendingTransfers.Has(PendingTransfers.Buy, l.listingId))
+                        MarketKit.RowButton(row, "Finish", null, () => Buy(listing), 220f, 92f, "Btn_Gold", 34f).interactable = Web3Session.Instance.SignedIn;
                     else MarketKit.RowButton(row, "Buy", null, () => Buy(listing), 220f, 92f, "Btn_Gold", 38f).interactable = Web3Session.Instance.SignedIn;
                 }
             if (!any) MarketKit.Note(_list, "No islands for sale right now. List yours below!", 28f);
+
+            // 13 Oct (review): payments and NFT transfers signed but not answered by the server yet (no second transfer).
+            var buys = PendingBuys();
+            var lists = PendingLists();
+            if (Web3Session.Instance.SignedIn && (buys.Count > 0 || lists.Count > 0))
+            {
+                MarketKit.Section(_list, "Icon_Clock", "Unfinished", "signed transfers the server has not confirmed yet; finishing never pays again");
+                foreach (var e in buys)
+                {
+                    var row = MarketKit.Card(_list, "PendingBuy", 104f);
+                    var c = MarketKit.Label(MarketKit.Cell(row, "Text", 0f, 80f),
+                        $"<b>Purchase</b>   {HackathonRules.Sol(e.lamports)}   <color={dim}>payment {HackathonRules.ShortSig(e.signature)}</color>" +
+                        (string.IsNullOrEmpty(e.lastError) ? string.Empty : $"\n<size=80%><color={dim}>last answer: {e.lastError}</color></size>"),
+                        28f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+                    c.textWrappingMode = TextWrappingModes.Normal;
+                    var listingId = e.key;
+                    var sig = e.signature;
+                    MarketKit.RowButton(row, "Finish purchase", null, () => FinishBuy(listingId), 290f, 76f, "Btn_Gold", 28f);
+                    MarketKit.RowButton(row, "Tx", "Icon_Link", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 130f, 76f, "Btn_Parchment", 28f);
+                }
+                foreach (var e in lists)
+                {
+                    var row = MarketKit.Card(_list, "PendingList", 104f);
+                    var c = MarketKit.Label(MarketKit.Cell(row, "Text", 0f, 80f),
+                        $"<b>Listing</b>   {IslandName(e.key)}   {HackathonRules.Sol(e.lamports)}   <color={dim}>NFT transfer {HackathonRules.ShortSig(e.signature)}</color>" +
+                        (string.IsNullOrEmpty(e.lastError) ? string.Empty : $"\n<size=80%><color={dim}>last answer: {e.lastError}</color></size>"),
+                        28f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+                    c.textWrappingMode = TextWrappingModes.Normal;
+                    var islandId = e.key;
+                    var sig = e.signature;
+                    MarketKit.RowButton(row, "Finish listing", null, () => FinishList(islandId), 270f, 76f, "Btn_Gold", 28f);
+                    MarketKit.RowButton(row, "Tx", "Icon_Link", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 130f, 76f, "Btn_Parchment", 28f);
+                }
+            }
 
             // Sell.
             if (Web3Session.Instance.SignedIn)
@@ -162,9 +241,10 @@ namespace RoguePirates.Hackathon.UI
                 MarketKit.Section(_list, "Icon_Upload", "Sell your island", "Listed NFTs stay in escrow until sold or cancelled.");
                 var islands = _islands?.islands;
                 IslandView sellable = null;
-                if (islands != null) foreach (var i in islands) if (i != null && !i.listed) { sellable = i; break; }
+                if (islands != null) foreach (var i in islands) if (i != null && !i.listed && !PendingTransfers.Has(PendingTransfers.List, i.islandId)) { sellable = i; break; }
                 if (sellable == null)
-                    MarketKit.Note(_list, islands == null || islands.Length == 0 ? "You have no island yet (claim one on the Islands screen)." : "Your island is already listed.", 28f);
+                    MarketKit.Note(_list, islands == null || islands.Length == 0 ? "You have no island yet (claim one on the Islands screen)."
+                        : lists.Count > 0 ? "Finish the listing above (its NFT is on its way to the escrow)." : "Your island is already listed.", 28f);
                 else
                 {
                     var row = MarketKit.Card(_list, "Sell", 160f);
@@ -267,22 +347,96 @@ namespace RoguePirates.Hackathon.UI
             return l.island == null || string.IsNullOrEmpty(baseUrl) ? null : baseUrl.TrimEnd('/') + "/static/islands/" + l.island.slot + ".png";
         }
 
+        List<PendingTransfers.Entry> PendingBuys() => PendingTransfers.All(PendingTransfers.Buy, Web3Session.Instance.Address);
+        List<PendingTransfers.Entry> PendingLists() => PendingTransfers.All(PendingTransfers.List, Web3Session.Instance.Address);
+
+        string IslandName(string islandId)
+        {
+            if (_islands?.islands != null) foreach (var i in _islands.islands) if (i != null && i.islandId == islandId) return i.name;
+            return "your island";
+        }
+
         async void Buy(Listing l)
         {
             if (_busy) return;
             _busy = true;
             try
             {
-                var (done, error) = await IslandApi.Buy(l, s => { if (this != null) Status(s, HackUi.Gold); });
-                if (this == null) return;
-                if (error != null) { Status(error, HackUi.Bad); return; }
-                Status(done.status == "sold"
-                    ? $"{done.island?.name} is yours! NFT {IslandUi.Short(done.nftMint)} moved to your wallet; the seller was paid."
-                    : $"Paid. The trade is {done.status}" + (string.IsNullOrEmpty(done.error) ? "." : ": " + done.error + " Press Complete under Your trades."), done.status == "sold" ? HackUi.Good : HackUi.Gold);
-                LastTrade = done;
+                Tx(null);
+                ShowBuy(await IslandApi.Buy(l, s => { if (this != null) Status(s, HackUi.Gold); }));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("MarketPanel.Buy: " + e);
+                if (this != null) Status("The purchase stopped: " + e.Message + " A signed payment is kept; Finish purchase asks again.", HackUi.Bad);
             }
             finally { _busy = false; }
-            AfterTrade();
+            if (this != null) AfterTrade();
+        }
+
+        async void FinishBuy(string listingId)
+        {
+            if (_busy) return;
+            _busy = true;
+            try { ShowBuy(await IslandApi.FinishBuy(listingId, s => { if (this != null) Status(s, HackUi.Gold); })); }
+            catch (Exception e) { Debug.LogWarning("MarketPanel.FinishBuy: " + e); if (this != null) Status(e.Message, HackUi.Bad); }
+            finally { _busy = false; }
+            if (this != null) AfterTrade();
+        }
+
+        void ShowBuy(IslandApi.TradeResult r)
+        {
+            if (this == null) return;
+            if (!r.Ok) { Status(r.Error ?? "The purchase did not finish.", r.Pending ? HackUi.Gold : HackUi.Bad, r.Signature); return; }
+            var done = r.Listing;
+            Status(done.status == "sold"
+                ? $"{done.island?.name} is yours! NFT {IslandUi.Short(done.nftMint)} moved to your wallet; the seller was paid."
+                : $"Paid. The trade is {done.status}" + (string.IsNullOrEmpty(done.error) ? "." : ": " + done.error + " Press Complete under Your trades."),
+                done.status == "sold" ? HackUi.Good : HackUi.Gold, r.Signature);
+            LastTrade = done;
+        }
+
+        async void FinishList(string islandId)
+        {
+            if (_busy) return;
+            _busy = true;
+            try { ShowList(IslandName(islandId), await IslandApi.FinishList(islandId, 0, s => { if (this != null) Status(s, HackUi.Gold); })); }
+            catch (Exception e) { Debug.LogWarning("MarketPanel.FinishList: " + e); if (this != null) Status(e.Message, HackUi.Bad); }
+            finally { _busy = false; }
+            if (this != null) AfterTrade();
+        }
+
+        void ShowList(string islandName, IslandApi.TradeResult r)
+        {
+            if (this == null) return;
+            if (!r.Ok) { Status(r.Error ?? "The listing did not finish.", r.Pending ? HackUi.Gold : HackUi.Bad, r.Signature); return; }
+            Status($"{islandName} is listed for {HackathonRules.Sol(r.Listing.priceLamports)}. The NFT is in escrow ({HackathonRules.ShortSig(r.Listing.escrowSignature)}).", HackUi.Good, r.Signature);
+            LastTrade = r.Listing;
+        }
+
+        /// <summary>Asks the server once about every unfinished purchase and listing (no wallet, no transfer).</summary>
+        async void ResumePending()
+        {
+            if (_busy) return;
+            _busy = true;
+            try
+            {
+                foreach (var e in PendingBuys())
+                {
+                    var r = await IslandApi.FinishBuy(e.key, null, 1);
+                    if (this == null) return;
+                    if (!r.Pending) ShowBuy(r);
+                }
+                foreach (var e in PendingLists())
+                {
+                    var r = await IslandApi.FinishList(e.key, 0, null, 1);
+                    if (this == null) return;
+                    if (!r.Pending) ShowList(IslandName(e.key), r);
+                }
+            }
+            catch (Exception e) { Debug.LogWarning("MarketPanel.ResumePending: " + e); }
+            finally { _busy = false; }
+            if (this != null) AfterTrade();
         }
 
         /// <summary>The last buy, list or cancel (the screen's success line links its NFT).</summary>
@@ -296,14 +450,16 @@ namespace RoguePirates.Hackathon.UI
             _busy = true;
             try
             {
-                var (listing, error) = await IslandApi.List(island, lamports, s => { if (this != null) Status(s, HackUi.Gold); });
-                if (this == null) return;
-                if (error != null) { Status(error, HackUi.Bad); return; }
-                Status($"{island.name} is listed for {HackathonRules.Sol(listing.priceLamports)}. The NFT is in escrow ({HackathonRules.ShortSig(listing.escrowSignature)}).", HackUi.Good);
-                LastTrade = listing;
+                Tx(null);
+                ShowList(island.name, await IslandApi.List(island, lamports, s => { if (this != null) Status(s, HackUi.Gold); }));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("MarketPanel.List: " + e);
+                if (this != null) Status("The listing stopped: " + e.Message + " A signed NFT transfer is kept; Finish listing asks again.", HackUi.Bad);
             }
             finally { _busy = false; }
-            AfterTrade();
+            if (this != null) AfterTrade();
         }
 
         async void Cancel(Listing l)
@@ -320,8 +476,9 @@ namespace RoguePirates.Hackathon.UI
                     listing.status == "cancelled" ? HackUi.Good : HackUi.Bad);
                 LastTrade = listing;
             }
+            catch (Exception e) { Debug.LogWarning("MarketPanel.Cancel: " + e); if (this != null) Status(e.Message, HackUi.Bad); }
             finally { _busy = false; }
-            AfterTrade();
+            if (this != null) AfterTrade();
         }
 
         async void Complete(Listing l)
@@ -336,8 +493,9 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 Status(listing.status == "sold" ? "Trade complete." : $"The trade is {listing.status}: {listing.error}", listing.status == "sold" ? HackUi.Good : HackUi.Bad);
             }
+            catch (Exception e) { Debug.LogWarning("MarketPanel.Complete: " + e); if (this != null) Status(e.Message, HackUi.Bad); }
             finally { _busy = false; }
-            AfterTrade();
+            if (this != null) AfterTrade();
         }
 
         async void AfterTrade()
@@ -345,16 +503,21 @@ namespace RoguePirates.Hackathon.UI
             var text = _status.text;
             var color = _status.color;
             var request = ++_requests;
-            var (market, _) = await IslandApi.Market();
-            if (this == null || request != _requests) return;
-            if (market != null) _market = market;
-            (_mine, _) = await IslandApi.MyListings();
-            if (this == null || request != _requests) return;
-            (_islands, _) = await IslandApi.Mine();
-            if (this == null || request != _requests) return;
-            Render();
-            Status(text, color);
-            _ = Web3Session.Instance.RefreshBalance();
+            try
+            {
+                var (market, _) = await IslandApi.Market();
+                if (this == null || request != _requests) return;
+                if (market != null) _market = market;
+                (_mine, _) = await IslandApi.MyListings();
+                if (this == null || request != _requests) return;
+                (_islands, _) = await IslandApi.Mine();
+                if (this == null || request != _requests) return;
+                Render();
+                _status.text = text;
+                _status.color = color;
+                _ = Web3Session.Instance.RefreshBalance();
+            }
+            catch (Exception e) { Debug.LogWarning("MarketPanel.AfterTrade: " + e); }
         }
     }
 }

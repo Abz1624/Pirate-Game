@@ -87,5 +87,42 @@ namespace RoguePirates.Hackathon
                 { error = "Use letters, digits, spaces, _ or - only."; return null; }
             return name;
         }
+
+        /// <summary>
+        /// 13 Oct (review): a signed transaction's id, known before it is sent: the fee payer's signature (the first one;
+        /// Solana's transaction id is always the first signature, and the fee payer signs first), base58. Null when the
+        /// wallet returned no signature.
+        /// </summary>
+        public static string TransactionId(System.Collections.Generic.IList<Solana.Unity.Rpc.Models.SignaturePubKeyPair> signatures, string feePayer)
+        {
+            if (signatures == null || signatures.Count == 0) return null;
+            byte[] sig = null;
+            foreach (var s in signatures)
+                if (s?.PublicKey != null && s.PublicKey.Key == feePayer) { sig = s.Signature; break; }
+            if (sig == null) sig = signatures[0]?.Signature;
+            return SignatureBase58(sig);
+        }
+
+        /// <summary>A 64-byte signature in base58; null for a missing or all-zero (unsigned) one.</summary>
+        public static string SignatureBase58(byte[] sig)
+        {
+            if (sig == null || sig.Length != 64) return null;
+            var any = false;
+            foreach (var b in sig) if (b != 0) { any = true; break; }
+            return any ? Solana.Unity.Wallet.Utilities.Encoders.Base58.EncodeData(sig) : null;
+        }
+
+        /// <summary>
+        /// A send that the node refused in its preflight (JSON-RPC -32002 "Transaction simulation failed", including
+        /// "Blockhash not found" and insufficient funds; -32003 signature verification failed): the node did not broadcast
+        /// it, so it can never land. Anything else (a timeout, no reply, an unreadable body, another code) may have been
+        /// broadcast: the transfer is "sent, unknown".
+        /// </summary>
+        public static bool DefinitelyNotBroadcast(int serverErrorCode, string rawResponse)
+        {
+            if (serverErrorCode == -32002 || serverErrorCode == -32003) return true;
+            if (string.IsNullOrEmpty(rawResponse)) return false;
+            return System.Text.RegularExpressions.Regex.IsMatch(rawResponse, @"""code""\s*:\s*-3200[23]\b");
+        }
     }
 }

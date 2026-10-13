@@ -171,7 +171,8 @@ namespace RoguePirates.Hackathon
             var adapter = new SolanaWalletAdapter(options, RpcCluster.DevNet, rpc, ws);
             Web3Host.Instance.RaiseWalletChooser();
             Account acc;
-            try { acc = await adapter.Login(); }
+            try { acc = await WaitForWallet(adapter.Login(), ConnectTimeoutSeconds, true); }
+            catch (WalletWaitException e) { return e.Message; }
             catch (Exception e)
             {
                 Debug.LogWarning("Web3Session wallet login: " + e.Message);
@@ -196,7 +197,9 @@ namespace RoguePirates.Hackathon
             if (!nonce.Ok || nonce.Data == null || string.IsNullOrEmpty(nonce.Data.message)) return ApiError("sign-in message", nonce);
 
             Raise("Approve the sign-in message in your wallet...");
-            var signed = await Wallet.SignMessage(Encoding.UTF8.GetBytes(nonce.Data.message));
+            byte[] signed;
+            try { signed = await WaitForWallet(Wallet.SignMessage(Encoding.UTF8.GetBytes(nonce.Data.message)), SignTimeoutSeconds); }
+            catch (WalletWaitException e) { return e.Message; }
             var sig = Web3Rules.DetachedSignature(signed);
             if (sig == null) return "The wallet did not sign the message.";
 
@@ -341,9 +344,10 @@ namespace RoguePirates.Hackathon
             if (!WalletConnected) return (null, "Connect a wallet first.");
             try
             {
-                var sig = Web3Rules.DetachedSignature(await Wallet.SignMessage(message));
+                var sig = Web3Rules.DetachedSignature(await WaitForWallet(Wallet.SignMessage(message), SignTimeoutSeconds));
                 return sig == null ? (null, "The wallet did not sign the message.") : (sig, null);
             }
+            catch (WalletWaitException e) { return (null, e.Message); }
             catch (Exception e) { return (null, Readable(e)); }
         }
 
@@ -354,19 +358,24 @@ namespace RoguePirates.Hackathon
             return (sig != null ? Encoders.Base58.EncodeData(sig) : null, error);
         }
 
-        /// <summary>Builds, signs (the wallet asks the player) and sends a SOL transfer on devnet, with an optional memo (the
-        /// server matches deposits by it). Returns the transaction signature.</summary>
-        public async Task<(string signature, string error)> TransferSol(string toAddress, double sol, string memo = null)
+        /// <summary>
+        /// Builds, signs (the wallet asks the player) and sends a SOL transfer on devnet, with an optional memo (the server
+        /// matches deposits by it). 13 Oct (review): the wallet only signs (<see cref="WalletBase.SignTransaction"/>: the WebGL
+        /// wallet adapter's signTransaction and Android MWA's sign_transactions alike); the transaction's id is its fee payer's
+        /// signature, known before anything is sent. <paramref name="onSigned"/> gets it first (the caller persists it), then
+        /// the game sends it. Any failure after signing is "sent, unknown" (<see cref="TransferResult.MaybeSent"/>): the SOL
+        /// may have left, so the caller keeps the signature and asks the server instead of saying nothing was taken. Only a
+        /// node's definite preflight rejection (simulation or signature check failed: nothing was broadcast) or a refusal
+        /// before signing counts as not sent.
+        /// </summary>
+        public Task<TransferResult> TransferSol(string toAddress, double sol, string memo = null, Action<string> onSigned = null)
         {
-            if (!WalletConnected) return (null, "Connect a wallet first.");
-            if (!Web3Rules.LooksLikeAddress(toAddress)) return (null, "Not a Solana address.");
+            if (!WalletConnected) return Task.FromResult(TransferResult.NotSent("Connect a wallet first."));
+            if (!Web3Rules.LooksLikeAddress(toAddress)) return Task.FromResult(TransferResult.NotSent("Not a Solana address."));
             var lamports = Web3Rules.SolToLamports(sol);
-            if (lamports == 0) return (null, "Nothing to send.");
-            if (Busy) return (null, "Busy, please wait.");
-            Begin("Approve the transfer in your wallet...");
-            try
+            if (lamports == 0) return Task.FromResult(TransferResult.NotSent("Nothing to send."));
+            return SignAndSend("Transfer", "Approve the transfer in your wallet...", onSigned, async from =>
             {
-                var from = Wallet.Account.PublicKey;
                 var tx = new Transaction
                 {
                     RecentBlockHash = await Wallet.GetBlockHash(Commitment.Confirmed, false),
@@ -375,32 +384,88 @@ namespace RoguePirates.Hackathon
                     Signatures = new List<SignaturePubKeyPair>(),
                 };
                 if (!string.IsNullOrEmpty(memo)) tx.Instructions.Add(MemoProgram.NewMemo(from, memo));
-                var result = await Wallet.SignAndSendTransaction(tx, false, Commitment.Confirmed);
-                if (result == null || !result.WasSuccessful || string.IsNullOrEmpty(result.Result))
+                return (tx, (string)null);
+            });
+        }
+
+        /// <summary>The end of a transfer: its signature (once the wallet signed), the error, and whether the SOL may have
+        /// left the wallet (signed and possibly broadcast: never tell the player nothing was taken).</summary>
+        public readonly struct TransferResult
+        {
+            public readonly string Signature;
+            public readonly string Error;
+            public readonly bool MaybeSent;
+
+            public TransferResult(string signature, string error, bool maybeSent)
+            {
+                Signature = signature;
+                Error = error;
+                MaybeSent = maybeSent;
+            }
+
+            public bool Ok => Error == null && !string.IsNullOrEmpty(Signature);
+            public static TransferResult NotSent(string error) => new TransferResult(null, error, false);
+        }
+
+        /// <summary>Signs <paramref name="build"/>'s transaction with the wallet, hands the signature to
+        /// <paramref name="onSigned"/>, then sends it (see <see cref="TransferSol"/>).</summary>
+        async Task<TransferResult> SignAndSend(string what, string status, Action<string> onSigned,
+            Func<PublicKey, Task<(Transaction tx, string error)>> build)
+        {
+            if (Busy) return TransferResult.NotSent("Busy, please wait.");
+            Begin(status);
+            string signature = null;
+            try
+            {
+                var from = Wallet.Account.PublicKey;
+                var (tx, buildError) = await build(from);
+                if (buildError != null) return TransferResult.NotSent(Fail(buildError));
+                Transaction signed;
+                try { signed = await WaitForWallet(Wallet.SignTransaction(tx), SignTimeoutSeconds); }
+                catch (WalletWaitException e) { return TransferResult.NotSent(Fail(e.Message)); }
+                signature = Web3Rules.TransactionId(signed?.Signatures, from.Key);
+                if (signature == null) return TransferResult.NotSent(Fail(what + " failed: the wallet did not sign."));
+                LastTransferSignature = signature;
+                // Persist first: from here on the SOL may leave the wallet whatever happens to this app.
+                try { onSigned?.Invoke(signature); }
+                catch (Exception e) { Debug.LogWarning("Web3Session: could not keep the signature: " + e.Message); }
+                Raise("Sending the transaction to devnet...");
+                var result = await Wallet.ActiveRpcClient.SendTransactionAsync(Convert.ToBase64String(signed.Serialize()), false, Commitment.Confirmed);
+                if (result != null && result.WasSuccessful && !string.IsNullOrEmpty(result.Result))
                 {
-                    var reason = result == null ? "no reply" : (result.Reason ?? "refused");
-                    // The SDK cannot parse newer RPC error bodies ("Unable to parse json."): read the node's message.
-                    var raw = result?.RawRpcResponse;
-                    if (!string.IsNullOrEmpty(raw))
-                    {
-                        var m = System.Text.RegularExpressions.Regex.Match(raw, @"""message""\s*:\s*""([^""]+)""");
-                        if (m.Success) reason = m.Groups[1].Value;
-                    }
-                    if (reason.IndexOf("insufficient", StringComparison.OrdinalIgnoreCase) >= 0 || reason.IndexOf("0x1", StringComparison.Ordinal) >= 0 ||
-                        reason.IndexOf("no record of a prior credit", StringComparison.OrdinalIgnoreCase) >= 0)
-                        reason = "not enough devnet SOL (get some at faucet.solana.com)";
-                    return (null, Fail("Transfer failed: " + reason));
+                    if (result.Result != signature) Debug.LogWarning($"Web3Session: the node returned {result.Result} for {signature}.");
+                    Done();
+                    _ = RefreshBalanceLater();
+                    return new TransferResult(signature, null, true);
                 }
-                LastTransferSignature = result.Result;
-                Done();
-                _ = RefreshBalanceLater();
-                return (result.Result, null);
+                var reason = SendFailureReason(result);
+                if (Web3Rules.DefinitelyNotBroadcast(result != null ? result.ServerErrorCode : 0, result?.RawRpcResponse))
+                    return new TransferResult(signature, Fail(what + " failed: " + reason), false);
+                // Unknown: the node may have taken it (a timeout, an unreadable reply).
+                return new TransferResult(signature, Fail(what + " was signed and sent, but devnet's reply was unclear (" + reason + ")."), true);
             }
             catch (Exception e)
             {
-                Debug.LogWarning("Web3Session.TransferSol: " + e);
-                return (null, Fail("Transfer failed: " + Readable(e)));
+                Debug.LogWarning("Web3Session." + what + ": " + e);
+                if (signature == null) return TransferResult.NotSent(Fail(what + " failed: " + Readable(e)));
+                return new TransferResult(signature, Fail(what + " was signed and sent, but devnet's reply was unclear (" + Readable(e) + ")."), true);
             }
+        }
+
+        static string SendFailureReason(Solana.Unity.Rpc.Core.Http.RequestResult<string> result)
+        {
+            var reason = result == null ? "no reply" : (result.Reason ?? "refused");
+            // The SDK cannot parse newer RPC error bodies ("Unable to parse json."): read the node's message.
+            var raw = result?.RawRpcResponse;
+            if (!string.IsNullOrEmpty(raw))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(raw, @"""message""\s*:\s*""([^""]+)""");
+                if (m.Success) reason = m.Groups[1].Value;
+            }
+            if (reason.IndexOf("insufficient", StringComparison.OrdinalIgnoreCase) >= 0 || reason.IndexOf("0x1", StringComparison.Ordinal) >= 0 ||
+                reason.IndexOf("no record of a prior credit", StringComparison.OrdinalIgnoreCase) >= 0)
+                reason = "not enough devnet SOL (get some at faucet.solana.com)";
+            return reason;
         }
 
         /// <summary>
@@ -408,15 +473,12 @@ namespace RoguePirates.Hackathon
         /// <paramref name="toAddress"/>'s associated token account, creating that account if needed (ATA "create
         /// idempotent"). Returns the transaction signature.
         /// </summary>
-        public async Task<(string signature, string error)> TransferNft(string mintAddress, string toAddress)
+        public Task<TransferResult> TransferNft(string mintAddress, string toAddress, Action<string> onSigned = null)
         {
-            if (!WalletConnected) return (null, "Connect a wallet first.");
-            if (!Web3Rules.LooksLikeAddress(toAddress) || !Web3Rules.LooksLikeAddress(mintAddress)) return (null, "Not a Solana address.");
-            if (Busy) return (null, "Busy, please wait.");
-            Begin("Approve the NFT transfer in your wallet...");
-            try
+            if (!WalletConnected) return Task.FromResult(TransferResult.NotSent("Connect a wallet first."));
+            if (!Web3Rules.LooksLikeAddress(toAddress) || !Web3Rules.LooksLikeAddress(mintAddress)) return Task.FromResult(TransferResult.NotSent("Not a Solana address."));
+            return SignAndSend("NFT transfer", "Approve the NFT transfer in your wallet...", onSigned, async from =>
             {
-                var from = Wallet.Account.PublicKey;
                 var mint = new PublicKey(mintAddress);
                 var to = new PublicKey(toAddress);
                 // The NFT sits in the wallet's associated account (the server mints and moves it there); else any account
@@ -435,7 +497,7 @@ namespace RoguePirates.Hackathon
                         if (a.PublicKey == AssociatedTokenAccountProgram.DeriveAssociatedTokenAccount(from, mint).Key) break;
                     }
                 }
-                if (!held) return (null, Fail("Your wallet does not hold this island's NFT."));
+                if (!held) return (null, "Your wallet does not hold this island's NFT.");
                 var destination = AssociatedTokenAccountProgram.DeriveAssociatedTokenAccount(to, mint);
                 var tx = new Transaction
                 {
@@ -461,30 +523,8 @@ namespace RoguePirates.Hackathon
                     },
                     Signatures = new List<SignaturePubKeyPair>(),
                 };
-                var result = await Wallet.SignAndSendTransaction(tx, false, Commitment.Confirmed);
-                if (result == null || !result.WasSuccessful || string.IsNullOrEmpty(result.Result))
-                {
-                    var reason = result == null ? "no reply" : (result.Reason ?? "refused");
-                    var raw = result?.RawRpcResponse;
-                    if (!string.IsNullOrEmpty(raw))
-                    {
-                        var m = System.Text.RegularExpressions.Regex.Match(raw, @"""message""\s*:\s*""([^""]+)""");
-                        if (m.Success) reason = m.Groups[1].Value;
-                    }
-                    if (reason.IndexOf("no record of a prior credit", StringComparison.OrdinalIgnoreCase) >= 0)
-                        reason = "not enough devnet SOL for the fee (get some at faucet.solana.com)";
-                    return (null, Fail("NFT transfer failed: " + reason));
-                }
-                LastTransferSignature = result.Result;
-                Done();
-                _ = RefreshBalanceLater();
-                return (result.Result, null);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning("Web3Session.TransferNft: " + e);
-                return (null, Fail("NFT transfer failed: " + Readable(e)));
-            }
+                return (tx, (string)null);
+            });
         }
 
         async Task RefreshBalanceLater()
@@ -505,6 +545,89 @@ namespace RoguePirates.Hackathon
                 return null;
             }
             catch (Exception e) { return "Airdrop failed: " + Readable(e); }
+        }
+
+        // ---------------------------------------------------------------- waiting for the wallet
+
+        /// <summary>How long the game waits for the wallet (seconds): choosing and approving a connection, signing.</summary>
+        public const float ConnectTimeoutSeconds = 180f, SignTimeoutSeconds = 180f;
+
+        sealed class WalletWaitException : Exception
+        {
+            public WalletWaitException(string message) : base(message) { }
+        }
+
+        bool _cancelRequested;
+        bool _waiting;
+
+        /// <summary>The session waits for the wallet (a connection, a signature): <see cref="CancelWait"/> stops waiting.</summary>
+        public bool CanCancel => Busy && _waiting;
+
+        /// <summary>Stops waiting for the wallet (the player closed it, or it never answered). Safe: a transfer is sent by the
+        /// game only after the wallet returns its signature, so a signature the wallet gives later is never sent.</summary>
+        public void CancelWait()
+        {
+            if (_waiting) _cancelRequested = true;
+        }
+
+        /// <summary>Waits for <paramref name="task"/>, at most <paramref name="seconds"/>, until <see cref="CancelWait"/>, or (the
+        /// WebGL wallet chooser) until its close button hides the chooser before a wallet was picked. Throws
+        /// <see cref="WalletWaitException"/> with the player-facing reason; the abandoned task is left to the SDK.</summary>
+        async Task<T> WaitForWallet<T>(Task<T> task, float seconds, bool watchPicker = false)
+        {
+            _waiting = true;
+            _cancelRequested = false;
+            Raise(Status);
+            var until = Time.realtimeSinceStartup + seconds;
+            var picker = watchPicker ? new PickerWatch() : null;
+            try
+            {
+                while (!task.IsCompleted)
+                {
+                    if (_cancelRequested) throw new WalletWaitException("Cancelled. Nothing was sent.");
+                    if (Time.realtimeSinceStartup > until) throw new WalletWaitException("The wallet did not answer in time. Nothing was sent; try again.");
+                    if (picker != null && picker.Closed()) throw new WalletWaitException("The wallet choice was closed.");
+                    await Awaitable.NextFrameAsync();
+                }
+                return await task;
+            }
+            finally
+            {
+                _waiting = false;
+                _cancelRequested = false;
+            }
+        }
+
+        /// <summary>The SDK's WebGL wallet chooser (SolanaWalletAdapterWebGL.WalletAdapterUI): its close button only hides it,
+        /// and the SDK's login then waits for a choice forever. Seen open, then hidden without a pick: closed.</summary>
+        sealed class PickerWatch
+        {
+            bool _seen, _picked;
+
+            public bool Closed()
+            {
+#if UNITY_WEBGL && !UNITY_EDITOR
+                var ui = SolanaWalletAdapterWebGL.WalletAdapterUI;
+                if (ui == null) return false;
+                if (ui.activeSelf)
+                {
+                    if (!_seen)
+                    {
+                        _seen = true;
+                        var screen = ui.transform.childCount > 0 ? ui.transform.GetChild(0).GetComponent<WalletAdapterScreen>() : null;
+                        if (screen != null)
+                        {
+                            var picked = screen.OnSelectedAction;
+                            screen.OnSelectedAction = name => { _picked = true; picked?.Invoke(name); };
+                        }
+                    }
+                    return false;
+                }
+                return _seen && !_picked;
+#else
+                return _seen && _picked; // only the WebGL player has the chooser
+#endif
+            }
         }
 
         // ---------------------------------------------------------------- state

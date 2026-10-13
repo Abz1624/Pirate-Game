@@ -92,16 +92,125 @@ namespace RoguePirates.Hackathon
         public static bool RaceFinished(int kills, int target) => kills >= (target > 0 ? target : 100);
 
         /// <summary>The hub message after a bundled deposit did not go through. Once a transfer was sent it never says that
-        /// no SOL was taken: a refused transfer is being refunded; an unconfirmed one stays in the lobby (Check deposit).</summary>
-        public static string DepositFailureLine(bool host, string stake, bool sent, bool refunded, string reason)
+        /// no SOL was taken: a refused transfer is being refunded; an unconfirmed one stays in the lobby (Check deposit); one
+        /// the server refused for good says what happens to the SOL (<paramref name="finalLine"/>).</summary>
+        public static string DepositFailureLine(bool host, string stake, bool sent, bool refunded, string reason, string finalLine = null)
         {
             var who = host ? "Match cancelled" : "Left the match";
             reason = string.IsNullOrEmpty(reason) ? null : reason.Trim().TrimEnd('.');
             if (refunded)
                 return $"{who}: the {stake} deposit could not be used" + (reason != null ? $" ({reason})" : string.Empty) + ". Your refund is on the way to your wallet.";
+            if (sent && !string.IsNullOrEmpty(finalLine)) return $"{who}: {finalLine}";
             if (sent)
                 return $"Your {stake} transfer was sent but is not confirmed yet" + (reason != null ? $" ({reason})" : string.Empty) + ". Stay here and press Check deposit; you will not pay twice.";
             return $"{who}: the {stake} deposit was not made" + (reason != null ? $" ({reason})" : string.Empty) + ". No SOL was taken.";
+        }
+
+        // ---------------------------------------------------------------- payments: the server's answer to a signature
+
+        /// <summary>
+        /// 13 Oct (review): how a payment's server answer is handled.
+        /// <list type="bullet">
+        /// <item>Accepted: done, the signature is forgotten;</item>
+        /// <item>Wait: not seen on devnet yet or the server is unreachable: ask again in a moment (same signature);</item>
+        /// <item>Hold: an answer that may change later (signed out, wagers off, an unknown refusal): keep the signature and
+        /// let the player ask again (Check deposit, Finish purchase, Finish listing); never pay again;</item>
+        /// <item>Final: the server decided for good (refunded, refused, the listing or seat is gone): forget the signature
+        /// and say what happens to the SOL.</item>
+        /// </list>
+        /// </summary>
+        public enum PaymentVerdict { Accepted, Wait, Hold, Final }
+
+        /// <summary>The refusals that are final for a signed payment (the same signature can never succeed).</summary>
+        public static readonly string[] FinalCodes =
+        {
+            "deposit_refunded", "purchase_refunded", "payment_refunded", "refunded", "memo_mismatch", "amount_too_low",
+            "signature_used", "invalid_signature", "wager_closed", "not_in_lobby", "already_started", "no_wager",
+            "listing_not_active", "listing_not_found", "own_listing", "already_listed", "not_your_island", "nft_not_minted",
+            "invalid_price", "invalid_purpose", "purpose_reserved", "reserved_purpose", "wrong_purpose", "expired",
+            // 13 Oct server hotfix (66ba84ed): a recorded payment re-checked and refused, a failed or foreign transaction,
+            // no stakes on bot matches.
+            "payment_used", "wrong_sender", "wrong_recipient", "tx_failed", "bot_stakes_off", "raid_stakes_off",
+            "lobby_not_found", "not_your_listing", "nft_not_in_escrow",
+        };
+
+        /// <summary>The verdict for a server answer. <paramref name="nftWait"/>: a listing, where the escrow may not see the
+        /// NFT yet (nft_not_received) right after the transfer.</summary>
+        public static PaymentVerdict Verdict(RoguePirates.V4.Online.ApiOutcome outcome, long status, string code, bool nftWait = false)
+        {
+            switch (outcome)
+            {
+                case RoguePirates.V4.Online.ApiOutcome.Ok: return PaymentVerdict.Accepted;
+                case RoguePirates.V4.Online.ApiOutcome.Offline:
+                case RoguePirates.V4.Online.ApiOutcome.ServerError: return PaymentVerdict.Wait;
+                case RoguePirates.V4.Online.ApiOutcome.NotConfigured: return PaymentVerdict.Hold;
+            }
+            if (code == "already_deposited") return PaymentVerdict.Accepted;
+            if (code == "tx_not_confirmed" || (nftWait && code == "nft_not_received")) return PaymentVerdict.Wait;
+            if (!string.IsNullOrEmpty(code))
+            {
+                if (Array.IndexOf(FinalCodes, code) >= 0 || code.IndexOf("refund", StringComparison.OrdinalIgnoreCase) >= 0) return PaymentVerdict.Final;
+            }
+            return PaymentVerdict.Hold;
+        }
+
+        /// <summary>A transfer that devnet still has not seen this long after signing can never land (its blockhash expired
+        /// after about 90 s): it was not taken.</summary>
+        public const double ExpireSeconds = 300;
+
+        public static bool Expired(string code, double ageSeconds) => code == "tx_not_confirmed" && ageSeconds > ExpireSeconds;
+
+        /// <summary>
+        /// The line for a signed payment the server refused for good: what, the server's reason, and what happens to the
+        /// SOL (or the NFT). <paramref name="what"/>: "deposit", "payment", "NFT transfer".
+        /// </summary>
+        public static string FinalLine(string what, string amount, string code, string serverMessage)
+        {
+            var reason = string.IsNullOrEmpty(serverMessage) ? FriendlyCode(code) : serverMessage.Trim().TrimEnd('.');
+            var head = string.IsNullOrEmpty(amount) ? $"The {what} was not accepted" : $"The {amount} {what} was not accepted";
+            if (code == "expired")
+                return $"The {what} never reached devnet (it expired), so nothing was taken. You can try again.";
+            var line = head + (string.IsNullOrEmpty(reason) ? "." : $": {reason}.");
+            var refundSaid = (serverMessage ?? string.Empty).IndexOf("refund", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (refundSaid) return line;
+            if (what == "NFT transfer")
+                return line + " The NFT is in the market escrow: ask the organisers to return it (keep the transaction link).";
+            if (code != null && code.IndexOf("refund", StringComparison.OrdinalIgnoreCase) >= 0)
+                return line + " Your SOL is refunded to your wallet.";
+            switch (code)
+            {
+                case "tx_failed":
+                    return line + " The transaction failed on devnet, so no SOL moved (only the network fee).";
+                case "payment_used":
+                    return line + " That payment was already used or refunded: check the transaction link.";
+                case "listing_not_active":
+                case "listing_not_found":
+                    return line + " The server refunds a payment for a listing that is no longer for sale to your wallet.";
+                case "memo_mismatch":
+                case "amount_too_low":
+                case "signature_used":
+                case "invalid_signature":
+                    return line + " If SOL left your wallet it is in the game's escrow and is not refunded automatically: keep the transaction link and ask the organisers.";
+            }
+            return line + " If SOL left your wallet the server refunds it; check the transaction link.";
+        }
+
+        static string FriendlyCode(string code)
+        {
+            switch (code)
+            {
+                case "memo_mismatch": return "the transfer was not for this (memo mismatch)";
+                case "amount_too_low": return "the transfer was smaller than the price";
+                case "signature_used": return "that transaction was already used";
+                case "listing_not_active": return "the listing is no longer for sale";
+                case "wager_closed": return "the wager is closed";
+                case "not_in_lobby": return "you are no longer seated in this lobby";
+                case "already_started": return "the match already started";
+                case "tx_failed": return "the transaction failed on devnet";
+                case "wrong_sender": return "the transfer was not from your signed-in wallet";
+                case "payment_used": return "the payment was already used or refunded";
+                default: return string.IsNullOrEmpty(code) ? null : code.Replace('_', ' ');
+            }
         }
     }
 }

@@ -202,12 +202,28 @@ namespace RoguePirates.Hackathon.UI
                     : last ?? "No time today yet. Reach 100 kills as fast as you can.";
         }
 
-        void SetSail()
+        bool _sailing;
+
+        async void SetSail()
         {
-            if (_race == null) return;
+            if (_race == null || _sailing) return;
             if (!Web3Session.Instance.SignedIn) { _me.text = "Connect a wallet first (top of the menu): race times are posted to your wallet profile."; return; }
-            // A voyage leaves any 1v1 lobby first (as the menu's Play does).
-            if (PvpSession.Exists && PvpSession.Instance.Lobby != null) _ = PvpSession.Instance.Leave();
+            _sailing = true;
+            try
+            {
+                // A voyage leaves any 1v1 lobby first (as the menu's Play does). 13 Oct (review): a deposit still waiting for
+                // the server is posted first and its answer awaited (the server refunds it once the seat is gone).
+                if (PvpSession.Exists && PvpSession.Instance.Lobby != null)
+                {
+                    _status.text = "Leaving the 1v1 lobby...";
+                    var line = await HackathonApi.LeaveLobbySafely();
+                    if (this == null) return;
+                    if (line != null) Debug.Log("DailyRacePanel: " + line);
+                }
+            }
+            catch (Exception e) { Debug.LogWarning("DailyRacePanel.SetSail: " + e); }
+            finally { _sailing = false; }
+            if (this == null) return;
             DailyRaceHud.Begin(_race);
             MenuServices.BeginSaltwindExperiment();
             SceneManager.LoadScene(V4SceneNames.SaltwindRun);

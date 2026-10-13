@@ -177,29 +177,126 @@ namespace RoguePirates.Hackathon
             return r.Ok && r.Data != null ? (r.Data, null) : (null, Error("your listings", r));
         }
 
-        /// <summary>Pays the listing's price to the treasury (memo buy:&lt;id&gt;) and asks the server to swap.</summary>
-        public static async Task<(Listing listing, string error)> Buy(Listing l, Action<string> progress)
+        /// <summary>The end of a market payment or listing: the listing, the error, the transfer's signature (explorer link) and
+        /// whether it is still pending (Finish purchase / Finish listing asks again without a second transfer).</summary>
+        public sealed class TradeResult
         {
-            var session = Web3Session.Instance;
-            if (!session.WalletConnected) return (null, "Connect your wallet to buy.");
-            var treasury = !string.IsNullOrEmpty(l.treasury) ? l.treasury : Treasury;
-            if (string.IsNullOrEmpty(treasury)) return (null, "The market has no escrow address.");
-            // Do not pay for a listing that is gone.
-            var fresh = await Client.Get<Listing>("/api/market/" + l.listingId, Token);
-            if (fresh.Ok && fresh.Data != null && fresh.Data.status != "active") return (null, "This listing is no longer for sale.");
-            progress?.Invoke("Approve the " + HackathonRules.Sol(l.priceLamports) + " payment in your wallet...");
-            var (sig, error) = await session.TransferSol(treasury, HackathonRules.LamportsToSol(l.priceLamports),
-                string.IsNullOrEmpty(l.memo) ? "buy:" + l.listingId : l.memo);
-            if (error != null) return (null, error);
-            for (var attempt = 0; attempt < 12; attempt++)
+            public Listing Listing;
+            public string Error;
+            public string Signature;
+            public bool Pending;
+            /// <summary>The server refused it for good (the line says what happens to the SOL or the NFT).</summary>
+            public bool Final;
+            public bool Ok => Error == null && Listing != null;
+        }
+
+        /// <summary>Seams for the market posts (tests): listing id and signature; island id, price and signature.</summary>
+        public static Func<string, string, Task<ApiResult<Listing>>> PostBuy = DefaultPostBuy;
+        public static Func<string, long, string, Task<ApiResult<Listing>>> PostList = DefaultPostList;
+
+        static async Task<ApiResult<Listing>> DefaultPostBuy(string listingId, string signature) =>
+            await Client.Post<Listing>("/api/market/" + listingId + "/buy", new SignatureRequest { signature = signature }, Token);
+
+        static async Task<ApiResult<Listing>> DefaultPostList(string islandId, long priceLamports, string signature) =>
+            await Client.Post<Listing>("/api/market/list", new ListRequest { islandId = islandId, priceLamports = priceLamports, signature = signature }, Token);
+
+        /// <summary>Seams for the reconciliation reads (tests): one listing; the player's listings.</summary>
+        public static Func<string, Task<Listing>> FetchListing = DefaultFetchListing;
+        public static Func<Task<Listing[]>> FetchMyListings = DefaultFetchMyListings;
+
+        static async Task<Listing> DefaultFetchListing(string listingId)
+        {
+            var r = await Client.Get<Listing>("/api/market/" + listingId, Token);
+            return r.Ok ? r.Data : null;
+        }
+
+        static async Task<Listing[]> DefaultFetchMyListings()
+        {
+            var (mine, _) = await MyListings();
+            return mine?.listings;
+        }
+
+        public static void UseDefaultPosts()
+        {
+            PostBuy = DefaultPostBuy;
+            PostList = DefaultPostList;
+            FetchListing = DefaultFetchListing;
+            FetchMyListings = DefaultFetchMyListings;
+        }
+
+        /// <summary>
+        /// Pays the listing's price to the treasury (memo buy:&lt;id&gt;) and asks the server to swap. 13 Oct (review): the
+        /// payment's signature is kept (<see cref="PendingTransfers"/>) when the wallet signs, before it is sent; a retry or
+        /// a reopened market posts that signature again instead of paying twice. A listing no longer for sale after paying
+        /// shows the server's answer (it refunds that payment).
+        /// </summary>
+        public static async Task<TradeResult> Buy(Listing l, Action<string> progress)
+        {
+            if (l == null) return new TradeResult { Error = "No listing." };
+            if (!PendingTransfers.Has(PendingTransfers.Buy, l.listingId))
             {
-                progress?.Invoke(attempt == 0 ? "Paid. The server is moving the island to you..." : "Waiting for devnet to confirm the payment...");
-                var r = await Client.Post<Listing>("/api/market/" + l.listingId + "/buy", new SignatureRequest { signature = sig }, Token);
-                if (r.Ok && r.Data != null) return (r.Data, null);
-                if (r.ErrorCode == "tx_not_confirmed" || r.Outcome == ApiOutcome.Offline) { await Awaitable.WaitForSecondsAsync(2.5f); continue; }
-                return (null, Error("purchase", r) + " (payment " + HackathonRules.ShortSig(sig) + ")");
+                var session = Web3Session.Instance;
+                if (!session.WalletConnected) return new TradeResult { Error = "Connect your wallet to buy." };
+                var treasury = !string.IsNullOrEmpty(l.treasury) ? l.treasury : Treasury;
+                if (string.IsNullOrEmpty(treasury)) return new TradeResult { Error = "The market has no escrow address." };
+                // Do not pay for a listing that is gone.
+                var fresh = await Client.Get<Listing>("/api/market/" + l.listingId, Token);
+                if (fresh.Ok && fresh.Data != null && fresh.Data.status != "active") return new TradeResult { Error = "This listing is no longer for sale." };
+                progress?.Invoke("Approve the " + HackathonRules.Sol(l.priceLamports) + " payment in your wallet...");
+                var wallet = session.Address;
+                var listingId = l.listingId;
+                var t = await session.TransferSol(treasury, HackathonRules.LamportsToSol(l.priceLamports),
+                    string.IsNullOrEmpty(l.memo) ? "buy:" + l.listingId : l.memo,
+                    sig => PendingTransfers.Remember(PendingTransfers.Buy, listingId, sig, wallet, l.priceLamports));
+                if (!t.Ok && !t.MaybeSent)
+                {
+                    PendingTransfers.Forget(PendingTransfers.Buy, l.listingId);
+                    return new TradeResult { Error = t.Error ?? "The payment was not made." };
+                }
             }
-            return (null, "Devnet has not confirmed the payment yet (" + HackathonRules.ShortSig(sig) + "). Open Market again to finish.");
+            return await FinishBuy(l.listingId, progress);
+        }
+
+        /// <summary>Posts the pending payment for <paramref name="listingId"/> (no wallet, no second payment).</summary>
+        public static async Task<TradeResult> FinishBuy(string listingId, Action<string> progress, int attempts = 12)
+        {
+            var pending = PendingTransfers.Get(PendingTransfers.Buy, listingId);
+            if (pending == null) return new TradeResult { Error = "No payment is waiting for this listing." };
+            var price = HackathonRules.Sol(pending.lamports);
+            var a = await PaymentFlow.Post(PendingTransfers.Buy, listingId, sig => PostBuy(listingId, sig),
+                attempt => progress?.Invoke(attempt == 0 ? "Paid. The server is moving the island to you..." : "Waiting for devnet to confirm the payment..."),
+                false, attempts);
+            var r = new TradeResult { Signature = a.Signature };
+            switch (a.Verdict)
+            {
+                case HackathonRules.PaymentVerdict.Accepted:
+                    r.Listing = a.Data;
+                    return r;
+                case HackathonRules.PaymentVerdict.Final:
+                    // An earlier post of this payment may have gone through (its reply lost): the listing says so.
+                    if (a.Code == "listing_not_active" || a.Code == "signature_used")
+                    {
+                        Listing now = null;
+                        try { now = await FetchListing(listingId); } catch (Exception e) { Debug.LogWarning("IslandApi.FinishBuy: " + e.Message); }
+                        if (now != null && !string.IsNullOrEmpty(now.paymentSignature) && now.paymentSignature == a.Signature)
+                        {
+                            r.Listing = now;
+                            return r;
+                        }
+                    }
+                    r.Final = true;
+                    r.Error = HackathonRules.FinalLine("payment", price, a.Code, a.Message);
+                    return r;
+                case HackathonRules.PaymentVerdict.Hold:
+                    r.Pending = true;
+                    r.Error = (string.IsNullOrEmpty(a.Message) ? "The server did not take the payment yet" : a.Message.TrimEnd('.')) +
+                              $". Your {price} payment is kept: press Finish purchase to ask again (you will not pay twice).";
+                    return r;
+                default:
+                    r.Pending = true;
+                    r.Error = $"Devnet has not confirmed the {price} payment yet. Press Finish purchase in a moment (you will not pay twice).";
+                    return r;
+            }
         }
 
         public static async Task<(Listing listing, string error)> Complete(string listingId)
@@ -214,37 +311,80 @@ namespace RoguePirates.Hackathon
             return r.Ok && r.Data != null ? (r.Data, null) : (null, Error("cancel", r));
         }
 
-        /// <summary>Sends the island's NFT to the escrow, then lists it at <paramref name="priceLamports"/>.</summary>
-        public static async Task<(Listing listing, string error)> List(IslandView island, long priceLamports, Action<string> progress)
+        /// <summary>
+        /// Sends the island's NFT to the escrow, then lists it at <paramref name="priceLamports"/>. 13 Oct (review): the escrow
+        /// transfer's signature is kept (<see cref="PendingTransfers"/>) when the wallet signs; "Finish listing" posts
+        /// /api/market/list again with it, so an NFT that reached the escrow is never stuck there unlisted.
+        /// </summary>
+        public static async Task<TradeResult> List(IslandView island, long priceLamports, Action<string> progress)
         {
-            if (island == null) return (null, "No island.");
-            if (island.nft == null || !island.nft.Minted) return (null, "The island's NFT is not minted yet (Retry mint first).");
-            if (priceLamports < 1_000_000L || priceLamports > 100_000_000_000L) return (null, "Prices are 0.001 to 100 SOL.");
-            var session = Web3Session.Instance;
-            if (!session.WalletConnected) return (null, "Connect your wallet to list the island.");
-            var treasury = Treasury;
-            if (string.IsNullOrEmpty(treasury))
+            if (island == null) return new TradeResult { Error = "No island." };
+            if (priceLamports < 1_000_000L || priceLamports > 100_000_000_000L) return new TradeResult { Error = "Prices are 0.001 to 100 SOL." };
+            if (!PendingTransfers.Has(PendingTransfers.List, island.islandId))
             {
-                var (m, merr) = await Market();
-                if (merr != null) return (null, merr);
-                treasury = m.treasury;
-            }
-            progress?.Invoke("Approve sending the Island NFT to the market escrow...");
-            var (sig, error) = await session.TransferNft(island.nft.mint, treasury);
-            if (error != null) return (null, error);
-            for (var attempt = 0; attempt < 12; attempt++)
-            {
-                progress?.Invoke(attempt == 0 ? "NFT sent. The server is checking the escrow..." : "Waiting for devnet to confirm the NFT transfer...");
-                var r = await Client.Post<Listing>("/api/market/list", new ListRequest { islandId = island.islandId, priceLamports = priceLamports, signature = sig }, Token);
-                if (r.Ok && r.Data != null) return (r.Data, null);
-                if (r.ErrorCode == "tx_not_confirmed" || r.ErrorCode == "nft_not_received" || r.Outcome == ApiOutcome.Offline)
+                if (island.nft == null || !island.nft.Minted) return new TradeResult { Error = "The island's NFT is not minted yet (Retry mint first)." };
+                var session = Web3Session.Instance;
+                if (!session.WalletConnected) return new TradeResult { Error = "Connect your wallet to list the island." };
+                var treasury = Treasury;
+                if (string.IsNullOrEmpty(treasury))
                 {
-                    await Awaitable.WaitForSecondsAsync(2.5f);
-                    continue;
+                    var (m, merr) = await Market();
+                    if (merr != null) return new TradeResult { Error = merr };
+                    treasury = m.treasury;
                 }
-                return (null, Error("listing", r) + " (NFT transfer " + HackathonRules.ShortSig(sig) + ")");
+                progress?.Invoke("Approve sending the Island NFT to the market escrow...");
+                var wallet = session.Address;
+                var islandId = island.islandId;
+                var t = await session.TransferNft(island.nft.mint, treasury,
+                    sig => PendingTransfers.Remember(PendingTransfers.List, islandId, sig, wallet, priceLamports));
+                if (!t.Ok && !t.MaybeSent)
+                {
+                    PendingTransfers.Forget(PendingTransfers.List, island.islandId);
+                    return new TradeResult { Error = t.Error ?? "The NFT was not sent." };
+                }
             }
-            return (null, "The escrow has not seen the NFT yet (" + HackathonRules.ShortSig(sig) + "). Try listing again in a moment.");
+            return await FinishList(island.islandId, priceLamports, progress);
+        }
+
+        /// <summary>Lists an island whose NFT transfer to the escrow is pending (no second transfer). A price of 0 keeps the
+        /// price asked when the NFT was sent.</summary>
+        public static async Task<TradeResult> FinishList(string islandId, long priceLamports, Action<string> progress, int attempts = 12)
+        {
+            var pending = PendingTransfers.Get(PendingTransfers.List, islandId);
+            if (pending == null) return new TradeResult { Error = "No NFT transfer is waiting for this island." };
+            var price = priceLamports > 0 ? priceLamports : pending.lamports;
+            var a = await PaymentFlow.Post(PendingTransfers.List, islandId, sig => PostList(islandId, price, sig),
+                attempt => progress?.Invoke(attempt == 0 ? "NFT sent. The server is checking the escrow..." : "Waiting for devnet to confirm the NFT transfer..."),
+                true, attempts);
+            var r = new TradeResult { Signature = a.Signature };
+            switch (a.Verdict)
+            {
+                case HackathonRules.PaymentVerdict.Accepted:
+                    r.Listing = a.Data;
+                    return r;
+                case HackathonRules.PaymentVerdict.Final:
+                    // An earlier post may have listed it (its reply lost): the player's listing with this escrow transfer.
+                    if (a.Code == "already_listed" || a.Code == "signature_used")
+                    {
+                        Listing[] mine = null;
+                        try { mine = await FetchMyListings(); } catch (Exception e) { Debug.LogWarning("IslandApi.FinishList: " + e.Message); }
+                        if (mine != null)
+                            foreach (var l in mine)
+                                if (l != null && l.escrowSignature == a.Signature) { r.Listing = l; return r; }
+                    }
+                    r.Final = true;
+                    r.Error = HackathonRules.FinalLine("NFT transfer", null, a.Code, a.Message);
+                    return r;
+                case HackathonRules.PaymentVerdict.Hold:
+                    r.Pending = true;
+                    r.Error = (string.IsNullOrEmpty(a.Message) ? "The server did not list the island yet" : a.Message.TrimEnd('.')) +
+                              ". The NFT transfer is kept: press Finish listing to ask again (no second transfer).";
+                    return r;
+                default:
+                    r.Pending = true;
+                    r.Error = "The escrow has not seen the NFT yet. Press Finish listing in a moment (no second transfer).";
+                    return r;
+            }
         }
 
         // ---------------------------------------------------------------- errors

@@ -632,6 +632,7 @@ namespace RoguePirates.Hackathon.UI
                 Status(island.nft != null && island.nft.Minted ? $"{island.name} is yours! Island NFT minted: {IslandUi.Short(island.nft.mint)}." : $"{island.name} is yours! The NFT mint is pending (retrying).", HackUi.Good);
                 _view = View.Mine;
             }
+            catch (Exception e) { Failed("Claim", e); return; }
             finally { _busy = false; }
             KeepStatusRefresh();
         }
@@ -649,6 +650,7 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 Status(island != null && island.nft != null && island.nft.Minted ? "Island NFT minted: " + IslandUi.Short(island.nft.mint) : "The NFT is minted.", HackUi.Good);
             }
+            catch (Exception e) { Failed("Mint", e); return; }
             finally { _busy = false; }
             KeepStatusRefresh();
         }
@@ -666,6 +668,7 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 Status($"Collected {data.collected} RUM ({data.fromStore} from the store, {data.fromVault} from the vault). You have {data.rum} RUM.", HackUi.Good);
             }
+            catch (Exception e) { Failed("Collect", e); return; }
             finally { _busy = false; }
             KeepStatusRefresh();
         }
@@ -683,8 +686,16 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 Status($"{IslandRules.BuildingName(kind)} is now level {data.level} (-{data.cost} RUM). You have {data.rum} RUM.", HackUi.Good);
             }
+            catch (Exception e) { Failed("Upgrade", e); return; }
             finally { _busy = false; }
             KeepStatusRefresh();
+        }
+
+        /// <summary>An action's exception (a network or parse failure) on the status line instead of an unobserved error.</summary>
+        void Failed(string what, Exception e)
+        {
+            Debug.LogWarning("IslandsPanel." + what + ": " + e);
+            if (this != null) Status(what + " failed: " + e.Message, HackUi.Bad);
         }
 
         /// <summary>Reloads everything but keeps the status line of the action that just finished.</summary>
@@ -693,14 +704,18 @@ namespace RoguePirates.Hackathon.UI
             var text = _status.text;
             var color = _statusColor;
             var request = ++_requests;
-            var (world, _) = await IslandApi.World();
-            if (this == null || request != _requests) return;
-            if (world != null) _world = world;
-            var (mine, _) = await IslandApi.Mine();
-            if (this == null || request != _requests) return;
-            if (mine != null) _mine = mine;
-            Render();
-            Status(text, color);
+            try
+            {
+                var (world, _) = await IslandApi.World();
+                if (this == null || request != _requests) return;
+                if (world != null) _world = world;
+                var (mine, _) = await IslandApi.Mine();
+                if (this == null || request != _requests) return;
+                if (mine != null) _mine = mine;
+                Render();
+                Status(text, color);
+            }
+            catch (Exception e) { Debug.LogWarning("IslandsPanel.KeepStatusRefresh: " + e); }
         }
 
         // ---------------------------------------------------------------- another island: raid
@@ -770,6 +785,7 @@ namespace RoguePirates.Hackathon.UI
                 _pendingRaid = raid;
                 if (_mine != null) _mine.rum = raid.rum;
             }
+            catch (Exception e) { Failed("Raid", e); return; }
             finally { _busy = false; }
             SetSail();
         }
@@ -787,16 +803,33 @@ namespace RoguePirates.Hackathon.UI
                 if (error != null) { Status(error, HackUi.Bad); return; }
                 _pendingRaid = raid;
             }
+            catch (Exception e) { Failed("Practice raid", e); return; }
             finally { _busy = false; }
             SetSail();
         }
 
-        void SetSail()
+        bool _sailing;
+
+        async void SetSail()
         {
             var raid = _pendingRaid;
-            if (raid == null) return;
+            if (raid == null || _sailing) return;
+            _sailing = true;
+            try
+            {
+                // 13 Oct (review): leaving a 1v1 lobby first posts a deposit still waiting for the server and awaits its
+                // answer (the server refunds it once the seat is gone; one devnet has not confirmed is kept for later).
+                if (PvpSession.Exists && PvpSession.Instance.Lobby != null)
+                {
+                    Status("Leaving the 1v1 lobby before the raid...", HackUi.Gold);
+                    var line = await HackathonApi.LeaveLobbySafely();
+                    if (line != null) Debug.Log("IslandsPanel: " + line);
+                }
+            }
+            catch (Exception e) { Debug.LogWarning("IslandsPanel.SetSail: " + e); }
+            finally { _sailing = false; }
+            if (this == null) return;
             _pendingRaid = null;
-            if (PvpSession.Exists && PvpSession.Instance.Lobby != null) _ = PvpSession.Instance.Leave();
             RaidHud.Begin(raid);
             MenuServices.BeginSaltwindExperiment();
             SceneManager.LoadScene(V4SceneNames.SaltwindRun);
@@ -815,12 +848,19 @@ namespace RoguePirates.Hackathon.UI
 
         // ---------------------------------------------------------------- history
 
+        int _historyRequests;
+
         async void ShowHistory()
         {
             if (!Web3Session.Instance.SignedIn) { K.TextRow(_list, "Connect a wallet to see your raids.", 26f, null, "Panel_Inset"); return; }
             K.TextRow(_list, "Loading your raids...", 24f, K.InkDim);
-            var (raids, error) = await IslandApi.MyRaids();
-            if (this == null || _view != View.History) return;
+            // 13 Oct (review): only the latest load draws (a slow earlier one never overwrites a newer list).
+            var request = ++_historyRequests;
+            MyRaids raids;
+            string error;
+            try { (raids, error) = await IslandApi.MyRaids(); }
+            catch (Exception e) { Debug.LogWarning("IslandsPanel.ShowHistory: " + e); (raids, error) = (null, "Could not load your raids: " + e.Message); }
+            if (this == null || _view != View.History || request != _historyRequests) return;
             ClearList();
             if (error != null) { K.TextRow(_list, error, 24f, K.InkBad, "Panel_Inset"); return; }
             LastRaidBlock();

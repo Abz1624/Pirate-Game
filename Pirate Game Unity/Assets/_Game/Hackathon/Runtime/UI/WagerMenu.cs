@@ -15,7 +15,8 @@ namespace RoguePirates.Hackathon.UI
     /// the V4 menu code is unchanged:
     /// <list type="bullet">
     /// <item>the hub gets a stake picker (none, 0.01, 0.05, 0.1 SOL); Host public / private set the stake on the new lobby
-    /// (POST /api/wagers/{lobbyId}); "Play vs bot" becomes "Vs Captain Marrow" (the house matches the stake);</item>
+    /// (POST /api/wagers/{lobbyId}); "Play vs bot" becomes "Vs Captain Marrow" (13 Oct, server rule: bot matches carry no
+    /// stake, so it is offered with No stake only);</item>
     /// <item>the lobby gets the AI captain's banner and a wager strip: the stake and pot and both seats' deposits;</item>
     /// <item>the deposit is part of creating or joining a staked match (owner, 12 Oct): the wallet asks to sign the stake
     /// transfer (to the treasury with the memo wager:&lt;lobbyId&gt;) right away and the server verifies it. A cancelled or
@@ -43,7 +44,10 @@ namespace RoguePirates.Hackathon.UI
         int _modeIndex;
         Button _start;
         int _stakeIndex;
-        bool _busy;
+        // 13 Oct (review): Host / Vs captain (_hosting) and the deposit (_depositing) are separate steps: the deposit's end
+        // no longer clears the host step's guard. _busy is either.
+        bool _hosting, _depositing, _leaving;
+        bool _busy => _hosting || _depositing || _leaving;
 
         // Hub.
         TMP_InputField _codeInput;
@@ -64,9 +68,8 @@ namespace RoguePirates.Hackathon.UI
         string _explorerUrl, _hubExplorerUrl;
         float _nextPoll;
         string _lastLobbyId;
-        // The last deposit attempt: a transfer exists (sent) / the server is refunding it (refunded) / its error.
-        bool _lastSent, _lastRefunded;
-        string _lastError;
+        // The last deposit attempt (13 Oct, review: the whole result: sent, refunded, final line, signature, pending).
+        HackathonApi.DepositResult _last;
 
         sealed class SeatRow
         {
@@ -75,7 +78,8 @@ namespace RoguePirates.Hackathon.UI
             public TextMeshProUGUI Role, Name, Rating, ChipText;
         }
 
-        public long Stake => HackathonRules.Stakes[_stakeIndex];
+        /// <summary>The stake Start uses: the picked one, none vs the AI captain (the server keeps bot matches unstaked).</summary>
+        public long Stake => _modeIndex == 2 ? 0L : HackathonRules.Stakes[_stakeIndex];
         public string WagerLine => _wagerText != null ? _wagerText.text : null;
         public string StatusLine => _statusText != null ? _statusText.text : null;
         public bool DepositVisible => _deposit != null && _deposit.gameObject.activeInHierarchy;
@@ -202,6 +206,10 @@ namespace RoguePirates.Hackathon.UI
         {
             _modeIndex = Mathf.Clamp(index, 0, _modeButtons.Length - 1);
             for (var i = 0; i < _modeButtons.Length; i++) SetStyle(_modeButtons[i], i == _modeIndex ? "Btn_Gold" : "Btn_Parchment");
+            // Vs the AI captain: no stake (the server does not stake bot matches); the chips show No stake only.
+            for (var i = 0; i < _stakeButtons.Length; i++)
+                if (_stakeButtons[i] != null) _stakeButtons[i].interactable = _modeIndex != 2 || i == 0;
+            if (_modeIndex == 2) PickStake(0);
             UpdateStart();
         }
 
@@ -230,7 +238,7 @@ namespace RoguePirates.Hackathon.UI
 
         public void PickStake(int index)
         {
-            _stakeIndex = Mathf.Clamp(index, 0, HackathonRules.Stakes.Length - 1);
+            _stakeIndex = Mathf.Clamp(_modeIndex == 2 ? 0 : index, 0, HackathonRules.Stakes.Length - 1);
             for (var i = 0; i < _stakeButtons.Length; i++)
             {
                 var b = _stakeButtons[i];
@@ -240,8 +248,8 @@ namespace RoguePirates.Hackathon.UI
             UpdateStart();
             if (_hubMessage != null && _hub.gameObject.activeInHierarchy)
                 HubMessage(Stake > 0
-                    ? $"Stake {HackathonRules.Sol(Stake)} each, the winner gets {HackathonRules.Sol(Stake * 2)}. Vs {HackathonRules.CaptainName} the house matches it."
-                    : "Friendly match: no stake.", HackUi.Gold);
+                    ? $"Stake {HackathonRules.Sol(Stake)} each, the winner gets {HackathonRules.Sol(Stake * 2)}."
+                    : _modeIndex == 2 ? $"Vs {HackathonRules.CaptainName}: a friendly match, no stake." : "Friendly match: no stake.", HackUi.Gold);
         }
 
         string StakeGate()
@@ -251,61 +259,60 @@ namespace RoguePirates.Hackathon.UI
             return null;
         }
 
-        /// <summary>Hosts a lobby with the picked stake (the V4 host call, then the stake).</summary>
+        /// <summary>Hosts a lobby with the picked stake (the V4 host call, then the stake). 13 Oct (review): a stake the
+        /// server refuses leaves the new lobby (it would otherwise sit there without the stake the host picked) and says why.</summary>
         public async void HostMatch(bool isPublic)
         {
             if (_busy) return;
             var gate = StakeGate();
             if (gate != null) { HubMessage(gate, HackUi.Bad); return; }
-            _busy = true;
+            _hosting = true;
             try
             {
-                HubMessage(Stake > 0 ? "Creating the match. Your wallet will ask you to sign the " + HackathonRules.Sol(Stake) + " deposit." : "Creating a lobby...", HackUi.Gold);
+                var stake = Stake;
+                HubMessage(stake > 0 ? "Creating the match. Your wallet will ask you to sign the " + HackathonRules.Sol(stake) + " deposit." : "Creating a lobby...", HackUi.Gold);
                 var error = await Session.Host(isPublic);
-                if (error == null && Stake > 0) error = await SetStake();
                 if (this == null) return;
-                if (error != null) { HubMessage(error, HackUi.Bad); if (!Session.InLobby) return; }
+                if (error != null) { HubMessage(error, HackUi.Bad); return; }
+                if (stake > 0)
+                {
+                    var stakeError = await SetStake(stake);
+                    if (this == null) return;
+                    if (stakeError != null) { await LeaveWith(stakeError + " The lobby was closed; nothing was paid."); return; }
+                }
                 _pvp.ShowLobby();
-                if (error == null && Stake > 0 && !await DepositOrLeave(true)) return;
+                if (stake > 0) await DepositOrLeave(true);
             }
-            catch (Exception e) { HubMessage(e.Message, HackUi.Bad); }
-            finally { _busy = false; }
+            catch (Exception e) { if (this != null) HubMessage(e.Message, HackUi.Bad); }
+            finally { _hosting = false; if (this != null) RefreshLobby(); }
         }
 
-        /// <summary>"Vs Captain Marrow": a private lobby, the stake (the house matches it), then the AI captain's seat.</summary>
+        /// <summary>"Vs Captain Marrow": a private lobby and the AI captain's seat. No stake (13 Oct: the server keeps bot
+        /// matches unstaked).</summary>
         public async void ChallengeCaptain()
         {
             if (_busy) return;
-            var gate = StakeGate();
-            if (gate != null) { HubMessage(gate, HackUi.Bad); return; }
-            _busy = true;
+            _hosting = true;
             try
             {
                 HubMessage(HackathonRules.CaptainName + " is raising his colours...", HackUi.Gold);
                 var error = await Session.Host(false);
-                if (error == null && Stake > 0) error = await SetStake();
                 if (this == null) return;
-                if (error == null && Stake > 0)
-                {
-                    _pvp.ShowLobby();
-                    if (!await DepositOrLeave(true)) return;
-                }
                 if (error == null) error = await Session.AddBot();
                 if (this == null) return;
                 if (error != null) { HubMessage(error, HackUi.Bad); if (!Session.InLobby) return; }
-                if (Stake > 0) _pvp.ShowLobby();
-                else _pvp.ShowDraft();
+                _pvp.ShowDraft();
             }
-            catch (Exception e) { HubMessage(e.Message, HackUi.Bad); }
-            finally { _busy = false; }
+            catch (Exception e) { if (this != null) HubMessage(e.Message, HackUi.Bad); }
+            finally { _hosting = false; }
         }
 
-        async Awaitable<string> SetStake()
+        async Awaitable<string> SetStake(long stake)
         {
             var lobbyId = Session.Lobby?.lobbyId;
-            HubMessage("Setting the stake to " + HackathonRules.Sol(Stake) + "...", HackUi.Gold);
-            var (w, error) = await HackathonApi.SetStake(lobbyId, Stake);
-            if (error != null) return "Lobby made, but the stake was refused: " + error;
+            HubMessage("Setting the stake to " + HackathonRules.Sol(stake) + "...", HackUi.Gold);
+            var (w, error) = await HackathonApi.SetStake(lobbyId, stake);
+            if (error != null) return "The stake was refused: " + error.TrimEnd('.') + ".";
             HackathonPvp.Adopt(lobbyId, w);
             if (w == null) await HackathonPvp.Refresh(lobbyId);
             return null;
@@ -382,7 +389,7 @@ namespace RoguePirates.Hackathon.UI
 
             var root = Reframe(_lobby, "Lobby", out _lobbyTitle, out var head);
             _lobbyTitle.rectTransform.offsetMax = new Vector2(-900f, _lobbyTitle.rectTransform.offsetMax.y);
-            KitButton(TopRight(head, "Leave", 34f, 22f, 230f, 84f), "Leave", "Icon_Close", () => Press(_v4Leave), "Btn_Gold", 32f, 36f);
+            KitButton(TopRight(head, "Leave", 34f, 22f, 230f, 84f), "Leave", "Icon_Close", Leave, "Btn_Gold", 32f, 36f);
             var tag = TopRight(head, "LobbyTag", 300f, 34f, 360f, 62f);
             Paint(tag, "Tag_Tan", 1.4f, null, new Color(0.88f, 0.78f, 0.6f, 1f));
             _lobbyTag = Label(Fill(tag, "Text", 14f, 2f, 14f, 2f), string.Empty, 28f, Ink, TextAlignmentOptions.Center, true, 18f);
@@ -422,7 +429,7 @@ namespace RoguePirates.Hackathon.UI
             // Creating or joining asks for the deposit by itself. This button is the fallback while the seat is unpaid:
             // "Pay deposit" (the automatic prompt was skipped or failed) or "Check deposit" (a sent transfer that devnet has
             // not confirmed yet; never pays twice).
-            _deposit = KitButton(TopRight(_strip, "Deposit", 14f, 9f, 370f, 66f), "Pay deposit", "Icon_Upload", Deposit, "Btn_Gold", 27f, 32f);
+            _deposit = KitButton(TopRight(_strip, "Deposit", 14f, 9f, 370f, 66f), "Pay deposit", "Icon_Upload", DepositPressed, "Btn_Gold", 27f, 32f);
 
             _status = ListRow(middle, "HackathonWagerStatus", 54f, null, 1f);
             RowIcon(_status, "Icon_Info", 8f, 32f);
@@ -583,8 +590,8 @@ namespace RoguePirates.Hackathon.UI
         {
             var lobbyOpen = _lobby.gameObject.activeInHierarchy;
             var hubOpen = _hub.gameObject.activeInHierarchy;
-            if (hubOpen && !_hubWasOpen) FillPublic();
-            if (lobbyOpen && !_lobbyWasOpen) RefreshLobby();
+            if (hubOpen && !_hubWasOpen) { FillPublic(); ResumeDeposits(); }
+            if (lobbyOpen && !_lobbyWasOpen) { RefreshLobby(); ResumeDeposits(); }
             _hubWasOpen = hubOpen;
             _lobbyWasOpen = lobbyOpen;
             // V4 writes its own messages without a colour: ink for those.
@@ -659,10 +666,12 @@ namespace RoguePirates.Hackathon.UI
                 $"{guestName}: {Mark(w.vsHouse || (w.guest != null && w.guest.deposited))}{HackathonRules.SeatFunding(w.guest, w.vsHouse)}</size>";
 
             var canDeposit = w.Open && !myDeposited && mySeat != null && !string.IsNullOrEmpty(mySeat.playerId);
-            var pending = canDeposit && HackathonApi.HasPendingDeposit(lobby.lobbyId);
-            _deposit.gameObject.SetActive(canDeposit && !_busy);
-            _deposit.interactable = canDeposit && !_busy;
-            SetLabel(_deposit, pending ? "Check deposit" : "Pay deposit " + stake);
+            var pending = HackathonApi.HasPendingDeposit(lobby.lobbyId);
+            // While the wallet is asked to sign, the button cancels the wait (nothing is sent until the wallet signs).
+            var cancel = _depositing && Web3Session.Instance.CanCancel;
+            _deposit.gameObject.SetActive(cancel || ((canDeposit || pending) && !_busy));
+            _deposit.interactable = cancel || ((canDeposit || pending) && !_busy);
+            SetLabel(_deposit, cancel ? "Cancel signing" : pending ? "Check deposit" : "Pay deposit " + stake);
 
             var result = HackathonRules.ResultLine(w, myId);
             if (result != null && !_busy) SetStatus(result, HackathonRules.ExplorerTx(HackathonRules.PayoutSignature(w)));
@@ -718,15 +727,16 @@ namespace RoguePirates.Hackathon.UI
         }
 
         /// <summary>Asks the wallet for this seat's stake and has the server verify it. On success the lobby shows the
-        /// deposit; on a cancel or failure the lobby is left (nothing was paid) and the hub says why. A transfer that was
-        /// sent but not yet confirmed keeps the lobby with "Check deposit". Returns true when the deposit is in.</summary>
+        /// deposit; on a cancel or a refusal before anything was signed the lobby is left (nothing was paid) and the hub says
+        /// why. A signed transfer the server has not answered for yet keeps the lobby with "Check deposit"; one the server
+        /// refused for good says what happens to the SOL, with the transaction link. Returns true when the deposit is in.</summary>
         async Awaitable<bool> DepositOrLeave(bool host)
         {
             var lobby = Session.Lobby;
             var w = lobby != null ? HackathonPvp.For(lobby.lobbyId) : null;
             if (w == null || !w.Exists) return true; // no stake: nothing to pay
             var stake = HackathonRules.Sol(w.stakeLamports);
-            if (!Web3Session.Instance.WalletConnected)
+            if (!Web3Session.Instance.WalletConnected && !HackathonApi.HasPendingDeposit(lobby.lobbyId))
             {
                 await LeaveWith("Reconnect your wallet (Wallet button, top of the menu) to sign the " + stake + " deposit. The match was cancelled; nothing was paid.");
                 return false;
@@ -734,85 +744,151 @@ namespace RoguePirates.Hackathon.UI
             var ok = await RunDeposit();
             if (this == null) return false;
             if (ok) return true;
-            var line = HackathonRules.DepositFailureLine(host, stake, _lastSent, _lastRefunded, _lastError);
-            if (_lastSent && !_lastRefunded)
+            var r = _last ?? new HackathonApi.DepositResult();
+            var line = HackathonRules.DepositFailureLine(host, stake, r.Sent, r.Refunded, r.Error, r.FinalLine);
+            if (r.Pending)
             {
-                // SOL left the wallet but the server has not taken it yet: stay in the lobby ("Check deposit").
-                SetStatus(line, HackathonRules.ExplorerTx(Web3Session.Instance.LastTransferSignature), true);
+                // Signed (maybe sent) and the server has not answered for good: stay in the lobby ("Check deposit").
+                SetStatus(line, HackathonRules.ExplorerTx(r.Signature), true);
                 return false;
             }
-            await LeaveWith(line);
+            await LeaveWith(line, HackathonRules.ExplorerTx(r.Signature));
             return false;
         }
 
-        async Awaitable LeaveWith(string message)
+        /// <summary>Leaves the lobby (a pending deposit is posted first: <see cref="HackathonApi.LeaveLobbySafely"/>), opens
+        /// the hub and shows <paramref name="message"/> (with a transaction link when given).</summary>
+        async Awaitable LeaveWith(string message, string url = null)
         {
-            if (Session.InLobby) await Session.Leave();
+            string depositLine = null;
+            _leaving = true;
+            try { depositLine = await HackathonApi.LeaveLobbySafely(); }
+            catch (Exception e) { Debug.LogWarning("WagerMenu.LeaveWith: " + e); }
+            finally { _leaving = false; }
             if (this == null) return;
             _pvp.Open();
-            HubMessage(message, HackUi.Bad);
+            HubMessage(depositLine != null && message != null && !message.Contains(depositLine) ? message + " " + depositLine : message ?? depositLine, HackUi.Bad);
+            SetHubLink(url);
         }
 
-        /// <summary>"Pay deposit" / "Check deposit": pays this seat's stake, or re-checks a sent transfer (no second
-        /// payment). A refused transfer is refunded by the server and the message says so.</summary>
+        /// <summary>The lobby's Leave: a deposit still waiting for the server is posted (and its answer awaited) first, so a
+        /// seat left with SOL in flight is refunded by the server; then V4's Leave.</summary>
+        async void Leave()
+        {
+            if (_leaving) return;
+            var lobbyId = Session.Lobby?.lobbyId;
+            if (lobbyId == null || !HackathonApi.HasPendingDeposit(lobbyId)) { Press(_v4Leave); return; }
+            _leaving = true;
+            string line = null;
+            try
+            {
+                SetStatus("Checking your deposit with the server before leaving...", null);
+                line = await HackathonApi.LeaveLobbySafely(false);
+            }
+            catch (Exception e) { Debug.LogWarning("WagerMenu.Leave: " + e); }
+            finally { _leaving = false; }
+            if (this == null) return;
+            Press(_v4Leave);
+            if (line != null) HubMessage(line, HackUi.Gold);
+        }
+
+        /// <summary>"Pay deposit" / "Check deposit" / "Cancel signing".</summary>
+        void DepositPressed()
+        {
+            if (_depositing && Web3Session.Instance.CanCancel) { Web3Session.Instance.CancelWait(); return; }
+            Deposit();
+        }
+
+        /// <summary>"Pay deposit" / "Check deposit": pays this seat's stake, or re-checks a signed transfer (no second
+        /// payment). A refused transfer says what happens to the SOL.</summary>
         public async void Deposit()
         {
             if (_busy) return;
-            if (await RunDeposit() || this == null) return;
-            if (_lastRefunded)
+            try
             {
+                if (await RunDeposit() || this == null) return;
+                var r = _last;
+                if (r == null || r.Pending || r.Error == null) return;
                 var lobby = Session.Lobby;
                 var w = lobby != null ? HackathonPvp.For(lobby.lobbyId) : null;
-                SetStatus(HackathonRules.DepositFailureLine(Session.IsHost, HackathonRules.Sol(w != null ? w.stakeLamports : 0), true, true, _lastError), null, true);
+                var stake = HackathonRules.Sol(w != null ? w.stakeLamports : 0);
+                if (r.Sent && (r.Refunded || r.FinalLine != null))
+                    SetStatus(HackathonRules.DepositFailureLine(Session.IsHost, stake, true, r.Refunded, r.Error, r.FinalLine), HackathonRules.ExplorerTx(r.Signature), true);
             }
+            catch (Exception e) { Debug.LogWarning("WagerMenu.Deposit: " + e); if (this != null) SetStatus(e.Message, null, true); }
         }
 
         /// <summary>Pays (or re-checks) this seat's stake. Returns true when the server has it.</summary>
         async Awaitable<bool> RunDeposit()
         {
-            // No _busy check here: Host / Vs captain hold _busy while they call this (the callers guard).
+            if (_depositing) return false;
             var lobby = Session.Lobby;
             var w = lobby != null ? HackathonPvp.For(lobby.lobbyId) : null;
-            _lastSent = lobby != null && HackathonApi.HasPendingDeposit(lobby.lobbyId);
-            _lastRefunded = false;
-            _lastError = null;
-            if (w == null) return false;
-            if (!Web3Session.Instance.WalletConnected)
+            _last = null;
+            if (lobby == null) return false;
+            var pending = HackathonApi.HasPendingDeposit(lobby.lobbyId);
+            if (w == null && !pending) return false;
+            if (!pending && !Web3Session.Instance.WalletConnected)
             {
-                _lastError = "the wallet is not connected";
+                _last = new HackathonApi.DepositResult { Error = "the wallet is not connected" };
                 var wallet = GetComponent<WalletMenu>();
                 if (wallet != null) wallet.Open();
                 SetStatus("Connect your wallet to sign the deposit.", null);
                 return false;
             }
-            _busy = true;
+            _depositing = true;
             RefreshLobby();
             try
             {
-                var (updated, error, sent, refunded) = await HackathonApi.Deposit(w, m => { if (this != null) SetStatus(m, null); });
-                _lastSent = sent;
-                _lastRefunded = refunded;
-                _lastError = error;
+                Action<string> progress = m => { if (this != null) { SetStatus(m, null); RefreshLobby(); } };
+                var r = pending ? await HackathonApi.CheckDeposit(lobby.lobbyId, progress) : await HackathonApi.Deposit(w, progress);
+                _last = r;
                 if (this == null) return false;
-                if (error != null) { SetStatus(error, null, true); return false; }
-                var sig = Web3Session.Instance.LastTransferSignature;
-                SetStatus("Deposit confirmed on devnet. Pick your build and press Ready.", HackathonRules.ExplorerTx(sig));
-                if (updated != null) HackathonPvp.Adopt(lobby.lobbyId, updated);
+                if (!r.Ok) { SetStatus(r.Error, HackathonRules.ExplorerTx(r.Signature), true); return false; }
+                SetStatus("Deposit confirmed on devnet. Pick your build and press Ready.", HackathonRules.ExplorerTx(r.Signature));
+                if (r.Wager != null) HackathonPvp.Adopt(lobby.lobbyId, r.Wager);
                 else await HackathonPvp.Refresh(lobby.lobbyId);
                 return true;
             }
             catch (Exception e)
             {
-                _lastSent = _lastSent || (lobby != null && HackathonApi.HasPendingDeposit(lobby.lobbyId));
-                _lastError = e.Message;
+                var stillPending = HackathonApi.HasPendingDeposit(lobby.lobbyId);
+                _last = new HackathonApi.DepositResult { Error = e.Message, Sent = stillPending, Pending = stillPending };
                 if (this != null) SetStatus(e.Message, null, true);
                 return false;
             }
             finally
             {
-                _busy = false;
+                _depositing = false;
                 if (this != null) RefreshLobby();
             }
+        }
+
+        bool _resuming;
+
+        /// <summary>Posts deposits signed earlier for other lobbies (the app closed during signing, a lobby left while
+        /// devnet was slow): the server takes or refunds them. Final answers show on the hub.</summary>
+        async void ResumeDeposits()
+        {
+            if (_resuming || !Web3Session.Instance.SignedIn) return;
+            _resuming = true;
+            try
+            {
+                var current = Session.InLobby ? Session.Lobby.lobbyId : null;
+                var lines = await HackathonApi.ResumePendingDeposits(current);
+                if (this != null && !string.IsNullOrEmpty(lines) && _hub.gameObject.activeInHierarchy) HubMessage(lines, HackUi.Gold);
+            }
+            catch (Exception e) { Debug.LogWarning("WagerMenu.ResumeDeposits: " + e); }
+            finally { _resuming = false; }
+        }
+
+        string _hubLinkOverride;
+
+        /// <summary>A transaction link on the hub's message (the last refused deposit), until the next wager result.</summary>
+        void SetHubLink(string url)
+        {
+            _hubLinkOverride = url;
+            RefreshHub();
         }
 
         // ---------------------------------------------------------------- hub: the last wager's result
@@ -824,8 +900,9 @@ namespace RoguePirates.Hackathon.UI
             var inLobby = Session.InLobby && Session.Lobby.lobbyId == HackathonPvp.WagerLobbyId;
             var result = !inLobby ? HackathonRules.ResultLine(w, Session.MyPlayerId ?? OnlineService.Active?.playerId) : null;
             var sig = result != null ? HackathonRules.PayoutSignature(w) : null;
-            _hubExplorerUrl = HackathonRules.ExplorerTx(sig);
+            _hubExplorerUrl = HackathonRules.ExplorerTx(sig) ?? _hubLinkOverride;
             _hubExplorer.gameObject.SetActive(_hubExplorerUrl != null);
+            if (_hubExplorerUrl != null) SetLabel(_hubExplorer, sig != null ? "View payout" : "View tx");
             if (result != null && _hubMessage != null && !_busy && (string.IsNullOrEmpty(_hubMessage.text) || _hubMessage.text.StartsWith("Last wager") || _hubMessage.text.StartsWith("Left the lobby") || _hubMessage.text.StartsWith("No public lobbies")))
                 HubMessage("Last wager: " + result + (HackathonRules.PayoutPending(w) ? " (payout on its way)" : string.Empty), HackUi.Good);
             if (_hubMessage != null)

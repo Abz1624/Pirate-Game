@@ -36,7 +36,7 @@ namespace RoguePirates.Hackathon.UI
         RectTransform _panel;
         TextMeshProUGUI _address, _balance, _profile, _message;
         TMP_InputField _email, _name, _promptName;
-        Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail, _copy, _explorer, _saveName, _promptSave, _promptSkip;
+        Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail, _copy, _explorer, _saveName, _promptSave, _promptSkip, _cancelWait;
         RectTransform _prompt;
         TextMeshProUGUI _promptMessage;
         RectTransform _addressActions, _balanceRow, _profileRow;
@@ -144,6 +144,8 @@ namespace RoguePirates.Hackathon.UI
             _refresh = Flex(MarketKit.RowButton(actions, "Refresh", "Icon_Refresh", () => Run(RefreshOnly()), 0f, Row, "Btn_Parchment", 28f));
             _airdrop = Flex(MarketKit.RowButton(actions, "Airdrop 1 SOL", null, () => Run(S.RequestAirdrop(1)), 0f, Row, "Btn_Green", 28f));
             _disconnect = Flex(MarketKit.RowButton(actions, "Disconnect", null, () => { S.Disconnect(); SetMessage("Disconnected.", Dim); }, 0f, Row, "Btn_Red", 28f));
+            // 13 Oct (review): stop waiting for a wallet that never answers (a closed chooser or popup); nothing is sent.
+            _cancelWait = Flex(MarketKit.RowButton(actions, "Cancel", null, () => S.CancelWait(), 0f, Row, "Btn_Red", 28f));
 
             MarketKit.Line(card, 44f, 398f, 44f);
 
@@ -387,6 +389,7 @@ namespace RoguePirates.Hackathon.UI
             _airdrop.gameObject.SetActive(connected && Web3Session.TestWalletAvailable);
             _disconnect.gameObject.SetActive(!string.IsNullOrEmpty(address));
             foreach (var b in new[] { _connect, _test, _signIn, _refresh, _airdrop, _disconnect, _saveEmail, _saveName }) b.interactable = !busy;
+            _cancelWait.gameObject.SetActive(S.CanCancel);
             _email.interactable = signedIn && !busy;
             _saveEmail.interactable = signedIn && !busy;
             _name.interactable = signedIn && !busy;
