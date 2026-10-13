@@ -153,59 +153,65 @@ namespace RoguePirates.Hackathon.UI
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            var box = Box(go.transform, "Raid", new Vector2(0.5f, 1f), new Vector2(0f, -146f), new Vector2(900f, 196f), new Color(0.06f, 0.1f, 0.16f, 0.85f));
-            box.GetComponent<Image>().raycastTarget = false;
-            _goal = HackUi.TextAt(box, "Goal", string.Empty, 24, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.79f), Vector2.one, true);
+            // Hackathon UI (13 Oct): the raid strip, Marrow's barks and the result card on the parchment kit (as the race HUD).
+            var box = BoardKit.Node(go.transform, "Raid");
+            box.anchorMin = box.anchorMax = new Vector2(0.5f, 1f);
+            box.pivot = new Vector2(0.5f, 1f);
+            box.anchoredPosition = new Vector2(0f, -146f);
+            box.sizeDelta = new Vector2(900f, 196f);
+            BoardKit.Paint(box, "Panel_Card", 2.2f, new Color(1f, 1f, 1f, 0.94f), new Color(0.95f, 0.88f, 0.72f, 0.92f));
+            BoardKit.Picture(BoardKit.TopLeft(box, "Icon", 22f, 56f, 76f, 76f), "Icon_Skull_Crossbones", BoardKit.Ink);
+            _goal = BoardKit.Label(BoardKit.Strip(box, "Goal", 108f, 14f, 30f, 32f), string.Empty, 24f, BoardKit.InkGold, TextAlignmentOptions.Center, true, 15f);
             // Always visible (owner, 12 Oct): when the guardian rises (no beacon in a raid), with a live countdown.
-            _guardian = HackUi.TextAt(box, "Guardian", string.Empty, 25, TextAlignmentOptions.Center, new Color(1f, 0.6f, 0.5f, 1f), new Vector2(0.02f, 0.57f), new Vector2(0.98f, 0.8f));
-            _clock = HackUi.TextAt(box, "Clock", string.Empty, 30, TextAlignmentOptions.Center, HackUi.TextColor, new Vector2(0f, 0.3f), new Vector2(1f, 0.58f));
-            _clock.fontStyle = FontStyles.Bold;
-            _wave = HackUi.TextAt(box, "Wave", string.Empty, 21, TextAlignmentOptions.Center, HackUi.Dim, new Vector2(0.02f, 0.03f), new Vector2(0.98f, 0.3f));
+            _guardian = BoardKit.Label(BoardKit.Strip(box, "Guardian", 108f, 48f, 30f, 34f), string.Empty, 24f, BoardKit.InkBad, TextAlignmentOptions.Center, false, 15f);
+            _clock = BoardKit.Label(BoardKit.Strip(box, "Clock", 108f, 84f, 30f, 50f), string.Empty, 34f, BoardKit.Ink, TextAlignmentOptions.Center, true, 20f);
+            _wave = BoardKit.Label(BoardKit.Strip(box, "Wave", 108f, 136f, 30f, 44f), string.Empty, 21f, BoardKit.InkDim, TextAlignmentOptions.Center, false, 14f);
+            _wave.textWrappingMode = TextWrappingModes.Normal;
             _goal.text = _raid.practice ? $"PRACTICE: TEST {_raid.islandName}'S DEFENCES   no fee, no loot" : $"CONQUER {_raid.islandName}   sink the guardian";
-            _hullBack = Box(box, "Hull", new Vector2(0.5f, 0f), new Vector2(0f, -30f), new Vector2(640f, 22f), new Color(0f, 0f, 0f, 0.6f));
+            // The guardian's hull, under the strip once it is up.
+            _hullBack = BoardKit.Node(box, "Hull");
+            _hullBack.anchorMin = _hullBack.anchorMax = new Vector2(0.5f, 0f);
             _hullBack.pivot = new Vector2(0.5f, 1f);
-            var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
-            fill.transform.SetParent(_hullBack, false);
-            var frt = (RectTransform)fill.transform;
-            frt.anchorMin = Vector2.zero;
-            frt.anchorMax = Vector2.one;
-            frt.offsetMin = new Vector2(2f, 2f);
-            frt.offsetMax = new Vector2(-2f, -2f);
-            _hullFill = fill.GetComponent<Image>();
-            _hullFill.color = new Color(0.9f, 0.3f, 0.22f, 1f);
-            _hullFill.raycastTarget = false;
+            _hullBack.anchoredPosition = new Vector2(0f, -8f);
+            _hullBack.sizeDelta = new Vector2(640f, 30f);
+            BoardKit.Paint(_hullBack, "Bar_Track", 1.6f, null, new Color(0.2f, 0.12f, 0.06f, 0.8f));
+            var fill = BoardKit.Fill(_hullBack, "Fill", 4f, 4f, 4f, 4f);
+            _hullFill = BoardKit.Paint(fill, "Bar_Fill_Gold", 1.6f, new Color(1f, 0.45f, 0.35f, 1f), new Color(0.85f, 0.25f, 0.18f, 1f));
             _hullBack.gameObject.SetActive(false);
 
-            _barkBox = Box(go.transform, "Bark", new Vector2(0.5f, 1f), new Vector2(0f, -384f), new Vector2(900f, 80f), new Color(0.35f, 0.07f, 0.06f, 0.82f));
-            _barkBox.GetComponent<Image>().raycastTarget = false;
-            _bark = HackUi.TextAt(_barkBox, "Text", string.Empty, 27, TextAlignmentOptions.Center, HackUi.TextColor, Vector2.zero, Vector2.one);
-            _bark.margin = new Vector4(16f, 4f, 16f, 4f);
+            _barkBox = BoardKit.Node(go.transform, "Bark");
+            _barkBox.anchorMin = _barkBox.anchorMax = new Vector2(0.5f, 1f);
+            _barkBox.pivot = new Vector2(0.5f, 1f);
+            _barkBox.anchoredPosition = new Vector2(0f, -384f);
+            _barkBox.sizeDelta = new Vector2(940f, 96f);
+            BoardKit.Paint(_barkBox, "Banner_Maroon", 1.6f, null, new Color(0.35f, 0.07f, 0.06f, 0.9f));
+            _bark = BoardKit.Label(BoardKit.Fill(_barkBox, "Text", 60f, 8f, 60f, 8f), string.Empty, 26f, BoardKit.OnWood, TextAlignmentOptions.Center, false, 16f);
             _bark.textWrappingMode = TextWrappingModes.Normal;
             _barkBox.gameObject.SetActive(false);
 
-            _resultBox = Box(go.transform, "Result", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(980f, 440f), new Color(0.06f, 0.1f, 0.16f, 0.96f));
-            _resultTitle = HackUi.TextAt(_resultBox, "Title", string.Empty, 52, TextAlignmentOptions.Center, HackUi.Gold, new Vector2(0f, 0.76f), new Vector2(1f, 0.97f), true);
-            _resultText = HackUi.TextAt(_resultBox, "Text", string.Empty, 28, TextAlignmentOptions.Top, HackUi.TextColor, new Vector2(0.04f, 0.26f), new Vector2(0.96f, 0.76f));
+            // The result: a full-screen backdrop and the scroll card (title, text, the way back).
+            _resultBox = BoardKit.Fill(go.transform, "Result");
+            _resultBox.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
+            var card = BoardKit.Node(_resultBox, "Card");
+            card.anchorMin = card.anchorMax = new Vector2(0.5f, 0.5f);
+            card.sizeDelta = new Vector2(1060f, 620f);
+            var c = BoardKit.ScrollSheet(card, 110f, 50f, 50f);
+            BoardKit.Medallion(c, 0f, 4f, 116f);
+            _resultTitle = BoardKit.Label(BoardKit.Strip(c, "Title", 130f, 14f, 20f, 90f), string.Empty, 60f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, true, 34f);
+            BoardKit.Line(c, 0f, 134f, 0f);
+            _resultText = BoardKit.Label(BoardKit.Fill(c, "Text", 10f, 120f, 10f, 150f), string.Empty, 30f, BoardKit.Ink, TextAlignmentOptions.TopLeft, false, 18f);
             _resultText.textWrappingMode = TextWrappingModes.Normal;
-            HackUi.Button(_resultBox, _raid.practice ? "Back to my island" : "Return to port", () => V4Game.GoToMenu(), new Vector2(0.27f, 0.05f), new Vector2(0.73f, 0.22f));
+            var home = BoardKit.Node(c, "Return");
+            home.anchorMin = home.anchorMax = new Vector2(0.5f, 0f);
+            home.pivot = new Vector2(0.5f, 0f);
+            home.sizeDelta = new Vector2(500f, 96f);
+            home.anchoredPosition = new Vector2(0f, 4f);
+            BoardKit.KitButton(home, _raid.practice ? "Back to my island" : "Return to port", "Icon_House", () => V4Game.GoToMenu(), "Btn_Gold", 36f, 48f);
             _resultBox.gameObject.SetActive(false);
 
             Say((_raid.practice ? $"A drill on {_raid.islandName}, Captain? Let us see if yer defences hold. " : $"Ye dare raid {_raid.islandName}? ") +
                 IslandRules.GuardianNotice("Barnacle King", GuardianSeconds), 8f);
-            _guardian.text = IslandRules.GuardianLine("Barnacle King", 0, GuardianSeconds, false, -1f);
-        }
-
-        static RectTransform Box(Transform parent, string name, Vector2 anchor, Vector2 pos, Vector2 size, Color color)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            var rt = (RectTransform)go.transform;
-            rt.anchorMin = rt.anchorMax = anchor;
-            rt.pivot = new Vector2(0.5f, anchor.y);
-            rt.anchoredPosition = pos;
-            rt.sizeDelta = size;
-            go.GetComponent<Image>().color = color;
-            return rt;
+            _guardian.text = IslandKit.Inkify(IslandRules.GuardianLine("Barnacle King", 0, GuardianSeconds, false, -1f));
         }
 
         void Say(string line, float seconds = 4f)
@@ -265,9 +271,9 @@ namespace RoguePirates.Hackathon.UI
             _hullBack.gameObject.SetActive(_guardianHull >= 0f);
             if (_guardianHull >= 0f) ((RectTransform)_hullFill.transform).anchorMax = new Vector2(_guardianHull, 1f);
 
-            var timeText = (left <= 60 ? "<color=#ff8c73>" : string.Empty) + IslandRules.Clock(left) + (left <= 60 ? "</color>" : string.Empty);
-            _guardian.text = IslandRules.GuardianLine("Barnacle King", _raidSeconds, guardianAt, _guardianUp, _guardianHull);
-            _clock.text = $"Minute <color=#ffd166>{minute}/15</color>   Time left {timeText}";
+            var timeText = (left <= 60 ? "<color=" + BoardKit.BadHex + ">" : string.Empty) + IslandRules.Clock(left) + (left <= 60 ? "</color>" : string.Empty);
+            _guardian.text = IslandKit.Inkify(IslandRules.GuardianLine("Barnacle King", _raidSeconds, guardianAt, _guardianUp, _guardianHull));
+            _clock.text = $"Minute <color={BoardKit.GoldHex}>{minute}/15</color>   Time left {timeText}";
             _wave.text = WaveLine(minute);
 
             if (minute != _lastMinute)
@@ -301,7 +307,7 @@ namespace RoguePirates.Hackathon.UI
             var minute = MinuteReached(won);
             var partial = !won && minute >= GuardianMinute;
             RaidSchedule.Clear();
-            _clock.text = won ? "<color=#7fd68b>ISLAND CONQUERED</color>" : partial ? "<color=#ffd166>THE GUARDIAN HOLDS</color>" : "<color=#ff8c73>RAID FAILED</color>";
+            _clock.text = won ? $"<color={BoardKit.GoodHex}>ISLAND CONQUERED</color>" : partial ? $"<color={BoardKit.GoldHex}>THE GUARDIAN HOLDS</color>" : $"<color={BoardKit.BadHex}>RAID FAILED</color>";
             Say(won ? "My King... sunk. Take yer plunder. Marrow never forgets." : partial ? "Ye reached my King and still ye fled. Scurry home with yer crumbs!" : "Another hull for the reef! Come back when ye can sail.", 6f);
             _resultBox.gameObject.SetActive(true);
             _resultTitle.text = _raid.practice ? (won ? "Practice: defences fell" : partial ? "Practice: partly held" : "Practice: defences held")
@@ -314,7 +320,7 @@ namespace RoguePirates.Hackathon.UI
                 // A practice raid stores nothing: no result to send.
                 _reported = true;
                 var verdict = IslandRules.PracticeVerdict(won, minute, GuardianMinute);
-                _resultText.text = reason + "\n" + verdict + "\n<size=85%><color=#9aa4ad>Practice only: no RUM, no loot, no shield, no record.</color></size>";
+                _resultText.text = reason + "\n" + verdict + "\n<size=85%><color=" + BoardKit.DimHex + ">Practice only: no RUM, no loot, no shield, no record.</color></size>";
                 LastResult = $"<b>Practice on {_raid.islandName}</b>: {verdict}";
                 LastRaid = null;
                 return;
@@ -336,8 +342,8 @@ namespace RoguePirates.Hackathon.UI
             LastRaid = result;
             LastResult = line;
             if (this == null || _resultText == null) return;
-            _resultText.text = reason + "\n" + line;
-            if (error != null) _resultText.color = HackUi.Bad;
+            _resultText.text = reason + "\n" + IslandKit.Inkify(line);
+            if (error != null) _resultText.color = BoardKit.InkBad;
         }
 
         static string Summary(RaidStart raid, RaidResult r)

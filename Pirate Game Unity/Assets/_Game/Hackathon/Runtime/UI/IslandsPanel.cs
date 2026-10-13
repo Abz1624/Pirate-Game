@@ -433,9 +433,11 @@ namespace RoguePirates.Hackathon.UI
                 h.childControlWidth = h.childControlHeight = true;
                 h.childForceExpandWidth = false;
                 h.childForceExpandHeight = true;
-                _nameInput = HackUi.Input(row, "Island name (3 to 16 letters)", 16);
-                K.Paint((RectTransform)_nameInput.transform, "Input_Field", 1.4f, null, new Color(0.97f, 0.92f, 0.8f, 1f)).raycastTarget = true;
-                if (_nameInput.textComponent != null) { _nameInput.textComponent.color = K.Ink; if (K.Font != null) _nameInput.textComponent.font = K.Font; }
+                var field = K.Node(row, "NameInput");
+                var fle = field.gameObject.AddComponent<LayoutElement>();
+                fle.flexibleWidth = 1f;
+                fle.minWidth = 200f;
+                _nameInput = MarketKit.Input(field, "Island name (3 to 16 letters)", 16, 30f);
                 var claim = K.Node(row, "ClaimButton");
                 var le = claim.gameObject.AddComponent<LayoutElement>();
                 le.preferredWidth = le.minWidth = 270f;

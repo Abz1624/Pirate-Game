@@ -161,18 +161,7 @@ namespace RoguePirates.Hackathon.UI
             Paint(join, "Panel_Inset", 2f);
             RowIcon(join, "Chest_2", 18f, 70f);
             var field = Strip(join, "Field", 104f, 12f, 420f, 68f);
-            _codeInput = HackUi.Input(field, "Lobby code (6 letters)", 8);
-            var frt = (RectTransform)_codeInput.transform;
-            frt.anchorMin = Vector2.zero;
-            frt.anchorMax = Vector2.one;
-            frt.offsetMin = frt.offsetMax = Vector2.zero;
-            Paint(frt, "Input_Field", 1f, null, new Color(0.98f, 0.95f, 0.88f, 1f)).raycastTarget = true;
-            foreach (var t in _codeInput.GetComponentsInChildren<TextMeshProUGUI>(true))
-            {
-                if (PvpKit.Font != null) t.font = PvpKit.Font;
-                t.color = t.name == "Placeholder" ? new Color(InkDim.r, InkDim.g, InkDim.b, 0.75f) : Ink;
-            }
-            if (PvpKit.Font != null) _codeInput.fontAsset = PvpKit.Font;
+            _codeInput = MarketKit.Input(field, "Lobby code (6 letters)", 8, 30f);
             _codeInput.characterValidation = TMP_InputField.CharacterValidation.Alphanumeric;
             _codeInput.onSubmit.AddListener(_ => _pvp.JoinCode(_codeInput.text));
             KitButton(TopRight(join, "JoinCode", 14f, 10f, 390f, 72f), "Join with code", "Icon_Link", () => _pvp.JoinCode(_codeInput.text), "Btn_Gold", 30f, 38f);
@@ -364,8 +353,8 @@ namespace RoguePirates.Hackathon.UI
             _lobbyTitle.rectTransform.offsetMax = new Vector2(-900f, _lobbyTitle.rectTransform.offsetMax.y);
             KitButton(TopRight(head, "Leave", 34f, 22f, 230f, 84f), "Leave", "Icon_Close", () => Press(_v4Leave), "Btn_Gold", 32f, 36f);
             var tag = TopRight(head, "LobbyTag", 300f, 34f, 360f, 62f);
-            tag.gameObject.AddComponent<Image>().color = new Color(0.16f, 0.09f, 0.04f, 0.75f);
-            _lobbyTag = Label(tag, string.Empty, 28f, OnWood, TextAlignmentOptions.Center, false, 18f);
+            Paint(tag, "Tag_Tan", 1.4f, null, new Color(0.88f, 0.78f, 0.6f, 1f));
+            _lobbyTag = Label(Fill(tag, "Text", 14f, 2f, 14f, 2f), string.Empty, 28f, Ink, TextAlignmentOptions.Center, true, 18f);
 
             const float pad = 40f;
             Icon(root, "Icon_Group", pad + 6f, 150f, 50f);
