@@ -11,6 +11,9 @@ namespace RoguePirates.Api.Solana;
 /// <summary>A verified SOL transfer into the treasury.</summary>
 public sealed record VerifiedTransfer(string Signature, string Sender, long Lamports, string? Memo, long Slot);
 
+/// <summary>A signed treasury transfer not sent yet: its bytes, its signature and the block height it must land by.</summary>
+public sealed record PreparedTransfer(byte[] Tx, string Signature, long LastValidBlockHeight);
+
 /// <summary>An NFT minted by the treasury.</summary>
 public sealed record MintedNft(string Mint, string Signature, string Owner);
 
@@ -33,7 +36,12 @@ public sealed class SolanaService
         _rpc = rpc;
         _settings = settings;
         _log = log;
-        if (settings.TreasurySecretKey != null)
+        if (settings.TreasurySecretKey != null && settings.IsMainnet && !settings.AllowMainnet)
+        {
+            // 13 Oct hotfix: a mainnet RPC or cluster needs an explicit ALLOW_MAINNET=true; until then no SOL moves
+            _log.LogError("SOLANA_RPC_URL/SOLANA_CLUSTER point at mainnet but ALLOW_MAINNET is not true; treasury off");
+        }
+        else if (settings.TreasurySecretKey != null)
         {
             try { _treasury = ParseKeypair(settings.TreasurySecretKey); }
             catch (Exception ex) { _log.LogError("TREASURY_SECRET_KEY is set but unreadable ({Type}); treasury off", ex.GetType().Name); }
@@ -138,18 +146,88 @@ public sealed class SolanaService
 
     // ---------- writes (treasury) ----------
 
-    /// <summary>Sends SOL from the treasury; returns the signature once confirmed.</summary>
-    public async Task<string> SendSolAsync(string toWallet, long lamports, string? memo = null, CancellationToken ct = default)
+    /// <summary>
+    /// Builds and signs a SOL transfer from the treasury without sending it. The signature is known before the send (it
+    /// is the fee payer's signature inside the signed bytes), so a payout can be recorded with it first: whatever happens
+    /// after the send, the payout can be resolved by signature and is never paid twice.
+    /// </summary>
+    public async Task<PreparedTransfer> PrepareSolTransferAsync(string toWallet, long lamports, string? memo = null, CancellationToken ct = default)
     {
         var treasury = Treasury;
         if (!IsValidAddress(toWallet)) throw new ApiException(400, "invalid_wallet", "Not a Solana address.");
         if (lamports <= 0) throw new ApiException(400, "invalid_amount", "The amount must be positive.");
-        var blockhash = await Wrap(() => _rpc.GetLatestBlockhashAsync(ct));
-        var b = new TransactionBuilder().SetRecentBlockHash(blockhash).SetFeePayer(treasury)
+        var bh = await Wrap(() => _rpc.GetLatestBlockhashInfoAsync(ct));
+        var b = new TransactionBuilder().SetRecentBlockHash(bh.Blockhash).SetFeePayer(treasury)
             .AddInstruction(SystemProgram.Transfer(treasury.PublicKey, new PublicKey(toWallet), (ulong)lamports));
         if (!string.IsNullOrEmpty(memo)) b.AddInstruction(MemoProgram.NewMemoV2(memo, treasury.PublicKey));
         var tx = b.Build(new List<Account> { treasury });
-        return await SendAndConfirmAsync(tx, ct);
+        return new PreparedTransfer(tx, SignatureOf(tx), bh.LastValidBlockHeight);
+    }
+
+    /// <summary>The first signature of a serialized transaction (compact-u16 count, then 64-byte signatures).</summary>
+    public static string SignatureOf(byte[] tx)
+    {
+        // the count is a compact-u16; a payout has 1 or 2 signers, so it is one byte
+        if (tx.Length < 65 || tx[0] == 0 || tx[0] > 0x7f) throw new FormatException("Not a signed transaction.");
+        return Encoders.Base58.EncodeData(tx[1..65]);
+    }
+
+    /// <summary>
+    /// Sends a signed transaction. Throws <c>tx_rejected</c> only when the node answered with a preflight rejection
+    /// (simulation or signature check failed: the transaction was not forwarded, nothing can land); any other error
+    /// (timeout, HTTP failure, unreadable answer) throws <c>tx_send_unknown</c>: it may have been accepted.
+    /// </summary>
+    public async Task SendPreparedAsync(byte[] tx, CancellationToken ct = default)
+    {
+        try { await _rpc.SendTransactionAsync(tx, ct); }
+        catch (SolanaRpcException ex) when (ex.Code is -32002 or -32003)
+        {
+            _log.LogWarning("Solana sendTransaction rejected at preflight ({Code}): {Message}", ex.Code, ex.Message);
+            throw new ApiException(502, "tx_rejected", "The Solana node rejected the transaction (preflight failed); nothing was sent.");
+        }
+        catch (Exception ex)
+        {
+            _log.LogWarning("Solana sendTransaction result unknown ({Type}): {Message}", ex.GetType().Name, ex.Message);
+            throw new ApiException(502, "tx_send_unknown", "The transaction may have been sent; its result is not known yet.");
+        }
+    }
+
+    /// <summary>
+    /// Polls the signature until it is confirmed ("confirmed"/"finalized"), failed on chain ("failed"), or the time is
+    /// up (null). RPC errors while polling are logged and polling continues; this never throws except on cancellation.
+    /// </summary>
+    public async Task<string?> WaitForConfirmationAsync(string signature, TimeSpan timeout, CancellationToken ct = default)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (true)
+        {
+            try
+            {
+                var status = await _rpc.GetSignatureStatusAsync(signature, ct);
+                if (status is "failed" or "confirmed" or "finalized") return status;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                _log.LogWarning("Solana signature status for {Sig} not read ({Type})", signature, ex.GetType().Name);
+            }
+            if (DateTime.UtcNow >= deadline) return null;
+            await Task.Delay(PollInterval, ct);
+        }
+    }
+
+    /// <summary>How long a payout send is polled before it is left unconfirmed for the reconciler (tests shorten it).</summary>
+    public TimeSpan ConfirmTimeout { get; set; } = TimeSpan.FromSeconds(45);
+
+    /// <summary>The time between signature status polls (tests shorten it).</summary>
+    public TimeSpan PollInterval { get; set; } = TimeSpan.FromMilliseconds(800);
+
+    /// <summary>One status read for the reconciler: the status (or null when unknown), and the current block height.
+    /// Throws 502 solana_rpc_error when the node cannot be read.</summary>
+    public async Task<(string? status, long blockHeight)> SignatureStatusAsync(string signature, CancellationToken ct = default)
+    {
+        var status = await Wrap(() => _rpc.GetSignatureStatusAsync(signature, ct));
+        var height = await Wrap(() => _rpc.GetBlockHeightAsync(ct));
+        return (status, height);
     }
 
     /// <summary>Mints a one-of-one NFT (SPL mint with 0 decimals, supply 1, Metaplex metadata and master edition) to the wallet.</summary>
@@ -212,33 +290,47 @@ public sealed class SolanaService
     public async Task<string> RequestAirdropAsync(string address, long lamports, CancellationToken ct = default) =>
         await Wrap(() => _rpc.RequestAirdropAsync(address, lamports, ct));
 
+    /// <summary>Sends a treasury transaction (NFT mint or transfer) and waits up to 45 s for it. Errors after the send
+    /// become tx_timeout (it may still land: callers check the chain before retrying).</summary>
     async Task<string> SendAndConfirmAsync(byte[] tx, CancellationToken ct)
     {
-        var sig = await Wrap(() => _rpc.SendTransactionAsync(tx, ct));
-        var deadline = DateTime.UtcNow.AddSeconds(45);
-        while (DateTime.UtcNow < deadline)
+        var sig = SignatureOf(tx);
+        try { await SendPreparedAsync(tx, ct); }
+        catch (ApiException ex) when (ex.Code == "tx_send_unknown")
         {
-            var status = await Wrap(() => _rpc.GetSignatureStatusAsync(sig, ct));
-            if (status == "failed") throw new ApiException(502, "tx_failed", $"The transaction {sig} failed on chain.");
-            if (status is "confirmed" or "finalized") return sig;
-            await Task.Delay(800, ct);
+            throw new ApiException(504, "tx_timeout", $"The transaction {sig} may have been sent but is not confirmed; check it on the explorer.");
         }
+        var status = await WaitForConfirmationAsync(sig, TimeSpan.FromSeconds(45), CancellationToken.None);
+        if (status == "failed") throw new ApiException(502, "tx_failed", $"The transaction {sig} failed on chain.");
+        if (status is "confirmed" or "finalized") return sig;
         throw new ApiException(504, "tx_timeout", $"The transaction {sig} was sent but not confirmed in time; check it on the explorer.");
     }
 
-    /// <summary>RPC errors become 502 solana_rpc_error (with the node's message), so the client sees a clear error.</summary>
+    /// <summary>RPC errors become 502 solana_rpc_error with a generic message (the node's raw answer is only logged, never
+    /// returned to clients).</summary>
     async Task<T> Wrap<T>(Func<Task<T>> call)
     {
         try { return await call(); }
+        catch (ApiException) { throw; }
         catch (SolanaRpcException ex)
         {
             _log.LogWarning("Solana RPC error {Code}: {Message}", ex.Code, ex.Message);
-            throw new ApiException(502, "solana_rpc_error", ex.Message);
+            throw new ApiException(502, "solana_rpc_error", "The Solana RPC call failed; try again shortly.");
         }
         catch (HttpRequestException ex)
         {
             _log.LogWarning("Solana RPC unreachable: {Message}", ex.Message);
             throw new ApiException(502, "solana_rpc_error", "The Solana RPC node is unreachable.");
+        }
+        catch (TaskCanceledException ex)
+        {
+            _log.LogWarning("Solana RPC timed out: {Message}", ex.Message);
+            throw new ApiException(502, "solana_rpc_error", "The Solana RPC node did not answer in time.");
+        }
+        catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+        {
+            _log.LogWarning("Solana RPC answer unreadable ({Type}): {Message}", ex.GetType().Name, ex.Message);
+            throw new ApiException(502, "solana_rpc_error", "The Solana RPC node gave an unreadable answer.");
         }
     }
 

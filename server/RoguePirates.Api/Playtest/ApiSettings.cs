@@ -44,6 +44,26 @@ public sealed class ApiSettings
     /// <summary>Hackathon: owner key for the admin endpoints (X-Admin-Key header). Unset: the admin endpoints answer 503.</summary>
     public string? AdminKey { get; init; }
 
+    /// <summary>13 Oct hotfix: a mainnet SOLANA_RPC_URL or SOLANA_CLUSTER keeps the treasury off unless ALLOW_MAINNET=true.</summary>
+    public bool AllowMainnet { get; init; }
+    public bool IsMainnet =>
+        SolanaCluster.Contains("mainnet", StringComparison.OrdinalIgnoreCase)
+        || SolanaRpcUrl.Contains("mainnet", StringComparison.OrdinalIgnoreCase);
+    /// <summary>13 Oct hotfix: the largest owner payout (POST /api/admin/payouts), ADMIN_PAYOUT_MAX_LAMPORTS, default 1 SOL.</summary>
+    public long AdminPayoutMaxLamports { get; init; } = 1_000_000_000;
+
+    /// <summary>
+    /// 13 Oct hotfix: RUM earned from voyages (POST /api/runs, client-reported kills / 10) goes through the design's soft
+    /// cap curve <c>cap * (1 - 0.5^(amount / half))</c> twice: per run (RUM_RUN_CAP 40, RUM_RUN_HALF 20: a 300-kill run's
+    /// 30 raw RUM gives 25) and per UTC day over the sum of the capped runs (RUM_DAY_CAP 150, RUM_DAY_HALF 75). So one run
+    /// never earns more than 40 RUM and a day never more than 150, whatever the client reports (an island store makes
+    /// 120+ RUM an hour).
+    /// </summary>
+    public int RumRunCap { get; init; } = 40;
+    public int RumRunHalf { get; init; } = 20;
+    public int RumDayCap { get; init; } = 150;
+    public int RumDayHalf { get; init; } = 75;
+
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
 
@@ -71,7 +91,15 @@ public sealed class ApiSettings
         SolanaCluster = NullIfEmpty(c["SOLANA_CLUSTER"]) ?? "devnet",
         AdminKey = NullIfEmpty(c["ADMIN_KEY"]),
         MatchTicketLifetimeSeconds = int.TryParse(c["MATCH_TICKET_LIFETIME_SECONDS"], out var lt) ? Math.Clamp(lt, 10, MatchTickets.MaxLifetimeSeconds) : 60,
+        AllowMainnet = bool.TryParse(c["ALLOW_MAINNET"], out var am) && am,
+        AdminPayoutMaxLamports = long.TryParse(c["ADMIN_PAYOUT_MAX_LAMPORTS"], out var apm) && apm > 0 ? apm : 1_000_000_000,
+        RumRunCap = Positive(c["RUM_RUN_CAP"], 40),
+        RumRunHalf = Positive(c["RUM_RUN_HALF"], 20),
+        RumDayCap = Positive(c["RUM_DAY_CAP"], 150),
+        RumDayHalf = Positive(c["RUM_DAY_HALF"], 75),
     };
+
+    static int Positive(string? v, int fallback) => int.TryParse(v, out var n) && n > 0 ? n : fallback;
 
     static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
 

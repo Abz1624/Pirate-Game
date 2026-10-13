@@ -252,6 +252,8 @@ public sealed class LobbyService
                 throw new ApiException(403, "not_host", "Only the host can add a bot.");
             if (lobby.Status != LobbyStates.Waiting || lobby.GuestPlayerId != null)
                 throw new ApiException(409, "not_waiting", "A bot can only join a lobby that is waiting for a second player.");
+            // 13 Oct hotfix: bot matches are free play (decided by the host's client); a staked lobby cannot seat the bot
+            await Hackathon.WagerService.RefuseBotIfStakedAsync(_db, lobby);
 
             lobby.GuestPlayerId = PracticeBot.Id;
             lobby.GuestStatus = SeatStates.Ready;

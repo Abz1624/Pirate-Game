@@ -60,7 +60,8 @@ public static class HackathonEndpoints
         app.MapPost("/api/deposits/verify", async (HttpContext ctx, DepositVerifyRequest req, PlayerAuth players, LedgerService ledger) =>
         {
             var player = await players.RequireAsync(ctx);
-            var (deposit, already) = await ledger.VerifyDepositAsync(player, req.Signature, req.Purpose, req.RefId,
+            // 13 Oct hotfix: wager, market and raid deposits are only recorded by their own endpoints (amount, memo, seat checks)
+            var (deposit, already) = await ledger.VerifyClientDepositAsync(player, req.Signature, req.Purpose, req.RefId,
                 req.MinLamports ?? 1, string.IsNullOrWhiteSpace(req.Memo) ? null : req.Memo.Trim());
             return Results.Ok(LedgerService.DepositView(deposit, already));
         });
@@ -85,9 +86,21 @@ public static class HackathonEndpoints
         app.MapPost("/api/admin/payouts", async (HttpContext ctx, AdminPayoutRequest req, ApiSettings settings, GameDb db, LedgerService ledger, SolanaService sol) =>
         {
             RequireAdmin(ctx, settings);
+            // 13 Oct hotfix: an Idempotency-Key header is required (the same key never pays twice) and the amount is capped
+            var key = ctx.Request.Headers["Idempotency-Key"].ToString().Trim();
+            if (key.Length is 0 or > 64)
+                throw new ApiException(400, "idempotency_key_required", "Send an Idempotency-Key header (1-64 characters); the same key never pays twice.");
+            if (req.Lamports > settings.AdminPayoutMaxLamports)
+                throw new ApiException(400, "amount_too_high", $"An owner payout is at most {settings.AdminPayoutMaxLamports} lamports (ADMIN_PAYOUT_MAX_LAMPORTS).");
             var wallet = (req.Wallet ?? "").Trim();
+            var reason = string.IsNullOrWhiteSpace(req.Reason) ? "admin" : req.Reason.Trim();
+            if (reason.Length > 32) throw new ApiException(400, "invalid_reason", "reason is at most 32 characters.");
+            var refId = "admin:" + key;
+            if (refId.Length > 64) refId = refId[..64];
             var player = await db.Players.AsNoTracking().FirstOrDefaultAsync(p => p.WalletAddress == wallet);
-            var payout = await ledger.PayAsync(player?.Id, wallet, req.Lamports, string.IsNullOrWhiteSpace(req.Reason) ? "admin" : req.Reason.Trim());
+            var previous = await db.Payouts.AsNoTracking().Where(p => p.Reason == reason && p.RefId == refId && p.Status != Payout.Failed)
+                .OrderByDescending(p => p.Id).FirstOrDefaultAsync();
+            var payout = previous ?? await ledger.PayAsync(player?.Id, wallet, req.Lamports, reason, refId);
             return Results.Ok(LedgerService.PayoutView(payout, sol.Cluster));
         });
 

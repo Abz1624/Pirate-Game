@@ -224,41 +224,67 @@ public sealed class WagerRewardRaceTests
         Assert.Equal(2, w.Payouts().Count(p => p.Reason == WagerService.RefundReason));
     }
 
+    /// <summary>13 Oct hotfix: a bot match is decided by the host's client, so stakes against the practice bot (the house
+    /// matching the stake from the treasury) are off: seating the bot in a staked lobby, or staking a lobby with the bot,
+    /// is refused with bot_stakes_off; a bot match without a stake works as before.</summary>
     [Fact]
-    public async Task Wager_VsHouse_HostDepositAlone_StartsTheBotMatch_WinPaysDouble_LossIsKept()
+    public async Task Wager_VsBot_StakesAreRefused_FreePlayStillWorks()
     {
         using var w = NewWorld();
         var host = await w.SignInAsync();
 
-        async Task<(Guid lobbyId, Guid matchId)> BotMatchAsync()
+        var staked = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { stakeLamports = Stake }));
+        var id = staked.GetProperty("lobbyId").GetGuid();
+        await Ok(await host.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "ready", draft = JsonHelpers.Draft() }));
+        var res = await host.Http.PostAsync($"/api/lobbies/{id}/bot", null);
+        Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
+        Assert.Equal("bot_stakes_off", await ErrorOf(res));
+
+        var free = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { }));
+        var freeId = free.GetProperty("lobbyId").GetGuid();
+        Assert.Equal("full", (await Ok(await host.Http.PostAsync($"/api/lobbies/{freeId}/bot", null))).GetProperty("status").GetString());
+        Assert.Equal("bot_stakes_off", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{freeId}", new { stakeLamports = Stake })));
+        var started = await Ok(await host.Http.PutAsJsonAsync($"/api/lobbies/{freeId}/status", new { status = "ready", draft = JsonHelpers.Draft() }));
+        Assert.Equal("starting", started.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, started.GetProperty("wager").ValueKind);
+        Assert.Empty(w.Payouts());
+    }
+
+    /// <summary>13 Oct hotfix: a vs-house wager funded before the hotfix is refunded whatever the result (the house never
+    /// pays a client-decided bot match).</summary>
+    [Fact]
+    public async Task Wager_LegacyVsHouse_IsRefunded_EvenWhenTheHostWins()
+    {
+        using var w = NewWorld();
+        var host = await w.SignInAsync();
+        var created = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { }));
+        var id = created.GetProperty("lobbyId").GetGuid();
+        await Ok(await host.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "ready", draft = JsonHelpers.Draft() }));
+        var started = await Ok(await host.Http.PostAsync($"/api/lobbies/{id}/bot", null));
+        var matchId = started.GetProperty("match").GetProperty("matchId").GetGuid();
+        var sig = w.Transfer(host, Stake, "wager:" + id);
+        using (var scope = w.Host.Services.CreateScope())
         {
-            var created = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { stakeLamports = Stake }));
-            var id = created.GetProperty("lobbyId").GetGuid();
-            await Ok(await host.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "ready", draft = JsonHelpers.Draft() }));
-            var withBot = await Ok(await host.Http.PostAsync($"/api/lobbies/{id}/bot", null));
-            Assert.Equal("full", withBot.GetProperty("status").GetString()); // waits for the stake
-            Assert.True(withBot.GetProperty("wager").GetProperty("vsHouse").GetBoolean());
-            var started = await Ok(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:" + id) }));
-            Assert.Equal("starting", started.GetProperty("status").GetString());
-            Assert.True(started.GetProperty("wager").GetProperty("guest").GetProperty("house").GetBoolean());
-            return (id, started.GetProperty("match").GetProperty("matchId").GetGuid());
+            // the state a staked bot match was left in before the hotfix: host deposit attached, the house "matching" it
+            var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+            var wager = WagerService.NewForLobby(id, host.Id, Stake, w.Host.Clock.UtcNow);
+            wager.Status = Wager.Funded;
+            wager.VsHouse = true;
+            wager.MatchId = matchId;
+            wager.HostDepositSig = sig;
+            db.Wagers.Add(wager);
+            db.SolanaDeposits.Add(new SolanaDeposit
+            {
+                Signature = sig, PlayerId = host.Id, Wallet = host.Key, Purpose = WagerService.DepositPurpose, RefId = wager.Id.ToString(),
+                Lamports = Stake, Memo = "wager:" + id, Status = SolanaDeposit.Consumed, CreatedAt = w.Host.Clock.UtcNow,
+            });
+            await db.SaveChangesAsync();
         }
-
-        var (won, wonMatch) = await BotMatchAsync();
-        await w.DecideAsync(wonMatch, host.Id);
-        await w.SettleAsync(won);
-        var wins = w.Payouts().Where(p => p.Reason == WagerService.WinReason).ToList();
-        Assert.Single(wins);
-        Assert.Equal(2 * Stake, wins[0].Lamports);
-        Assert.Equal(host.Key, wins[0].Wallet);
-
-        var (lost, lostMatch) = await BotMatchAsync();
-        await w.DecideAsync(lostMatch, PracticeBot.Id);
-        await w.SettleAsync(lost);
-        var view = await Ok(await host.Http.GetAsync($"/api/wagers/{lost}"));
-        Assert.Equal("settled", view.GetProperty("status").GetString());
-        Assert.Equal("house_won", view.GetProperty("result").GetString());
-        Assert.Single(w.Payouts()); // only the first win
+        await w.DecideAsync(matchId, host.Id);
+        await w.SettleAsync(id);
+        Assert.DoesNotContain(w.Payouts(), p => p.Reason == WagerService.WinReason);
+        var refund = Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason);
+        Assert.Equal(Stake, refund.Lamports);
     }
 
     [Fact]
@@ -345,7 +371,8 @@ public sealed class WagerRewardRaceTests
     [Fact]
     public async Task WeeklyRewards_PayTopWalletPlayersOnce_AndShowOnTheBoard()
     {
-        using var w = NewWorld();
+        // runs without logs are not server-checked: pay on reported totals here (the default is checked-only since 13 Oct)
+        using var w = NewWorld(extra: new() { ["WEEKLY_REWARD_CHECKED_ONLY"] = "false" });
         var a = await w.SignInAsync();
         var b = await w.SignInAsync();
         var c = await w.SignInAsync();

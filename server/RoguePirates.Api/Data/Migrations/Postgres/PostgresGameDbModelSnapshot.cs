@@ -442,6 +442,9 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<long>("Lamports")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("LastValidBlockHeight")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid?>("PlayerId")
                         .HasColumnType("uuid");
 
@@ -476,6 +479,10 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.HasIndex("PlayerId");
 
                     b.HasIndex("Reason", "RefId");
+
+                    b.HasIndex(new[] { "Reason", "RefId" }, "IX_Payouts_Reason_RefId_Live")
+                        .IsUnique()
+                        .HasFilter("\"RefId\" IS NOT NULL AND \"Status\" <> 'failed'");
 
                     b.ToTable("Payouts");
                 });

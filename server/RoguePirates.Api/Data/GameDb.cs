@@ -12,6 +12,9 @@ public abstract class GameDb : DbContext
 {
     protected GameDb(DbContextOptions options) : base(options) { }
 
+    /// <summary>The unique filtered index on Payouts (Reason, RefId) over rows that are not failed (AddPayoutSafety).</summary>
+    public const string LivePayoutIndex = "IX_Payouts_Reason_RefId_Live";
+
     public DbSet<Player> Players => Set<Player>();
     public DbSet<RunRecord> Runs => Set<RunRecord>();
     public DbSet<RunLog> RunLogs => Set<RunLog>();
@@ -133,6 +136,9 @@ public abstract class GameDb : DbContext
         {
             e.HasIndex(x => x.PlayerId);
             e.HasIndex(x => new { x.Reason, x.RefId });
+            // 13 Oct hotfix: at most one live (not failed) payout per obligation, enforced by the database
+            e.HasIndex(x => new { x.Reason, x.RefId }, LivePayoutIndex).IsUnique()
+                .HasFilter("\"RefId\" IS NOT NULL AND \"Status\" <> 'failed'");
             e.Property(x => x.Wallet).HasMaxLength(Key);
             e.Property(x => x.Reason).HasMaxLength(32);
             e.Property(x => x.RefId).HasMaxLength(64);

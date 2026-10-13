@@ -15,7 +15,7 @@ namespace RoguePirates.Api.Hackathon;
 public sealed class MarketService
 {
     public const string Paid = "paid", Cancelling = "cancelling";
-    public const string DepositPurpose = "market_buy", SaleReason = "market_sale";
+    public const string DepositPurpose = "market_buy", SaleReason = "market_sale", RefundReason = "market_refund";
     public const long MinPriceLamports = 1_000_000, MaxPriceLamports = 100 * SolanaService.LamportsPerSol; // 0.001 .. 100 SOL
     /// <summary>Stored in TransferSig when a retry finds the NFT already at its destination (the first send timed out).</summary>
     const string TransferredUnknownSig = "confirmed-by-holding";
@@ -136,30 +136,157 @@ public sealed class MarketService
 
     // ---------- buy ----------
 
+    /// <summary>
+    /// A purchase (13 Oct hotfix): the buyer's transfer (memo buy:&lt;listingId&gt;, any amount) is verified and recorded
+    /// first; then, under the market lock, the stored deposit is checked against the listing as it is NOW (still active,
+    /// not the buyer's own, right wallet and memo, at least the price, not used before). A payment that cannot buy the
+    /// listing is refunded in full (reason market_refund); an overpayment above the price is refunded too.
+    /// </summary>
     public async Task<object> BuyAsync(Player buyer, Guid listingId, string? signature)
     {
         IslandService.RequireWallet(buyer);
+        var first = await FindAsync(listingId);
+        if (first.SellerPlayerId == buyer.Id) throw new ApiException(400, "own_listing", "You cannot buy your own listing (cancel it instead).");
+        if (first.Status == Paid && first.BuyerPlayerId == buyer.Id && first.PaymentSig == (signature ?? "").Trim())
+        {
+            await IslandLocks.Market.WaitAsync();
+            try { return await CompleteLockedAsync(await FindAsync(listingId)); } // a retry of the same purchase
+            finally { IslandLocks.Market.Release(); }
+        }
+
+        // the chain check and record, outside the lock; any amount, so a short payment is recorded and refunded
+        var (recorded, _) = await _ledger.VerifyDepositAsync(buyer, signature, DepositPurpose, listingId.ToString(), 1, Memo(listingId));
+
+        ApiException? refuse;
+        SolanaDeposit d;
+        MarketListing listing;
         await IslandLocks.Market.WaitAsync();
         try
         {
-            var listing = await FindAsync(listingId);
-            if (listing.Status == Paid && listing.BuyerPlayerId == buyer.Id)
+            listing = await FindAsync(listingId);
+            await _db.Entry(listing).ReloadAsync();
+            d = await _db.SolanaDeposits.FirstAsync(x => x.Id == recorded.Id);
+            await _db.Entry(d).ReloadAsync();
+            if (listing.Status == Paid && listing.PaymentSig == d.Signature && listing.BuyerPlayerId == buyer.Id)
                 return await CompleteLockedAsync(listing); // a retry of the same purchase
-            if (listing.Status != MarketListing.Active)
-                throw new ApiException(409, "listing_not_active", $"The listing is {listing.Status}; do not pay for it.");
-            if (listing.SellerPlayerId == buyer.Id) throw new ApiException(400, "own_listing", "You cannot buy your own listing (cancel it instead).");
-
-            var (deposit, _) = await _ledger.VerifyDepositAsync(buyer, signature, DepositPurpose, listingId.ToString(), listing.PriceLamports, Memo(listingId));
-            deposit.Status = SolanaDeposit.Consumed;
-            deposit.ConsumedAt = _clock.UtcNow;
-            listing.Status = Paid;
-            listing.BuyerPlayerId = buyer.Id;
-            listing.PaymentSig = deposit.Signature;
-            await _db.SaveChangesAsync();
-            _log.LogInformation("Listing {Id}: paid by {Buyer} ({Sig})", listingId, buyer.Id, deposit.Signature);
-            return await CompleteLockedAsync(listing);
+            refuse = PaymentProblem(d, listing, buyer);
+            if (refuse == null)
+            {
+                d.Status = SolanaDeposit.Consumed;
+                d.ConsumedAt = _clock.UtcNow;
+                listing.Status = Paid;
+                listing.BuyerPlayerId = buyer.Id;
+                listing.PaymentSig = d.Signature;
+                await _db.SaveChangesAsync();
+                _log.LogInformation("Listing {Id}: paid by {Buyer} ({Sig}, {Lamports} lamports)", listingId, buyer.Id, d.Signature, d.Lamports);
+                return await CompleteLockedAsync(listing);
+            }
+            if (d.Status is SolanaDeposit.Verified)
+            {
+                d.Status = SolanaDeposit.Refunding;
+                d.ConsumedAt = _clock.UtcNow;
+                await _db.SaveChangesAsync();
+            }
         }
         finally { IslandLocks.Market.Release(); }
+
+        // refused: the whole payment goes back (once; a deposit used for a purchase is never refunded here)
+        var refunded = false;
+        if (d.Status is SolanaDeposit.Refunding or SolanaDeposit.Refunded)
+            refunded = await RefundDepositAsync(d) is { Status: Payout.Sent };
+        throw new ApiException(refuse.Status, refuse.Code, refuse.Message + (d.Status is SolanaDeposit.Refunding or SolanaDeposit.Refunded
+            ? refunded ? " Your payment was refunded to your wallet." : " Your payment is being refunded to your wallet."
+            : ""));
+    }
+
+    /// <summary>Why a recorded payment cannot buy the listing now (null when it can).</summary>
+    static ApiException? PaymentProblem(SolanaDeposit d, MarketListing listing, Player buyer)
+    {
+        if (d.Status != SolanaDeposit.Verified)
+            return new ApiException(409, "payment_used", "This payment was already used or refunded.");
+        if (d.PlayerId != buyer.Id || d.Wallet != buyer.WalletAddress || d.Purpose != DepositPurpose || d.RefId != listing.Id.ToString())
+            return new ApiException(409, "signature_used", "This transaction was already used.");
+        if (d.Memo == null || !d.Memo.Contains(Memo(listing.Id), StringComparison.Ordinal))
+            return new ApiException(400, "memo_mismatch", "The transaction's memo does not carry the expected reference.");
+        if (listing.Status != MarketListing.Active)
+            return new ApiException(409, "listing_not_active", $"The listing is {listing.Status}.");
+        if (listing.SellerPlayerId == buyer.Id)
+            return new ApiException(400, "own_listing", "You cannot buy your own listing (cancel it instead).");
+        if (d.Lamports < listing.PriceLamports)
+            return new ApiException(400, "amount_too_low", $"The transfer is {d.Lamports} lamports; the price is {listing.PriceLamports}.");
+        return null;
+    }
+
+    static string DepositRef(long depositId) => "dep:" + depositId;
+    static string OverpaymentRef(long depositId) => "over:" + depositId;
+
+    /// <summary>Refunds a refused payment in full (once). Marks the deposit refunded when the payout is sent.</summary>
+    async Task<Payout?> RefundDepositAsync(SolanaDeposit d)
+    {
+        var p = await PayoutOnce.PayAsync(_db, _ledger, _clock, _log, d.PlayerId, d.Wallet, d.Lamports, RefundReason, DepositRef(d.Id));
+        if (p is { Status: Payout.Sent } && d.Status != SolanaDeposit.Refunded)
+        {
+            d.Status = SolanaDeposit.Refunded;
+            await _db.SaveChangesAsync();
+        }
+        return p;
+    }
+
+    /// <summary>Refunds what a purchase paid above the price (once).</summary>
+    async Task RefundOverpaymentAsync(MarketListing listing)
+    {
+        if (listing.PaymentSig == null) return;
+        var d = await _db.SolanaDeposits.AsNoTracking().FirstOrDefaultAsync(x => x.Signature == listing.PaymentSig);
+        if (d == null || d.Lamports <= listing.PriceLamports) return;
+        await PayoutOnce.PayAsync(_db, _ledger, _clock, _log, d.PlayerId, d.Wallet, d.Lamports - listing.PriceLamports, RefundReason, OverpaymentRef(d.Id));
+    }
+
+    /// <summary>
+    /// Sweep (on the wager sweep timer): retries refunds of refused payments, refunds payments recorded but never used
+    /// (the buy request died) after a grace period, and retries overpayment refunds of paid listings.
+    /// </summary>
+    public async Task<int> SweepRefundsAsync()
+    {
+        if (!_sol.TreasuryOn) return 0;
+        var graceBefore = _clock.UtcNow - WagerService.AttachGrace;
+        var ids = await _db.SolanaDeposits.AsNoTracking()
+            .Where(x => x.Purpose == DepositPurpose && (x.Status == SolanaDeposit.Refunding
+                        || (x.Status == SolanaDeposit.Verified && x.CreatedAt <= graceBefore)))
+            .OrderBy(x => x.Id).Take(50).Select(x => x.Id).ToListAsync();
+        var n = 0;
+        foreach (var id in ids)
+        {
+            SolanaDeposit? refund = null;
+            await IslandLocks.Market.WaitAsync();
+            try
+            {
+                var d = await _db.SolanaDeposits.FirstAsync(x => x.Id == id);
+                await _db.Entry(d).ReloadAsync();
+                if (d.Status == SolanaDeposit.Verified)
+                {
+                    if (await _db.MarketListings.AnyAsync(l => l.PaymentSig == d.Signature))
+                    {
+                        d.Status = SolanaDeposit.Consumed; // used by a purchase that did not mark it
+                        d.ConsumedAt ??= _clock.UtcNow;
+                    }
+                    else
+                    {
+                        d.Status = SolanaDeposit.Refunding;
+                        d.ConsumedAt ??= _clock.UtcNow;
+                    }
+                    await _db.SaveChangesAsync();
+                }
+                if (d.Status == SolanaDeposit.Refunding) refund = d;
+            }
+            finally { IslandLocks.Market.Release(); }
+            if (refund != null && await RefundDepositAsync(refund) != null) n++;
+        }
+
+        var since = _clock.UtcNow.AddDays(-7);
+        var paid = await _db.MarketListings.Where(l => l.PaymentSig != null && (l.Status == Paid || (l.Status == MarketListing.Sold && l.ClosedAt >= since)))
+            .ToListAsync();
+        foreach (var l in paid) await RefundOverpaymentAsync(l);
+        return n;
     }
 
     /// <summary>Finishes a paid trade (buyer or seller): the NFT to the buyer, the island to the buyer, the seller paid.</summary>
@@ -230,6 +357,9 @@ public sealed class MarketService
                 catch (ApiException ex) { errors.Add($"seller_payout: {ex.Code}: {ex.Message}"); }
             }
         }
+
+        // 3. an overpayment goes back to the buyer (once)
+        await RefundOverpaymentAsync(listing);
 
         if (listing.TransferSig != null && listing.PayoutSig != null)
         {

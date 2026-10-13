@@ -16,6 +16,9 @@ public sealed record ChainTransaction(
     IReadOnlyList<string> Memos,
     DateTime? BlockTime);
 
+/// <summary>A recent blockhash and the last block height at which a transaction built on it can be processed.</summary>
+public sealed record BlockhashInfo(string Blockhash, long LastValidBlockHeight);
+
 /// <summary>A token account holding a mint (getTokenAccountsByOwner, jsonParsed).</summary>
 public sealed record TokenHolding(string TokenAccount, string Mint, string Owner, ulong Amount);
 
@@ -29,6 +32,12 @@ public interface ISolanaRpc
     /// <summary>The transaction at "confirmed" commitment, or null when the node does not know it (yet).</summary>
     Task<ChainTransaction?> GetTransactionAsync(string signature, CancellationToken ct = default);
     Task<string> GetLatestBlockhashAsync(CancellationToken ct = default);
+    /// <summary>The latest blockhash with the last block height at which a transaction using it can land. The default
+    /// (for fakes) never expires, so a payout whose result is unknown stays unconfirmed: the safe side.</summary>
+    async Task<BlockhashInfo> GetLatestBlockhashInfoAsync(CancellationToken ct = default) =>
+        new(await GetLatestBlockhashAsync(ct), long.MaxValue);
+    /// <summary>The current block height (getBlockHeight, confirmed).</summary>
+    Task<long> GetBlockHeightAsync(CancellationToken ct = default) => Task.FromResult(0L);
     /// <summary>Sends a signed, serialized transaction; returns its signature.</summary>
     Task<string> SendTransactionAsync(byte[] transaction, CancellationToken ct = default);
     /// <summary>The signature's confirmation status (processed, confirmed, finalized), "failed", or null if unknown.</summary>
@@ -142,11 +151,18 @@ public sealed class HttpSolanaRpc : ISolanaRpc
         return new ChainTransaction(signature, slot, failed, signers, transfers, memos, blockTime);
     }
 
-    public async Task<string> GetLatestBlockhashAsync(CancellationToken ct = default)
+    public async Task<string> GetLatestBlockhashAsync(CancellationToken ct = default) =>
+        (await GetLatestBlockhashInfoAsync(ct)).Blockhash;
+
+    public async Task<BlockhashInfo> GetLatestBlockhashInfoAsync(CancellationToken ct = default)
     {
         var r = await CallAsync("getLatestBlockhash", new object?[] { Confirmed }, ct);
-        return r.GetProperty("value").GetProperty("blockhash").GetString()!;
+        var v = r.GetProperty("value");
+        return new BlockhashInfo(v.GetProperty("blockhash").GetString()!, v.GetProperty("lastValidBlockHeight").GetInt64());
     }
+
+    public async Task<long> GetBlockHeightAsync(CancellationToken ct = default) =>
+        (await CallAsync("getBlockHeight", new object?[] { Confirmed }, ct)).GetInt64();
 
     public async Task<string> SendTransactionAsync(byte[] transaction, CancellationToken ct = default)
     {

@@ -32,12 +32,33 @@ public sealed class FakeSolanaRpc : ISolanaRpc
     public Task<ChainTransaction?> GetTransactionAsync(string signature, CancellationToken ct = default) =>
         Task.FromResult(Transactions.TryGetValue(signature, out var t) ? t : null);
     public Task<string> GetLatestBlockhashAsync(CancellationToken ct = default) => Task.FromResult("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k");
+    /// <summary>When set, a send throws this AFTER the transaction was recorded as accepted by the node (lost response).</summary>
+    public Exception? ThrowAfterSend { get; set; }
+    /// <summary>When set, signature status polls throw this (the node is flaky after the send).</summary>
+    public Exception? ThrowOnStatus { get; set; }
+    /// <summary>Signatures the "chain" knows, with their status; a sent transaction lands as confirmed unless
+    /// <see cref="LandSends"/> is false.</summary>
+    public ConcurrentDictionary<string, string> Statuses { get; } = new();
+    public bool LandSends { get; set; } = true;
+    public long BlockHeight { get; set; } = 1000;
+    public long LastValidBlockHeight { get; set; } = 1150;
+
     public Task<string> SendTransactionAsync(byte[] transaction, CancellationToken ct = default)
     {
         Sent.Add(transaction);
-        return Task.FromResult(HackathonTests.RandomSignature());
+        var sig = SolanaService.SignatureOf(transaction);
+        if (LandSends) Statuses[sig] = "confirmed";
+        if (ThrowAfterSend != null) throw ThrowAfterSend;
+        return Task.FromResult(sig);
     }
-    public Task<string?> GetSignatureStatusAsync(string signature, CancellationToken ct = default) => Task.FromResult<string?>("confirmed");
+    public Task<string?> GetSignatureStatusAsync(string signature, CancellationToken ct = default)
+    {
+        if (ThrowOnStatus != null) throw ThrowOnStatus;
+        return Task.FromResult(Statuses.TryGetValue(signature, out var s) ? s : null);
+    }
+    public Task<BlockhashInfo> GetLatestBlockhashInfoAsync(CancellationToken ct = default) =>
+        Task.FromResult(new BlockhashInfo("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k", LastValidBlockHeight));
+    public Task<long> GetBlockHeightAsync(CancellationToken ct = default) => Task.FromResult(BlockHeight);
     public Task<long> GetMinimumBalanceForRentExemptionAsync(int dataLength, CancellationToken ct = default) => Task.FromResult(1461600L);
     public Task<IReadOnlyList<TokenHolding>> GetTokenAccountsByOwnerAsync(string owner, string mint, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<TokenHolding>>(Holdings.Where(h => h.Owner == owner && h.Mint == mint).ToList());
@@ -306,9 +327,20 @@ public sealed class HackathonTests
             new(sig, 123, failed, new[] { signer ?? from }, new[] { new SolTransfer(from, to, lamports) },
                 memo == null ? Array.Empty<string>() : new[] { memo }, null);
 
+        // 13 Oct hotfix: the generic endpoint cannot create wager, market or raid deposits (their endpoints check amount,
+        // memo and seat; a client-chosen purpose and minLamports let a 1-lamport transfer pass as a full stake)
+        var tiny = RandomSignature();
+        rpc.Transactions[tiny] = Tx(tiny, me, tre, 1);
+        foreach (var reserved in new[] { "wager", "market_buy", "raid_wager", "island_mint", "WAGER" })
+        {
+            var r = await c.PostAsJsonAsync("/api/deposits/verify", new { signature = tiny, purpose = reserved, refId = "abc", minLamports = 1 });
+            Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
+            Assert.Equal("purpose_reserved", (await r.ReadJson()).GetProperty("error").GetString());
+        }
+
         var good = RandomSignature();
-        rpc.Transactions[good] = Tx(good, me, tre, 10_000_000, memo: "wager:abc");
-        var res = await c.PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "wager", refId = "abc", minLamports = 10_000_000, memo = "wager:abc" });
+        rpc.Transactions[good] = Tx(good, me, tre, 10_000_000, memo: "tip:abc");
+        var res = await c.PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "tip", refId = "abc", minLamports = 10_000_000, memo = "tip:abc" });
         Assert.True(res.IsSuccessStatusCode, await res.Content.ReadAsStringAsync());
         var d = await res.ReadJson();
         Assert.Equal(10_000_000, d.GetProperty("lamports").GetInt64());
@@ -316,11 +348,11 @@ public sealed class HackathonTests
         Assert.False(d.GetProperty("alreadyVerified").GetBoolean());
 
         // same player, same purpose: idempotent; any other use: 409
-        var again = await (await c.PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "wager", refId = "abc" })).ReadJson();
+        var again = await (await c.PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "tip", refId = "abc" })).ReadJson();
         Assert.True(again.GetProperty("alreadyVerified").GetBoolean());
-        Assert.Equal(HttpStatusCode.Conflict, (await c.PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "market_buy" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await c.PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "generic" })).StatusCode);
         var other = await SignInAsync(host, new Account());
-        var stolen = await host.As(other.GetProperty("token").GetString()!).PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "wager", refId = "abc" });
+        var stolen = await host.As(other.GetProperty("token").GetString()!).PostAsJsonAsync("/api/deposits/verify", new { signature = good, purpose = "tip", refId = "abc" });
         Assert.Equal(HttpStatusCode.Conflict, stolen.StatusCode);
 
         async Task<string> Error(object body) => (await (await c.PostAsJsonAsync("/api/deposits/verify", body)).ReadJson()).GetProperty("error").GetString()!;
@@ -363,10 +395,18 @@ public sealed class HackathonTests
         Assert.Equal(HttpStatusCode.Forbidden, noKey.StatusCode);
         var c = host.Anon();
         c.DefaultRequestHeaders.Add("X-Admin-Key", "test-admin-key");
+        // 13 Oct hotfix: an Idempotency-Key is required, the same key never pays twice, and the amount is capped
+        var noIdem = await c.PostAsJsonAsync("/api/admin/payouts", new { wallet = to, lamports = 10_000_000, reason = "smoke" });
+        Assert.Equal("idempotency_key_required", (await noIdem.ReadJson()).GetProperty("error").GetString());
+        c.DefaultRequestHeaders.Add("Idempotency-Key", "smoke-1");
         var p = await (await c.PostAsJsonAsync("/api/admin/payouts", new { wallet = to, lamports = 10_000_000, reason = "smoke" })).ReadJson();
         Assert.Equal("sent", p.GetProperty("status").GetString());
         Assert.True(SolanaService.IsValidSignature(p.GetProperty("signature").GetString()));
+        var replay = await (await c.PostAsJsonAsync("/api/admin/payouts", new { wallet = to, lamports = 10_000_000, reason = "smoke" })).ReadJson();
+        Assert.Equal(p.GetProperty("payoutId").GetInt64(), replay.GetProperty("payoutId").GetInt64());
         Assert.Single(rpc.Sent);
+        var big = await c.PostAsJsonAsync("/api/admin/payouts", new { wallet = to, lamports = 2 * SolanaService.LamportsPerSol, reason = "smoke" });
+        Assert.Equal("amount_too_high", (await big.ReadJson()).GetProperty("error").GetString());
     }
 
     [Fact]

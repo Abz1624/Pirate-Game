@@ -427,6 +427,9 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<long>("Lamports")
                         .HasColumnType("INTEGER");
 
+                    b.Property<long?>("LastValidBlockHeight")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid?>("PlayerId")
                         .HasColumnType("TEXT");
 
@@ -461,6 +464,10 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.HasIndex("PlayerId");
 
                     b.HasIndex("Reason", "RefId");
+
+                    b.HasIndex(new[] { "Reason", "RefId" }, "IX_Payouts_Reason_RefId_Live")
+                        .IsUnique()
+                        .HasFilter("\"RefId\" IS NOT NULL AND \"Status\" <> 'failed'");
 
                     b.ToTable("Payouts");
                 });

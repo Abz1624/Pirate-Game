@@ -64,10 +64,21 @@ public sealed class WagerService
     public static Task<Wager?> ForLobbyAsync(GameDb db, Guid lobbyId) =>
         db.Wagers.Where(w => w.LobbyId == lobbyId && w.Status != Wager.Cancelled).OrderByDescending(w => w.CreatedAt).FirstOrDefaultAsync();
 
-    /// <summary>Both stakes are in: the host's deposit, and the guest's (or the house's, against the bot).</summary>
+    /// <summary>Both stakes are in: the host's deposit and the guest's. Never against the practice bot (13 Oct hotfix: a bot
+    /// match is decided by the host's client, so it is free play; the house no longer matches stakes).</summary>
     public static bool IsFunded(Wager w, Lobby lobby) =>
-        w.HostDepositSig != null && lobby.GuestPlayerId != null
-        && (PracticeBot.Is(lobby.GuestPlayerId) || (w.GuestDepositSig != null && w.GuestPlayerId == lobby.GuestPlayerId));
+        w.HostDepositSig != null && lobby.GuestPlayerId != null && !PracticeBot.Is(lobby.GuestPlayerId)
+        && w.GuestDepositSig != null && w.GuestPlayerId == lobby.GuestPlayerId;
+
+    public static ApiException BotStakesOff() => new(409, "bot_stakes_off",
+        "Matches against Captain Marrow (the practice bot) are free play: remove the stake (stakeLamports 0) or wait for a human opponent.");
+
+    /// <summary>Refuses seating the practice bot in a lobby with an open stake (13 Oct hotfix: no staked bot matches).</summary>
+    public static async Task RefuseBotIfStakedAsync(GameDb db, Lobby lobby)
+    {
+        var w = await ForLobbyAsync(db, lobby.Id);
+        if (w != null && Open(w)) throw BotStakesOff();
+    }
 
     /// <summary>The start gate: true when the lobby has no open wager, or its wager is funded.</summary>
     public static async Task<bool> MayStartAsync(GameDb db, Lobby lobby)
@@ -152,6 +163,7 @@ public sealed class WagerService
             var lobby = await LoadLobbyAsync(lobbyId);
             if (lobby.HostPlayerId != player.Id) throw new ApiException(403, "not_host", "Only the host can set the stake.");
             if (!PreStart(lobby)) throw new ApiException(409, "already_started", "The stake can only change before the match starts.");
+            if (stake != 0 && PracticeBot.Is(lobby.GuestPlayerId)) throw BotStakesOff();
             var w = await ForLobbyAsync(_db, lobbyId);
             if (w != null && (w.HostDepositSig != null || w.GuestDepositSig != null || !Open(w)))
                 throw new ApiException(409, "wager_locked", "A deposit was already made; the stake cannot change.");
@@ -207,14 +219,27 @@ public sealed class WagerService
             var d = await _db.SolanaDeposits.FirstAsync(x => x.Id == deposit.Id);
             await _db.Entry(d).ReloadAsync();
             Reconcile(w, lobby);
-            try { CheckSeat(lobby, w, player); }
-            catch (ApiException ex) { refuse = ex.Message; }
             var isHost = lobby.HostPlayerId == player.Id;
-            if (d.Status == SolanaDeposit.Refunded) throw new ApiException(409, "deposit_refunded", "This deposit was already refunded to your wallet.");
-            if (refuse == null && (isHost ? w.HostDepositSig : w.GuestDepositSig) is { } other && other != d.Signature)
-                refuse = "Your stake was already deposited.";
+            var attached = d.Signature == (isHost ? w.HostDepositSig : w.GuestDepositSig);
+            // 13 Oct hotfix: a deposit with any refund decided (refunding/refunded, or a refund payout recorded) is never attached again
+            var refundRef = DepositRef(d.Id);
+            if (d.Status is SolanaDeposit.Refunding or SolanaDeposit.Refunded
+                || await _db.Payouts.AnyAsync(p => p.Reason == RefundReason && p.RefId == refundRef))
+                throw new ApiException(409, "deposit_refunded", "This deposit is refunded (or being refunded) to your wallet.");
+            if (!attached)
+            {
+                try { CheckSeat(lobby, w, player); }
+                catch (ApiException ex) { refuse = ex.Message; }
+                // 13 Oct hotfix: the stored deposit is re-checked against the CURRENT wager under the lock: the stake may have
+                // been raised after it was verified, and a stored deposit is returned without a new chain check
+                refuse ??= DepositProblem(d, w, player, lobbyId);
+                if (refuse == null && (isHost ? w.HostDepositSig : w.GuestDepositSig) is { } other && other != d.Signature)
+                    refuse = "Your stake was already deposited.";
+                if (refuse == null && d.Status != SolanaDeposit.Verified)
+                    refuse = "This deposit was already used and released; it is refunded.";
+            }
 
-            if (d.Signature == w.HostDepositSig || d.Signature == w.GuestDepositSig) { /* already attached */ }
+            if (attached || d.Signature == w.HostDepositSig || d.Signature == w.GuestDepositSig) { /* already attached */ }
             else if (refuse == null)
             {
                 if (isHost) w.HostDepositSig = d.Signature;
@@ -246,6 +271,19 @@ public sealed class WagerService
         }
         _log.LogInformation("Wager {WagerId}: deposit {Sig} from player {PlayerId}", w.Id, deposit.Signature, player.Id);
         return state!;
+    }
+
+    /// <summary>Why a recorded deposit cannot pay this player's stake now (null when it can): right player and wallet,
+    /// this wager's deposit, the lobby's memo, at least the current stake (the recipient was checked to be the treasury
+    /// when the deposit was recorded; only the server records wager deposits).</summary>
+    public static string? DepositProblem(SolanaDeposit d, Wager w, Player player, Guid lobbyId)
+    {
+        if (d.PlayerId != player.Id || d.Wallet != player.WalletAddress) return "This deposit is not from your wallet.";
+        if (d.Purpose != DepositPurpose || d.RefId != w.Id.ToString()) return "This deposit is not for this wager.";
+        if (d.Memo == null || !d.Memo.Contains(Memo(lobbyId), StringComparison.Ordinal)) return "The deposit's memo does not name this lobby.";
+        if (d.Lamports < w.StakeLamports)
+            return $"The deposit is {d.Lamports} lamports; the stake is {w.StakeLamports}.";
+        return null;
     }
 
     void CheckSeat(Lobby lobby, Wager w, Player player)
@@ -323,7 +361,15 @@ public sealed class WagerService
         var match = await _db.Matches.AsNoTracking().FirstOrDefaultAsync(m => m.Id == matchId);
         if (match == null) return;
         var now = _clock.UtcNow;
-        if (match.Status == MatchStates.Decided && match.WinnerPlayerId is { } winner)
+        if (w.VsHouse && match.Status is MatchStates.Decided or MatchStates.Disputed)
+        {
+            // 13 Oct hotfix: a bot match is decided by the host's client, so a stake on it (from before the hotfix) is
+            // refunded whatever the result; the house never pays out on it
+            w.Status = Wager.Refunded;
+            w.SettledAt = now;
+            _log.LogInformation("Wager {WagerId} vs the house refunded (bot matches are free play)", w.Id);
+        }
+        else if (match.Status == MatchStates.Decided && match.WinnerPlayerId is { } winner)
         {
             w.WinnerPlayerId = winner;
             w.Status = Wager.Settled;
@@ -350,13 +396,35 @@ public sealed class WagerService
         var now = _clock.UtcNow;
         var any = false;
 
-        var deposits = await _db.SolanaDeposits.Where(d => d.Purpose == DepositPurpose && d.RefId == refId && d.Status != SolanaDeposit.Refunded).ToListAsync();
-        foreach (var d in deposits)
+        var candidates = await _db.SolanaDeposits.AsNoTracking()
+            .Where(d => d.Purpose == DepositPurpose && d.RefId == refId && d.Status != SolanaDeposit.Refunded).Select(d => d.Id).ToListAsync();
+        foreach (var depositId in candidates)
         {
-            var attached = d.Signature == w.HostDepositSig || d.Signature == w.GuestDepositSig;
-            var owed = w.Status is Wager.Refunded or Wager.Cancelled || !attached;
-            if (!owed) continue;
-            if (!attached && d.Status == SolanaDeposit.Verified && d.CreatedAt + AttachGrace > now) continue; // attach in flight
+            // 13 Oct hotfix: the refund decision is taken under the lobby lock (where deposits are attached) and marked
+            // "refunding" first, so a deposit being refunded can never be attached to a seat again
+            SolanaDeposit? d = null;
+            await GameLocks.Lobby.WaitAsync();
+            try
+            {
+                var current = await _db.Wagers.AsNoTracking().FirstAsync(x => x.Id == wagerId);
+                var dep = await _db.SolanaDeposits.FirstAsync(x => x.Id == depositId);
+                await _db.Entry(dep).ReloadAsync();
+                var attached = dep.Signature == current.HostDepositSig || dep.Signature == current.GuestDepositSig;
+                var owed = dep.Status != SolanaDeposit.Refunded && (current.Status is Wager.Refunded or Wager.Cancelled || !attached);
+                var inFlight = !attached && dep.Status == SolanaDeposit.Verified && dep.CreatedAt + AttachGrace > now; // attach in flight
+                if (owed && !inFlight)
+                {
+                    if (dep.Status != SolanaDeposit.Refunding)
+                    {
+                        dep.Status = SolanaDeposit.Refunding;
+                        dep.ConsumedAt ??= now;
+                        await _db.SaveChangesAsync();
+                    }
+                    d = dep;
+                }
+            }
+            finally { GameLocks.Lobby.Release(); }
+            if (d == null) continue;
             var p = await PayoutOnce.PayAsync(_db, _ledger, _clock, _log, d.PlayerId, d.Wallet, d.Lamports, RefundReason, DepositRef(d.Id));
             if (p == null) continue;
             any = true;
@@ -486,15 +554,39 @@ public sealed class WagerSweeper : BackgroundService
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(_settings.SweepSeconds));
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            try
-            {
-                using var scope = _scopes.CreateScope();
-                await scope.ServiceProvider.GetRequiredService<WagerService>().SweepAsync();
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _log.LogWarning(ex, "Wager sweep failed");
-            }
+            await PassAsync(_scopes, _log);
+        }
+    }
+
+    /// <summary>One sweep: payouts reconciled by signature first (13 Oct hotfix), then wagers, then market refunds.</summary>
+    public static async Task PassAsync(IServiceScopeFactory scopes, ILogger log)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<LedgerService>().ReconcileAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogWarning(ex, "Payout reconcile failed");
+        }
+        try
+        {
+            using var scope = scopes.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<WagerService>().SweepAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogWarning(ex, "Wager sweep failed");
+        }
+        try
+        {
+            using var scope = scopes.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<MarketService>().SweepRefundsAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogWarning(ex, "Market refund sweep failed");
         }
     }
 }

@@ -30,10 +30,11 @@ public sealed class PlayerSession
 }
 
 /// <summary>A SOL transfer from a player's wallet to the treasury, verified on chain. The signature is unique, so a
-/// transfer is credited once.</summary>
+/// transfer is credited once. Statuses: verified (recorded, not used yet), consumed (attached to a seat or a purchase),
+/// refunding (a refund was decided: it can never be attached again), refunded (the refund was sent).</summary>
 public sealed class SolanaDeposit
 {
-    public const string Verified = "verified", Consumed = "consumed", Refunded = "refunded";
+    public const string Verified = "verified", Consumed = "consumed", Refunding = "refunding", Refunded = "refunded";
 
     public long Id { get; set; }
     public string Signature { get; set; } = "";
@@ -51,10 +52,15 @@ public sealed class SolanaDeposit
     public DateTime? ConsumedAt { get; set; }
 }
 
-/// <summary>A SOL payment from the treasury to a wallet (wager win, refund, weekly reward, market sale, owner payout).</summary>
+/// <summary>A SOL payment from the treasury to a wallet (wager win, refund, weekly reward, market sale, owner payout).
+/// Statuses (13 Oct hotfix): pending (recorded; once <see cref="Signature"/> is set the transaction may be in flight),
+/// sent (confirmed on chain), unconfirmed (sent or maybe sent, result unknown: the reconciler resolves it by signature),
+/// failed (proven not to have moved SOL: never sent, rejected by the node's preflight, failed on chain, or its blockhash
+/// expired without the signature landing). Only a failed payout may be retried. A unique index on (Reason, RefId) over
+/// the rows that are not failed makes "at most one live payout per obligation" a database guarantee.</summary>
 public sealed class Payout
 {
-    public const string Pending = "pending", Sent = "sent", Failed = "failed";
+    public const string Pending = "pending", Sent = "sent", Failed = "failed", Unconfirmed = "unconfirmed";
 
     public long Id { get; set; }
     public Guid? PlayerId { get; set; }
@@ -68,6 +74,10 @@ public sealed class Payout
     public string? Error { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? SentAt { get; set; }
+    // ---- AddPayoutSafety (13 Oct hotfix) ----
+    /// <summary>The last block height at which the signed transaction can land (getLatestBlockhash). Once the chain is
+    /// past it and the signature is still unknown, the payout provably never happened and may be retried.</summary>
+    public long? LastValidBlockHeight { get; set; }
 }
 
 /// <summary>A SOL stake on a 1v1 match or a raid. Both sides deposit to the treasury (escrow); the winner is paid.</summary>
