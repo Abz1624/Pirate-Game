@@ -211,6 +211,9 @@ namespace RoguePirates.V4.Presentation.Hud
         /// one time and destroyed.</summary>
         public bool TakeSnapshot()
         {
+            // No graphics device (-nographics batch runs, the dedicated server): RenderTexture.Create crashes natively, so
+            // there is no snapshot (the map stays blank; markers still draw).
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) return false;
             _bounds = BoundsRect();
             var width = SnapshotSize;
             var height = Mathf.Max(64, Mathf.RoundToInt(SnapshotSize * _bounds.height / Mathf.Max(1f, _bounds.width)));

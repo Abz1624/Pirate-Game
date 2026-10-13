@@ -26,6 +26,14 @@ namespace RoguePirates.V4.Tests
             _canvas = new GameObject("canvas", typeof(RectTransform), typeof(Canvas));
             var camerasBefore = Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
             var map = SnapshotMinimapPresenter.Create(_canvas.transform);
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                // -nographics (batch runs, the dedicated server): no snapshot, and nothing made or left behind.
+                Assert.IsFalse(map.TakeSnapshot(), "no snapshot without a graphics device");
+                Assert.AreEqual(0, map.SnapshotCount);
+                Assert.AreEqual(camerasBefore, Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length, "no camera made");
+                Assert.Ignore("no graphics device (-nographics): the snapshot is skipped, as intended");
+            }
             map.TakeSnapshot();
             Assert.AreEqual(1, map.SnapshotCount);
             Assert.IsNotNull(map.WorldTexture, "the static world is in a texture");

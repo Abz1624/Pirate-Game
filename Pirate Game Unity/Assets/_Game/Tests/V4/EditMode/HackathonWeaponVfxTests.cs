@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Foundation.Data;
@@ -85,7 +86,6 @@ namespace RoguePirates.V4.Tests
         {
             var settings = AssetDatabase.LoadAssetAtPath<DemoJuiceSettings>("Assets/_Game/Resources/DemoJuiceSettings.asset");
             Assert.IsNotNull(settings);
-            Assert.IsNotNull(settings.goldPickupPrefab, "the keg pickup's gold coin");
             var weapons = new FakeWeapons();
             weapons.List.Add(new WeaponSlot { Config = Weapon("cursed_doubloons", WeaponPlaceholderLook.Doubloons) });
             var ship = new FakeShipView { Pos = new Vector3(0f, 0f, 0f) };
@@ -98,9 +98,17 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(3, _presenter.CoinsInFlight);
             for (var i = 0; i < _presenter.CoinCount; i++)
                 Assert.Less(Vector3.Distance(_presenter.CoinPosition(i), ship.Pos), 1.5f, "they start at the ship");
-            Assert.IsTrue(_pools.Has(WeaponVfxPresenter.KeyPrefix + "coin/" + settings.goldPickupPrefab.name), "the coins are the gold pickup model");
+            // b7e3ec86 (13 Oct, owner): the coins are the gold barrel's coin particle (its coin material) on a camera-facing
+            // quad, no longer the keg pickup's coin model.
+            var coinMaterial = RoguePirates.V4.Presentation.Weapons.WeaponVisualSources.CoinSpriteMaterial(settings);
+            Assert.IsNotNull(coinMaterial, "the gold barrel's coin particle material");
+            Assert.IsTrue(_pools.Has(WeaponVfxPresenter.KeyPrefix + "coin/Doubloon_CoinSprite"), "the coins are the coin sprite");
+            if (settings.goldPickupPrefab != null) Assert.IsFalse(_pools.Has(WeaponVfxPresenter.KeyPrefix + "coin/" + settings.goldPickupPrefab.name), "not the gold pickup model");
+            var sprites = Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(r => r.sharedMaterial == coinMaterial).ToList();
+            Assert.AreEqual(3, sprites.Count, "three coin quads in the barrel's coin material");
 
-            _presenter.Tick(0.2f);
+            // b7e3ec86 (13 Oct, owner: "the enemies are dying before the coins hit them"): a fast, flat throw, at most ~0.1 s.
+            _presenter.Tick(0.02f);
             Assert.AreEqual(3, _presenter.CoinsInFlight, "still flying");
             var mid = _presenter.CoinPosition(0);
             Assert.Greater(mid.z, 2f, "on their way");

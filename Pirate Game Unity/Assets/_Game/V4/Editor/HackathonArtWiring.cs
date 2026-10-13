@@ -4,6 +4,7 @@ using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Foundation.Data;
 using RoguePirates.V4.Foundation.VFX;
+using RoguePirates.V4.Presentation.Effects;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;

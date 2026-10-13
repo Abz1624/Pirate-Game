@@ -264,10 +264,15 @@ namespace RoguePirates.V4.Tests
             walls.Bind(world, ship);
             Call(walls, "Update");
             Assert.IsFalse(walls.WallShown(0) || walls.WallShown(1) || walls.WallShown(2) || walls.WallShown(3), "far from every edge");
-            ship.Position = new Vector3(-90f, 0f, 0f); // 10 m from the west edge
+            Assert.IsFalse(walls.WarningShown, "no storm edge warning far from the edges");
+            // Hackathon (5709f36f, owner): the red walls stay hidden; a "Storm edge!" warning shows near an edge instead.
+            ship.Position = new Vector3(-95f, 0f, 0f); // 5 m from the west edge
             Call(walls, "Update");
-            Assert.IsTrue(walls.WallShown(0), "the west wall fades in near the west edge");
-            Assert.IsFalse(walls.WallShown(1), "the east wall stays hidden");
+            Assert.IsTrue(walls.WarningShown, "the storm edge warning shows near the west edge");
+            Assert.IsFalse(walls.WallShown(0) || walls.WallShown(1) || walls.WallShown(2) || walls.WallShown(3), "the walls stay hidden");
+            ship.Position = new Vector3(0f, 0f, 0f);
+            Call(walls, "Update");
+            Assert.IsFalse(walls.WarningShown, "and hides again back in open water");
         }
 
         /// <summary>

@@ -35,6 +35,21 @@ namespace RoguePirates.V4.Editor
             "Assets/Mesh/Cursed/bell/fish_bell.fbx",
             "Assets/Mesh/Cursed/Treasure map/Treasure map.fbx",
             "Assets/Mesh/Cursed/pirate_tombstone/pirate_tombstone.fbx",
+            // Hackathon (13 Oct): the art team's enemy models (HackathonArtWiring), measured 13 Oct: drowned pursuer 13,020;
+            // drowned harrier 11,782; needle sloop 11,613; ram raider 10,921; cutthroat skiff 10,016; shield frigate 9,952;
+            // repair tender 8,343; powder barge 7,962; bomb ketch 7,366; kraken crown 7,180; gunner cog 7,044; net cutter 6,513.
+            "Assets/3D Models/Enemies/ships/drowned_pursuer/drowned_pursuer.fbx",
+            "Assets/3D Models/Enemies/ships/drowned_harrier/drowned_harrrier.fbx",
+            "Assets/3D Models/Enemies/ships/needle_slop/needle_slop.fbx",
+            "Assets/3D Models/Enemies/ships/ram_raider/ram_raider.fbx",
+            "Assets/3D Models/Enemies/ships/CutthroatSkiff/CutthroatSkiff.fbx",
+            "Assets/3D Models/Enemies/ships/shield_frigate/shield_frigate.fbx",
+            "Assets/3D Models/Enemies/ships/REPAIR TENDER/REPAIR TENDER.fbx",
+            "Assets/3D Models/Enemies/ships/powder barge/POWDER BARGE.fbx",
+            "Assets/3D Models/Enemies/ships/BOMB_KETCH/BOOMB_KETCH.fbx",
+            "Assets/3D Models/Enemies/Kraken_Crown/Kraken_Crown.fbx",
+            "Assets/3D Models/Enemies/ships/GUNNER_COG/GUNNER_COG.fbx",
+            "Assets/3D Models/Enemies/ships/net cutter/net cutter.fbx",
         };
 
         [MenuItem("RoguePirates/V5/M3e: generate Mesh LODs for the heavy models")]

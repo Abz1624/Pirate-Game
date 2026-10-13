@@ -1,9 +1,9 @@
 using UnityEngine;
 
-namespace RoguePirates.V4.Foundation.VFX
+namespace RoguePirates.V4.Presentation.Effects
 {
     /// <summary>
-    /// Hackathon (12 Oct): the small idle motion the art team's weapon models had from their own (V3-era) scripts, written
+    /// Hackathon (12 Oct; 13 Oct: moved from Foundation to Presentation, it reads frame time): the small idle motion the art team's weapon models had from their own (V3-era) scripts, written
     /// fresh for V4: a steady spin about a local axis (the chainshot's balls, the ink pot's tumble) or a swing back and
     /// forth (the parrots' wings). Presentation only: scaled game time (it stops when paused), no random numbers, no allocation.
     /// </summary>
