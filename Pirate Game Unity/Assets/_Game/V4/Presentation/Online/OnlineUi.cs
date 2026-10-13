@@ -9,6 +9,9 @@ namespace RoguePirates.V4.Presentation.Online
     /// <summary>
     /// Playtest (3 Oct, owner): the online panels' building blocks, in the menu hub's look (dark navy panel, cream text,
     /// the settings' amber 72-unit buttons) and the art menu's font for titles.
+    /// Hackathon UI (13 Oct, owner): with the parchment kit present (<see cref="MenuKit"/>) the texts are ink in the kit
+    /// font, the buttons gold kit buttons, rows parchment insets, fields and scroll bars the kit's; panels opt in to the
+    /// parchment sheet with <see cref="Sheet"/> (the weekly board keeps its own look).
     /// </summary>
     static class OnlineUi
     {
@@ -59,6 +62,16 @@ namespace RoguePirates.V4.Presentation.Online
             return rt;
         }
 
+        /// <summary>Hackathon UI: the parchment sheet under a wood header on a panel made by <see cref="Panel"/> (no-op
+        /// without the kit). Returns the header (null without the kit).</summary>
+        public static RectTransform Sheet(RectTransform panel, string title, float headerHeight, out TextMeshProUGUI titleText, float rightRoom = 300f)
+        {
+            titleText = null;
+            if (!MenuKit.Ready) return null;
+            MenuKit.Sheet(panel.GetComponent<Image>());
+            return MenuKit.WoodHeader(panel, title, headerHeight, out titleText, rightRoom);
+        }
+
         /// <summary>A child stretched between anchors with pixel insets (left, bottom, right, top).</summary>
         public static RectTransform Area(Transform parent, string name, Vector2 min, Vector2 max, Vector4 inset = default)
         {
@@ -92,6 +105,12 @@ namespace RoguePirates.V4.Presentation.Online
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             var t = go.GetComponent<TextMeshProUGUI>();
             if (title && TitleFont != null) t.font = TitleFont;
+            if (MenuKit.Ready && OnParchment(parent))
+            {
+                MenuKit.InkText(t, MenuKit.InkFor(color));
+                text = MenuKit.InkRich(text);
+                color = t.color;
+            }
             t.text = text;
             t.fontSize = size;
             t.alignment = align;
@@ -100,6 +119,22 @@ namespace RoguePirates.V4.Presentation.Online
             t.textWrappingMode = TextWrappingModes.NoWrap;
             t.overflowMode = TextOverflowModes.Ellipsis;
             return t;
+        }
+
+        static readonly string[] PaperSprites = { "Panel_Card", "Panel_Inset", "Slot_Card", "Slot_Card_Selected", "Input_Field" };
+
+        /// <summary>Hackathon UI: true when <paramref name="t"/> sits on kit paper (a parchment sheet, inset, card or field),
+        /// so its text is ink; texts over the sea or a dark HUD strip keep their light colours.</summary>
+        static bool OnParchment(Transform t)
+        {
+            for (; t != null; t = t.parent)
+            {
+                var img = t.GetComponent<Image>();
+                if (img == null || img.sprite == null) continue;
+                foreach (var n in PaperSprites)
+                    if (img.sprite == MenuKit.S(n)) return true;
+            }
+            return false;
         }
 
         /// <summary>A text placed between anchors in its parent.</summary>
@@ -117,6 +152,7 @@ namespace RoguePirates.V4.Presentation.Online
         {
             var b = SettingsPanel.CreateButton(parent, label, click);
             b.name = label;
+            MenuKit.StyleButton(b, "Btn_Gold");
             if (min.HasValue && max.HasValue)
             {
                 var rt = (RectTransform)b.transform;
@@ -145,7 +181,7 @@ namespace RoguePirates.V4.Presentation.Online
             srt.anchorMax = Vector2.one;
             srt.offsetMin = new Vector2(inset.x, inset.y);
             srt.offsetMax = new Vector2(-inset.z, -inset.w);
-            scroll.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.18f);
+            scroll.GetComponent<Image>().color = MenuKit.Ready ? new Color(0.45f, 0.3f, 0.15f, 0.08f) : new Color(0f, 0f, 0f, 0.18f);
             var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
             content.transform.SetParent(scroll.transform, false);
             var list = (RectTransform)content.transform;
@@ -165,6 +201,11 @@ namespace RoguePirates.V4.Presentation.Online
             sr.horizontal = false;
             sr.movementType = ScrollRect.MovementType.Clamped;
             sr.scrollSensitivity = 30f;
+            if (MenuKit.Ready)
+            {
+                MenuKit.StyleScroll(sr, 12f);
+                v.padding = new RectOffset(8, 24, 8, 8);
+            }
             return list;
         }
 
@@ -174,6 +215,8 @@ namespace RoguePirates.V4.Presentation.Online
             var go = new GameObject("Row", typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
             go.transform.SetParent(list, false);
             go.GetComponent<Image>().color = tint;
+            // Hackathon UI: a parchment inset; a warm (highlighted) tint turns gold.
+            if (MenuKit.Ready) MenuKit.Paint(go.GetComponent<Image>(), "Panel_Inset", 2.4f, tint.r > 0.9f && tint.b < 0.6f && tint.a > 0.1f ? new Color(1f, 0.86f, 0.5f, 1f) : Color.white);
             var le = go.GetComponent<LayoutElement>();
             le.preferredHeight = le.minHeight = height;
             var h = go.GetComponent<HorizontalLayoutGroup>();
@@ -226,6 +269,7 @@ namespace RoguePirates.V4.Presentation.Online
             input.richText = false;
             input.fontAsset = text.font;
             input.pointSize = 30;
+            MenuKit.StyleInput(input);
             return input;
         }
     }

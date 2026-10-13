@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RoguePirates.V4.Online;
+using RoguePirates.V4.Presentation.Menu;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,6 +41,16 @@ namespace RoguePirates.V4.Presentation.Online
             var header = OnlineUi.TopStrip(rt, "Header", 16f, 80f);
             _title = OnlineUi.TextAt(header, "Title", "Captain profile", 44, TextAlignmentOptions.MidlineLeft, OnlineUi.Gold, Vector2.zero, new Vector2(0.72f, 1f), true);
             _close = OnlineUi.Button(header, "Close", Close, new Vector2(0.74f, 0.05f), new Vector2(1f, 0.95f));
+            // Hackathon UI (13 Oct, owner): parchment sheet under a wood header (the title and a gold Close in it).
+            var head = OnlineUi.Sheet(rt, "Captain profile", 92f, out var kitTitle, 280f);
+            if (head != null)
+            {
+                _title.gameObject.SetActive(false);
+                _title = kitTitle;
+                MenuKit.ButtonIcon(_close, "Icon_Close", 30f);
+                MenuKit.HeaderButton(head, _close, 26f, 220f, 68f);
+                header.gameObject.SetActive(false);
+            }
 
             var info = OnlineUi.TopStrip(rt, "Active", 104f, 52f);
             _active = OnlineUi.TextAt(info, "Name", string.Empty, 34, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor, Vector2.zero, new Vector2(0.65f, 1f));
@@ -186,9 +197,9 @@ namespace RoguePirates.V4.Presentation.Online
             if (!gameObject.activeSelf) return;
             var active = OnlineService.Active;
             _title.text = _creating ? (_firstLaunch ? "Welcome, captain" : "New profile") : "Captain profile";
-            _active.text = _creating ? "Choose a name" : active != null ? active.Display + (active.Registered ? $"  <size=70%><color=#9aa4ad>rating {active.rating}</color></size>" : string.Empty) : "No profile";
+            _active.text = MenuKit.InkRich(_creating ? "Choose a name" : active != null ? active.Display + (active.Registered ? $"  <size=70%><color=#9aa4ad>rating {active.rating}</color></size>" : string.Empty) : "No profile");
             _status.text = StatusLabel(active);
-            _status.color = OnlineService.IsOnline ? OnlineUi.Good : OnlineUi.Dim;
+            _status.color = MenuKit.Ready ? (OnlineService.IsOnline ? MenuKit.InkGood : MenuKit.InkDim) : OnlineService.IsOnline ? OnlineUi.Good : OnlineUi.Dim;
             OnlineUi.SetLabel(_save, _creating ? "Create" : "Save name");
             _cancel.gameObject.SetActive(_creating && OnlineService.Profiles.Profiles.Count > 0);
             _newButton.gameObject.SetActive(!_creating);
@@ -212,7 +223,12 @@ namespace RoguePirates.V4.Presentation.Online
                 use.GetComponent<LayoutElement>().minWidth = 170f;
                 var forget = OnlineUi.Button(row, _confirmForget == id ? "Sure?" : "Forget", () => Forget(id));
                 forget.GetComponent<LayoutElement>().minWidth = 150f;
-                if (_confirmForget == id) forget.GetComponent<Image>().color = new Color(0.9f, 0.4f, 0.3f, 1f);
+                if (_confirmForget == id)
+                {
+                    if (MenuKit.Ready) MenuKit.StyleButton(forget, "Btn_Red");
+                    else forget.GetComponent<Image>().color = new Color(0.9f, 0.4f, 0.3f, 1f);
+                }
+                else MenuKit.StyleButton(forget, "Btn_Parchment");
                 _rows.Add(row.gameObject);
             }
         }

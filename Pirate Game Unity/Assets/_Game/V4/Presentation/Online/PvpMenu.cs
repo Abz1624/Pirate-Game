@@ -6,6 +6,7 @@ using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Hud;
+using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Progression;
 using TMPro;
 using UnityEngine;
@@ -390,8 +391,32 @@ namespace RoguePirates.V4.Presentation.Online
             OnlineUi.TextAt(header, "Title", "Your build", 40, TextAlignmentOptions.MidlineLeft, OnlineUi.Gold, Vector2.zero, new Vector2(0.3f, 1f), true);
             _draftStrip = OnlineUi.TextAt(header, "Strip", string.Empty, 26, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor, new Vector2(0.3f, 0f), new Vector2(0.62f, 1f));
             _draftStrip.textWrappingMode = TextWrappingModes.Normal;
-            OnlineUi.Button(header, "Lobby", ShowLobby, new Vector2(0.64f, 0.05f), new Vector2(0.8f, 0.95f));
+            var lobbyButton = OnlineUi.Button(header, "Lobby", ShowLobby, new Vector2(0.64f, 0.05f), new Vector2(0.8f, 0.95f));
             _draftReady = OnlineUi.Button(header, "Ready", ReadyFromDraft, new Vector2(0.82f, 0.05f), new Vector2(1f, 0.95f));
+            // Hackathon UI (13 Oct, owner): the Build Setup reference page: parchment sheet, wood header with the title, the
+            // lobby line and the Lobby / Ready buttons in it.
+            var head = OnlineUi.Sheet(_draft, "Your build", 104f, out _, 1180f);
+            if (head != null)
+            {
+                MenuKit.StyleButton(lobbyButton, "Btn_Parchment");
+                MenuKit.ButtonIcon(lobbyButton, "Icon_Chevron_Left", 30f);
+                MenuKit.HeaderButton(head, lobbyButton, 330f, 250f, 72f);
+                MenuKit.ButtonIcon(_draftReady, "Icon_Check", 30f);
+                MenuKit.HeaderButton(head, _draftReady, 30f, 280f, 72f);
+                var strip = _draftStrip.rectTransform;
+                strip.SetParent(head, false);
+                strip.anchorMin = new Vector2(1f, 0f);
+                strip.anchorMax = new Vector2(1f, 1f);
+                strip.pivot = new Vector2(1f, 0.5f);
+                strip.sizeDelta = new Vector2(560f, 0f);
+                strip.anchoredPosition = new Vector2(-610f, 0f);
+                MenuKit.InkText(_draftStrip, MenuKit.OnWood);
+                _draftStrip.alignment = TextAlignmentOptions.MidlineRight;
+                _draftStrip.enableAutoSizing = true;
+                _draftStrip.fontSizeMin = 18f;
+                _draftStrip.fontSizeMax = 28f;
+                header.gameObject.SetActive(false);
+            }
 
             // Left: the content to pick from (weapons above, Logbooks below). Right: the two priority lists.
             var left = OnlineUi.Area(_draft, "Pick", new Vector2(0f, 0f), new Vector2(0.62f, 1f), new Vector4(20f, 156f, 8f, 96f));
@@ -420,7 +445,9 @@ namespace RoguePirates.V4.Presentation.Online
             detail.offsetMin = new Vector2(20f, 62f);
             detail.offsetMax = new Vector2(-20f, 150f);
             detail.gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
+            MenuKit.Paint(detail, "Panel_Inset", 2f);
             _draftDetail = OnlineUi.Text(detail, "Text", DetailHint, 24, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor);
+            _draftMessage.fontStyle = FontStyles.Bold;
             _draftDetail.margin = new Vector4(16f, 4f, 16f, 4f);
             _draftDetail.textWrappingMode = TextWrappingModes.Normal;
             _draftDetail.enableAutoSizing = true;
@@ -440,7 +467,31 @@ namespace RoguePirates.V4.Presentation.Online
             grid.padding = new RectOffset(8, 8, 8, 8);
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             grid.constraintCount = 4;
+            list.gameObject.AddComponent<GridFit>(); // Hackathon UI: the cards fill the width (5 columns on 20:9)
             return list;
+        }
+
+        /// <summary>Hackathon UI (13 Oct, owner): a card grid as wide as its list (columns of at least 250 units, stretched
+        /// to fill), so wide screens show more cards per row instead of an empty strip.</summary>
+        sealed class GridFit : MonoBehaviour
+        {
+            const float MinCell = 250f;
+            void OnEnable() => Fit();
+            void OnRectTransformDimensionsChange() => Fit();
+
+            void Fit()
+            {
+                var g = GetComponent<GridLayoutGroup>();
+                var rt = (RectTransform)transform;
+                if (g == null) return;
+                var w = rt.rect.width - g.padding.left - g.padding.right;
+                if (w <= 1f) return;
+                var cols = Mathf.Max(1, Mathf.FloorToInt((w + g.spacing.x) / (MinCell + g.spacing.x)));
+                var cell = Mathf.Floor((w - g.spacing.x * (cols - 1)) / cols);
+                if (g.constraintCount == cols && Mathf.Abs(g.cellSize.x - cell) < 0.5f) return;
+                g.constraintCount = cols;
+                g.cellSize = new Vector2(cell, g.cellSize.y);
+            }
         }
 
         public void ShowDraft()
@@ -451,7 +502,7 @@ namespace RoguePirates.V4.Presentation.Online
             RefreshDraft();
             RefreshDraftStrip(PvpSession.Instance.Lobby);
             _draftMessage.text = "Pick 6 weapons and 6 Logbooks (all start at level 1), then order them.";
-            if (_draftDetail != null) _draftDetail.text = DetailHint;
+            if (_draftDetail != null) _draftDetail.text = MenuKit.InkRich(DetailHint);
             var me = PvpSession.Instance.MySeat;
             if (me != null && me.status != "drafting" && PvpSession.Instance.Lobby?.status != "starting") _ = PvpSession.Instance.SetStatus("drafting");
         }
@@ -503,8 +554,8 @@ namespace RoguePirates.V4.Presentation.Online
         public void ShowDetail(string id, bool weapon)
         {
             if (_draftDetail == null) return;
-            if (weapon) { var w = _allWeapons.Find(x => x.weaponId == id); if (w != null) _draftDetail.text = Detail(w); }
-            else { var l = _allLogbooks.Find(x => x.logbookId == id); if (l != null) _draftDetail.text = Detail(l); }
+            if (weapon) { var w = _allWeapons.Find(x => x.weaponId == id); if (w != null) _draftDetail.text = MenuKit.InkRich(Detail(w)); }
+            else { var l = _allLogbooks.Find(x => x.logbookId == id); if (l != null) _draftDetail.text = MenuKit.InkRich(Detail(l)); }
         }
 
         void Card(RectTransform grid, string id, string label, string line, Sprite icon, bool weapon)
@@ -513,6 +564,7 @@ namespace RoguePirates.V4.Presentation.Online
             go.transform.SetParent(grid, false);
             var image = go.GetComponent<Image>();
             image.color = CardTint;
+            CardLook(image, false);
             go.GetComponent<Button>().onClick.AddListener(() => { Toggle(id, weapon); ShowDetail(id, weapon); });
             // Hover (desktop) shows the description too; a tap (phone) shows it with the pick.
             go.AddComponent<HoverRelay>().Enter = () => ShowDetail(id, weapon);
@@ -535,7 +587,7 @@ namespace RoguePirates.V4.Presentation.Online
             text.margin = new Vector4(left, 0f, 40f, 0f);
             text.fontStyle = FontStyles.Bold;
             var desc = OnlineUi.TextAt(go.transform, "Line", line ?? string.Empty, 17, TextAlignmentOptions.TopLeft, OnlineUi.Dim, Vector2.zero, new Vector2(1f, 0.54f));
-            desc.margin = new Vector4(left, 0f, 10f, 4f);
+            desc.margin = new Vector4(left, 0f, 34f, 4f); // Hackathon UI: clear of the pick number
             desc.textWrappingMode = TextWrappingModes.Normal;
             var badge = OnlineUi.TextAt(go.transform, "Badge", string.Empty, 26, TextAlignmentOptions.MidlineRight, OnlineUi.Gold, Vector2.zero, Vector2.one);
             badge.margin = new Vector4(0f, 0f, 10f, 0f);
@@ -612,16 +664,18 @@ namespace RoguePirates.V4.Presentation.Online
             {
                 var i = _weapons.IndexOf(kv.Key);
                 kv.Value.color = i >= 0 ? PickedTint : CardTint;
+                CardLook(kv.Value, i >= 0);
                 _weaponBadges[kv.Key].text = i >= 0 ? (i + 1).ToString() : string.Empty;
             }
             foreach (var kv in _logbookCards)
             {
                 var i = _logbooks.IndexOf(kv.Key);
                 kv.Value.color = i >= 0 ? PickedTint : CardTint;
+                CardLook(kv.Value, i >= 0);
                 _logbookBadges[kv.Key].text = i >= 0 ? (i + 1).ToString() : string.Empty;
             }
-            _weaponCount.text = $"Weapons  <color=#ffd166>{_weapons.Count}/{Picks}</color>";
-            _logbookCount.text = $"Logbooks  <color=#ffd166>{_logbooks.Count}/{Picks}</color>";
+            _weaponCount.text = MenuKit.InkRich($"Weapons  <color=#ffd166>{_weapons.Count}/{Picks}</color>");
+            _logbookCount.text = MenuKit.InkRich($"Logbooks  <color=#ffd166>{_logbooks.Count}/{Picks}</color>");
             ClearRows(_orderRows);
             OrderRows(_weaponOrder, _weapons, true);
             OrderRows(_logbookOrder, _logbooks, false);
@@ -650,9 +704,18 @@ namespace RoguePirates.V4.Presentation.Online
             return l != null ? Name(l) : id;
         }
 
+        /// <summary>Hackathon UI: a draft card on the kit's slot card (gold when picked); without the kit, the tint.</summary>
+        static void CardLook(Image image, bool picked)
+        {
+            if (!MenuKit.Ready) return;
+            MenuKit.Paint(image, picked ? "Slot_Card_Selected" : "Slot_Card", 2.4f);
+            image.raycastTarget = true;
+        }
+
         static void SmallButton(Transform row, string label, Action click, bool enabled)
         {
             var b = OnlineUi.Button(row, label, click);
+            MenuKit.StyleButton(b, label == "X" ? "Btn_Red" : "Btn_Parchment");
             var le = b.GetComponent<LayoutElement>();
             le.minWidth = le.preferredWidth = label.Length > 1 ? 104f : 64f;
             le.minHeight = le.preferredHeight = 48f;
@@ -667,7 +730,7 @@ namespace RoguePirates.V4.Presentation.Online
             var s = PvpSession.Instance;
             if (state == null) { _draftStrip.text = "Not in a lobby."; return; }
             var other = s.OpponentSeat;
-            _draftStrip.text = "Lobby " + state.code + "   " + (other == null ? "<color=#9aa4ad>Waiting for a player</color>"
+            _draftStrip.text = "Lobby " + state.code + "   " + (other == null ? "<color=#d9c6a5>Waiting for a player</color>"
                 : other.name + other.tag + ": <b>" + StatusLabel(other) + "</b>");
         }
 
