@@ -377,7 +377,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _boostLabel.raycastTarget = false;
             _boostLabel.textWrappingMode = TextWrappingModes.NoWrap;
             _boostLabel.overflowMode = TextOverflowModes.Ellipsis;
-            _boostLabel.text = "Boost  ·  SHIFT";
+            _boostLabel.text = BoostReadyText;
             // Hackathon UI (13 Oct, owner): the kit's bar track and green fill instead of the flat blue box.
             _kitBoost = RoguePirates.V4.Presentation.Menu.MenuKit.HudBar(bg, _boostFill, "Bar_Fill_Green", _boostLabel);
 
@@ -424,6 +424,9 @@ namespace RoguePirates.V4.Presentation.Hud
             if (_boostPlaceholder.anchoredPosition != target) _boostPlaceholder.anchoredPosition = target;
         }
 
+        /// <summary>The ready boost names its key on desktop; touch devices have the BOOST button instead.</summary>
+        static string BoostReadyText => RoguePirates.V4.Foundation.Platform.VirtualJoystick.TouchControlsWanted ? "Boost  ·  READY" : "Boost  ·  SHIFT";
+
         void OnBoostClicked() => _views?.Commands?.RequestBoost();
 
         void RefreshBoostMeter()
@@ -465,7 +468,7 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 1 => $"BOOST!  ·  {seconds}s",
                 2 => $"Boost  ·  {seconds}s",
-                _ => "Boost  ·  SHIFT"
+                _ => BoostReadyText
             };
         }
     }

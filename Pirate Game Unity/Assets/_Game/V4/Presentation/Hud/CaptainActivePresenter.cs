@@ -115,7 +115,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _fill.fillAmount = ready ? 1f : 1f - remaining / duration;
             _fill.color = _kit ? (ready ? Color.white : new Color(0.62f, 0.6f, 0.56f, 1f)) : ready ? ReadyColor : CoolingColor;
             var seconds = ready ? -1 : Mathf.CeilToInt(remaining);
-            var key = captain.ActiveKeyHint;
+            var key = RoguePirates.V4.Foundation.Platform.VirtualJoystick.TouchControlsWanted ? "READY" : captain.ActiveKeyHint;
             if (seconds != _lastSeconds || key != _lastKey || captain.ActiveName != _lastName)
             {
                 _lastSeconds = seconds;

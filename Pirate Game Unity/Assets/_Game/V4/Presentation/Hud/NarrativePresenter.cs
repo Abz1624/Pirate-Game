@@ -97,6 +97,13 @@ namespace RoguePirates.V4.Presentation.Hud
             _seenPrompt = 0;
         }
 
+        /// <summary>Touch devices have the USE button, not the E key: the tutorial lines name the button there.</summary>
+        static string TouchText(string s)
+        {
+            if (string.IsNullOrEmpty(s) || !RoguePirates.V4.Foundation.Platform.VirtualJoystick.TouchControlsWanted) return s;
+            return s.Replace("hold E or USE", "hold USE").Replace("hold E", "hold USE").Replace("press E", "tap USE").Replace("Press E", "Tap USE");
+        }
+
         void LateUpdate()
         {
             if (_view == null) return;
@@ -105,7 +112,7 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 _seenBark = _view.BarkSerial;
                 _speaker.text = _view.BarkSpeaker;
-                _line.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(_view.BarkLine); // no em dashes in UI text
+                _line.text = TouchText(RoguePirates.V4.Foundation.Core.DemoMode.Text(_view.BarkLine)); // no em dashes in UI text
                 FitHeight(_bark, _line, 36f, 12f); // speaker row + wrapped line
                 _barkTimer = Mathf.Max(0.5f, _view.BarkSeconds);
                 _bark.gameObject.SetActive(true);
@@ -113,7 +120,7 @@ namespace RoguePirates.V4.Presentation.Hud
             if (_view.PromptSerial != _seenPrompt)
             {
                 _seenPrompt = _view.PromptSerial;
-                _promptText.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(_view.PromptText);
+                _promptText.text = TouchText(RoguePirates.V4.Foundation.Core.DemoMode.Text(_view.PromptText));
                 FitHeight(_prompt, _promptText, 14f, 14f);
                 _promptTimer = Mathf.Max(0.5f, _view.PromptSeconds);
                 _prompt.gameObject.SetActive(true);
