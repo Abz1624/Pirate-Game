@@ -13,16 +13,18 @@ namespace RoguePirates.Hackathon.UI
     /// Hackathon (12 Oct, owner: web3 mode is the demo's path): a "Connect Wallet" button on the main menu (top centre) and
     /// the wallet panel (full address with Copy address and View on explorer, devnet SOL balance, profile, optional email, disconnect). Attached to V4's online
     /// menu when the menu scene loads, so V4 code is unchanged. Reads <see cref="Web3Session"/> and its Changed event.
+    /// 13 Oct: entry, panel and captain name prompt redrawn in the art team's parchment kit (<see cref="MarketKit"/>).
     /// </summary>
     public sealed class WalletMenu : MonoBehaviour
     {
-        static readonly Color PanelColor = new Color(0.06f, 0.1f, 0.16f, 0.97f);
-        static readonly Color TextColor = new Color(0.95f, 0.93f, 0.88f, 1f);
-        static readonly Color Dim = new Color(0.7f, 0.72f, 0.75f, 1f);
-        static readonly Color Gold = new Color(1f, 0.82f, 0.4f, 1f);
-        static readonly Color Good = new Color(0.45f, 0.85f, 0.45f, 1f);
-        static readonly Color Bad = new Color(1f, 0.55f, 0.45f, 1f);
-        const float Row = 72f;
+        static Color TextColor => MarketKit.Ink;
+        static Color Dim => MarketKit.InkDim;
+        static Color Gold => MarketKit.InkGold;
+        static Color Good => MarketKit.InkGood;
+        static Color Bad => MarketKit.InkBad;
+        static string DimHex => MarketKit.Hex(MarketKit.InkDim);
+        const float Row = 80f;
+        const float HeaderHeight = 130f;
 
         OnlineMenuPresenter _online;
         Button _entry;
@@ -33,7 +35,6 @@ namespace RoguePirates.Hackathon.UI
         RectTransform _prompt;
         TextMeshProUGUI _promptMessage;
         RectTransform _addressActions;
-        TMP_FontAsset _font;
 
         public bool IsOpen => _panel != null && _panel.gameObject.activeSelf;
         public string EntryLabel => _entry != null ? _entry.GetComponentInChildren<TextMeshProUGUI>(true).text : null;
@@ -71,10 +72,7 @@ namespace RoguePirates.Hackathon.UI
 
         void Build(Transform canvas)
         {
-            var art = ArtMenuSettings.Load();
-            _font = art != null ? art.font : null;
-
-            // The entry: gold, top centre of the menu, above the art menu's layers.
+            // The entry: a gold kit button, top centre of the menu, above the art menu's layers.
             var main = FindDeep(canvas, "MainMenuPanel");
             var host = new GameObject("HackathonWalletEntry", typeof(RectTransform));
             host.transform.SetParent(main != null ? main : canvas, false);
@@ -82,12 +80,9 @@ namespace RoguePirates.Hackathon.UI
             hrt.anchorMin = hrt.anchorMax = new Vector2(0.5f, 1f); // top centre (clear sky; the logo and RUM sit top right)
             hrt.pivot = new Vector2(0.5f, 1f);
             hrt.anchoredPosition = new Vector2(0f, -24f);
-            hrt.sizeDelta = new Vector2(460f, 80f);
+            hrt.sizeDelta = new Vector2(460f, 86f);
             SettingsPanel.DrawOnTop(host, 210);
-            _entry = SettingsPanel.CreateButton(host.transform, "Connect Wallet", Open);
-            Stretch((RectTransform)_entry.transform);
-            var le = _entry.GetComponent<LayoutElement>();
-            if (le != null) le.ignoreLayout = true;
+            _entry = MarketKit.KitButton(MarketKit.Fill(hrt, "Button"), "Connect Wallet", "Icon_User", Open, "Btn_Gold", 32f, 40f);
 
             BuildPanel(canvas);
             S.Changed += Refresh;
@@ -97,97 +92,87 @@ namespace RoguePirates.Hackathon.UI
 
         void BuildPanel(Transform canvas)
         {
-            var go = new GameObject("HackathonWalletPanel", typeof(RectTransform), typeof(Image));
+            var go = new GameObject("HackathonWalletPanel", typeof(RectTransform));
             go.transform.SetParent(canvas, false);
             _panel = (RectTransform)go.transform;
-            _panel.anchorMin = new Vector2(0.15f, 0.05f);
-            _panel.anchorMax = new Vector2(0.85f, 0.95f);
+            _panel.anchorMin = new Vector2(0.12f, 0.04f);
+            _panel.anchorMax = new Vector2(0.88f, 0.96f);
             _panel.offsetMin = _panel.offsetMax = Vector2.zero;
-            go.GetComponent<Image>().color = PanelColor;
             SettingsPanel.DrawOnTop(go, 240);
-            var blocker = new GameObject("Blocker", typeof(RectTransform), typeof(Image));
-            blocker.transform.SetParent(_panel, false);
-            var brt = (RectTransform)blocker.transform;
-            brt.anchorMin = new Vector2(-2f, -2f);
-            brt.anchorMax = new Vector2(3f, 3f);
-            brt.offsetMin = brt.offsetMax = Vector2.zero;
-            blocker.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.45f);
+            MarketKit.Blocker(_panel);
 
-            var y = 16f;
-            var header = Strip("Header", ref y, 80f);
-            TextIn(header, "Title", "Wallet and profile", 44, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, new Vector2(0.55f, 1f), true);
-            TextIn(header, "Network", "Solana devnet", 24, TextAlignmentOptions.MidlineRight, Dim, new Vector2(0.5f, 0f), new Vector2(0.76f, 1f));
-            ButtonIn(header, "Close", Close, new Vector2(0.78f, 0.05f), new Vector2(1f, 0.95f));
+            var card = MarketKit.Fill(_panel, "Card", 8f, 0f, 8f, HeaderHeight - 40f);
+            MarketKit.Paint(card, "Panel_Card", 1.2f);
+            var head = MarketKit.Strip(_panel, "Header", 0f, 0f, 0f, HeaderHeight);
+            MarketKit.Header(head, "Wallet and profile", "Icon_User", 56f, 150f, 560f);
+            MarketKit.KitButton(MarketKit.TopRight(head, "Close", 24f, 22f, 230f, 86f), "Close", "Icon_Close", Close, "Btn_Gold", 34f, 38f);
+            MarketKit.Chip(MarketKit.TopRight(head, "Network", 276f, 30f, 260f, 70f), "Solana devnet", 28f, MarketKit.Ink, true);
 
             // The full address (wraps on narrow screens), then Copy address and View on explorer.
-            _address = TextIn(Strip("Address", ref y, 84f), "Address", string.Empty, 30, TextAlignmentOptions.MidlineLeft, TextColor, Vector2.zero, Vector2.one);
+            var addr = MarketKit.Strip(card, "Address", 44f, 56f, 44f, 112f);
+            MarketKit.Paint(addr, "Panel_Inset", 1.6f);
+            _address = MarketKit.Label(MarketKit.Fill(addr, "Address", 26f, 8f, 26f, 8f), string.Empty, 30f, TextColor, TextAlignmentOptions.MidlineLeft, false, 18f);
             _address.textWrappingMode = TextWrappingModes.Normal;
-            _address.overflowMode = TextOverflowModes.Overflow;
-            _addressActions = Strip("AddressActions", ref y, 64f);
-            var ah = _addressActions.gameObject.AddComponent<HorizontalLayoutGroup>();
-            ah.spacing = 12f;
-            ah.childControlWidth = ah.childControlHeight = true;
-            ah.childForceExpandWidth = true;
-            _copy = Flex(SettingsPanel.CreateButton(_addressActions, "Copy address", CopyAddress), 64f);
-            _explorer = Flex(SettingsPanel.CreateButton(_addressActions, "View on explorer", OpenExplorer), 64f);
-            _balance = TextIn(Strip("Balance", ref y, 44f), "Balance", string.Empty, 30, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one);
-            _profile = TextIn(Strip("Profile", ref y, 44f), "Profile", string.Empty, 28, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
-            y += 4f;
+            _addressActions = MarketKit.Strip(card, "AddressActions", 44f, 180f, 44f, 72f);
+            MarketKit.Row(_addressActions, 16f);
+            _copy = MarketKit.RowButton(_addressActions, "Copy address", "Icon_Copy", CopyAddress, 340f, 72f, "Btn_Parchment", 28f);
+            _explorer = MarketKit.RowButton(_addressActions, "View on explorer", "Icon_Link", OpenExplorer, 380f, 72f, "Btn_Parchment", 28f);
 
-            var actions = Strip("Actions", ref y, Row);
-            var h = actions.gameObject.AddComponent<HorizontalLayoutGroup>();
-            h.spacing = 12f;
-            h.childControlWidth = h.childControlHeight = true;
+            var bal = MarketKit.Strip(card, "Balance", 50f, 262f, 50f, 50f);
+            MarketKit.Icon(MarketKit.TopLeft(bal, "Chest", 0f, 0f, 50f, 50f), "Chest_2");
+            _balance = MarketKit.Label(MarketKit.Fill(bal, "Balance", 66f, 0f, 0f, 0f), string.Empty, 32f, Gold, TextAlignmentOptions.MidlineLeft, true, 20f);
+            var prof = MarketKit.Strip(card, "Profile", 50f, 314f, 50f, 46f);
+            MarketKit.Icon(MarketKit.TopLeft(prof, "User", 6f, 4f, 38f, 38f), "Icon_User", Dim);
+            _profile = MarketKit.Label(MarketKit.Fill(prof, "Profile", 66f, 0f, 0f, 0f), string.Empty, 28f, Dim, TextAlignmentOptions.MidlineLeft, false, 18f);
+
+            var actions = MarketKit.Strip(card, "Actions", 44f, 370f, 44f, Row);
+            var h = MarketKit.Row(actions, 14f);
             h.childForceExpandWidth = true;
-            _connect = Flex(SettingsPanel.CreateButton(actions, "Connect Wallet", () => Run(S.Connect(false))));
-            _test = Flex(SettingsPanel.CreateButton(actions, "Test wallet (dev)", () => Run(S.Connect(true))));
-            _signIn = Flex(SettingsPanel.CreateButton(actions, "Sign in again", () => Run(S.SignIn())));
-            _refresh = Flex(SettingsPanel.CreateButton(actions, "Refresh", () => Run(RefreshOnly())));
-            _airdrop = Flex(SettingsPanel.CreateButton(actions, "Airdrop 1 SOL", () => Run(S.RequestAirdrop(1))));
-            _disconnect = Flex(SettingsPanel.CreateButton(actions, "Disconnect", () => { S.Disconnect(); SetMessage("Disconnected.", Dim); }));
-            y += 12f;
+            _connect = Flex(MarketKit.RowButton(actions, "Connect Wallet", null, () => Run(S.Connect(false)), 0f, Row, "Btn_Gold", 30f));
+            _test = Flex(MarketKit.RowButton(actions, "Test wallet (dev)", null, () => Run(S.Connect(true)), 0f, Row, "Btn_Parchment", 28f));
+            _signIn = Flex(MarketKit.RowButton(actions, "Sign in again", null, () => Run(S.SignIn()), 0f, Row, "Btn_Gold", 30f));
+            _refresh = Flex(MarketKit.RowButton(actions, "Refresh", "Icon_Refresh", () => Run(RefreshOnly()), 0f, Row, "Btn_Parchment", 28f));
+            _airdrop = Flex(MarketKit.RowButton(actions, "Airdrop 1 SOL", null, () => Run(S.RequestAirdrop(1)), 0f, Row, "Btn_Green", 28f));
+            _disconnect = Flex(MarketKit.RowButton(actions, "Disconnect", null, () => { S.Disconnect(); SetMessage("Disconnected.", Dim); }, 0f, Row, "Btn_Red", 28f));
+
+            MarketKit.Line(card, 44f, 466f, 44f);
 
             // Captain name (the name other players see; the server's name rules).
-            TextIn(Strip("NameLabel", ref y, 36f), "NameLabel", "Captain name  <size=85%>(3 to 16 letters, digits, spaces, _ or -)</size>", 26, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
-            var nameRow = Strip("Name", ref y, Row);
-            var nh = nameRow.gameObject.AddComponent<HorizontalLayoutGroup>();
-            nh.spacing = 12f;
-            nh.childControlWidth = nh.childControlHeight = true;
-            nh.childForceExpandWidth = false;
-            _name = Input(nameRow, "Your captain name", 16);
+            Caption(card, 480f, "Captain name", "3 to 16 letters, digits, spaces, _ or -");
+            var nameRow = MarketKit.Strip(card, "Name", 44f, 524f, 44f, Row);
+            MarketKit.Row(nameRow, 14f);
+            _name = MarketKit.Input(MarketKit.Cell(nameRow, "NameInput", 0f, Row), "Your captain name", 16);
             _name.onSubmit.AddListener(_ => SaveName());
-            _saveName = SettingsPanel.CreateButton(nameRow, "Save name", SaveName);
-            var nle = _saveName.GetComponent<LayoutElement>() ?? _saveName.gameObject.AddComponent<LayoutElement>();
-            nle.minWidth = 240f;
-            y += 8f;
+            _saveName = MarketKit.RowButton(nameRow, "Save name", "Icon_Save", SaveName, 280f, Row, "Btn_Gold", 30f);
 
-            TextIn(Strip("EmailLabel", ref y, 36f), "EmailLabel", "Email  <size=85%>(optional, for match news)</size>", 26, TextAlignmentOptions.MidlineLeft, Dim, Vector2.zero, Vector2.one);
-            var email = Strip("Email", ref y, Row);
-            var eh = email.gameObject.AddComponent<HorizontalLayoutGroup>();
-            eh.spacing = 12f;
-            eh.childControlWidth = eh.childControlHeight = true;
-            eh.childForceExpandWidth = false;
-            _email = Input(email, "you@example.com", 254);
+            Caption(card, 616f, "Email", "optional, for match news");
+            var email = MarketKit.Strip(card, "Email", 44f, 660f, 44f, Row);
+            MarketKit.Row(email, 14f);
+            _email = MarketKit.Input(MarketKit.Cell(email, "EmailInput", 0f, Row), "you@example.com", 254);
             _email.contentType = TMP_InputField.ContentType.EmailAddress;
             _email.onSubmit.AddListener(_ => SaveEmail());
-            _saveEmail = SettingsPanel.CreateButton(email, "Save email", SaveEmail);
-            var sle = _saveEmail.GetComponent<LayoutElement>() ?? _saveEmail.gameObject.AddComponent<LayoutElement>();
-            sle.minWidth = 240f;
-            y += 12f;
+            _saveEmail = MarketKit.RowButton(email, "Save email", "Icon_Save", SaveEmail, 280f, Row, "Btn_Gold", 30f);
 
-            _message = TextIn(Strip("Message", ref y, 84f), "Message", string.Empty, 26, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
+            var msg = MarketKit.Fill(card, "Message", 44f, 30f, 44f, 756f);
+            _message = MarketKit.Label(MarketKit.Fill(msg, "Message", 6f, 0f, 6f, 0f), string.Empty, 27f, Dim, TextAlignmentOptions.TopLeft, false, 18f);
             _message.textWrappingMode = TextWrappingModes.Normal;
-            _message.overflowMode = TextOverflowModes.Overflow;
 
             go.SetActive(false);
             BuildNamePrompt(canvas);
+        }
+
+        static void Caption(RectTransform card, float y, string title, string hint)
+        {
+            var t = MarketKit.Label(MarketKit.Strip(card, title, 50f, y, 50f, 40f),
+                "<b>" + title + "</b>   <size=80%><color=" + MarketKit.Hex(MarketKit.InkDim) + ">(" + hint + ")</color></size>", 30f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+            t.richText = true;
         }
 
         /// <summary>After a first wallet sign-in: "Name your captain" (skippable). Drawn above the wallet panel.</summary>
         void BuildNamePrompt(Transform canvas)
         {
             // The root is the full-screen blocker (dims and blocks the menu); the panel is its child, so it draws on top of
-            // the blocker and keeps its own colour.
+            // the blocker and keeps its own look.
             var go = new GameObject("HackathonNamePrompt", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(canvas, false);
             _prompt = (RectTransform)go.transform;
@@ -196,36 +181,32 @@ namespace RoguePirates.Hackathon.UI
             _prompt.offsetMin = _prompt.offsetMax = Vector2.zero;
             go.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
             SettingsPanel.DrawOnTop(go, 250);
-            var panelGo = new GameObject("Panel", typeof(RectTransform), typeof(Image));
-            panelGo.transform.SetParent(_prompt, false);
-            var panel = (RectTransform)panelGo.transform;
-            panel.anchorMin = new Vector2(0.22f, 0.31f);
-            panel.anchorMax = new Vector2(0.78f, 0.69f);
+            var panel = MarketKit.Node(_prompt, "Panel");
+            panel.anchorMin = new Vector2(0.2f, 0.24f);
+            panel.anchorMax = new Vector2(0.8f, 0.76f);
             panel.offsetMin = panel.offsetMax = Vector2.zero;
-            panelGo.GetComponent<Image>().color = PanelColor;
 
-            var y = 20f;
-            TextIn(StripIn(panel, "Title", ref y, 64f), "Title", "Name your captain", 42, TextAlignmentOptions.MidlineLeft, Gold, Vector2.zero, Vector2.one, true);
-            var intro = TextIn(StripIn(panel, "Intro", ref y, 72f), "Intro",
+            const float head = 116f;
+            var card = MarketKit.Fill(panel, "Card", 8f, 0f, 8f, head - 36f);
+            MarketKit.Paint(card, "Panel_Card", 1.2f);
+            MarketKit.Header(MarketKit.Strip(panel, "Header", 0f, 0f, 0f, head), "Name your captain", "Icon_User", 52f, 136f, 30f);
+
+            var intro = MarketKit.Label(MarketKit.Strip(card, "Intro", 48f, 52f, 48f, 84f),
                 "Other captains see this name on the leaderboards, in 1v1 lobbies and on your island. You can change it later in the wallet panel.",
-                26, TextAlignmentOptions.TopLeft, TextColor, Vector2.zero, Vector2.one);
+                28f, TextColor, TextAlignmentOptions.TopLeft, false, 18f);
             intro.textWrappingMode = TextWrappingModes.Normal;
-            var field = StripIn(panel, "Name", ref y, Row);
-            var fh = field.gameObject.AddComponent<HorizontalLayoutGroup>();
-            fh.childControlWidth = fh.childControlHeight = true;
-            _promptName = Input(field, "3 to 16 letters, digits, spaces, _ or -", 16);
+            _promptName = MarketKit.Input(MarketKit.Strip(card, "Name", 44f, 146f, 44f, Row), "3 to 16 letters, digits, spaces, _ or -", 16);
             _promptName.onSubmit.AddListener(_ => SavePromptName());
-            var buttons = StripIn(panel, "Buttons", ref y, Row);
-            var h = buttons.gameObject.AddComponent<HorizontalLayoutGroup>();
-            h.spacing = 12f;
-            h.childControlWidth = h.childControlHeight = true;
+            var buttons = MarketKit.Strip(card, "Buttons", 44f, 242f, 44f, Row);
+            var h = MarketKit.Row(buttons, 16f);
             h.childForceExpandWidth = true;
-            _promptSave = Flex(SettingsPanel.CreateButton(buttons, "Save name", SavePromptName));
-            _promptSkip = Flex(SettingsPanel.CreateButton(buttons, "Skip for now", SkipNamePrompt));
-            _promptMessage = TextIn(StripIn(panel, "Message", ref y, 48f), "Message", string.Empty, 24, TextAlignmentOptions.TopLeft, Dim, Vector2.zero, Vector2.one);
+            _promptSave = Flex(MarketKit.RowButton(buttons, "Save name", "Icon_Save", SavePromptName, 0f, Row, "Btn_Gold", 30f));
+            _promptSkip = Flex(MarketKit.RowButton(buttons, "Skip for now", null, SkipNamePrompt, 0f, Row, "Btn_Parchment", 30f));
+            _promptMessage = MarketKit.Label(MarketKit.Fill(card, "Message", 50f, 20f, 50f, 334f), string.Empty, 26f, Dim, TextAlignmentOptions.TopLeft, false, 16f);
             _promptMessage.textWrappingMode = TextWrappingModes.Normal;
             go.SetActive(false);
         }
+
 
         public void OpenNamePrompt()
         {
@@ -357,13 +338,13 @@ namespace RoguePirates.Hackathon.UI
 
             _address.text = string.IsNullOrEmpty(address)
                 ? "No wallet connected"
-                : "<size=24><color=#9aa4ad>Wallet address</color></size>" + (connected ? (S.Kind == Web3Session.WalletKind.TestWallet ? "   <size=24><color=#9aa4ad>test wallet</color></size>" : string.Empty)
-                    : "   <size=24><color=#9aa4ad>session kept, reconnect to sign</color></size>") + "\n" + address;
+                : "<size=24><color=" + DimHex + ">Wallet address</color></size>" + (connected ? (S.Kind == Web3Session.WalletKind.TestWallet ? "   <size=24><color=" + DimHex + ">test wallet</color></size>" : string.Empty)
+                    : "   <size=24><color=" + DimHex + ">session kept, reconnect to sign</color></size>") + "\n" + address;
             _addressActions.gameObject.SetActive(!string.IsNullOrEmpty(address));
             _balance.text = string.IsNullOrEmpty(address) ? string.Empty : "Balance  " + Web3Rules.FormatSol(S.Balance) + "  (devnet)";
             var p = S.Profile;
             _profile.text = p != null
-                ? $"{p.name}<color=#9aa4ad>{p.tag}</color>   rating {p.rating}   " + (OnlineService.IsOnline ? "online" : "offline")
+                ? $"{p.name}<color={DimHex}>{p.tag}</color>   rating {p.rating}   " + (OnlineService.IsOnline ? "online" : "offline")
                 : (string.IsNullOrEmpty(address) ? "Connect a Solana wallet to play online (leaderboard, 1v1, wagers)." : "Not signed in.");
 
             var busy = S.Busy;
@@ -393,55 +374,7 @@ namespace RoguePirates.Hackathon.UI
             _message.color = color;
         }
 
-        // ---------------------------------------------------------------- UI bits (the menu hub's look)
-
-        RectTransform Strip(string name, ref float fromTop, float height) => StripIn(_panel, name, ref fromTop, height);
-
-        static RectTransform StripIn(RectTransform parent, string name, ref float fromTop, float height)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rt = (RectTransform)go.transform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(1f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.offsetMin = new Vector2(24f, -fromTop - height);
-            rt.offsetMax = new Vector2(-24f, -fromTop);
-            fromTop += height + 8f;
-            return rt;
-        }
-
-        TextMeshProUGUI TextIn(Transform parent, string name, string text, float size, TextAlignmentOptions align, Color color, Vector2 min, Vector2 max, bool title = false)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
-            go.transform.SetParent(parent, false);
-            var rt = (RectTransform)go.transform;
-            rt.anchorMin = min;
-            rt.anchorMax = max;
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-            var t = go.GetComponent<TextMeshProUGUI>();
-            if (title && _font != null) t.font = _font;
-            t.text = text;
-            t.fontSize = size;
-            t.alignment = align;
-            t.color = color;
-            t.raycastTarget = false;
-            t.textWrappingMode = TextWrappingModes.NoWrap;
-            t.overflowMode = TextOverflowModes.Ellipsis;
-            return t;
-        }
-
-        static Button ButtonIn(Transform parent, string label, Action click, Vector2 min, Vector2 max)
-        {
-            var b = SettingsPanel.CreateButton(parent, label, click);
-            var rt = (RectTransform)b.transform;
-            rt.anchorMin = min;
-            rt.anchorMax = max;
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-            var le = b.GetComponent<LayoutElement>();
-            if (le != null) le.ignoreLayout = true;
-            return b;
-        }
+        // ---------------------------------------------------------------- UI bits
 
         static Button Flex(Button b, float height = Row)
         {
@@ -452,49 +385,7 @@ namespace RoguePirates.Hackathon.UI
             return b;
         }
 
-        TMP_InputField Input(Transform parent, string placeholder, int limit)
-        {
-            var go = new GameObject("EmailInput", typeof(RectTransform), typeof(Image), typeof(TMP_InputField), typeof(LayoutElement));
-            go.transform.SetParent(parent, false);
-            go.GetComponent<Image>().color = TextColor;
-            var le = go.GetComponent<LayoutElement>();
-            le.preferredHeight = le.minHeight = Row;
-            le.flexibleWidth = 1f;
-            var area = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D));
-            area.transform.SetParent(go.transform, false);
-            var art = (RectTransform)area.transform;
-            art.anchorMin = Vector2.zero;
-            art.anchorMax = Vector2.one;
-            art.offsetMin = new Vector2(16f, 6f);
-            art.offsetMax = new Vector2(-16f, -6f);
-            var ph = TextIn(area.transform, "Placeholder", placeholder, 30, TextAlignmentOptions.MidlineLeft, new Color(0.3f, 0.3f, 0.3f, 0.6f), Vector2.zero, Vector2.one);
-            ph.fontStyle = FontStyles.Italic;
-            var text = TextIn(area.transform, "Text", string.Empty, 30, TextAlignmentOptions.MidlineLeft, new Color(0.08f, 0.06f, 0.04f, 1f), Vector2.zero, Vector2.one);
-            text.overflowMode = TextOverflowModes.Overflow;
-            var input = go.GetComponent<TMP_InputField>();
-            input.textViewport = art;
-            input.textComponent = text;
-            input.placeholder = ph;
-            input.characterLimit = limit;
-            input.lineType = TMP_InputField.LineType.SingleLine;
-            input.richText = false;
-            input.fontAsset = text.font;
-            input.pointSize = 30;
-            return input;
-        }
-
-        static void SetLabel(Button b, string text)
-        {
-            var t = b != null ? b.GetComponentInChildren<TextMeshProUGUI>(true) : null;
-            if (t != null) t.text = text;
-        }
-
-        static void Stretch(RectTransform rt)
-        {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-        }
+        static void SetLabel(Button b, string text) => MarketKit.SetLabel(b, text);
 
         static Transform FindDeep(Transform root, string name)
         {

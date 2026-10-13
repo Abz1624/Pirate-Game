@@ -13,6 +13,8 @@ namespace RoguePirates.Hackathon.UI
     public sealed class HackStatus : MonoBehaviour
     {
         public Image Background;
+        /// <summary>13 Oct: on a parchment strip (kit screens) the text is in the skin's inks; the tint follows those.</summary>
+        public bool Parchment;
         TextMeshProUGUI _text;
         string _base;
         Color _lastColor;
@@ -33,7 +35,7 @@ namespace RoguePirates.Hackathon.UI
             if (_text.color != _lastColor || Background != null && Background.color == default)
             {
                 _lastColor = _text.color;
-                if (Background != null) Background.color = HackUi.StatusTint(_lastColor);
+                if (Background != null) Background.color = Parchment ? ParchmentTint(_lastColor) : HackUi.StatusTint(_lastColor);
             }
             if (Background != null) Background.enabled = !string.IsNullOrEmpty(_base);
             if (!_base.EndsWith("...")) return;
@@ -42,6 +44,18 @@ namespace RoguePirates.Hackathon.UI
             _dots = dots;
             _text.text = Animated(_base, dots);
         }
+
+        /// <summary>The tint of a parchment status strip for an ink colour (red, green, amber or none).</summary>
+        public static Color ParchmentTint(Color ink)
+        {
+            var skin = HackSkin.I;
+            if (Near(ink, skin.inkBad)) return new Color(0.75f, 0.18f, 0.12f, 0.18f);
+            if (Near(ink, skin.inkGood)) return new Color(0.2f, 0.6f, 0.25f, 0.18f);
+            if (Near(ink, skin.inkGold)) return new Color(1f, 0.7f, 0.2f, 0.2f);
+            return new Color(0f, 0f, 0f, 0f);
+        }
+
+        static bool Near(Color a, Color b) => Mathf.Abs(a.r - b.r) < 0.02f && Mathf.Abs(a.g - b.g) < 0.02f && Mathf.Abs(a.b - b.b) < 0.02f;
 
         /// <summary>"Loading..." with 0 to 3 dots (spaces keep the width steady).</summary>
         public static string Animated(string message, int dots)

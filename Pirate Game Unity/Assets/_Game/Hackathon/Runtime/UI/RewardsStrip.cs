@@ -43,26 +43,37 @@ namespace RoguePirates.Hackathon.UI
             var body = rt.Find("Body") as RectTransform;
             if (body != null) body.offsetMin = new Vector2(body.offsetMin.x, body.offsetMin.y + Height + 8f);
 
+            // 13 Oct: a parchment inset from the art team's kit (a trophy, the prize table in ink, the winners and their
+            // payout links as parchment buttons), readable on the leaderboard's own background.
             var area = HackUi.Area(rt, "HackathonRewards", Vector2.zero, new Vector2(1f, 0f));
             area.offsetMin = new Vector2(24f, 104f);
             area.offsetMax = new Vector2(-24f, 104f + Height);
-            area.gameObject.AddComponent<Image>().color = new Color(0.45f, 0.75f, 0.45f, 0.12f);
-            _table = HackUi.TextAt(area, "Table", "Rewards: Top 3 each week win devnet SOL: 0.5 / 0.3 / 0.2", 25, TextAlignmentOptions.MidlineLeft,
-                HackUi.Gold, new Vector2(0f, 0.52f), Vector2.one);
-            _table.margin = new Vector4(16f, 0f, 16f, 0f);
-            _winners = HackUi.TextAt(area, "Winners", string.Empty, 20, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, Vector2.zero, new Vector2(0.58f, 0.52f));
-            _winners.margin = new Vector4(16f, 0f, 8f, 0f);
+            MarketKit.Paint(area, "Panel_Inset", 2f, null, new Color(0.95f, 0.88f, 0.72f, 1f));
+            MarketKit.Icon(MarketKit.TopLeft(area, "Trophy", 18f, 18f, 76f, 76f), "Icon_Trophy", MarketKit.InkGold);
+            _table = MarketKit.Label(MarketKit.Node(area, "Table"), "<b>Rewards: Top 3 each week win devnet SOL: 0.5 / 0.3 / 0.2</b>", 26f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
+            Place((RectTransform)_table.transform, new Vector2(0f, 0.5f), Vector2.one, new Vector4(108f, 0f, 20f, 4f));
+            _table.richText = true;
+            _winners = MarketKit.Label(MarketKit.Node(area, "Winners"), string.Empty, 22f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 14f);
+            Place((RectTransform)_winners.transform, Vector2.zero, new Vector2(0.58f, 0.5f), new Vector4(108f, 6f, 8f, 0f));
             _winners.textWrappingMode = TextWrappingModes.Normal;
+            _winners.richText = true;
             for (var i = 0; i < _links.Length; i++)
             {
                 var index = i;
-                var x0 = 0.585f + i * 0.14f;
-                _links[i] = HackUi.Button(area, "#" + (i + 1) + " payout", () => { if (_urls[index] != null) Application.OpenURL(_urls[index]); },
-                    new Vector2(x0, 0.06f), new Vector2(x0 + 0.13f, 0.5f));
-                var t = _links[i].GetComponentInChildren<TextMeshProUGUI>(true);
-                if (t != null) t.fontSize = 20;
+                var x0 = 0.585f + i * 0.138f;
+                var brt = MarketKit.Node(area, "Payout" + (i + 1));
+                Place(brt, new Vector2(x0, 0.06f), new Vector2(x0 + 0.13f, 0.5f), Vector4.zero);
+                _links[i] = MarketKit.KitButton(brt, "#" + (i + 1) + " payout", "Icon_Link", () => { if (_urls[index] != null) Application.OpenURL(_urls[index]); }, "Btn_Parchment", 20f, 22f, 2f);
                 _links[i].gameObject.SetActive(false);
             }
+        }
+
+        static void Place(RectTransform rt, Vector2 min, Vector2 max, Vector4 inset)
+        {
+            rt.anchorMin = min;
+            rt.anchorMax = max;
+            rt.offsetMin = new Vector2(inset.x, inset.y);
+            rt.offsetMax = new Vector2(-inset.z, -inset.w);
         }
 
         void OnEnable()
@@ -98,11 +109,11 @@ namespace RoguePirates.Hackathon.UI
 
         void Show(WeeklyRewardsResponse data, string label)
         {
-            var table = new StringBuilder("Rewards: Top 3 each week win devnet SOL: ");
+            var table = new StringBuilder("<b>Rewards: Top 3 each week win devnet SOL: ");
             if (data.table != null && data.table.Length > 0)
                 for (var i = 0; i < data.table.Length; i++) table.Append(i > 0 ? " / " : string.Empty).Append(data.table[i].sol.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture));
             else table.Append("0.5 / 0.3 / 0.2");
-            table.Append("  <size=75%><color=#9aa4ad>(wallet players, paid at the weekly reset)</color></size>");
+            table.Append("</b>  <size=75%><color=" + MarketKit.Hex(MarketKit.InkDim) + ">(wallet players, paid at the weekly reset)</color></size>");
             _table.text = table.ToString();
 
             for (var i = 0; i < _links.Length; i++) { _urls[i] = null; _links[i].gameObject.SetActive(false); }
@@ -117,8 +128,8 @@ namespace RoguePirates.Hackathon.UI
                 var w = data.winners[i];
                 if (w == null) continue;
                 sb.Append(i > 0 ? "   " : string.Empty)
-                  .Append("<color=#ffd166>#").Append(w.rank).Append("</color> ").Append(w.name)
-                  .Append(" <size=80%><color=#9aa4ad>").Append(string.IsNullOrEmpty(w.walletShort) ? Web3Rules.ShortAddress(w.wallet) : w.walletShort).Append("</color></size> ")
+                  .Append("<color=" + MarketKit.Hex(MarketKit.InkGold) + "><b>#").Append(w.rank).Append("</b></color> ").Append(w.name)
+                  .Append(" <size=80%><color=" + MarketKit.Hex(MarketKit.InkDim) + ">").Append(string.IsNullOrEmpty(w.walletShort) ? Web3Rules.ShortAddress(w.wallet) : w.walletShort).Append("</color></size> ")
                   .Append(w.sol.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)).Append(" SOL");
                 var sig = w.payout != null ? w.payout.signature : null;
                 var slot = Mathf.Clamp(w.rank - 1, 0, _links.Length - 1);

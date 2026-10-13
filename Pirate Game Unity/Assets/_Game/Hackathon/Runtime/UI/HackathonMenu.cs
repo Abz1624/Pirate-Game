@@ -136,13 +136,13 @@ namespace RoguePirates.Hackathon.UI
             }
             else
             {
-                button = HackUi.Button(main != null ? main : canvas, "Daily Race", null);
-                var rt = (RectTransform)button.transform;
+                // No art menu: a gold kit button (13 Oct, the art team's UI kit).
+                var rt = MarketKit.Node(main != null ? main : canvas, "HackathonDailyRace");
                 rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.5f);
                 rt.pivot = new Vector2(1f, 0.5f);
-                rt.sizeDelta = new Vector2(300f, HackUi.RowHeight);
+                rt.sizeDelta = new Vector2(300f, 86f);
                 rt.anchoredPosition = new Vector2(-48f, 230f);
-                button.onClick = new Button.ButtonClickedEvent();
+                button = MarketKit.KitButton(rt, "Daily Race", "Icon_Flag", null, "Btn_Gold", 30f, 36f);
             }
             button.onClick.AddListener(panel.Open);
             return button;
