@@ -64,6 +64,34 @@ public sealed class ApiSettings
     public int RumDayCap { get; init; } = 150;
     public int RumDayHalf { get; init; } = 75;
 
+    // ---- V5 M9h (13 Oct): live-API switches. The owner kept every one on (H2, 13 Oct: "don't switch off anything for
+    // now"); each is a variable so it can be flipped on Railway without a code change. ----
+    /// <summary>WAGERS_HUMAN_ENABLED (default true): SOL stakes between human players in 1v1 lobbies. false: new stakes and
+    /// new deposits are refused (409 wagers_off; a transfer already sent is recorded and refunded); open wagers still settle.</summary>
+    public bool WagersHumanEnabled { get; init; } = true;
+    /// <summary>RAID_LOOT_ENABLED (default true): a won raid takes RUM from the island. false: raids still win, shield and
+    /// count in the defence record, but loot nothing.</summary>
+    public bool RaidLootEnabled { get; init; } = true;
+    /// <summary>ISLAND_SALE_CARRIES_RUM (default true): a market sale hands the buyer the island as it is (RUM-bought
+    /// building levels, store and vault RUM). false (I26.2): the store and vault RUM go to the seller's balance and the
+    /// buildings go back to their start levels when the island changes hands.</summary>
+    public bool IslandSaleCarriesRum { get; init; } = true;
+    /// <summary>DAILY_RACE_FIXED_SALT (default true): the daily race seed uses DAILY_RACE_SALT or, unset, the public default
+    /// salt in the code (anyone can compute future seeds). false: DAILY_RACE_SALT or, unset, a secret salt derived from
+    /// the treasury key (random per process without one), so seeds cannot be computed ahead.</summary>
+    public bool DailyRaceFixedSalt { get; init; } = true;
+
+    // ---- V5 M9h: sessions and treasury bounds ----
+    /// <summary>SESSION_LIFETIME_DAYS (default 30): wallet sessions expire this long after their last use (sliding).</summary>
+    public int SessionLifetimeDays { get; init; } = 30;
+    /// <summary>MINT_DAILY_BUDGET (default 20): Island NFT mints the treasury pays per UTC day (each about 0.018 SOL).</summary>
+    public int MintDailyBudget { get; init; } = 20;
+    /// <summary>TREASURY_MIN_LAMPORTS (default 2 SOL): below this float the treasury reports "low" and logs an alarm.</summary>
+    public long TreasuryMinLamports { get; init; } = 2_000_000_000;
+    /// <summary>RPC_READ_RATE_LIMIT_PER_MINUTE (default 30): GET /api/wallet/balance calls per client IP per minute (each
+    /// one is a Solana RPC call).</summary>
+    public int RpcReadRateLimitPerMinute { get; init; } = 30;
+
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
 
@@ -97,7 +125,24 @@ public sealed class ApiSettings
         RumRunHalf = Positive(c["RUM_RUN_HALF"], 20),
         RumDayCap = Positive(c["RUM_DAY_CAP"], 150),
         RumDayHalf = Positive(c["RUM_DAY_HALF"], 75),
+        WagersHumanEnabled = Flag(c["WAGERS_HUMAN_ENABLED"], true),
+        RaidLootEnabled = Flag(c["RAID_LOOT_ENABLED"], true),
+        IslandSaleCarriesRum = Flag(c["ISLAND_SALE_CARRIES_RUM"], true),
+        DailyRaceFixedSalt = Flag(c["DAILY_RACE_FIXED_SALT"], true),
+        SessionLifetimeDays = Positive(c["SESSION_LIFETIME_DAYS"], 30),
+        MintDailyBudget = int.TryParse(c["MINT_DAILY_BUDGET"], out var mb) && mb >= 0 ? mb : 20,
+        TreasuryMinLamports = long.TryParse(c["TREASURY_MIN_LAMPORTS"], out var tm) && tm >= 0 ? tm : 2_000_000_000,
+        RpcReadRateLimitPerMinute = Positive(c["RPC_READ_RATE_LIMIT_PER_MINUTE"], 30),
     };
+
+    /// <summary>true/false (any case) or 1/0; anything else (unset, empty, a typo) keeps the default.</summary>
+    public static bool Flag(string? v, bool fallback)
+    {
+        if (string.IsNullOrWhiteSpace(v)) return fallback;
+        v = v.Trim();
+        if (bool.TryParse(v, out var b)) return b;
+        return v == "1" ? true : v == "0" ? false : fallback;
+    }
 
     static int Positive(string? v, int fallback) => int.TryParse(v, out var n) && n > 0 ? n : fallback;
 

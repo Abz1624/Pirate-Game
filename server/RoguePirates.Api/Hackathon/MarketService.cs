@@ -25,10 +25,13 @@ public sealed class MarketService
     readonly LedgerService _ledger;
     readonly SolanaService _sol;
     readonly IClock _clock;
+    readonly ApiSettings _settings;
     readonly ILogger<MarketService> _log;
 
-    public MarketService(GameDb db, IslandService islands, LedgerService ledger, SolanaService sol, IClock clock, ILogger<MarketService> log)
+    public MarketService(GameDb db, IslandService islands, LedgerService ledger, SolanaService sol, IClock clock, ApiSettings settings,
+        ILogger<MarketService> log)
     {
+        _settings = settings;
         _db = db;
         _islands = islands;
         _ledger = ledger;
@@ -327,13 +330,25 @@ public sealed class MarketService
             await IslandLocks.Economy.WaitAsync();
             try
             {
-                var island = await _db.Islands.FirstOrDefaultAsync(i => i.Id == islandId);
+                var state = await _islands.TryLoadAsync(islandId);
+                var island = state?.Island;
+                await using var tx = await _db.Database.BeginTransactionAsync();
                 if (island != null && island.OwnerPlayerId != buyer.Id)
                 {
+                    if (!_settings.IslandSaleCarriesRum)
+                    {
+                        // V5 M9h switch ISLAND_SALE_CARRIES_RUM=false (I26.2): RUM value never moves to a SOL buyer. The
+                        // island's store and vault RUM go to the seller and its buildings go back to their start levels.
+                        var kept = KeepRumWithSeller(state!, _clock.UtcNow);
+                        await _db.SaveChangesAsync();
+                        if (kept > 0) await _islands.AddRumAsync(listing.SellerPlayerId, kept);
+                        _log.LogInformation("Island {Island} sold: {Rum} RUM kept by the seller {Seller}, buildings reset", islandId, kept, listing.SellerPlayerId);
+                    }
                     island.OwnerPlayerId = buyer.Id;
                     _log.LogInformation("Island {Island} now belongs to {Buyer} (listing {Id})", islandId, buyer.Id, listing.Id);
                 }
                 await _db.SaveChangesAsync();
+                await tx.CommitAsync();
             }
             finally { IslandLocks.Economy.Release(); }
         }
@@ -370,6 +385,24 @@ public sealed class MarketService
         else listing.Error = Clip(string.Join(" | ", errors), 256);
         await _db.SaveChangesAsync();
         return await ViewAsync(listing);
+    }
+
+    /// <summary>For a sale that does not carry RUM (ISLAND_SALE_CARRIES_RUM=false): accrues the island, empties its store
+    /// and vault and resets every building to its start level. Returns the RUM the seller keeps (the caller credits it).</summary>
+    public static long KeepRumWithSeller(IslandState s, DateTime now)
+    {
+        IslandService.Accrue(s, now);
+        var rum = s.Island.RumStored + s.Island.RumVault;
+        s.Island.RumStored = 0;
+        s.Island.RumVault = 0;
+        s.Island.LastAccrualAt = now;
+        foreach (var b in s.Buildings.Values)
+        {
+            b.Level = IslandRules.StartLevel(b.Kind);
+            b.UpdatedAt = now;
+        }
+        s.Island.Level = IslandRules.IslandLevel(s.Levels);
+        return rum;
     }
 
     // ---------- cancel ----------

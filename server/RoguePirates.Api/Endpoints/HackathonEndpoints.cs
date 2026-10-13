@@ -56,6 +56,21 @@ public static class HackathonEndpoints
                 sol = (double?)(lamports / (double)SolanaService.LamportsPerSol), cluster = sol.Cluster });
         });
 
+        // ---- V5 M9h: the live-API switches as this server runs them (public, read-only; set on Railway) ----
+        app.MapGet("/api/switches", (ApiSettings settings, IConfiguration config) => Results.Ok(new
+        {
+            wagersHumanEnabled = settings.WagersHumanEnabled,
+            raidLootEnabled = settings.RaidLootEnabled,
+            islandSaleCarriesRum = settings.IslandSaleCarriesRum,
+            dailyRaceFixedSalt = settings.DailyRaceFixedSalt,
+            weeklyRewardCheckedOnly = !(bool.TryParse(config["WEEKLY_REWARD_CHECKED_ONLY"], out var co) && !co), // as RewardService reads it
+            weeklyRewardsAuto = !(bool.TryParse(config["WEEKLY_REWARDS_AUTO"], out var au) && !au),
+            botStakes = false,
+            raidStakes = false,
+            mintDailyBudget = settings.MintDailyBudget,
+            sessionLifetimeDays = settings.SessionLifetimeDays,
+        }));
+
         // ---- deposits (generic; wagers, market and raids use the same check) ----
         app.MapPost("/api/deposits/verify", async (HttpContext ctx, DepositVerifyRequest req, PlayerAuth players, LedgerService ledger) =>
         {

@@ -39,12 +39,13 @@ public sealed class IslandTests
         public string Key => Account.PublicKey.Key;
     }
 
-    internal static (ApiHost host, FlakyRpc rpc, Account treasury) NewHost(bool treasuryOn = true)
+    internal static (ApiHost host, FlakyRpc rpc, Account treasury) NewHost(bool treasuryOn = true, Dictionary<string, string?>? extra = null)
     {
         var rpc = new FlakyRpc();
         var treasury = new Account();
         var settings = new Dictionary<string, string?> { ["PUBLIC_API_URL"] = "https://api.test" };
         if (treasuryOn) settings["TREASURY_SECRET_KEY"] = Encoders.Base58.EncodeData(treasury.PrivateKey.KeyBytes);
+        if (extra != null) foreach (var (k, v) in extra) settings[k] = v;
         var host = new ApiHost(settings, s =>
         {
             s.RemoveAll<ISolanaRpc>();
@@ -94,7 +95,7 @@ public sealed class IslandTests
         Assert.Equal(1, await db.Players.Where(p => p.WalletAddress == w.Key).ExecuteUpdateAsync(u => u.SetProperty(p => p.Rum, p => p.Rum + rum)));
     }
 
-    static string Deposit(FakeSolanaRpc rpc, string from, string to, long lamports, string? memo = null)
+    internal static string Deposit(FakeSolanaRpc rpc, string from, string to, long lamports, string? memo = null)
     {
         var sig = HackathonTests.RandomSignature();
         rpc.Transactions[sig] = new ChainTransaction(sig, 100, false, new[] { from }, new[] { new SolTransfer(from, to, lamports) },
@@ -435,14 +436,14 @@ public sealed class IslandTests
 
     // ---- marketplace ----
 
-    static async Task<(Guid islandId, string mint)> MintedIslandAsync(Wallet w, string name = "Tortuga")
+    internal static async Task<(Guid islandId, string mint)> MintedIslandAsync(Wallet w, string name = "Tortuga")
     {
         var island = await ClaimAsync(w, name);
         return (island.GetProperty("islandId").GetGuid(), island.GetProperty("nft").GetProperty("mint").GetString()!);
     }
 
     /// <summary>The seller's NFT transfer into escrow: a transaction they signed, and the treasury now holds the mint.</summary>
-    static string EscrowNft(FakeSolanaRpc rpc, Wallet seller, Account treasury, string mint)
+    internal static string EscrowNft(FakeSolanaRpc rpc, Wallet seller, Account treasury, string mint)
     {
         var sig = HackathonTests.RandomSignature();
         rpc.Transactions[sig] = new ChainTransaction(sig, 100, false, new[] { seller.Key }, Array.Empty<SolTransfer>(), Array.Empty<string>(), null);

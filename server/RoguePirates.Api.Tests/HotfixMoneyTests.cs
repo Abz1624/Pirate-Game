@@ -141,6 +141,7 @@ public sealed class HotfixMoneyTests
         Assert.Equal("purpose_reserved", await ErrorOf(reg));
         var attach = await host.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = tiny });
         Assert.False(attach.IsSuccessStatusCode);
+        Assert.Equal("deposit_refunded", await ErrorOf(attach)); // V5 M9h: recorded and refunded, never attached
 
         // even a deposit row already stored that way (before the hotfix) is re-checked at attach time and refunded
         var old = w.Transfer(host, 1, null);
@@ -150,8 +151,8 @@ public sealed class HotfixMoneyTests
         Assert.Equal("deposit_refunded", await ErrorOf(res));
         var view = await Ok(await host.Http.GetAsync($"/api/wagers/{lobbyId}"));
         Assert.False(view.GetProperty("host").GetProperty("deposited").GetBoolean());
-        var refund = Assert.Single(w.Payouts());
-        Assert.Equal(1, refund.Lamports); // only what was sent comes back
+        Assert.Equal(2, w.Payouts().Count); // the tiny transfer (M9h) and the stored one
+        Assert.All(w.Payouts(), refund => Assert.Equal(1, refund.Lamports)); // only what was sent comes back
     }
 
     [Fact]

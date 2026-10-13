@@ -340,8 +340,10 @@ public sealed class WagerRewardRaceTests
         var listed = await Ok(await w.Host.Anon().GetAsync("/api/lobbies/public"));
         Assert.Equal(Stake, listed.GetProperty("lobbies").EnumerateArray().Single(l => l.GetProperty("lobbyId").GetGuid() == id).GetProperty("stakeLamports").GetInt64());
 
-        Assert.Equal("memo_mismatch", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:other") })));
-        Assert.Equal("amount_too_low", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake - 1, "wager:" + id) })));
+        // V5 M9h: a wrong memo or a short transfer is recorded and refunded (409 deposit_refunded), no longer left in the treasury
+        Assert.Equal("deposit_refunded", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:other") })));
+        Assert.Equal("deposit_refunded", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake - 1, "wager:" + id) })));
+        Assert.Equal(2, w.Payouts().Count(p => p.Reason == WagerService.RefundReason && p.Wallet == host.Key));
         var stranger = await w.SignInAsync();
         Assert.Equal("deposit_refunded", await ErrorOf(await stranger.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(stranger, Stake, "wager:" + id) })));
         Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason && p.Wallet == stranger.Key);
@@ -352,7 +354,7 @@ public sealed class WagerRewardRaceTests
         await Ok(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = sig }));
         // a second, different transfer for an already paid seat is refunded, not kept
         Assert.Equal("deposit_refunded", await ErrorOf(await host.Http.PostAsJsonAsync($"/api/wagers/{id}/deposit", new { signature = w.Transfer(host, Stake, "wager:" + id) })));
-        Assert.Single(w.Payouts(), p => p.Reason == WagerService.RefundReason && p.Wallet == host.Key);
+        Assert.Equal(3, w.Payouts().Count(p => p.Reason == WagerService.RefundReason && p.Wallet == host.Key));
 
         // removing the stake is refused after a deposit; with 0 on a fresh lobby it cancels
         var other = await Ok(await host.Http.PostAsJsonAsync("/api/lobbies", new { stakeLamports = Stake }));

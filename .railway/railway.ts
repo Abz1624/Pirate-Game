@@ -58,6 +58,16 @@ export default defineRailway(() => {
       RUM_RUN_HALF: preserve(),
       RUM_DAY_CAP: preserve(),
       RUM_DAY_HALF: preserve(),
+      // V5 M9h (13 Oct): the live-API switches (all on by the owner's H2 answer; flip one by setting it to false) and the
+      // session and treasury bounds. Unset ones keep their code defaults (server/README.md).
+      WAGERS_HUMAN_ENABLED: preserve(),
+      RAID_LOOT_ENABLED: preserve(),
+      ISLAND_SALE_CARRIES_RUM: preserve(),
+      DAILY_RACE_FIXED_SALT: preserve(),
+      SESSION_LIFETIME_DAYS: preserve(),
+      MINT_DAILY_BUDGET: preserve(),
+      TREASURY_MIN_LAMPORTS: preserve(),
+      RPC_READ_RATE_LIMIT_PER_MINUTE: preserve(),
       // Match server tests (D26) add RP_MATCH_TICKET_SECRET, VOYAGE_SERVER_URL and VOYAGE_MATCH_ID here with preserve()
       // before setting them, and remove them again after the session (M9b's were removed on 11 Oct).
     },

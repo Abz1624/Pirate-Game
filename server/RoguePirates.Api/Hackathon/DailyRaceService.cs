@@ -34,10 +34,13 @@ public sealed class DailyRaceService
     readonly IClock _clock;
     readonly IConfiguration _config;
     readonly PlausibilityService _checks;
+    readonly ApiSettings _settings;
     readonly ILogger<DailyRaceService> _log;
 
-    public DailyRaceService(GameDb db, IClock clock, IConfiguration config, PlausibilityService checks, ILogger<DailyRaceService> log)
+    public DailyRaceService(GameDb db, IClock clock, IConfiguration config, PlausibilityService checks, ApiSettings settings,
+        ILogger<DailyRaceService> log)
     {
+        _settings = settings;
         _db = db;
         _clock = clock;
         _config = config;
@@ -46,7 +49,25 @@ public sealed class DailyRaceService
     }
 
     public int TargetKills => int.TryParse(_config["DAILY_RACE_TARGET_KILLS"], out var k) && k is > 0 and <= 10000 ? k : DefaultTargetKills;
-    string Salt => string.IsNullOrWhiteSpace(_config["DAILY_RACE_SALT"]) ? DefaultSalt : _config["DAILY_RACE_SALT"]!.Trim();
+    string Salt => SaltFor(_config["DAILY_RACE_SALT"], _settings.DailyRaceFixedSalt, _settings.TreasurySecretKey);
+
+    /// <summary>A random salt for this process, used only when the fixed salt is off and no secret is configured.</summary>
+    static readonly string ProcessSalt = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+
+    /// <summary>
+    /// The race salt. DAILY_RACE_SALT when set. Otherwise (V5 M9h switch DAILY_RACE_FIXED_SALT): true (default, kept on
+    /// by the owner) the public default in this file, so anyone can compute future seeds; false a secret derived from
+    /// the treasury key (HMAC, one-way: the key cannot be recovered from it), or a random salt per process without one.
+    /// A day's seed is stored with its race row, so a restart never changes today's seed.
+    /// </summary>
+    public static string SaltFor(string? configured, bool fixedSalt, string? treasurySecret)
+    {
+        if (!string.IsNullOrWhiteSpace(configured)) return configured.Trim();
+        if (fixedSalt) return DefaultSalt;
+        if (!string.IsNullOrWhiteSpace(treasurySecret))
+            return Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(treasurySecret.Trim()), Encoding.UTF8.GetBytes("rp-daily-race-salt-v1")));
+        return ProcessSalt;
+    }
     string Map => RunService.NormalizeMap(_config["DAILY_RACE_MAP"]);
 
     /// <summary>The seed of a date: HMAC-SHA256(salt, "yyyy-MM-dd"), first 4 bytes, positive and non-zero.</summary>

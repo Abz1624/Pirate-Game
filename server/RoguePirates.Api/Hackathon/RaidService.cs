@@ -24,10 +24,13 @@ public sealed class RaidService
     readonly LedgerService _ledger;
     readonly SolanaService _sol;
     readonly IClock _clock;
+    readonly ApiSettings _settings;
     readonly ILogger<RaidService> _log;
 
-    public RaidService(GameDb db, IslandService islands, LedgerService ledger, SolanaService sol, IClock clock, ILogger<RaidService> log)
+    public RaidService(GameDb db, IslandService islands, LedgerService ledger, SolanaService sol, IClock clock, ApiSettings settings,
+        ILogger<RaidService> log)
     {
+        _settings = settings;
         _db = db;
         _islands = islands;
         _ledger = ledger;
@@ -112,7 +115,10 @@ public sealed class RaidService
                     isCustom = customDesign, seed = raid.Seed, timeLimitSeconds = IslandRules.RaidTimeLimitSeconds,
                     windowSeconds = IslandRules.DefenceWindowSeconds, design = DefenceService.DesignView(design, ct, walls),
                 },
-                loot = new { exposedRum = exposed, ifWon = Loot(exposed, false), ifPartial = Loot(exposed, true), lootPercent = IslandRules.RaidLootPercent },
+                // V5 M9h switch RAID_LOOT_ENABLED=false: the raid still wins and shields, but loots nothing
+                loot = _settings.RaidLootEnabled
+                    ? new { exposedRum = exposed, ifWon = Loot(exposed, false), ifPartial = Loot(exposed, true), lootPercent = IslandRules.RaidLootPercent, enabled = true }
+                    : new { exposedRum = exposed, ifWon = 0L, ifPartial = 0L, lootPercent = 0, enabled = false },
                 wager = (object?)null, // raids have no SOL stake (kept in the JSON for older clients)
                 practice = false,
             };
@@ -146,7 +152,7 @@ public sealed class RaidService
                 isCustom = customDesign, seed, timeLimitSeconds = IslandRules.RaidTimeLimitSeconds,
                 windowSeconds = IslandRules.DefenceWindowSeconds, design = DefenceService.DesignView(design, ct, walls),
             },
-            loot = new { exposedRum = 0L, ifWon = 0L, ifPartial = 0L, lootPercent = 0 },
+            loot = new { exposedRum = 0L, ifWon = 0L, ifPartial = 0L, lootPercent = 0, enabled = _settings.RaidLootEnabled },
             wager = (object?)null,
             practice = true,
         };
@@ -226,7 +232,7 @@ public sealed class RaidService
             {
                 var s = await _islands.LoadAsync(raid.IslandId);
                 IslandService.Accrue(s, now);
-                var loot = Math.Min(s.Island.RumStored, Loot(s.Island.RumStored, partial));
+                var loot = _settings.RaidLootEnabled ? Math.Min(s.Island.RumStored, Loot(s.Island.RumStored, partial)) : 0;
                 s.Island.RumStored -= loot;
                 s.Island.ShieldUntil = now + IslandRules.ShieldAfterRaid;
                 raid.RumLooted = loot;

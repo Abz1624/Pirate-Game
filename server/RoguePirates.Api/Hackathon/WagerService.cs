@@ -35,11 +35,13 @@ public sealed class WagerService
     readonly LobbyService _lobbies;
     readonly IClock _clock;
     readonly IConfiguration _config;
+    readonly ApiSettings _settings;
     readonly ILogger<WagerService> _log;
 
     public WagerService(GameDb db, SolanaService sol, LedgerService ledger, LobbyService lobbies, IClock clock,
-        IConfiguration config, ILogger<WagerService> log)
+        IConfiguration config, ApiSettings settings, ILogger<WagerService> log)
     {
+        _settings = settings;
         _db = db;
         _sol = sol;
         _ledger = ledger;
@@ -69,6 +71,10 @@ public sealed class WagerService
     public static bool IsFunded(Wager w, Lobby lobby) =>
         w.HostDepositSig != null && lobby.GuestPlayerId != null && !PracticeBot.Is(lobby.GuestPlayerId)
         && w.GuestDepositSig != null && w.GuestPlayerId == lobby.GuestPlayerId;
+
+    /// <summary>V5 M9h switch WAGERS_HUMAN_ENABLED=false: no new SOL stakes or deposits (open wagers still settle).</summary>
+    public static ApiException WagersOff() => new(409, "wagers_off",
+        "SOL stakes are switched off on this server; play the match without a stake.");
 
     public static ApiException BotStakesOff() => new(409, "bot_stakes_off",
         "Matches against Captain Marrow (the practice bot) are free play: remove the stake (stakeLamports 0) or wait for a human opponent.");
@@ -146,6 +152,7 @@ public sealed class WagerService
     /// <summary>Checks a stake before it is put on a lobby: the host signed in with a wallet, the treasury is on, 0.001..cap SOL.</summary>
     public void ValidateStake(Player host, long stake)
     {
+        if (!_settings.WagersHumanEnabled) throw WagersOff();
         if (host.WalletAddress == null)
             throw new ApiException(400, "wallet_required", "Sign in with a wallet to put a stake on a lobby.");
         if (!_sol.TreasuryOn) throw new ApiException(503, "treasury_off", "The treasury wallet is not configured on this server.");
@@ -187,6 +194,9 @@ public sealed class WagerService
     /// Since 12 Oct (the client signs the deposit as part of creating or joining): a valid transfer is always verified and
     /// recorded first; when the seat or wager is no longer valid (left or not seated, wager closed, match started, stake
     /// already paid) it is refunded once and the call fails with 409 deposit_refunded, so no SOL is ever stranded.
+    /// V5 M9h: the same for a transfer that is too small or carries another memo (before: 400 amount_too_low /
+    /// memo_mismatch and nothing recorded): recorded, refunded once (wager_refund, refId dep:&lt;depositId&gt;) and answered
+    /// with 409 deposit_refunded naming the reason.
     /// </summary>
     public async Task<object> DepositAsync(Player player, Guid lobbyId, string? signature)
     {
@@ -205,8 +215,10 @@ public sealed class WagerService
         }
         finally { GameLocks.Lobby.Release(); }
 
-        // chain check outside the lobby lock
-        var (deposit, _) = await _ledger.VerifyDepositAsync(player, signature, DepositPurpose, w.Id.ToString(), w.StakeLamports, Memo(lobbyId));
+        // chain check outside the lobby lock. V5 M9h: any amount and any memo, so a transfer from the player's wallet to the
+        // treasury that cannot pay the stake (too little, another memo or none) is recorded too and refunded below, once
+        // (it used to fail with amount_too_low / memo_mismatch and leave the SOL in the treasury).
+        var (deposit, _) = await _ledger.VerifyDepositAsync(player, signature, DepositPurpose, w.Id.ToString(), 1, null);
 
         string? refuse = null;
         object? state = null;
@@ -233,6 +245,7 @@ public sealed class WagerService
                 // 13 Oct hotfix: the stored deposit is re-checked against the CURRENT wager under the lock: the stake may have
                 // been raised after it was verified, and a stored deposit is returned without a new chain check
                 refuse ??= DepositProblem(d, w, player, lobbyId);
+                if (refuse == null && !_settings.WagersHumanEnabled) refuse = WagersOff().Message;
                 if (refuse == null && (isHost ? w.HostDepositSig : w.GuestDepositSig) is { } other && other != d.Signature)
                     refuse = "Your stake was already deposited.";
                 if (refuse == null && d.Status != SolanaDeposit.Verified)
