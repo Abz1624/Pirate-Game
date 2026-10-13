@@ -464,11 +464,16 @@ namespace RoguePirates.Hackathon.UI
         {
             var strip = BottomStrip(rt, "Status", 6f, 0f, 6f, StatusHeight);
             Paint(strip, "Header_Wood", 2f, null, new Color(0.32f, 0.2f, 0.1f, 0.95f));
-            var tint = Fill(strip, "Tint", 6f, 4f, 6f, 4f).gameObject.AddComponent<Image>();
+            // A parchment slip in the wood frame with ink text (light text on the wood read poorly on the phone).
+            var paper = Fill(strip, "Paper", 10f, 6f, 10f, 6f);
+            Paint(paper, "Panel_Inset", 1.6f, null, new Color(0.96f, 0.89f, 0.74f, 1f));
+            var tint = Fill(paper, "Tint", 4f, 3f, 4f, 3f).gameObject.AddComponent<Image>();
             tint.raycastTarget = false;
-            _status = Label(Fill(strip, "Text", 24f, 2f, 24f, 2f), string.Empty, 24f, HackUi.Dim, TextAlignmentOptions.MidlineLeft, false, 15f);
+            _status = Label(Fill(paper, "Text", 20f, 2f, 20f, 2f), string.Empty, 25f, Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
             _status.textWrappingMode = TextWrappingModes.Normal;
-            _status.gameObject.AddComponent<HackStatus>().Background = tint;
+            var hs = _status.gameObject.AddComponent<HackStatus>();
+            hs.Background = tint;
+            hs.Parchment = true;
         }
 
         // ================================================================ load, save, close
@@ -552,7 +557,9 @@ namespace RoguePirates.Hackathon.UI
         void Status(string text, Color color)
         {
             _status.text = text;
-            _status.color = color;
+            // The callers pass the on-wood colours; the slip is parchment, so the skin's inks of the same meaning.
+            var skin = HackSkin.I;
+            _status.color = color == HackUi.Bad ? skin.inkBad : color == HackUi.Good ? skin.inkGood : color == HackUi.Gold ? skin.inkGold : Ink;
         }
 
         void RefreshButtons()

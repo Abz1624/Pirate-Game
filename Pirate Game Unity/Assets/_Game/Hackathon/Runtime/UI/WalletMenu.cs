@@ -25,6 +25,8 @@ namespace RoguePirates.Hackathon.UI
         static string DimHex => MarketKit.Hex(MarketKit.InkDim);
         const float Row = 80f;
         const float HeaderHeight = 130f;
+        const float PanelHeight = 870f;
+        const float AddressButtonsWidth = 736f;
 
         OnlineMenuPresenter _online;
         Button _entry;
@@ -37,7 +39,7 @@ namespace RoguePirates.Hackathon.UI
         Button _connect, _test, _refresh, _airdrop, _signIn, _disconnect, _saveEmail, _copy, _explorer, _saveName, _promptSave, _promptSkip;
         RectTransform _prompt;
         TextMeshProUGUI _promptMessage;
-        RectTransform _addressActions;
+        RectTransform _addressActions, _balanceRow, _profileRow;
 
         public bool IsOpen => _panel != null && _panel.gameObject.activeSelf;
         public string EntryLabel => _entry != null ? _entry.GetComponentInChildren<TextMeshProUGUI>(true).text : null;
@@ -100,9 +102,11 @@ namespace RoguePirates.Hackathon.UI
             var go = new GameObject("HackathonWalletPanel", typeof(RectTransform));
             go.transform.SetParent(canvas, false);
             _panel = (RectTransform)go.transform;
-            _panel.anchorMin = new Vector2(0.12f, 0.04f);
-            _panel.anchorMax = new Vector2(0.88f, 0.96f);
-            _panel.offsetMin = _panel.offsetMax = Vector2.zero;
+            // Sized to its content (the card ends under the message line), centred: no empty band at 20:9.
+            _panel.anchorMin = new Vector2(0.12f, 0.5f);
+            _panel.anchorMax = new Vector2(0.88f, 0.5f);
+            _panel.offsetMin = new Vector2(0f, -PanelHeight * 0.5f);
+            _panel.offsetMax = new Vector2(0f, PanelHeight * 0.5f);
             SettingsPanel.DrawOnTop(go, 240);
             MarketKit.Blocker(_panel);
 
@@ -118,19 +122,20 @@ namespace RoguePirates.Hackathon.UI
             MarketKit.Paint(addr, "Panel_Inset", 1.6f);
             _address = MarketKit.Label(MarketKit.Fill(addr, "Address", 26f, 8f, 26f, 8f), string.Empty, 30f, TextColor, TextAlignmentOptions.MidlineLeft, false, 18f);
             _address.textWrappingMode = TextWrappingModes.Normal;
-            _addressActions = MarketKit.Strip(card, "AddressActions", 44f, 180f, 44f, 72f);
+            _addressActions = MarketKit.Strip(card, "AddressActions", 44f, 194f, 44f, 72f);
             MarketKit.Row(_addressActions, 16f);
             _copy = MarketKit.RowButton(_addressActions, "Copy address", "Icon_Copy", CopyAddress, 340f, 72f, "Btn_Parchment", 28f);
             _explorer = MarketKit.RowButton(_addressActions, "View on explorer", "Icon_Link", OpenExplorer, 380f, 72f, "Btn_Parchment", 28f);
 
-            var bal = MarketKit.Strip(card, "Balance", 50f, 262f, 50f, 50f);
+            // Balance and profile beside Copy / View on explorer (they left the right half of the card empty below them).
+            var bal = _balanceRow = MarketKit.Strip(card, "Balance", 44f + AddressButtonsWidth + 40f, 182f, 50f, 46f);
             MarketKit.Icon(MarketKit.TopLeft(bal, "Chest", 0f, 0f, 50f, 50f), "Chest_2");
             _balance = MarketKit.Label(MarketKit.Fill(bal, "Balance", 66f, 0f, 0f, 0f), string.Empty, 32f, Gold, TextAlignmentOptions.MidlineLeft, true, 20f);
-            var prof = MarketKit.Strip(card, "Profile", 50f, 314f, 50f, 46f);
+            var prof = _profileRow = MarketKit.Strip(card, "Profile", 44f + AddressButtonsWidth + 40f, 230f, 50f, 46f);
             MarketKit.Icon(MarketKit.TopLeft(prof, "User", 6f, 4f, 38f, 38f), "Icon_User", Dim);
             _profile = MarketKit.Label(MarketKit.Fill(prof, "Profile", 66f, 0f, 0f, 0f), string.Empty, 28f, Dim, TextAlignmentOptions.MidlineLeft, false, 18f);
 
-            var actions = MarketKit.Strip(card, "Actions", 44f, 370f, 44f, Row);
+            var actions = MarketKit.Strip(card, "Actions", 44f, 300f, 44f, Row);
             var h = MarketKit.Row(actions, 14f);
             h.childForceExpandWidth = true;
             _connect = Flex(MarketKit.RowButton(actions, "Connect Wallet", null, () => Run(S.Connect(false)), 0f, Row, "Btn_Gold", 30f));
@@ -140,25 +145,25 @@ namespace RoguePirates.Hackathon.UI
             _airdrop = Flex(MarketKit.RowButton(actions, "Airdrop 1 SOL", null, () => Run(S.RequestAirdrop(1)), 0f, Row, "Btn_Green", 28f));
             _disconnect = Flex(MarketKit.RowButton(actions, "Disconnect", null, () => { S.Disconnect(); SetMessage("Disconnected.", Dim); }, 0f, Row, "Btn_Red", 28f));
 
-            MarketKit.Line(card, 44f, 466f, 44f);
+            MarketKit.Line(card, 44f, 398f, 44f);
 
             // Captain name (the name other players see; the server's name rules).
-            Caption(card, 480f, "Captain name", "3 to 16 letters, digits, spaces, _ or -");
-            var nameRow = MarketKit.Strip(card, "Name", 44f, 524f, 44f, Row);
+            Caption(card, 412f, "Captain name", "3 to 16 letters, digits, spaces, _ or -");
+            var nameRow = MarketKit.Strip(card, "Name", 44f, 456f, 44f, Row);
             MarketKit.Row(nameRow, 14f);
             _name = MarketKit.Input(MarketKit.Cell(nameRow, "NameInput", 0f, Row), "Your captain name", 16);
             _name.onSubmit.AddListener(_ => SaveName());
             _saveName = MarketKit.RowButton(nameRow, "Save name", "Icon_Save", SaveName, 280f, Row, "Btn_Gold", 30f);
 
-            Caption(card, 616f, "Email", "optional, for match news");
-            var email = MarketKit.Strip(card, "Email", 44f, 660f, 44f, Row);
+            Caption(card, 548f, "Email", "optional, for match news");
+            var email = MarketKit.Strip(card, "Email", 44f, 592f, 44f, Row);
             MarketKit.Row(email, 14f);
             _email = MarketKit.Input(MarketKit.Cell(email, "EmailInput", 0f, Row), "you@example.com", 254);
             _email.contentType = TMP_InputField.ContentType.EmailAddress;
             _email.onSubmit.AddListener(_ => SaveEmail());
             _saveEmail = MarketKit.RowButton(email, "Save email", "Icon_Save", SaveEmail, 280f, Row, "Btn_Gold", 30f);
 
-            var msg = MarketKit.Fill(card, "Message", 44f, 30f, 44f, 756f);
+            var msg = MarketKit.Fill(card, "Message", 44f, 20f, 44f, 686f);
             _message = MarketKit.Label(MarketKit.Fill(msg, "Message", 6f, 0f, 6f, 0f), string.Empty, 27f, Dim, TextAlignmentOptions.TopLeft, false, 18f);
             _message.textWrappingMode = TextWrappingModes.Normal;
 
@@ -363,6 +368,10 @@ namespace RoguePirates.Hackathon.UI
                 : "<size=24><color=" + DimHex + ">Wallet address</color></size>" + (connected ? (S.Kind == Web3Session.WalletKind.TestWallet ? "   <size=24><color=" + DimHex + ">test wallet</color></size>" : string.Empty)
                     : "   <size=24><color=" + DimHex + ">session kept, reconnect to sign</color></size>") + "\n" + address;
             _addressActions.gameObject.SetActive(!string.IsNullOrEmpty(address));
+            // No address: the profile line (the connect hint) takes the whole row the buttons leave.
+            var side = string.IsNullOrEmpty(address) ? 50f : 44f + AddressButtonsWidth + 40f;
+            _balanceRow.offsetMin = new Vector2(side, _balanceRow.offsetMin.y);
+            _profileRow.offsetMin = new Vector2(side, _profileRow.offsetMin.y);
             _balance.text = string.IsNullOrEmpty(address) ? string.Empty : "Balance  " + Web3Rules.FormatSol(S.Balance) + "  (devnet)";
             var p = S.Profile;
             _profile.text = p != null

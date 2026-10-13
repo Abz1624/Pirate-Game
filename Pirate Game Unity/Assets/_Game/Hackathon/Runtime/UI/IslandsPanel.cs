@@ -33,6 +33,8 @@ namespace RoguePirates.Hackathon.UI
         const float BodyTop = 202f;
 
         RectTransform _map, _markers, _list, _rumPill;
+        readonly List<(RectTransform rt, float x, float y, float width)> _regions = new List<(RectTransform, float, float, float)>();
+        readonly List<Rect> _markerBoxes = new List<Rect>();
         ScrollRect _scroll;
         TextMeshProUGUI _rum, _status, _shield;
         Image _statusBg, _statusIcon;
@@ -64,7 +66,7 @@ namespace RoguePirates.Hackathon.UI
         public static IslandsPanel Create(Transform canvas)
         {
             var rt = HackUi.Panel(canvas, "HackathonIslands", new Vector2(0.015f, 0.02f), new Vector2(0.985f, 0.98f), 227);
-            rt.GetComponent<Image>().color = new Color(0.02f, 0.06f, 0.1f, 0.92f); // the menu's own labels must not read through the gaps
+            rt.GetComponent<Image>().color = new Color(0.02f, 0.06f, 0.1f, 1f); // opaque: the menu's profile chip read through the header gap even at 0.92
             var panel = rt.gameObject.AddComponent<IslandsPanel>();
             panel.Build(rt);
             return panel;
@@ -148,7 +150,7 @@ namespace RoguePirates.Hackathon.UI
 
         // ---------------------------------------------------------------- map art
 
-        static void DrawSea(RectTransform map)
+        void DrawSea(RectTransform map)
         {
             // Grid lines (a chart look).
             for (var i = 1; i < 10; i++)
@@ -184,7 +186,7 @@ namespace RoguePirates.Hackathon.UI
             img.raycastTarget = false;
         }
 
-        static void Region(RectTransform map, string name, float x, float y)
+        void Region(RectTransform map, string name, float x, float y)
         {
             var t = K.Label(K.Node(map, name), name.ToUpperInvariant(), 24f, new Color(0.85f, 0.93f, 1f, 0.3f), TextAlignmentOptions.Center, true);
             var rt = t.rectTransform;
@@ -192,6 +194,41 @@ namespace RoguePirates.Hackathon.UI
             rt.anchorMax = new Vector2(x + 0.2f, y + 0.03f);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             t.characterSpacing = 4f;
+            // Width of the faint caps text in map pixels (24 px caps plus the letter spacing), for the overlap check.
+            _regions.Add((rt, x, y, name.Length * 19f + 16f));
+        }
+
+        static readonly Vector2[] RegionNudges =
+        {
+            new Vector2(0f, 0f), new Vector2(0.09f, 0f), new Vector2(-0.09f, 0f), new Vector2(0f, -0.045f), new Vector2(0f, 0.045f),
+            new Vector2(0.17f, 0f), new Vector2(-0.17f, 0f), new Vector2(0.09f, -0.045f), new Vector2(-0.09f, -0.045f),
+            new Vector2(0.09f, 0.045f), new Vector2(-0.09f, 0.045f),
+        };
+
+        /// <summary>Moves each faint region name to a nearby spot clear of the island markers and their names; hides it when none is clear.</summary>
+        void PlaceRegions()
+        {
+            var size = _map.rect.size;
+            if (size.x < 10f || size.y < 10f) size = new Vector2(1170f, 770f);
+            foreach (var (rt, x, y, width) in _regions)
+            {
+                var half = new Vector2(Mathf.Min(width, size.x * 0.4f) * 0.5f, 18f);
+                var placed = false;
+                foreach (var n in RegionNudges)
+                {
+                    var c = new Vector2(Mathf.Clamp(x + n.x, half.x / size.x, 1f - half.x / size.x), Mathf.Clamp(y + n.y, 0.035f, 0.965f));
+                    var box = new Rect(c.x * size.x - half.x, c.y * size.y - half.y, half.x * 2f, half.y * 2f);
+                    var hit = false;
+                    foreach (var m in _markerBoxes) if (m.Overlaps(box)) { hit = true; break; }
+                    if (hit) continue;
+                    rt.anchorMin = new Vector2(c.x - 0.2f, c.y - 0.03f);
+                    rt.anchorMax = new Vector2(c.x + 0.2f, c.y + 0.03f);
+                    rt.offsetMin = rt.offsetMax = Vector2.zero;
+                    placed = true;
+                    break;
+                }
+                rt.gameObject.SetActive(placed);
+            }
         }
 
         static readonly (IslandRules.Marker kind, string label, string dot, Color color)[] LegendItems =
@@ -241,7 +278,10 @@ namespace RoguePirates.Hackathon.UI
         {
             for (var i = _markers.childCount - 1; i >= 0; i--) Destroy(_markers.GetChild(i).gameObject);
             MarkerCount = 0;
-            if (_world?.slots == null) return;
+            _markerBoxes.Clear();
+            if (_world?.slots == null) { PlaceRegions(); return; }
+            var mapSize = _map.rect.size;
+            if (mapSize.x < 10f || mapSize.y < 10f) mapSize = new Vector2(1170f, 770f);
             var byId = new Dictionary<string, IslandView>();
             if (_world.islands != null)
                 foreach (var i in _world.islands)
@@ -292,8 +332,15 @@ namespace RoguePirates.Hackathon.UI
                 trt.anchoredPosition = new Vector2(0f, -2f);
                 t.outlineWidth = 0.18f;
                 t.outlineColor = new Color32(0, 25, 50, 220);
+                // The dot plus its name below it, in map pixels (name width estimated from its length).
+                var px = new Vector2(ax * mapSize.x, ay * mapSize.y);
+                var nameHalf = Mathf.Min(120f, label.Length * (island != null ? 6.5f : 5.2f) + 6f);
+                var dotHalf = size * 0.5f + 4f;
+                _markerBoxes.Add(new Rect(px.x - dotHalf, px.y - dotHalf, dotHalf * 2f, dotHalf * 2f));
+                _markerBoxes.Add(new Rect(px.x - nameHalf, px.y - size * 0.56f - 34f, nameHalf * 2f, 34f));
                 MarkerCount++;
             }
+            PlaceRegions();
         }
 
         // ---------------------------------------------------------------- open / refresh

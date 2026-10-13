@@ -428,6 +428,25 @@ namespace RoguePirates.Hackathon.UI
             _status.gameObject.SetActive(false);
         }
 
+        /// <summary>The lobby card is as tall as its shown rows (code, wager, status, banner): no empty band above the
+        /// actions. Seats end at 390 and the middle stack starts at 402; actions and the message take the bottom 178.</summary>
+        void FitLobby()
+        {
+            if (_codeSection == null) return;
+            var stack = 0f;
+            var rows = 0;
+            foreach (var row in new[] { _codeSection, _strip, _status, _banner })
+            {
+                if (row == null || !row.gameObject.activeSelf) continue;
+                var le = row.GetComponent<LayoutElement>();
+                stack += le != null && le.preferredHeight > 0f ? le.preferredHeight : row.rect.height;
+                rows++;
+            }
+            if (rows > 1) stack += (rows - 1) * 8f;
+            var height = Mathf.Clamp(402f + stack + 24f + 178f, 720f, PanelSize.y);
+            if (!Mathf.Approximately(_lobby.sizeDelta.y, height)) _lobby.sizeDelta = new Vector2(PanelSize.x, height);
+        }
+
         static SeatRow Seat(RectTransform rt)
         {
             var s = new SeatRow { Root = rt };
@@ -540,7 +559,7 @@ namespace RoguePirates.Hackathon.UI
             // V4 writes its own messages without a colour: ink for those.
             if (_hubMessage != null && _hubMessage.text != _hubSet) { _hubMessage.color = Ink; _hubSet = _hubMessage.text; }
             if (_lobbyMessage != null && _lobbyMessage.text != _lobbySet) { _lobbyMessage.color = Ink; _lobbySet = _lobbyMessage.text; }
-            if (lobbyOpen) MirrorActions();
+            if (lobbyOpen) { MirrorActions(); FitLobby(); }
             if (!lobbyOpen && !hubOpen) return;
             if (Time.unscaledTime < _nextPoll) return;
             _nextPoll = Time.unscaledTime + 3f;
