@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 17 (13 Oct): the hackathon interlude folded in; M9h and M9i (hackathon carry-over) next, then M9c resumes at S1b; web3 phases re-scoped to harden the hackathon code; questions H1-H14. rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 18 (13 Oct): the deep review's fixes landed (server money hotfix, client money path, gameplay); everything the hackathon switched off is back (H8, H9 answered: D30) and M5c's content was done early; weapon visual prefabs; run checks v9; clean full suites at `e851dcd3`; M9h and M9i continue with what is left. rev 17 (13 Oct): the hackathon interlude folded in; M9h and M9i (hackathon carry-over) next, then M9c resumes at S1b; web3 phases re-scoped to harden the hackathon code; questions H1-H14. rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -59,6 +59,17 @@ pending fixes and art); the
 paused new content moves to **M5c** after M9c; M10, M10b, M11, M13, M14-M18, M24, M26, M26b and M28 now build on and
 harden the hackathon code instead of starting fresh (each phase says what exists). `DemoMode` gained the art-team
 slots; retiring it stays a later task.
+
+**After the hackathon (13 Oct, rev 18).** A deep review (server and web3 funds with devnet treated as real money, the
+Unity hackathon client, gameplay) and its fixes: the server money hotfix (`66ba84ed`, `76a3f47a`, `646f9884`,
+`b281478a`), the client money path (`ff1f033a`, `b1dfd60f`, `a6f9d447`) and gameplay and content fixes (`2182f198`,
+`abb6ab02`), listed under M9h and M9i. The owner brought back everything the hackathon switched off (D30): the four
+weapons, the Cursed Chest Key, and the four designed items and the Chaos Logbook, so **M5c's content was done now,
+ahead of M9c** (`abb6ab02`). Weapons and their VFX became editable per-weapon prefabs (`86f31c46`, `392e15c3`,
+`plan/hackathon/WEAPON-PREFABS.md`); the art still pending is listed for the art team in
+`plan/hackathon/ART-PENDING.md`. Goldens and the M9c fingerprints were re-frozen for the new content (`4d0461d6`) and
+run checks v9 deployed for config `f88859f9` (`0081d65f`). Clean full run at `e851dcd3`: EditMode 835/835, PlayMode
+132/134 (2 probe skips), server 227/229 (2 devnet skips) (`plan/hackathon/review/tests-2026-10-13.md`).
 
 V5 turns the finished V4 voyage into a live game: a balanced voyage, a menu with a shop, the rest of the content, mobile
 controls, verified accounts with custodial Solana devnet wallets, a player island with defenses, async raids and races,
@@ -156,6 +167,7 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D27 | **Owner answer of 9 Oct (art guide)**: the Iron Figurehead, the Ramming Prow's evolution item kept for Black Tide in D21, is replaced by the **Cuttlefish Bone**, an ink-themed Uncommon item with the same +9% damage that evolves the Squid Ink Pots into Black Tide at weapon level 5. Same asset (GUID kept), new id `cuttlefish_bone`; it had no icon and was never sold, so no save or art is affected. The art guide carries its brief and icon prompt. (C) |
 | D28 | **Owner answers of 10 Oct (M9b re-test)**: the leash moves relocated enemies just outside the camera's view (about 31 m ahead instead of 26 m), as a config value, in normal play and online, so they never pop in on screen; extended 10 Oct: each enemy is placed just outside the view along its own direction from the ship (a configured margin past the view edge). (C) |
 | D29 | **Hackathon demo choices (owner, 12-13 Oct; demo scope, `plan/hackathon/PLAN.md`)**: web3 accounts sign in with their own wallet (SIWS; wallet address as the profile key, email optional) through the MagicBlock Solana Unity SDK; devnet SOL only; SOL is wagered only in 1v1 (the house matches the stake against Captain Marrow) and raids cost only the 25 RUM fee; the AI captain is the PvP bot with a name (1v1 opponent, island defender); Island NFTs with a server-escrow market; on 13 Oct: enemy damage x2, the chained-mace Anchor Flail at the starters' level-1 DPS, the storm edge warning instead of walls, the Signal Buoy off, flamethrower, lighthouse lantern, squid ink pots and siren bell off (`UnlockConfig.disabledWeaponIds`), the Ledger and voyage download buttons hidden, the parchment UI kit. These hold for the current build. Where they conflict with D4, D6, D7, D8 (house-matched stakes and treasury-paid prizes are not player-vs-player wagers and need D8's legal review before any mainnet), M24 or M26 the earlier decision stands until the owner answers H1-H14 (section 9); M9h switches off the value flows the owner chooses in H2. (C for the demo; V5 status pending H1-H14) |
+| D30 | **Owner answers of 13 Oct (after the hackathon; H8, H9)**: everything skipped for the hackathon comes back now: the flamethrower, lighthouse lantern, squid ink pots and siren bell in every pool (`UnlockConfig.disabledWeaponIds` empty), the Cursed Chest Key in the chests, and the four designed items (`devils_match`, `hammerhead_helm`, `queen_annes_fuse`, `storm_in_a_bottle`) and the Chaos Logbook (H8; M5c's content done ahead of M9c, `2182f198`, `abb6ab02`); Captain Ember keeps the flamethrower as her starter (H9, moot now that it is back). Weapons and their VFX are editable per-weapon prefabs (`plan/hackathon/WEAPON-PREFABS.md`); the art still to make is the art team's list (`plan/hackathon/ART-PENDING.md`). This replaces D29's weapon, chest key and Signal Buoy pool switches except the Signal Buoy, which stays off as config (`StageContentConfig.disabledPoiTypes`). (C) |
 
 ---
 
@@ -733,6 +745,40 @@ Unity hackathon client, gameplay, simulator and content, a full test-suite run w
   assembly (done in rev 17); the GDD Decision log gets D29; drop the superseded stash "ui-redesign WIP" and fast-forward
   `main` when the owner says.
 
+**Status (rev 18, 13 Oct).** Done:
+- T9h.1: clean full run at `e851dcd3`: EditMode 835/835, PlayMode 132/134 (2 probe skips), server 227/229 (2 devnet
+  skips); the first run's failures (stale rules, two owner-changed tests, `ArtMotion` frame time, heavy models without
+  mesh LODs, the headless minimap crash, a flaky hotfix test) fixed in `009bdca5`, `b281478a`, `0081d65f`; goldens and
+  the M9c fingerprints re-frozen at `4d0461d6` (`plan/hackathon/review/tests-2026-10-13.md`).
+- I9h.1, the deep review's blockers (server and web3 funds, devnet treated as real money): reserved deposit purposes
+  (`400 purpose_reserved`) and the stored deposit re-checked at wager attach and market buy (a short or reused deposit is
+  refunded, never attached; deposits with a refund decided stay `refunding`); payouts recorded first with a unique index
+  on (reason, ref id) over live rows, the signature saved before the send, only a preflight rejection marked failed and a
+  reconciler resolving `unconfirmed` payouts by signature; bot matches unstaked (`409 bot_stakes_off`, legacy house
+  wagers refunded); market refunds for refused payments and overpayments; weekly SOL paid once per (week, map, rank),
+  only after the week ends and only for checked runs (`WEEKLY_REWARD_CHECKED_ONLY=true`); voyage RUM soft caps (40 per
+  run, 150 per day, D4's flatten-and-cap); admin payouts need an idempotency key and are capped; raw RPC errors hidden;
+  a mainnet guard (`ALLOW_MAINNET`); the Railway IaC preserves every API variable (`66ba84ed`, `76a3f47a`, `646f9884`,
+  `b281478a`). Client money path: transfers signed first and the signature persisted before sending (pending transfers
+  survive an app kill), retryable vs final server answers, wallet timeouts and cancel (`b1dfd60f`); raids and races end
+  through the run's end path and the raid schedule is taken once per run (`ff1f033a`); defence designer load tokens and
+  the 1v1 pause menu Leave (`a6f9d447`).
+- C9h.1 partly: weekly prizes for checked runs only (the hourly job stays on but pays only ended weeks); staked 1v1
+  against Captain Marrow off. C9h.3 partly: `server/README.md` updated for the hotfix.
+
+Remaining in M9h:
+- C9h.1: SOL stakes between humans still settle on the relay's client-reported sinking; raid loot still from a
+  client-reported conquest; island sales still carry RUM-bought levels and the store and vault RUM to the SOL buyer
+  (owner question R1 on the island-value rule); `DAILY_RACE_SALT` still the fixed default. H2 is still the owner's call
+  for these.
+- C9h.2: one island claim per wallet ever, a daily mint budget, a treasury float with a top-up rule and a low-balance
+  alarm; the payouts and mints since 12 Oct listed, including the pre-hotfix `unconfirmed` payouts checked by hand on the
+  explorer.
+- The review's open money findings: wager deposits refused as `amount_too_low` or `memo_mismatch` are not refunded; an
+  island NFT mint retry can mint twice; sessions never expire; one hot key for every treasury role (until M11, D7).
+- C9h.3: the "ui-redesign WIP" stash and fast-forwarding `main` (owner); the GDD Decision log gets D29 and D30.
+- The automated check and the owner check below.
+
 Automated check: suites green (or retired with reasons); each switch read back from the live API (`/api/rewards/weekly`,
 lobby and wager JSON, raid start, market, race); a scripted claim, mint and sell refused on the second claim.
 Owner check: read the report (switch states, payouts and mints since 12 Oct, treasury float); one voyage and one unstaked
@@ -740,7 +786,7 @@ Owner check: read the report (switch states, payouts and mints since 12 Oct, tre
 
 #### M9i — Hackathon carry-over 2: run checks, fixes and art
 
-(Added in rev 17. After M9h, and after the owner answers H8, H9 and H10, since switching weapons back on, Ember's start
+(Added in rev 17. After M9h, and after the owner answers H8, H9 (answered 13 Oct, D30) and H10, since switching weapons back on, Ember's start
 and enemy damage x2 change the config hash the run checks are generated for. Commit `V5 M9i: hackathon fixes and art`.)
 
 Goal: the hackathon's loose ends are closed and the run checks match the config the game ships, so M9c resumes on a
@@ -760,6 +806,34 @@ known-good base.
   ready, G9i.2 moves to M5c rather than holding the phase.
 - T9i.x Tests for every fix; at the end, goldens and the M9c fingerprints re-frozen with only the expected lines moving,
   so M9c S1b starts from them.
+
+**Status (rev 18, 13 Oct).** H8 and H9 answered (D30); H10 (enemy damage x2) still open. Done:
+- I9i.2: the four weapons back in every pool and Ember starts with her flamethrower (`2182f198`); Big Game Hunter
+  already counted bosses and minibosses, now named "Elite & Boss Damage" and counting the rival captain in 1v1
+  (`abb6ab02`).
+- I9i.1 partly (gameplay review): chained mace hits per throw, prewarm, recycling and a return timeout; the bot's arsenal
+  leaves out the mace; the Signal Buoy off as config (`StageContentConfig.disabledPoiTypes`); tests no longer weakened
+  (`abb6ab02`); heavy art models get mesh LODs, `ArtMotion` moved to Presentation, the minimap snapshot skipped without
+  a graphics device (`009bdca5`).
+- G9i.1: run checks v9 for config `f88859f9` (the content back, the four items and Chaos): re-export, rules regenerated,
+  the v8 config and the 12 Oct builds kept in the merged bounds, 0.03% false positives (budget 0.1%), deployed
+  (`0081d65f`). The simulator is still tuned at enemy damage x1 (re-fit if H10 keeps x2).
+- G9i.2 partly: weapons and their VFX as per-weapon prefabs with a catalog (`86f31c46`, `392e15c3`,
+  `plan/hackathon/WEAPON-PREFABS.md`), the parked VFX prefab task folded in; Tidal Aura, the Maelstrom whirlpool and the
+  Mortar shell wired; the art still to make is in `plan/hackathon/ART-PENDING.md` (page
+  https://claude.ai/artifact/FxC5XjXzQ1nArDTAXtQ3cZ).
+- T9i.x: goldens and the M9c fingerprints re-frozen with only the expected lines moving (`4d0461d6`).
+
+Remaining in M9i:
+- The review's other findings: client-reported PvP hull, raid results and race times (server authority: M13b, M15,
+  M17, M22); NFT vs database ownership (M26); GET rate limits; one shared UI kit (7 copies today, loaded by reflection);
+  bot maces not drawn in PvP; MWA wallets that only offer `sign_and_send` unsupported.
+- Device checks: deposit, buy, list, cancel and an app kill mid-transfer on desktop WebGL and Android MWA; shop taps on
+  a phone; the pause menu, level-up cards and storm edge warning on a device (D9); menu side buttons at least 48 px.
+- The 13 Oct hackathon builds answer `outdated_client` under v9; the next build fixes it.
+- H10 (enemy damage x2) and, if kept, the simulator re-fit; the owner's weapon art and icon mapping; the art team's
+  issues (`ART-PENDING.md`).
+- The automated check (a desktop WebGL build) and the owner playtest below.
 
 Automated check: suites green; run checks pass the owner's voyages on the new config; a scenario per fixed item; a
 desktop WebGL build.
@@ -809,7 +883,11 @@ usage checked against the month's baseline before every Railway test; the worksp
 #### M5c — Parked content: four items and the Chaos Logbook
 
 (Added in rev 17. After M9c, because new content changes the config hash and with it M9c's frozen fingerprints and the
-run-check rules.)
+run-check rules.) **Rev 18: the content was done early, on 13 Oct, at the owner's call (D30)**: the four items and the
+Chaos Logbook in `abb6ab02` (designs from `plan/hackathon/art-guide.md`, 15 tests in `V5DesignedItemsTests`), in the
+chests, the Logbook pool, the RUM shop, PvP drafts and the bot; icons wired; run checks v9 and the fingerprints
+re-frozen for them before M9c S1b. Left: the balance pass against the M2 model and the simulator (G5c.1's model part,
+with H10), and the owner playtest; the gate (reviewer, playtest) runs with M9i's.
 
 Goal: the content paused in the hackathon joins the game, balanced against the model, with art.
 
@@ -1380,8 +1458,10 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 | N7 | Phone in M9: one reference-phone run in the go criteria, or leave the phone to M13b? | Answered 8 Oct: Leave to M13b (D22) |
 | N8 | Spend: about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project? | Answered 8 Oct: Approve ($10 limit) (D22); changed 8 Oct: $15 workspace limit, $10 alert (D23) |
 | Q-A, Q-B, Q-C | Plan rev 11 review: spend limit on the whole workspace; reject at once or shadow mode first; one M9 or a split? | Answered 8 Oct: $15 hard limit and $10 alert on the workspace; shadow mode first, the owner enforces later; split into M9a, M9b, M9c (D23) |
+| H8 | The four weapons switched off for the hackathon (flamethrower, lighthouse lantern, squid ink pots, siren bell): when do they come back? | Answered 13 Oct: now, with everything else skipped (the Cursed Chest Key, the four designed items and the Chaos Logbook) (D30) |
+| H9 | Captain Ember starts with the flamethrower, which was switched off. | Answered 13 Oct: Ember keeps the flamethrower (back in the pools anyway) (D30) |
 
-Hackathon questions (13 Oct, rev 17; the suggested option first). The 11 Oct questions in `plan/v5/OPEN-QUESTIONS.md`
+Hackathon questions (13 Oct, rev 17; the suggested option first; H8 and H9 answered in rev 18, above). The 11 Oct questions in `plan/v5/OPEN-QUESTIONS.md`
 (M9b close, M9c design M9c-1 to M9c-12) are still open too.
 
 | # | Question | Options (suggested first) |
@@ -1393,10 +1473,17 @@ Hackathon questions (13 Oct, rev 17; the suggested option first). The 11 Oct que
 | H5 | Islands: keep the hackathon model (24 world-map slots, four buildings, 15 one-minute defence windows, sink the guardian boss to win) as the base for M14-M15 instead of the plan's home-seed sections, 0:00-5:00 schedule and Treasury Beacon? | Keep it and add sockets, structures and decorations on top / go back to the plan's design |
 | H6 | D4 and islands: a free-claimed island upgraded with RUM is an NFT sold for SOL with its buildings and its store and vault RUM; islands brew RUM capped per store but not per day; voyage RUM is linear (`kills/10`) and was credited from client-reported runs; the NFTs can also trade outside the game, where the game's records do not follow. | On a sale the RUM stays with the seller and RUM-bought levels reset (I26.2); a daily cap on brewed RUM in M14; voyage RUM flattened and capped and hackathon RUM made legacy RUM in M10; outside trades handled by M26's sync / keep as built on devnet |
 | H7 | The daily race (fastest to 100 kills, many attempts) vs M17's one-attempt island race. | Keep both: the daily race as a daily mode, M17 as planned / the daily race replaces M17 |
-| H8 | (needed before M9i) The four weapons switched off (flamethrower, lighthouse lantern, squid ink pots, siren bell): when do they come back? | Each when its art and VFX land (M9i art mapping); the flamethrower with your new flame effect (D21 Q26) / stay off for now |
-| H9 | (needed before M9i) Captain Ember starts with the flamethrower (and her ability needs it), which is switched off. | Ember keeps the flamethrower as her own starter even while it is out of the pools / give her another starter / hide Ember until it returns |
 | H10 | (needed before M9i) Enemy damage x2 (since 12 Oct): keep it? The M2 balance model and the simulator were tuned at x1. | Keep it and re-fit the simulator and run checks in M9i / back to x1 |
 | H11 | The parchment UI kit (`MenuKit`, `HackSkin`): the standard for every V5 screen? | Yes, with D9's touch rules / only the hackathon screens |
 | H12 | Renames: Admiral -> Big Game Hunter, Extra Hands -> Echo Arsenal, Cuttlefish Bone (D27) -> Kraken Ink Sack (ids unchanged). | Keep the new names; D27's art brief follows / restore the old names |
 | H13 | Other demo switches: storm edge warning instead of walls, Signal Buoy off, Ledger (shop) button hidden, voyage download buttons hidden. | Keep the storm warning; Signal Buoy off until reworked; the Ledger returns when locks return (D18 P3); downloads only in playtest builds / restore all |
 | H14 | The `RoguePirates.Hackathon` assembly: keep it, and move its parts into the planned V5 assemblies (Meta, Chain, Presentation.Meta) as each phase touches them? | Yes, piece by piece / move it all now / keep it as is |
+
+Review questions (13 Oct, rev 18, from the deep review of the hackathon; the suggested option first).
+
+| # | Question | Options (suggested first) |
+|---|---|---|
+| R1 | Island value on a SOL sale: today the buyer gets the RUM-bought building levels and the store and vault RUM, which moves RUM value into SOL (D4). | The RUM stays with the seller and RUM-bought levels reset on a sale (I26.2), switched in M9h / sell with RUM-bought levels but keep the RUM with the seller / keep as built on devnet |
+| R2 | NFT vs database ownership, and royalties: the game's records do not follow an Island NFT traded outside the game; the NFTs carry 0% royalties. | The database follows the chain (ownership sync in M26) and 5% royalties with Metaplex Core (M26) / the database stays the owner record and outside trades are not honoured / keep as built |
+| R3 | Legal review of wagers, house-matched stakes and treasury-paid prizes (D8). | Before any mainnet or real-value prize, per launch region; devnet only until then / now, before more web3 work |
+| R4 | A server-side treasury scan as a safety net: compare the treasury's on-chain transfers with the database (deposits, payouts, mints) and alert on anything unrecorded. | Yes, a scheduled scan with an alert in M9h's treasury bounds / later, in M28 / no |

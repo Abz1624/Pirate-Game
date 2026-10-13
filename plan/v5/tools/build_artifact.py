@@ -231,7 +231,7 @@ def build(out_path):
         decs += f'<article class="dec"><header><span class="id">{did}</span><h4>{inline(title)}</h4>{chip}</header><p>{inline(rest)}</p></article>'
 
     # questions
-    q_rows = [r for k, v in blocks(secs["9"][1]) if k == "table" for r in v][1:]
+    q_rows = [r for k, v in blocks(secs["9"][1]) if k == "table" for r in v if r[0].strip() != "#"]
     qs = '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Question</th><th>Options (suggested first)</th></tr></thead><tbody>'
     for qid, q, opts in q_rows:
         parts = [o.strip() for o in opts.split(" · ")]

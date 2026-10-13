@@ -1,20 +1,47 @@
-# Your TODOs — V5 (updated 13 Oct)
+# Your TODOs — V5 (updated 13 Oct, plan rev 18)
+
+# Now (13 Oct, evening): review fixes landed, content back, suites clean (plan rev 18)
+
+- [x] H8 and H9 answered (D30): the four weapons, the Cursed Chest Key, the four designed items and the Chaos Logbook
+      are back; Ember keeps the flamethrower. Done in `2182f198` and `abb6ab02` (M5c content done early).
+- [x] Deep review of the hackathon: blockers fixed (server money hotfix, client money path, gameplay); clean full run at
+      `e851dcd3`: EditMode 835/835, PlayMode 132/134, server 227/229 (`plan/hackathon/review/tests-2026-10-13.md`).
+- [ ] **Answer H2 for what is still live**: SOL stakes between humans (client-reported sinking), raid loot from
+      client-reported raids, island sales carrying RUM-bought levels and RUM to the SOL buyer, the fixed daily race salt,
+      free claims (one per wallet ever and a daily mint budget?). Bot stakes are already off and weekly SOL pays only
+      checked runs.
+- [ ] **Answer H10**: keep enemy damage x2 (then the simulator is re-fitted) or back to x1?
+- [ ] **Answer the review questions** (plan section 9, R1-R4): R1 island value for SOL vs the RUM rule (D4); R2 NFT vs
+      database ownership and royalties; R3 legal review of wagers, house stakes and treasury prizes; R4 a server treasury
+      scan as a safety net.
+- [ ] **Answer the other open questions**: H1, H3-H7, H11-H14 (plan section 9) and the 11 Oct ones in
+      `plan/v5/OPEN-QUESTIONS.md`.
+- [ ] **Check the pre-hotfix `unconfirmed` payouts** on the devnet explorer by hand (payouts sent before the hotfix
+      have no saved signature to reconcile).
+- [ ] **Back up the Railway database** (Postgres) before the next migration.
+- [ ] **Device checks**: deposit, buy, list, cancel and an app kill mid-transfer on desktop WebGL and on Android (MWA);
+      shop taps on a phone; the pause menu, level-up cards and storm edge warning on a device. Note: the 13 Oct hackathon
+      builds answer `outdated_client` under run checks v9; use the next build.
+- [ ] Close the stray Unity instance (pid 18388) if it is still running.
+- [ ] Art: the pending list for the art team is `plan/hackathon/ART-PENDING.md` (page
+      https://claude.ai/artifact/FxC5XjXzQ1nArDTAXtQ3cZ); weapon visuals are now editable prefabs
+      (`plan/hackathon/WEAPON-PREFABS.md`).
 
 # Now (13 Oct): hackathon folded into V5 (plan rev 17)
 
 - [x] Hackathon demo (12-13 Oct): submitted; APK and desktop WebGL in `plan/hackathon/BUILDS.md`; merged into
       `v5-live-game` at `a5a8be02`. Retro and inventory: `plan/hackathon/RETRO.md`.
-- [ ] **Answer H2 first** (plan section 9): which live devnet value flows to switch off in M9h (weekly SOL auto-payout on
+- [x] (Partly, see above: bot stakes off and weekly SOL for checked runs only, by the review hotfix.) **Answer H2 first** (plan section 9): which live devnet value flows to switch off in M9h (weekly SOL auto-payout on
       unchecked runs, staked 1v1 vs Captain Marrow and between players, raid loot, island sales carrying RUM, the fixed
       daily race salt, free claims whose mints the treasury pays). Then H8-H10 (weapons back on, Ember, enemy damage x2)
       before M9i.
 - [ ] Answer H1 and H3-H14 (wallets going forward, wager rake, weekly prizes, islands, D4 and island sales, the daily race,
       the four switched-off weapons, Captain Ember without the flamethrower, enemy damage x2, the parchment UI kit as the
       standard, the renames, the other demo switches, the Hackathon assembly).
-- [ ] Read the deep review's findings when they land in `plan/hackathon/review/` (blockers in M9h, the rest in M9i).
+- [x] Read the deep review's findings when they land in `plan/hackathon/review/` (blockers in M9h, the rest in M9i).
 - [ ] Say whether to drop the git stash "ui-redesign WIP" (superseded by the parchment kit redraws) and when to
       fast-forward `main` (still at `63e6962a`) to `a5a8be02`.
-- [ ] Parked content (4 items and the Chaos Logbook) is saved in `plan/hackathon/parked/` and planned as M5c after M9c;
+- [x] (Done early, 13 Oct, D30.) Parked content (4 items and the Chaos Logbook) is saved in `plan/hackathon/parked/` and planned as M5c after M9c;
       say if you want it sooner.
 
 # 13 Oct: hackathon art (now part of M9i)
