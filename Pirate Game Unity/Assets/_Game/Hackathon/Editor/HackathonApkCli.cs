@@ -24,5 +24,20 @@ namespace RoguePirates.Hackathon.Editor
             finally { PlayerSettings.SetApplicationIdentifier(target, pkg); AssetDatabase.SaveAssets(); }
             if (Application.isBatchMode) EditorApplication.Exit(ok ? 0 : 1);
         }
+
+        /// <summary>Hackathon: batch-mode desktop WebGL build (Builds/WebGL-Desktop-Hackathon).
+        /// -executeMethod RoguePirates.Hackathon.Editor.HackathonApkCli.BuildWebGL</summary>
+        public static void BuildWebGL()
+        {
+            var ok = false;
+            try
+            {
+                var r = RoguePirates.V4.Editor.V5WebGLProfiles.BuildDesktopVariant("Hackathon", null);
+                Debug.Log("[HackathonWebGLCli] " + r);
+                ok = r != null && r.Contains("Succeeded");
+            }
+            catch (System.Exception e) { Debug.LogError("[HackathonWebGLCli] " + e); }
+            if (Application.isBatchMode) EditorApplication.Exit(ok ? 0 : 1);
+        }
     }
 }
