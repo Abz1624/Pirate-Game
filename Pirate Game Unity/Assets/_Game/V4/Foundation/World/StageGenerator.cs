@@ -225,6 +225,7 @@ namespace RoguePirates.V4.Foundation.World
                 placed++;
             }
             layout.pois.Add(new POISlot { type = POIType.BossBeacon, position = layout.bossBeacon });
+            StagePoiPlacer.RemoveDisabledPois(layout);
         }
     }
 }

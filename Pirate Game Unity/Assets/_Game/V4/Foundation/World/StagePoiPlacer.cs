@@ -47,6 +47,19 @@ namespace RoguePirates.V4.Foundation.World
 
             PlaceExplosiveBarrels(layout, placed, options, clearance, islandLayout);
             SpawnAnchorValidator.SyncBossBeaconPoi(layout);
+            RemoveDisabledPois(layout);
+        }
+
+        /// <summary>
+        /// Hackathon (owner, 13 Oct): the Signal Buoy is disabled for now. It is still placed (so every other POI keeps
+        /// its seeded position) and then dropped from the layout, so it never spawns. Its definition stays.
+        /// </summary>
+        public static readonly POIType[] DisabledTypes = { POIType.TrialBuoy };
+
+        public static void RemoveDisabledPois(StageLayout layout)
+        {
+            if (layout?.pois == null) return;
+            layout.pois.RemoveAll(p => System.Array.IndexOf(DisabledTypes, p.type) >= 0);
         }
 
         static void TryPlaceFirstChest(
