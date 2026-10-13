@@ -90,12 +90,12 @@ namespace RoguePirates.Hackathon.UI
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0f, -146f);
-            rt.sizeDelta = new Vector2(640f, 112f);
+            rt.sizeDelta = new Vector2(660f, 128f);
             BoardKit.Paint(rt, "Panel_Card", 2.2f, new Color(1f, 1f, 1f, 0.94f), new Color(0.95f, 0.88f, 0.72f, 0.92f));
-            BoardKit.Picture(BoardKit.TopLeft(rt, "Clock", 18f, 22f, 64f, 64f), "Icon_Clock", BoardKit.Ink);
+            BoardKit.Picture(BoardKit.TopLeft(rt, "Clock", 18f, 30f, 64f, 64f), "Icon_Clock", BoardKit.Ink);
             _goal = BoardKit.Label(BoardKit.Strip(rt, "Goal", 90f, 10f, 20f, 30f), string.Empty, 22f, BoardKit.InkGold, TextAlignmentOptions.Center, true, 14f);
             _clock = BoardKit.Label(BoardKit.Strip(rt, "Clock", 90f, 38f, 20f, 42f), string.Empty, 34f, BoardKit.Ink, TextAlignmentOptions.Center, true, 20f);
-            _result = BoardKit.Label(BoardKit.Strip(rt, "Result", 90f, 80f, 20f, 26f), string.Empty, 19f, BoardKit.InkDim, TextAlignmentOptions.Center, false, 12f);
+            _result = BoardKit.Label(BoardKit.Strip(rt, "Result", 90f, 82f, 20f, 28f), string.Empty, 19f, BoardKit.InkDim, TextAlignmentOptions.Center, false, 12f);
             _goal.text = $"DAILY RACE {_race.date}   Reach {Target} kills";
             _result.text = "Fastest captain today wins the board";
 

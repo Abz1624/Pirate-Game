@@ -63,7 +63,8 @@ namespace RoguePirates.Hackathon.UI
         public static DefencePanel Create(Transform canvas)
         {
             var rt = HackUi.Panel(canvas, "HackathonDefence", new Vector2(0.015f, 0.025f), new Vector2(0.985f, 0.975f), 229);
-            rt.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            // Dark under the parchment pieces: the Islands screen (or a lobby) behind must not read through the gaps.
+            rt.GetComponent<Image>().color = new Color(0.02f, 0.06f, 0.1f, 0.92f);
             var panel = rt.gameObject.AddComponent<DefencePanel>();
             panel.Build(rt);
             return panel;
@@ -171,6 +172,8 @@ namespace RoguePirates.Hackathon.UI
 
         static TextMeshProUGUI Label(RectTransform rt, string text, float size, Color color, TextAlignmentOptions align, bool bold = false, float minSize = 0f)
         {
+            // A rect that already draws (a kit sprite) cannot take a text as well: the text goes on a child filling it.
+            if (rt.GetComponent<Graphic>() != null) rt = Fill(rt, "Text");
             var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
             if (Font != null) t.font = Font;
             t.text = text;

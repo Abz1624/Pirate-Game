@@ -142,7 +142,7 @@ namespace RoguePirates.Hackathon.UI
         void Build()
         {
             _design = DefenceRules.Normalize(_raid.defence?.design);
-            if (_game.Context != null) _game.Context.TryGet(out _bosses);
+            if (_game != null && _game.Context != null) _game.Context.TryGet(out _bosses);
             var go = new GameObject("HackathonRaidCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             go.transform.SetParent(transform, false);
             var canvas = go.GetComponent<Canvas>();
@@ -182,7 +182,7 @@ namespace RoguePirates.Hackathon.UI
             _barkBox = BoardKit.Node(go.transform, "Bark");
             _barkBox.anchorMin = _barkBox.anchorMax = new Vector2(0.5f, 1f);
             _barkBox.pivot = new Vector2(0.5f, 1f);
-            _barkBox.anchoredPosition = new Vector2(0f, -384f);
+            _barkBox.anchoredPosition = new Vector2(0f, -396f); // clear of the guardian's hull bar
             _barkBox.sizeDelta = new Vector2(940f, 96f);
             BoardKit.Paint(_barkBox, "Banner_Maroon", 1.6f, null, new Color(0.35f, 0.07f, 0.06f, 0.9f));
             _bark = BoardKit.Label(BoardKit.Fill(_barkBox, "Text", 60f, 8f, 60f, 8f), string.Empty, 26f, BoardKit.OnWood, TextAlignmentOptions.Center, false, 16f);

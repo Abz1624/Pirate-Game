@@ -53,7 +53,7 @@ namespace RoguePirates.Hackathon.UI
             _table = MarketKit.Label(MarketKit.Node(area, "Table"), "<b>Rewards: Top 3 each week win devnet SOL: 0.5 / 0.3 / 0.2</b>", 26f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
             Place((RectTransform)_table.transform, new Vector2(0f, 0.5f), Vector2.one, new Vector4(108f, 0f, 20f, 4f));
             _table.richText = true;
-            _winners = MarketKit.Label(MarketKit.Node(area, "Winners"), string.Empty, 22f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 14f);
+            _winners = MarketKit.Label(MarketKit.Node(area, "Winners"), string.Empty, 22f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 11f);
             Place((RectTransform)_winners.transform, Vector2.zero, new Vector2(0.58f, 0.5f), new Vector4(108f, 6f, 8f, 0f));
             _winners.textWrappingMode = TextWrappingModes.Normal;
             _winners.richText = true;

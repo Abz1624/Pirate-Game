@@ -402,6 +402,8 @@ namespace RoguePirates.V4.Presentation.Online
 
         public static TextMeshProUGUI Label(RectTransform rt, string text, float size, Color color, TextAlignmentOptions align, bool bold = false, float minSize = 0f)
         {
+            // A rect that already draws (a kit sprite) cannot take a text as well: the text goes on a child filling it.
+            if (rt.GetComponent<Graphic>() != null) rt = Fill(rt, "Text");
             var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
             if (Font != null) t.font = Font;
             t.text = text;

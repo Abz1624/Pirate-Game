@@ -28,6 +28,9 @@ namespace RoguePirates.Hackathon.UI
 
         OnlineMenuPresenter _online;
         Button _entry;
+        RectTransform _entryHost;
+        Transform _canvas;
+        float _nextCover;
         RectTransform _panel;
         TextMeshProUGUI _address, _balance, _profile, _message;
         TMP_InputField _email, _name, _promptName;
@@ -82,6 +85,8 @@ namespace RoguePirates.Hackathon.UI
             hrt.anchoredPosition = new Vector2(0f, -24f);
             hrt.sizeDelta = new Vector2(460f, 86f);
             SettingsPanel.DrawOnTop(host, 210);
+            _entryHost = hrt;
+            _canvas = canvas;
             _entry = MarketKit.KitButton(MarketKit.Fill(hrt, "Button"), "Connect Wallet", "Icon_User", Open, "Btn_Gold", 32f, 40f);
 
             BuildPanel(canvas);
@@ -262,6 +267,23 @@ namespace RoguePirates.Hackathon.UI
                 if (_online != null && _online.Profile != null && _online.Profile.IsOpen) _online.Profile.gameObject.SetActive(false);
                 Open();
             }
+        }
+
+        /// <summary>The entry sits over the menu's top edge: while another panel is open over the menu (settings, profile,
+        /// leaderboard, 1v1, the hackathon screens, this wallet panel) it steps aside, so it never covers their headers.</summary>
+        void LateUpdate()
+        {
+            if (_entryHost == null || _canvas == null || Time.unscaledTime < _nextCover) return;
+            _nextCover = Time.unscaledTime + 0.15f;
+            var covered = false;
+            foreach (var c in _canvas.GetComponentsInChildren<Canvas>(false))
+            {
+                if (!c.overrideSorting || c.sortingOrder < 210 || c.transform == _entryHost) continue;
+                if (c.transform.IsChildOf(_entryHost)) continue;
+                covered = true;
+                break;
+            }
+            if (_entryHost.gameObject.activeSelf == covered) _entryHost.gameObject.SetActive(!covered);
         }
 
         void OnDestroy()

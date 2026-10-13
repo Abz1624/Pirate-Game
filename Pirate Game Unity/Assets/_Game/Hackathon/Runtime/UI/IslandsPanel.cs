@@ -64,7 +64,7 @@ namespace RoguePirates.Hackathon.UI
         public static IslandsPanel Create(Transform canvas)
         {
             var rt = HackUi.Panel(canvas, "HackathonIslands", new Vector2(0.015f, 0.02f), new Vector2(0.985f, 0.98f), 227);
-            rt.GetComponent<Image>().color = new Color(0.02f, 0.06f, 0.1f, 0.55f);
+            rt.GetComponent<Image>().color = new Color(0.02f, 0.06f, 0.1f, 0.92f); // the menu's own labels must not read through the gaps
             var panel = rt.gameObject.AddComponent<IslandsPanel>();
             panel.Build(rt);
             return panel;
@@ -186,7 +186,7 @@ namespace RoguePirates.Hackathon.UI
 
         static void Region(RectTransform map, string name, float x, float y)
         {
-            var t = K.Label(K.Node(map, name), name.ToUpperInvariant(), 24f, new Color(0.85f, 0.93f, 1f, 0.45f), TextAlignmentOptions.Center, true);
+            var t = K.Label(K.Node(map, name), name.ToUpperInvariant(), 24f, new Color(0.85f, 0.93f, 1f, 0.3f), TextAlignmentOptions.Center, true);
             var rt = t.rectTransform;
             rt.anchorMin = new Vector2(x - 0.2f, y - 0.03f);
             rt.anchorMax = new Vector2(x + 0.2f, y + 0.03f);
@@ -215,7 +215,7 @@ namespace RoguePirates.Hackathon.UI
             K.Paint(strip, "Header_Wood", 1.4f, new Color(0.62f, 0.5f, 0.45f, 1f), new Color(0.25f, 0.15f, 0.08f, 1f));
             var h = strip.gameObject.AddComponent<HorizontalLayoutGroup>();
             h.childAlignment = TextAnchor.MiddleCenter;
-            h.spacing = 10f;
+            h.spacing = 6f;
             h.padding = new RectOffset(16, 16, 8, 8);
             h.childControlWidth = h.childControlHeight = true;
             h.childForceExpandWidth = false;
@@ -227,12 +227,13 @@ namespace RoguePirates.Hackathon.UI
                 if (img.sprite == null) img.sprite = IslandUi.Circle;
                 img.preserveAspect = true;
                 var le = d.gameObject.AddComponent<LayoutElement>();
-                le.preferredWidth = le.minWidth = 34f;
-                le.preferredHeight = le.minHeight = 38f;
-                var t = K.Label(K.Node(strip, label), label, 28f, K.OnWood, TextAlignmentOptions.MidlineLeft);
+                le.preferredWidth = le.minWidth = 30f;
+                le.preferredHeight = le.minHeight = 34f;
+                var t = K.Label(K.Node(strip, label), label, 25f, K.OnWood, TextAlignmentOptions.MidlineLeft);
+                // A new text has no mesh yet (its preferred width reads 0 and the label shrank to "..."): an estimate.
+                t.overflowMode = TextOverflowModes.Overflow;
                 var tle = t.gameObject.AddComponent<LayoutElement>();
-                tle.preferredWidth = t.GetPreferredValues(label).x + 18f;
-                tle.minWidth = tle.preferredWidth * 0.7f;
+                tle.preferredWidth = tle.minWidth = label.Length * 13f + 14f;
             }
         }
 
