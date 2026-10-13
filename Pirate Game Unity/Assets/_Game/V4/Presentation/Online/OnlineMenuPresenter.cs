@@ -53,9 +53,14 @@ namespace RoguePirates.V4.Presentation.Online
         }
 
         /// <summary>V5 M8z (7 Oct, owner): "Download last voyage" under the profile chip, once a voyage was recorded.</summary>
+        /// <summary>Hackathon (13 Oct, owner): hide the voyage download buttons (menu and results) for now.</summary>
+        public const bool HideDownloadButtons = true;
+
         void BuildLastVoyageButton(Transform parent)
         {
             // V5 M8z (7 Oct, D20): playtest builds only (DemoJuiceSettings.downloadSessionFiles).
+            // Hackathon (13 Oct, owner): the button is hidden for now; voyages are still recorded.
+            if (HideDownloadButtons) return;
             if (!RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles || !RoguePirates.V4.Telemetry.SessionFile.HasLast) return;
             TextMeshProUGUI note = null;
             var button = OnlineUi.Button(parent, "Download last voyage", () =>

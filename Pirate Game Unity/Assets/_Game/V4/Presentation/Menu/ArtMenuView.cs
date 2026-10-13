@@ -26,6 +26,9 @@ namespace RoguePirates.V4.Presentation.Menu
     /// </summary>
     public sealed class ArtMenuView : MonoBehaviour, ICaptainMenuView
     {
+        /// <summary>Hackathon (13 Oct, owner): the shop (Ledger) is disabled for now.</summary>
+        public const bool HideShop = true;
+
         /// <summary>V5 M7/M8: a hub screen asked for ("Settings", "Ledger" for the shop, "Profile").</summary>
         public event System.Action<string> HubRequested;
 
@@ -159,6 +162,16 @@ namespace RoguePirates.V4.Presentation.Menu
                 if (b == null) continue;
                 var open = name == "Settings" || name == "Ledger" || name == "Profile" || name == "Leaderboard"; // Playtest (3 Oct, owner): the weekly leaderboard
                 b.interactable = open;
+                if (name == "Ledger" && HideShop)
+                {
+                    // Hackathon (13 Oct, owner): the shop is off for now; the button stays in place (other buttons are
+                    // positioned from it) but is invisible and can't be pressed.
+                    b.interactable = false;
+                    var group = b.GetComponent<CanvasGroup>() ?? b.gameObject.AddComponent<CanvasGroup>();
+                    group.alpha = 0f;
+                    group.blocksRaycasts = false;
+                    continue;
+                }
                 if (open) { var n = name; b.onClick.AddListener(() => HubRequested?.Invoke(n)); }
             }
             FitSideButtons(_main.transform);

@@ -236,7 +236,8 @@ namespace RoguePirates.V4.Presentation.Hud
             _purchaseGoal.gameObject.SetActive(false);
             // V5 M8z (7 Oct, owner): the voyage's recorded data, again, in case the automatic download was missed.
             // V5 M8z (7 Oct, D20): playtest builds only (DemoJuiceSettings.downloadSessionFiles).
-            if (RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles)
+            // Hackathon (13 Oct, owner): hidden for now (OnlineMenuPresenter.HideDownloadButtons).
+            if (RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles && !RoguePirates.V4.Presentation.Online.OnlineMenuPresenter.HideDownloadButtons)
                 CreateButton("run_results_session", "Download voyage data", "Download this voyage's recorded data again.", new Vector2(0f, 96f),
                     () => ShowMessage(RoguePirates.V4.Telemetry.SessionFile.DownloadLast(), 3f));
             ApplyKit();
