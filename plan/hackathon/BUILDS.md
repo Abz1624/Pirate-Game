@@ -12,6 +12,10 @@ table is still the 16:05 one from `fad370cf`).
 other starting weapons, baseDamage 20 -> 12.1, config 8ea655e3; run checks v8 deployed for it, which also accept the
 21:05 build's config 841839 and the 15:51 build's 83779c). Same profile and method; WebGL only.
 
+**APK rebuild, 13 Oct 06:07-06:13** (storm edge warning instead of the red walls, Signal Buoy off, faster Cursed
+Doubloons coins with the gold barrel coin, Defence designer redrawn after the owner's reference). Same batch method;
+Succeeded, 191.6 MB, 350 s; installed on the Seeker.
+
 **APK rebuild, 13 Oct 05:04-05:22** at `fc6ab20b` + the batch entry `HackathonApkCli` (art team models and boats lifted,
 new icons and renames, flamethrower / lighthouse lantern / squid ink pots / siren bell out of the pools, placeholder UI).
 Built in batch mode (the open Editor hung on "Detecting Android SDK"):
