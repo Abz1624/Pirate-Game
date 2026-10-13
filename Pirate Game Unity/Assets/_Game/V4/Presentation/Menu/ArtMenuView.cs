@@ -164,12 +164,10 @@ namespace RoguePirates.V4.Presentation.Menu
                 b.interactable = open;
                 if (name == "Ledger" && HideShop)
                 {
-                    // Hackathon (13 Oct, owner): the shop is off for now; the button stays in place (other buttons are
-                    // positioned from it) but is invisible and can't be pressed.
+                    // Hackathon (13 Oct, owner): the shop is off for now; the button leaves the column (the layout
+                    // closes the gap; FitSideButtons keeps the column's bottom edge where it was).
                     b.interactable = false;
-                    var group = b.GetComponent<CanvasGroup>() ?? b.gameObject.AddComponent<CanvasGroup>();
-                    group.alpha = 0f;
-                    group.blocksRaycasts = false;
+                    b.gameObject.SetActive(false);
                     continue;
                 }
                 if (open) { var n = name; b.onClick.AddListener(() => HubRequested?.Invoke(n)); }
@@ -380,6 +378,8 @@ namespace RoguePirates.V4.Presentation.Menu
         /// Ledger, Raid) share one width that fits the widest label, and the column keeps its right edge. Called again when
         /// the PvP button is added.
         /// </summary>
+        static readonly System.Collections.Generic.Dictionary<int, Vector2> _columnOrigin = new System.Collections.Generic.Dictionary<int, Vector2>();
+
         public static void FitSideButtons(Transform main)
         {
             var menu = main != null ? FindDeep(main, "RightMenu") as RectTransform : null;
@@ -407,8 +407,23 @@ namespace RoguePirates.V4.Presentation.Menu
             var layout = menu.GetComponent<VerticalLayoutGroup>();
             if (layout != null && count > 0) height += layout.spacing * (count - 1) + layout.padding.vertical;
             var right = menu.anchoredPosition.x + menu.sizeDelta.x * (1f - menu.pivot.x);
-            menu.sizeDelta = new Vector2(width, Mathf.Max(menu.sizeDelta.y, height));
-            menu.anchoredPosition = new Vector2(right - width * (1f - menu.pivot.x), menu.anchoredPosition.y);
+            if (HideShop)
+            {
+                // Hackathon (13 Oct, owner): with the Ledger gone the column is exactly as tall as its buttons and its
+                // bottom edge stays where it was with the Ledger in it (just above Set Sail), so no gap is left. The
+                // prefab's first position is remembered so repeated calls (one per added button) don't drift.
+                var id = menu.GetInstanceID();
+                if (!_columnOrigin.TryGetValue(id, out var origin)) _columnOrigin[id] = origin = new Vector2(menu.anchoredPosition.y, menu.sizeDelta.y);
+                var withLedger = height + 65f + (layout != null ? layout.spacing : 0f);
+                var bottom = origin.x - Mathf.Max(origin.y, withLedger) * menu.pivot.y;
+                menu.sizeDelta = new Vector2(width, height);
+                menu.anchoredPosition = new Vector2(right - width * (1f - menu.pivot.x), bottom + height * menu.pivot.y);
+            }
+            else
+            {
+                menu.sizeDelta = new Vector2(width, Mathf.Max(menu.sizeDelta.y, height));
+                menu.anchoredPosition = new Vector2(right - width * (1f - menu.pivot.x), menu.anchoredPosition.y);
+            }
             LayoutRebuilder.MarkLayoutForRebuild(menu);
         }
 
