@@ -1,4 +1,5 @@
 using System;
+using RoguePirates.UI;
 using RoguePirates.V4.Foundation.Platform;
 using TMPro;
 using UnityEngine;
@@ -35,7 +36,7 @@ namespace RoguePirates.V4.Presentation.Menu
             rt.anchorMax = new Vector2(0.5f, 0.96f);
             rt.sizeDelta = new Vector2(Width, 0f);
             go.GetComponent<Image>().color = new Color(0.06f, 0.1f, 0.16f, 0.96f);
-            MenuKit.Sheet(go.GetComponent<Image>()); // Hackathon UI (13 Oct): the parchment kit
+            UiKit.Sheet(go.GetComponent<Image>()); // Hackathon UI (13 Oct): the parchment kit
             DrawOnTop(go, 210);
             var panel = go.AddComponent<SettingsPanel>();
             panel.Build(rt);
@@ -67,7 +68,7 @@ namespace RoguePirates.V4.Presentation.Menu
             srt.anchorMin = Vector2.zero;
             srt.anchorMax = Vector2.one;
             srt.offsetMin = new Vector2(0f, RowHeight + 32f); // above the Close button
-            srt.offsetMax = new Vector2(0f, MenuKit.Ready ? -HeaderHeight : 0f); // Hackathon UI: below the wood header
+            srt.offsetMax = new Vector2(0f, UiKit.Ready ? -HeaderHeight : 0f); // Hackathon UI: below the wood header
             scroll.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
             var content = new GameObject("Rows", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
             content.transform.SetParent(scroll.transform, false);
@@ -86,7 +87,7 @@ namespace RoguePirates.V4.Presentation.Menu
             var sr = scroll.GetComponent<ScrollRect>();
             sr.content = _rows;
             sr.horizontal = false;
-            if (MenuKit.Ready) MenuKit.WoodHeader(rt, "Settings", HeaderHeight, out _, 24f);
+            if (UiKit.Ready) UiKit.WoodHeader(rt, "Settings", HeaderHeight, out _, 24f);
             else Label("Settings", 40, FontStyles.Bold);
             _ui = SliderRow("UI scale", GameSettings.MinUiScale, GameSettings.MaxUiScale, v => _edit.uiScale = v);
             _music = SliderRow("Music", 0f, 1f, v => _edit.musicVolume = v);
@@ -103,8 +104,8 @@ namespace RoguePirates.V4.Presentation.Menu
             crt.pivot = new Vector2(0.5f, 0f);
             crt.sizeDelta = new Vector2(320f, RowHeight);
             crt.anchoredPosition = new Vector2(0f, 16f);
-            MenuKit.StyleButton(close, "Btn_Gold");
-            MenuKit.StyleScroll(sr);
+            UiKit.StyleButton(close, "Btn_Gold");
+            UiKit.StyleScroll(sr);
         }
 
         const float HeaderHeight = 96f;
@@ -132,7 +133,7 @@ namespace RoguePirates.V4.Presentation.Menu
             t.fontStyle = style;
             t.color = new Color(0.95f, 0.93f, 0.88f, 1f);
             t.alignment = TextAlignmentOptions.MidlineLeft;
-            if (MenuKit.Ready) MenuKit.InkText(t, MenuKit.Ink); // Hackathon UI: ink on parchment
+            if (UiKit.Ready) UiKit.InkText(t, UiKit.Ink); // Hackathon UI: ink on parchment
             var tle = go.GetComponent<LayoutElement>();
             tle.preferredHeight = RowHeight;
             tle.minHeight = RowHeight;
@@ -150,7 +151,7 @@ namespace RoguePirates.V4.Presentation.Menu
             h.childControlWidth = true;
             h.childControlHeight = true;
             h.childForceExpandWidth = true;
-            if (MenuKit.Ready) h.childForceExpandWidth = false; // Hackathon UI: a fixed label column, controls share one width
+            if (UiKit.Ready) h.childForceExpandWidth = false; // Hackathon UI: a fixed label column, controls share one width
             return (RectTransform)go.transform;
         }
 
@@ -176,7 +177,7 @@ namespace RoguePirates.V4.Presentation.Menu
             slider.maxValue = max;
             slider.onValueChanged.AddListener(v => set(v));
             background.GetComponent<Image>().raycastTarget = true;
-            MenuKit.StyleSlider(slider);
+            UiKit.StyleSlider(slider);
             return slider;
         }
 
@@ -197,7 +198,7 @@ namespace RoguePirates.V4.Presentation.Menu
         /// <summary>Hackathon UI: the row labels in one column so every slider and button starts at the same x.</summary>
         static void FixedLabel(TextMeshProUGUI t)
         {
-            if (!MenuKit.Ready) return;
+            if (!UiKit.Ready) return;
             var le = t.GetComponent<LayoutElement>();
             le.minWidth = le.preferredWidth = 280f;
             le.flexibleWidth = 0f;
@@ -209,7 +210,7 @@ namespace RoguePirates.V4.Presentation.Menu
             FixedLabel(Label(name, 28, FontStyles.Normal, row));
             var button = MakeButton(row, "-", () => { change(); Refresh(); });
             button.GetComponent<LayoutElement>().flexibleWidth = 1f;
-            MenuKit.StyleButton(button, "Btn_Parchment");
+            UiKit.StyleButton(button, "Btn_Parchment");
             var label = button.GetComponentInChildren<TextMeshProUGUI>();
             return label;
         }

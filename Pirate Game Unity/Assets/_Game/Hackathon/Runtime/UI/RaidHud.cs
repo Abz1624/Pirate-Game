@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RoguePirates.UI;
 using RoguePirates.V4;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Spawning;
@@ -157,64 +158,64 @@ namespace RoguePirates.Hackathon.UI
             scaler.matchWidthOrHeight = 0.5f;
 
             // Hackathon UI (13 Oct): the raid strip, Marrow's barks and the result card on the parchment kit (as the race HUD).
-            var box = BoardKit.Node(go.transform, "Raid");
+            var box = UiKit.Node(go.transform, "Raid");
             box.anchorMin = box.anchorMax = new Vector2(0.5f, 1f);
             box.pivot = new Vector2(0.5f, 1f);
             box.anchoredPosition = new Vector2(0f, -146f);
             box.sizeDelta = new Vector2(900f, 196f);
-            BoardKit.Paint(box, "Panel_Card", 2.2f, new Color(1f, 1f, 1f, 0.94f), new Color(0.95f, 0.88f, 0.72f, 0.92f));
-            BoardKit.Picture(BoardKit.TopLeft(box, "Icon", 22f, 56f, 76f, 76f), "Icon_Skull_Crossbones", BoardKit.Ink);
-            _goal = BoardKit.Label(BoardKit.Strip(box, "Goal", 108f, 14f, 30f, 32f), string.Empty, 24f, BoardKit.InkGold, TextAlignmentOptions.Center, true, 15f);
+            UiKit.Paint(box, "Panel_Card", 2.2f, new Color(1f, 1f, 1f, 0.94f), new Color(0.95f, 0.88f, 0.72f, 0.92f));
+            UiKit.Picture(UiKit.TopLeft(box, "Icon", 22f, 56f, 76f, 76f), "Icon_Skull_Crossbones", UiKit.Ink);
+            _goal = UiKit.Label(UiKit.Strip(box, "Goal", 108f, 14f, 30f, 32f), string.Empty, 24f, UiKit.InkGold, TextAlignmentOptions.Center, true, 15f);
             // Always visible (owner, 12 Oct): when the guardian rises (no beacon in a raid), with a live countdown.
-            _guardian = BoardKit.Label(BoardKit.Strip(box, "Guardian", 108f, 48f, 30f, 34f), string.Empty, 24f, BoardKit.InkBad, TextAlignmentOptions.Center, false, 15f);
-            _clock = BoardKit.Label(BoardKit.Strip(box, "Clock", 108f, 84f, 30f, 50f), string.Empty, 34f, BoardKit.Ink, TextAlignmentOptions.Center, true, 20f);
-            _wave = BoardKit.Label(BoardKit.Strip(box, "Wave", 108f, 136f, 30f, 44f), string.Empty, 21f, BoardKit.InkDim, TextAlignmentOptions.Center, false, 14f);
+            _guardian = UiKit.Label(UiKit.Strip(box, "Guardian", 108f, 48f, 30f, 34f), string.Empty, 24f, UiKit.InkBad, TextAlignmentOptions.Center, false, 15f);
+            _clock = UiKit.Label(UiKit.Strip(box, "Clock", 108f, 84f, 30f, 50f), string.Empty, 34f, UiKit.Ink, TextAlignmentOptions.Center, true, 20f);
+            _wave = UiKit.Label(UiKit.Strip(box, "Wave", 108f, 136f, 30f, 44f), string.Empty, 21f, UiKit.InkDim, TextAlignmentOptions.Center, false, 14f);
             _wave.textWrappingMode = TextWrappingModes.Normal;
             _goal.text = _raid.practice ? $"PRACTICE: TEST {_raid.islandName}'S DEFENCES   no fee, no loot" : $"CONQUER {_raid.islandName}   sink the guardian";
             // The guardian's hull, under the strip once it is up.
-            _hullBack = BoardKit.Node(box, "Hull");
+            _hullBack = UiKit.Node(box, "Hull");
             _hullBack.anchorMin = _hullBack.anchorMax = new Vector2(0.5f, 0f);
             _hullBack.pivot = new Vector2(0.5f, 1f);
             _hullBack.anchoredPosition = new Vector2(0f, -8f);
             _hullBack.sizeDelta = new Vector2(640f, 30f);
-            BoardKit.Paint(_hullBack, "Bar_Track", 1.6f, null, new Color(0.2f, 0.12f, 0.06f, 0.8f));
-            var fill = BoardKit.Fill(_hullBack, "Fill", 4f, 4f, 4f, 4f);
-            _hullFill = BoardKit.Paint(fill, "Bar_Fill_Gold", 1.6f, new Color(1f, 0.45f, 0.35f, 1f), new Color(0.85f, 0.25f, 0.18f, 1f));
+            UiKit.Paint(_hullBack, "Bar_Track", 1.6f, null, new Color(0.2f, 0.12f, 0.06f, 0.8f));
+            var fill = UiKit.Fill(_hullBack, "Fill", 4f, 4f, 4f, 4f);
+            _hullFill = UiKit.Paint(fill, "Bar_Fill_Gold", 1.6f, new Color(1f, 0.45f, 0.35f, 1f), new Color(0.85f, 0.25f, 0.18f, 1f));
             _hullBack.gameObject.SetActive(false);
 
-            _barkBox = BoardKit.Node(go.transform, "Bark");
+            _barkBox = UiKit.Node(go.transform, "Bark");
             _barkBox.anchorMin = _barkBox.anchorMax = new Vector2(0.5f, 1f);
             _barkBox.pivot = new Vector2(0.5f, 1f);
             _barkBox.anchoredPosition = new Vector2(0f, -396f); // clear of the guardian's hull bar
             _barkBox.sizeDelta = new Vector2(940f, 96f);
-            BoardKit.Paint(_barkBox, "Banner_Maroon", 1.6f, null, new Color(0.35f, 0.07f, 0.06f, 0.9f));
-            _bark = BoardKit.Label(BoardKit.Fill(_barkBox, "Text", 60f, 8f, 60f, 8f), string.Empty, 26f, BoardKit.OnWood, TextAlignmentOptions.Center, false, 16f);
+            UiKit.Paint(_barkBox, "Banner_Maroon", 1.6f, null, new Color(0.35f, 0.07f, 0.06f, 0.9f));
+            _bark = UiKit.Label(UiKit.Fill(_barkBox, "Text", 60f, 8f, 60f, 8f), string.Empty, 26f, UiKit.OnWood, TextAlignmentOptions.Center, false, 16f);
             _bark.textWrappingMode = TextWrappingModes.Normal;
             _barkBox.gameObject.SetActive(false);
 
             // The result: a full-screen backdrop and the scroll card (title, text, the way back).
-            _resultBox = BoardKit.Fill(go.transform, "Result");
+            _resultBox = UiKit.Fill(go.transform, "Result");
             _resultBox.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
-            var card = BoardKit.Node(_resultBox, "Card");
+            var card = UiKit.Node(_resultBox, "Card");
             card.anchorMin = card.anchorMax = new Vector2(0.5f, 0.5f);
             card.sizeDelta = new Vector2(1060f, 620f);
-            var c = BoardKit.ScrollSheet(card, 110f, 50f, 50f);
-            BoardKit.Medallion(c, 0f, 4f, 116f);
-            _resultTitle = BoardKit.Label(BoardKit.Strip(c, "Title", 130f, 14f, 20f, 90f), string.Empty, 60f, BoardKit.Ink, TextAlignmentOptions.MidlineLeft, true, 34f);
-            BoardKit.Line(c, 0f, 134f, 0f);
-            _resultText = BoardKit.Label(BoardKit.Fill(c, "Text", 10f, 120f, 10f, 150f), string.Empty, 30f, BoardKit.Ink, TextAlignmentOptions.TopLeft, false, 18f);
+            var c = UiKit.ScrollSheet(card, 110f, 50f, 50f);
+            UiKit.Medallion(c, 0f, 4f, 116f);
+            _resultTitle = UiKit.Label(UiKit.Strip(c, "Title", 130f, 14f, 20f, 90f), string.Empty, 60f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, true, 34f);
+            UiKit.Line(c, 0f, 134f, 0f);
+            _resultText = UiKit.Label(UiKit.Fill(c, "Text", 10f, 120f, 10f, 150f), string.Empty, 30f, UiKit.Ink, TextAlignmentOptions.TopLeft, false, 18f);
             _resultText.textWrappingMode = TextWrappingModes.Normal;
-            var home = BoardKit.Node(c, "Return");
+            var home = UiKit.Node(c, "Return");
             home.anchorMin = home.anchorMax = new Vector2(0.5f, 0f);
             home.pivot = new Vector2(0.5f, 0f);
             home.sizeDelta = new Vector2(500f, 96f);
             home.anchoredPosition = new Vector2(0f, 4f);
-            BoardKit.KitButton(home, _raid.practice ? "Back to my island" : "Return to port", "Icon_House", () => V4Game.GoToMenu(), "Btn_Gold", 36f, 48f);
+            UiKit.KitButton(home, _raid.practice ? "Back to my island" : "Return to port", "Icon_House", () => V4Game.GoToMenu(), "Btn_Gold", 36f, 48f);
             _resultBox.gameObject.SetActive(false);
 
             Say((_raid.practice ? $"A drill on {_raid.islandName}, Captain? Let us see if yer defences hold. " : $"Ye dare raid {_raid.islandName}? ") +
                 IslandRules.GuardianNotice("Barnacle King", GuardianSeconds), 8f);
-            _guardian.text = IslandKit.Inkify(IslandRules.GuardianLine("Barnacle King", 0, GuardianSeconds, false, -1f));
+            _guardian.text = UiKit.InkRich(IslandRules.GuardianLine("Barnacle King", 0, GuardianSeconds, false, -1f));
         }
 
         void Say(string line, float seconds = 4f)
@@ -274,9 +275,9 @@ namespace RoguePirates.Hackathon.UI
             _hullBack.gameObject.SetActive(_guardianHull >= 0f);
             if (_guardianHull >= 0f) ((RectTransform)_hullFill.transform).anchorMax = new Vector2(_guardianHull, 1f);
 
-            var timeText = (left <= 60 ? "<color=" + BoardKit.BadHex + ">" : string.Empty) + IslandRules.Clock(left) + (left <= 60 ? "</color>" : string.Empty);
-            _guardian.text = IslandKit.Inkify(IslandRules.GuardianLine("Barnacle King", _raidSeconds, guardianAt, _guardianUp, _guardianHull));
-            _clock.text = $"Minute <color={BoardKit.GoldHex}>{minute}/15</color>   Time left {timeText}";
+            var timeText = (left <= 60 ? "<color=" + UiKit.BadHex + ">" : string.Empty) + IslandRules.Clock(left) + (left <= 60 ? "</color>" : string.Empty);
+            _guardian.text = UiKit.InkRich(IslandRules.GuardianLine("Barnacle King", _raidSeconds, guardianAt, _guardianUp, _guardianHull));
+            _clock.text = $"Minute <color={UiKit.GoldHex}>{minute}/15</color>   Time left {timeText}";
             _wave.text = WaveLine(minute);
 
             if (minute != _lastMinute)
@@ -320,7 +321,7 @@ namespace RoguePirates.Hackathon.UI
             // 13 Oct (review): the raid's end is the voyage's end (as the daily race's goal): the run's normal end path
             // settles the Rum, closes level-ups and shows the run as complete. A sinking already ended the run.
             if (why != "sunk") CompleteRun(why);
-            _clock.text = won ? $"<color={BoardKit.GoodHex}>ISLAND CONQUERED</color>" : partial ? $"<color={BoardKit.GoldHex}>THE GUARDIAN HOLDS</color>" : $"<color={BoardKit.BadHex}>RAID FAILED</color>";
+            _clock.text = won ? $"<color={UiKit.GoodHex}>ISLAND CONQUERED</color>" : partial ? $"<color={UiKit.GoldHex}>THE GUARDIAN HOLDS</color>" : $"<color={UiKit.BadHex}>RAID FAILED</color>";
             Say(won ? "My King... sunk. Take yer plunder. Marrow never forgets." : partial ? "Ye reached my King and still ye fled. Scurry home with yer crumbs!" : "Another hull for the reef! Come back when ye can sail.", 6f);
             _resultBox.gameObject.SetActive(true);
             _resultTitle.text = _raid.practice ? (won ? "Practice: defences fell" : partial ? "Practice: partly held" : "Practice: defences held")
@@ -333,7 +334,7 @@ namespace RoguePirates.Hackathon.UI
                 // A practice raid stores nothing: no result to send.
                 _reported = true;
                 var verdict = IslandRules.PracticeVerdict(won, minute, GuardianMinute);
-                _resultText.text = reason + "\n" + verdict + "\n<size=85%><color=" + BoardKit.DimHex + ">Practice only: no RUM, no loot, no shield, no record.</color></size>";
+                _resultText.text = reason + "\n" + verdict + "\n<size=85%><color=" + UiKit.DimHex + ">Practice only: no RUM, no loot, no shield, no record.</color></size>";
                 LastResult = $"<b>Practice on {_raid.islandName}</b>: {verdict}";
                 LastRaid = null;
                 return;
@@ -355,8 +356,8 @@ namespace RoguePirates.Hackathon.UI
             LastRaid = result;
             LastResult = line;
             if (this == null || _resultText == null) return;
-            _resultText.text = reason + "\n" + IslandKit.Inkify(line);
-            if (error != null) _resultText.color = BoardKit.InkBad;
+            _resultText.text = reason + "\n" + UiKit.InkRich(line);
+            if (error != null) _resultText.color = UiKit.InkBad;
         }
 
         static string Summary(RaidStart raid, RaidResult r)

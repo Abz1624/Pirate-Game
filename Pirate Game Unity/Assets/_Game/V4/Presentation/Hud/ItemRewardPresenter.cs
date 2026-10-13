@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RoguePirates.UI;
 using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Views;
 using TMPro;
@@ -99,21 +100,21 @@ namespace RoguePirates.V4.Presentation.Hud
         /// ink text in the kit font.</summary>
         void ApplyKit(RectTransform rt, Outline outline, RectTransform icon)
         {
-            if (!MenuKit.Ready) return;
+            if (!UiKit.Ready) return;
             outline.enabled = false;
             rt.sizeDelta = new Vector2(Width + 80f, Height + 16f);
-            MenuKit.Paint(rt.GetComponent<Image>(), "Panel_Card", 1.6f).raycastTarget = false;
-            var slot = MenuKit.Node(rt, "Slot");
+            UiKit.Reskin(rt.GetComponent<Image>(), "Panel_Card", 1.6f).raycastTarget = false;
+            var slot = UiKit.Node(rt, "Slot");
             slot.anchorMin = slot.anchorMax = new Vector2(0f, 0.5f);
             slot.pivot = new Vector2(0f, 0.5f);
             slot.sizeDelta = new Vector2(IconSize + 12f, IconSize + 12f);
             slot.anchoredPosition = new Vector2(16f, 0f);
-            MenuKit.Paint(slot, "Slot_Card", 2.4f).raycastTarget = false;
+            UiKit.Reskin(slot, "Slot_Card", 2.4f).raycastTarget = false;
             slot.SetAsFirstSibling();
             icon.anchoredPosition = new Vector2(22f, 0f);
-            foreach (var (t, c) in new[] { (_header, MenuKit.InkGold), (_name, MenuKit.Ink), (_description, MenuKit.InkDim) })
+            foreach (var (t, c) in new[] { (_header, UiKit.InkGold), (_name, UiKit.Ink), (_description, UiKit.InkDim) })
             {
-                MenuKit.InkText(t, c);
+                UiKit.InkText(t, c);
                 var r = t.rectTransform;
                 r.offsetMin = new Vector2(r.offsetMin.x + 12f, r.offsetMin.y - 6f);
                 r.offsetMax = new Vector2(-22f, r.offsetMax.y - 6f);
@@ -121,7 +122,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _header.fontSize = 17f;
             _name.fontSize = 30f;
             _description.fontSize = 18f;
-            _description.color = MenuKit.Ink;
+            _description.color = UiKit.Ink;
         }
 
         static GameObject Child(Transform parent, string name, params Type[] extra)

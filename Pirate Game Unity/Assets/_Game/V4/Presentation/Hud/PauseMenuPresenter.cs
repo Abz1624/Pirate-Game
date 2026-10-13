@@ -1,3 +1,4 @@
+using RoguePirates.UI;
 using RoguePirates.V4.Foundation.Platform;
 using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Views;
@@ -73,19 +74,19 @@ namespace RoguePirates.V4.Presentation.Hud
             var settings = SettingsPanel.CreateButton(_panel, "Settings", OpenSettings);
             var quit = SettingsPanel.CreateButton(_panel, "Quit to menu", Quit);
             // Hackathon UI (13 Oct, owner): the parchment kit (a sheet under a wood "Paused" header, kit buttons with icons).
-            if (MenuKit.Ready)
+            if (UiKit.Ready)
             {
                 _panel.sizeDelta = new Vector2(560f, 440f);
-                MenuKit.Sheet(shade.GetComponent<Image>());
+                UiKit.Sheet(shade.GetComponent<Image>());
                 v.padding = new RectOffset(48, 48, 120, 44);
                 v.spacing = 20f;
-                MenuKit.WoodHeader(_panel, "Paused", 92f, out _, 24f);
-                MenuKit.StyleButton(_resume, "Btn_Gold");
-                MenuKit.ButtonIcon(_resume, "Icon_Play");
-                MenuKit.StyleButton(settings, "Btn_Parchment");
-                MenuKit.ButtonIcon(settings, "Icon_Gear");
-                MenuKit.StyleButton(quit, "Btn_Parchment");
-                MenuKit.ButtonIcon(quit, "Icon_House");
+                UiKit.WoodHeader(_panel, "Paused", 92f, out _, 24f);
+                UiKit.StyleButton(_resume, "Btn_Gold");
+                UiKit.ButtonIcon(_resume, "Icon_Play");
+                UiKit.StyleButton(settings, "Btn_Parchment");
+                UiKit.ButtonIcon(settings, "Icon_Gear");
+                UiKit.StyleButton(quit, "Btn_Parchment");
+                UiKit.ButtonIcon(quit, "Icon_House");
             }
             SettingsPanel.DrawOnTop(shade, PanelSortingOrder);
             _settings = SettingsPanel.Create(root);
@@ -121,16 +122,16 @@ namespace RoguePirates.V4.Presentation.Hud
             _matchText.raycastTarget = false;
             _matchResume = SettingsPanel.CreateButton(_match, "Resume", MatchResume);
             _matchLeave = SettingsPanel.CreateButton(_match, "Leave match", MatchLeave);
-            if (MenuKit.Ready)
+            if (UiKit.Ready)
             {
-                MenuKit.Sheet(go.GetComponent<Image>());
+                UiKit.Sheet(go.GetComponent<Image>());
                 v.padding = new RectOffset(48, 48, 116, 40);
-                MenuKit.WoodHeader(_match, "Match menu", 92f, out _, 24f);
-                MenuKit.InkText(_matchText, MenuKit.Ink);
-                MenuKit.StyleButton(_matchResume, "Btn_Gold");
-                MenuKit.ButtonIcon(_matchResume, "Icon_Play");
-                MenuKit.StyleButton(_matchLeave, "Btn_Parchment");
-                MenuKit.ButtonIcon(_matchLeave, "Icon_Flag");
+                UiKit.WoodHeader(_match, "Match menu", 92f, out _, 24f);
+                UiKit.InkText(_matchText, UiKit.Ink);
+                UiKit.StyleButton(_matchResume, "Btn_Gold");
+                UiKit.ButtonIcon(_matchResume, "Icon_Play");
+                UiKit.StyleButton(_matchLeave, "Btn_Parchment");
+                UiKit.ButtonIcon(_matchLeave, "Icon_Flag");
             }
             SettingsPanel.DrawOnTop(go, PanelSortingOrder);
             go.SetActive(false);
@@ -183,7 +184,7 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             _confirmLeave = confirm;
             _matchText.text = confirm ? "Leave? You forfeit the match." : "The match keeps running.";
-            if (MenuKit.Ready) _matchText.color = confirm ? MenuKit.InkBad : MenuKit.InkDim;
+            if (UiKit.Ready) _matchText.color = confirm ? UiKit.InkBad : UiKit.InkDim;
             SetLabel(_matchResume, confirm ? "Stay" : "Resume");
             SetLabel(_matchLeave, confirm ? "Leave and forfeit" : "Leave match");
         }

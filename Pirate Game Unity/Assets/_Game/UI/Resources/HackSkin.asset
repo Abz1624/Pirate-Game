@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d16912ea1426f962daa39079757dec8, type: 3}
   m_Name: HackSkin
-  m_EditorClassIdentifier: RoguePirates.Hackathon::RoguePirates.Hackathon.UI.HackSkin
+  m_EditorClassIdentifier: RoguePirates.UI::RoguePirates.UI.HackSkin
   font: {fileID: 11400000, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
   ink: {r: 0.24, g: 0.14, b: 0.06, a: 1}
   inkDim: {r: 0.48, g: 0.35, b: 0.23, a: 1}

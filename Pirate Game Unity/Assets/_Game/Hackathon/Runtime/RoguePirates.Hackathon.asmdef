@@ -6,6 +6,7 @@
         "RoguePirates.V4",
         "RoguePirates.V4.Presentation",
         "RoguePirates.V4.Foundation",
+        "RoguePirates.UI",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

@@ -1,4 +1,5 @@
 using System;
+using RoguePirates.UI;
 using RoguePirates.V4;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Online;
@@ -71,16 +72,16 @@ namespace RoguePirates.Hackathon.UI
 
             // Hackathon UI (13 Oct): the parchment kit. The bark is a maroon banner, the wager a parchment card.
             _barkBox = Box(go.transform, "Bark", new Vector2(0.5f, 1f), new Vector2(0f, -200f), new Vector2(940f, 96f), "Banner_Maroon", 1.6f, new Color(0.35f, 0.07f, 0.06f, 0.92f));
-            PvpKit.RowIcon(_barkBox, "Icon_Skull_Crossbones", 26f, 56f, PvpKit.OnWood);
-            _bark = PvpKit.Label(PvpKit.Fill(_barkBox, "Text", 96f, 6f, 24f, 6f), string.Empty, 28f, PvpKit.OnWood, TextAlignmentOptions.MidlineLeft, false, 16f);
+            UiKit.RowIcon(_barkBox, "Icon_Skull_Crossbones", 26f, 56f, UiKit.OnWood);
+            _bark = UiKit.Label(UiKit.Fill(_barkBox, "Text", 96f, 6f, 24f, 6f), string.Empty, 28f, UiKit.OnWood, TextAlignmentOptions.MidlineLeft, false, 16f);
             _bark.textWrappingMode = TextWrappingModes.Normal;
             _barkBox.gameObject.SetActive(false);
 
             _wagerBox = Box(go.transform, "Wager", new Vector2(0.5f, 0f), new Vector2(0f, 28f), new Vector2(1100f, 84f), "Panel_Card", 2.2f, new Color(0.96f, 0.89f, 0.74f, 0.97f));
-            PvpKit.RowIcon(_wagerBox, "Chest_2", 18f, 60f);
-            _wagerText = PvpKit.Label(PvpKit.Fill(_wagerBox, "Text", 92f, 4f, 280f, 4f), string.Empty, 25f, PvpKit.Ink, TextAlignmentOptions.MidlineLeft, false, 15f);
+            UiKit.RowIcon(_wagerBox, "Chest_2", 18f, 60f);
+            _wagerText = UiKit.Label(UiKit.Fill(_wagerBox, "Text", 92f, 4f, 280f, 4f), string.Empty, 25f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 15f);
             _wagerText.textWrappingMode = TextWrappingModes.Normal;
-            _explorer = PvpKit.KitButton(PvpKit.TopRight(_wagerBox, "ViewPayout", 16f, 12f, 250f, 60f), "View payout", "Icon_Link",
+            _explorer = UiKit.KitButton(UiKit.TopRight(_wagerBox, "ViewPayout", 16f, 12f, 250f, 60f), "View payout", "Icon_Link",
                 () => { if (_explorerUrl != null) Application.OpenURL(_explorerUrl); }, "Btn_Gold", 25f, 28f);
             _explorer.gameObject.SetActive(false);
             _wagerBox.gameObject.SetActive(false);
@@ -89,12 +90,12 @@ namespace RoguePirates.Hackathon.UI
 
         static RectTransform Box(Transform parent, string name, Vector2 anchor, Vector2 pos, Vector2 size, string sprite, float thin, Color fallback)
         {
-            var rt = PvpKit.Node(parent, name);
+            var rt = UiKit.Node(parent, name);
             rt.anchorMin = rt.anchorMax = anchor;
             rt.pivot = new Vector2(0.5f, anchor.y);
             rt.anchoredPosition = pos;
             rt.sizeDelta = size;
-            PvpKit.Paint(rt, sprite, thin, null, fallback);
+            UiKit.Paint(rt, sprite, thin, null, fallback);
             return rt;
         }
 

@@ -1,3 +1,4 @@
+using RoguePirates.UI;
 using RoguePirates.V4.Foundation.Platform;
 using RoguePirates.V4.Views;
 using TMPro;
@@ -69,8 +70,8 @@ namespace RoguePirates.V4.Presentation.Hud
         static void KitPause(RectTransform pause)
         {
             var image = pause.GetComponent<Image>();
-            var art = RoguePirates.V4.Presentation.Menu.MenuKit.S("Pause_2");
-            var square = art == null ? RoguePirates.V4.Presentation.Menu.MenuKit.S("Btn_Square_Gold") : null;
+            var art = UiKit.S("Pause_2");
+            var square = art == null ? UiKit.S("Btn_Square_Gold") : null;
             if (art == null && square == null) return;
             var label = pause.Find("Label");
             if (label != null) label.gameObject.SetActive(false);
@@ -88,7 +89,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 rt.sizeDelta = new Vector2(PauseSize * 0.12f, PauseSize * 0.42f);
                 rt.anchoredPosition = new Vector2((i == 0 ? -1f : 1f) * PauseSize * 0.12f, 0f);
                 var img = bar.GetComponent<Image>();
-                img.color = RoguePirates.V4.Presentation.Menu.MenuKit.Ink;
+                img.color = UiKit.Ink;
                 img.raycastTarget = false;
             }
         }

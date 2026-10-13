@@ -9,8 +9,8 @@ namespace RoguePirates.Hackathon.UI
 {
     /// <summary>
     /// Hackathon (12 Oct, U-3): shared bits of the islands and market screens: a round marker sprite and the NFT picture
-    /// cache. (13 Oct: the old navy rows, amber buttons and RUM bar went; the screens draw with <see cref="IslandKit"/> and
-    /// <see cref="MarketKit"/>.)
+    /// cache. (13 Oct: the old navy rows, amber buttons and RUM bar went; the screens draw with the parchment kit,
+    /// <see cref="RoguePirates.UI.UiKit"/>.)
     /// </summary>
     static class IslandUi
     {

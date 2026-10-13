@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RoguePirates.UI;
 using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Foundation.Progression;
 using RoguePirates.V4.Views;
@@ -379,7 +380,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _boostLabel.overflowMode = TextOverflowModes.Ellipsis;
             _boostLabel.text = BoostReadyText;
             // Hackathon UI (13 Oct, owner): the kit's bar track and green fill instead of the flat blue box.
-            _kitBoost = RoguePirates.V4.Presentation.Menu.MenuKit.HudBar(bg, _boostFill, "Bar_Fill_Green", _boostLabel);
+            _kitBoost = UiKit.HudBar(bg, _boostFill, "Bar_Fill_Green", _boostLabel);
 
             _boostButton = boostRoot.GetComponent<Button>();
             if (_boostButton == null) _boostButton = boostRoot.gameObject.AddComponent<Button>();

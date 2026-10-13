@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using RoguePirates.UI;
 using RoguePirates.V4.Foundation.Balance;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.World;
@@ -198,7 +199,7 @@ namespace RoguePirates.V4.Presentation.Hud
         }
 
         /// <summary>Hackathon UI: the summary's gold line in a parchment ink.</summary>
-        static string Ink(string summary) => MenuKit.InkRich(summary);
+        static string Ink(string summary) => UiKit.InkRich(summary);
 
         void BuildUi(Transform canvas)
         {
@@ -250,28 +251,28 @@ namespace RoguePirates.V4.Presentation.Hud
         /// </summary>
         void ApplyKit()
         {
-            if (!MenuKit.Ready) return;
+            if (!UiKit.Ready) return;
             var rt = _panel.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(720f, 760f);
-            MenuKit.Sheet(_panel.GetComponent<Image>());
-            var head = MenuKit.WoodHeader(rt, "RESULTS", 104f, out var title, 24f);
+            UiKit.Sheet(_panel.GetComponent<Image>());
+            var head = UiKit.WoodHeader(rt, "RESULTS", 104f, out var title, 24f);
             head.SetAsLastSibling();
             _headline.gameObject.SetActive(false);
             _headline = title;
             _headline.alignment = TextAlignmentOptions.MidlineLeft;
-            MenuKit.InkText(_summary, MenuKit.Ink, 24f);
+            UiKit.InkText(_summary, UiKit.Ink, 24f);
             var body = _summaryScroll.GetComponent<RectTransform>();
             body.offsetMin = new Vector2(40f, 112f);
             body.offsetMax = new Vector2(-28f, -122f);
             _summary.margin = new Vector4(0f, 0f, 24f, 0f);
-            MenuKit.StyleScroll(_summaryScroll, 12f);
+            UiKit.StyleScroll(_summaryScroll, 12f);
             foreach (var b in _panel.GetComponentsInChildren<Button>(true))
             {
                 var r = (RectTransform)b.transform;
                 r.sizeDelta = new Vector2(300f, 76f);
-                if (b == _retry) { r.anchoredPosition = new Vector2(-160f, 24f); MenuKit.StyleButton(b, "Btn_Gold"); MenuKit.ButtonIcon(b, "Icon_Refresh", 30f); }
-                else if (b == _menu) { r.anchoredPosition = new Vector2(160f, 24f); MenuKit.StyleButton(b, "Btn_Parchment"); MenuKit.ButtonIcon(b, "Icon_House", 30f); }
-                else { r.anchoredPosition = new Vector2(r.anchoredPosition.x * 1.4f, 112f); r.sizeDelta = new Vector2(400f, 64f); MenuKit.StyleButton(b, "Btn_Parchment"); MenuKit.ButtonIcon(b, "Icon_Save", 28f); }
+                if (b == _retry) { r.anchoredPosition = new Vector2(-160f, 24f); UiKit.StyleButton(b, "Btn_Gold"); UiKit.ButtonIcon(b, "Icon_Refresh", 30f); }
+                else if (b == _menu) { r.anchoredPosition = new Vector2(160f, 24f); UiKit.StyleButton(b, "Btn_Parchment"); UiKit.ButtonIcon(b, "Icon_House", 30f); }
+                else { r.anchoredPosition = new Vector2(r.anchoredPosition.x * 1.4f, 112f); r.sizeDelta = new Vector2(400f, 64f); UiKit.StyleButton(b, "Btn_Parchment"); UiKit.ButtonIcon(b, "Icon_Save", 28f); }
             }
             // The download row (playtest builds) sits above the two main buttons: the body ends above it.
             if (_panel.transform.Find("run_results_session") != null) body.offsetMin = new Vector2(40f, 188f);

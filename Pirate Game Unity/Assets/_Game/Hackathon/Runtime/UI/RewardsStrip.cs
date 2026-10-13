@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using RoguePirates.UI;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Online;
 using TMPro;
@@ -48,12 +49,12 @@ namespace RoguePirates.Hackathon.UI
             var area = HackUi.Area(rt, "HackathonRewards", Vector2.zero, new Vector2(1f, 0f));
             area.offsetMin = new Vector2(24f, 104f);
             area.offsetMax = new Vector2(-24f, 104f + Height);
-            MarketKit.Paint(area, "Panel_Inset", 2f, null, new Color(0.95f, 0.88f, 0.72f, 1f));
-            MarketKit.Icon(MarketKit.TopLeft(area, "Trophy", 18f, 18f, 76f, 76f), "Icon_Trophy", MarketKit.InkGold);
-            _table = MarketKit.Label(MarketKit.Node(area, "Table"), "<b>Rewards: Top 3 each week win devnet SOL: 0.5 / 0.3 / 0.2</b>", 26f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
+            UiKit.Paint(area, "Panel_Inset", 2f, null, new Color(0.95f, 0.88f, 0.72f, 1f));
+            UiKit.Icon(UiKit.TopLeft(area, "Trophy", 18f, 18f, 76f, 76f), "Icon_Trophy", UiKit.InkGold);
+            _table = UiKit.Label(UiKit.Node(area, "Table"), "<b>Rewards: Top 3 each week win devnet SOL: 0.5 / 0.3 / 0.2</b>", 26f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
             Place((RectTransform)_table.transform, new Vector2(0f, 0.5f), Vector2.one, new Vector4(108f, 0f, 20f, 4f));
             _table.richText = true;
-            _winners = MarketKit.Label(MarketKit.Node(area, "Winners"), string.Empty, 22f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 11f);
+            _winners = UiKit.Label(UiKit.Node(area, "Winners"), string.Empty, 22f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 11f);
             Place((RectTransform)_winners.transform, Vector2.zero, new Vector2(0.58f, 0.5f), new Vector4(108f, 6f, 8f, 0f));
             _winners.textWrappingMode = TextWrappingModes.Normal;
             _winners.richText = true;
@@ -61,9 +62,9 @@ namespace RoguePirates.Hackathon.UI
             {
                 var index = i;
                 var x0 = 0.585f + i * 0.138f;
-                var brt = MarketKit.Node(area, "Payout" + (i + 1));
+                var brt = UiKit.Node(area, "Payout" + (i + 1));
                 Place(brt, new Vector2(x0, 0.06f), new Vector2(x0 + 0.13f, 0.5f), Vector4.zero);
-                _links[i] = MarketKit.KitButton(brt, "#" + (i + 1) + " payout", "Icon_Link", () => { if (_urls[index] != null) Application.OpenURL(_urls[index]); }, "Btn_Parchment", 20f, 22f, 2f);
+                _links[i] = UiKit.KitButton(brt, "#" + (i + 1) + " payout", "Icon_Link", () => { if (_urls[index] != null) Application.OpenURL(_urls[index]); }, "Btn_Parchment", 20f, 22f, 2f, wrap: false, spacing: 10f);
                 _links[i].gameObject.SetActive(false);
             }
         }
@@ -113,7 +114,7 @@ namespace RoguePirates.Hackathon.UI
             if (data.table != null && data.table.Length > 0)
                 for (var i = 0; i < data.table.Length; i++) table.Append(i > 0 ? " / " : string.Empty).Append(data.table[i].sol.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture));
             else table.Append("0.5 / 0.3 / 0.2");
-            table.Append("</b>  <size=75%><color=" + MarketKit.Hex(MarketKit.InkDim) + ">(wallet players, paid at the weekly reset)</color></size>");
+            table.Append("</b>  <size=75%><color=" + UiKit.Hex(UiKit.InkDim) + ">(wallet players, paid at the weekly reset)</color></size>");
             _table.text = table.ToString();
 
             for (var i = 0; i < _links.Length; i++) { _urls[i] = null; _links[i].gameObject.SetActive(false); }
@@ -128,8 +129,8 @@ namespace RoguePirates.Hackathon.UI
                 var w = data.winners[i];
                 if (w == null) continue;
                 sb.Append(i > 0 ? "   " : string.Empty)
-                  .Append("<color=" + MarketKit.Hex(MarketKit.InkGold) + "><b>#").Append(w.rank).Append("</b></color> ").Append(w.name)
-                  .Append(" <size=80%><color=" + MarketKit.Hex(MarketKit.InkDim) + ">").Append(string.IsNullOrEmpty(w.walletShort) ? Web3Rules.ShortAddress(w.wallet) : w.walletShort).Append("</color></size> ")
+                  .Append("<color=" + UiKit.Hex(UiKit.InkGold) + "><b>#").Append(w.rank).Append("</b></color> ").Append(w.name)
+                  .Append(" <size=80%><color=" + UiKit.Hex(UiKit.InkDim) + ">").Append(string.IsNullOrEmpty(w.walletShort) ? Web3Rules.ShortAddress(w.wallet) : w.walletShort).Append("</color></size> ")
                   .Append(w.sol.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)).Append(" SOL");
                 var sig = w.payout != null ? w.payout.signature : null;
                 var slot = Mathf.Clamp(w.rank - 1, 0, _links.Length - 1);

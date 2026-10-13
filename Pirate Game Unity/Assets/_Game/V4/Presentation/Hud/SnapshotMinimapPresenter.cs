@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RoguePirates.UI;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Foundation.World;
@@ -108,7 +109,7 @@ namespace RoguePirates.V4.Presentation.Hud
             border.raycastTarget = false;
             var inner = Child(root, "Inner");
             // Hackathon UI (13 Oct, owner): a wood frame from the parchment kit instead of the flat gold border.
-            var wood = RoguePirates.V4.Presentation.Menu.MenuKit.S("Header_Wood");
+            var wood = UiKit.S("Header_Wood");
             if (wood != null)
             {
                 border.sprite = wood;

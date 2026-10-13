@@ -124,6 +124,35 @@ namespace RoguePirates.V4.Tests
                 StringAssert.DoesNotContain("\"GUID:", File.ReadAllText(asmdef), $"{Path.GetFileName(asmdef)} must reference assemblies by name");
         }
 
+        /// <summary>
+        /// V5 M9i: one parchment UI kit (<c>RoguePirates.UI</c>: the skin and <c>UiKit</c>) below both V4 Presentation and the
+        /// hackathon assembly. It references neither; V4 does not reference the hackathon; nothing reads the skin by
+        /// reflection any more; and no other kit copy (a static "...Kit" class) is left.
+        /// </summary>
+        [Test]
+        public void UiKit_IsOneSharedAssembly_BelowV4AndTheHackathon()
+        {
+            var ui = File.ReadAllText(Path.Combine(GameRoot, "UI/RoguePirates.UI.asmdef"));
+            foreach (var name in new[] { "RoguePirates.V4", "RoguePirates.Hackathon", "RoguePirates.V5" })
+                StringAssert.DoesNotContain("\"" + name, ui, "the UI kit sits below " + name);
+            StringAssert.Contains("\"RoguePirates.UI\"", File.ReadAllText(Path.Combine(GameRoot, "V4/Presentation/RoguePirates.V4.Presentation.asmdef")));
+            StringAssert.Contains("\"RoguePirates.UI\"", File.ReadAllText(Path.Combine(GameRoot, "Hackathon/Runtime/RoguePirates.Hackathon.asmdef")));
+            foreach (var asmdef in Directory.GetFiles(Path.Combine(GameRoot, "V4"), "*.asmdef", SearchOption.AllDirectories))
+                StringAssert.DoesNotContain("\"RoguePirates.Hackathon", File.ReadAllText(asmdef), Path.GetFileName(asmdef) + " must not reference the hackathon");
+
+            var copies = new List<string>();
+            var kitClass = new Regex(@"static\s+(partial\s+)?class\s+\w*Kit\b");
+            foreach (var root in new[] { "V4", "Hackathon", "UI" })
+            foreach (var file in Directory.GetFiles(Path.Combine(GameRoot, root), "*.cs", SearchOption.AllDirectories))
+            {
+                var text = File.ReadAllText(file);
+                if (text.Contains("Resources.Load<ScriptableObject>(\"HackSkin\")") || text.Contains("GetField(\"sprites\")"))
+                    copies.Add(Path.GetFileName(file) + " reads the skin by reflection");
+                if (root != "UI" && kitClass.IsMatch(text)) copies.Add(Path.GetFileName(file) + " has its own kit class");
+            }
+            Assert.IsEmpty(copies, string.Join("; ", copies));
+        }
+
         [Test]
         public void DevTools_IsCompiledOnlyInEditorAndDevelopmentBuilds()
         {

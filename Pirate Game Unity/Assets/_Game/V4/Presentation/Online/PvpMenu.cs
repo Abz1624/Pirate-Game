@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RoguePirates.UI;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.UI;
@@ -398,11 +399,11 @@ namespace RoguePirates.V4.Presentation.Online
             var head = OnlineUi.Sheet(_draft, "Your build", 104f, out _, 1180f);
             if (head != null)
             {
-                MenuKit.StyleButton(lobbyButton, "Btn_Parchment");
-                MenuKit.ButtonIcon(lobbyButton, "Icon_Chevron_Left", 30f);
-                MenuKit.HeaderButton(head, lobbyButton, 330f, 250f, 72f);
-                MenuKit.ButtonIcon(_draftReady, "Icon_Check", 30f);
-                MenuKit.HeaderButton(head, _draftReady, 30f, 280f, 72f);
+                UiKit.StyleButton(lobbyButton, "Btn_Parchment");
+                UiKit.ButtonIcon(lobbyButton, "Icon_Chevron_Left", 30f);
+                UiKit.HeaderButton(head, lobbyButton, 330f, 250f, 72f);
+                UiKit.ButtonIcon(_draftReady, "Icon_Check", 30f);
+                UiKit.HeaderButton(head, _draftReady, 30f, 280f, 72f);
                 var strip = _draftStrip.rectTransform;
                 strip.SetParent(head, false);
                 strip.anchorMin = new Vector2(1f, 0f);
@@ -410,7 +411,7 @@ namespace RoguePirates.V4.Presentation.Online
                 strip.pivot = new Vector2(1f, 0.5f);
                 strip.sizeDelta = new Vector2(560f, 0f);
                 strip.anchoredPosition = new Vector2(-610f, 0f);
-                MenuKit.InkText(_draftStrip, MenuKit.OnWood);
+                UiKit.InkText(_draftStrip, UiKit.OnWood);
                 _draftStrip.alignment = TextAlignmentOptions.MidlineRight;
                 _draftStrip.enableAutoSizing = true;
                 _draftStrip.fontSizeMin = 18f;
@@ -445,7 +446,7 @@ namespace RoguePirates.V4.Presentation.Online
             detail.offsetMin = new Vector2(20f, 62f);
             detail.offsetMax = new Vector2(-20f, 150f);
             detail.gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
-            MenuKit.Paint(detail, "Panel_Inset", 2f);
+            UiKit.Reskin(detail, "Panel_Inset", 2f);
             _draftDetail = OnlineUi.Text(detail, "Text", DetailHint, 24, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor);
             _draftMessage.fontStyle = FontStyles.Bold;
             _draftDetail.margin = new Vector4(16f, 4f, 16f, 4f);
@@ -502,7 +503,7 @@ namespace RoguePirates.V4.Presentation.Online
             RefreshDraft();
             RefreshDraftStrip(PvpSession.Instance.Lobby);
             _draftMessage.text = "Pick 6 weapons and 6 Logbooks (all start at level 1), then order them.";
-            if (_draftDetail != null) _draftDetail.text = MenuKit.InkRich(DetailHint);
+            if (_draftDetail != null) _draftDetail.text = UiKit.InkRich(DetailHint);
             var me = PvpSession.Instance.MySeat;
             if (me != null && me.status != "drafting" && PvpSession.Instance.Lobby?.status != "starting") _ = PvpSession.Instance.SetStatus("drafting");
         }
@@ -556,8 +557,8 @@ namespace RoguePirates.V4.Presentation.Online
         public void ShowDetail(string id, bool weapon)
         {
             if (_draftDetail == null) return;
-            if (weapon) { var w = _allWeapons.Find(x => x.weaponId == id); if (w != null) _draftDetail.text = MenuKit.InkRich(Detail(w)); }
-            else { var l = _allLogbooks.Find(x => x.logbookId == id); if (l != null) _draftDetail.text = MenuKit.InkRich(Detail(l)); }
+            if (weapon) { var w = _allWeapons.Find(x => x.weaponId == id); if (w != null) _draftDetail.text = UiKit.InkRich(Detail(w)); }
+            else { var l = _allLogbooks.Find(x => x.logbookId == id); if (l != null) _draftDetail.text = UiKit.InkRich(Detail(l)); }
         }
 
         void Card(RectTransform grid, string id, string label, string line, Sprite icon, bool weapon)
@@ -681,8 +682,8 @@ namespace RoguePirates.V4.Presentation.Online
                 CardLook(kv.Value, i >= 0);
                 _logbookBadges[kv.Key].text = i >= 0 ? (i + 1).ToString() : string.Empty;
             }
-            _weaponCount.text = MenuKit.InkRich($"Weapons  <color=#ffd166>{_weapons.Count}/{Picks}</color>");
-            _logbookCount.text = MenuKit.InkRich($"Logbooks  <color=#ffd166>{_logbooks.Count}/{Picks}</color>");
+            _weaponCount.text = UiKit.InkRich($"Weapons  <color=#ffd166>{_weapons.Count}/{Picks}</color>");
+            _logbookCount.text = UiKit.InkRich($"Logbooks  <color=#ffd166>{_logbooks.Count}/{Picks}</color>");
             ClearRows(_orderRows);
             OrderRows(_weaponOrder, _weapons, true);
             OrderRows(_logbookOrder, _logbooks, false);
@@ -714,15 +715,15 @@ namespace RoguePirates.V4.Presentation.Online
         /// <summary>Hackathon UI: a draft card on the kit's slot card (gold when picked); without the kit, the tint.</summary>
         static void CardLook(Image image, bool picked)
         {
-            if (!MenuKit.Ready) return;
-            MenuKit.Paint(image, picked ? "Slot_Card_Selected" : "Slot_Card", 2.4f);
+            if (!UiKit.Ready) return;
+            UiKit.Reskin(image, picked ? "Slot_Card_Selected" : "Slot_Card", 2.4f);
             image.raycastTarget = true;
         }
 
         static void SmallButton(Transform row, string label, Action click, bool enabled)
         {
             var b = OnlineUi.Button(row, label, click);
-            MenuKit.StyleButton(b, label == "X" ? "Btn_Red" : "Btn_Parchment");
+            UiKit.StyleButton(b, label == "X" ? "Btn_Red" : "Btn_Parchment");
             var le = b.GetComponent<LayoutElement>();
             le.minWidth = le.preferredWidth = label.Length > 1 ? 104f : 64f;
             le.minHeight = le.preferredHeight = 48f;

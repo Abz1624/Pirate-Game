@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RoguePirates.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,28 +51,28 @@ namespace RoguePirates.Hackathon.UI
 
         void Build(RectTransform rt)
         {
-            var card = MarketKit.Fill(rt, "Card", 8f, 0f, 8f, HeaderHeight - 40f);
-            MarketKit.Paint(card, "Panel_Card", 1.2f);
+            var card = UiKit.Fill(rt, "Card", 8f, 0f, 8f, HeaderHeight - 40f);
+            UiKit.Paint(card, "Panel_Card", 1.2f);
 
-            var head = MarketKit.Strip(rt, "Header", 0f, 0f, 0f, HeaderHeight);
-            MarketKit.Header(head, "Island market", "Icon_Skull_Crossbones", 60f, 150f, 940f);
-            _close = MarketKit.KitButton(MarketKit.TopRight(head, "Close", 24f, 22f, 230f, 86f), "Close", "Icon_Close", Close, "Btn_Gold", 34f, 38f);
-            MarketKit.KitButton(MarketKit.TopRight(head, "Refresh", 270f, 22f, 230f, 86f), "Refresh", "Icon_Refresh", Refresh, "Btn_Gold", 34f, 38f);
-            var bal = MarketKit.TopRight(head, "Balance", 520f, 24f, 400f, 82f);
-            MarketKit.Icon(MarketKit.TopLeft(bal, "Chest", 0f, 4f, 74f, 74f), "Chest_2");
-            _balance = MarketKit.Label(MarketKit.Fill(bal, "Text", 86f, 0f, 0f, 0f), string.Empty, 34f, MarketKit.OnWood, TextAlignmentOptions.MidlineLeft, true, 22f);
+            var head = UiKit.Strip(rt, "Header", 0f, 0f, 0f, HeaderHeight);
+            HackUi.Header(head, "Island market", "Icon_Skull_Crossbones", 60f, 150f, 940f);
+            _close = UiKit.KitButton(UiKit.TopRight(head, "Close", 24f, 22f, 230f, 86f), "Close", "Icon_Close", Close, "Btn_Gold", 34f, 38f, wrap: false, spacing: 10f);
+            UiKit.KitButton(UiKit.TopRight(head, "Refresh", 270f, 22f, 230f, 86f), "Refresh", "Icon_Refresh", Refresh, "Btn_Gold", 34f, 38f, wrap: false, spacing: 10f);
+            var bal = UiKit.TopRight(head, "Balance", 520f, 24f, 400f, 82f);
+            UiKit.Icon(UiKit.TopLeft(bal, "Chest", 0f, 4f, 74f, 74f), "Chest_2");
+            _balance = UiKit.Label(UiKit.Fill(bal, "Text", 86f, 0f, 0f, 0f), string.Empty, 34f, UiKit.OnWood, TextAlignmentOptions.MidlineLeft, true, 22f);
 
-            _sub = MarketKit.Label(MarketKit.Strip(card, "Intro", 56f, 58f, 56f, 46f), "Buy and sell island NFTs for devnet SOL. The game's escrow holds a listed NFT until it sells.",
-                30f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 20f);
-            _statusStrip = MarketKit.Strip(card, "Status", 50f, 108f, 50f, 58f);
-            _status = MarketKit.StatusLine(_statusStrip, 27f);
+            _sub = UiKit.Label(UiKit.Strip(card, "Intro", 56f, 58f, 56f, 46f), "Buy and sell island NFTs for devnet SOL. The game's escrow holds a listed NFT until it sells.",
+                30f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 20f);
+            _statusStrip = UiKit.Strip(card, "Status", 50f, 108f, 50f, 58f);
+            _status = HackUi.StatusLine(_statusStrip, 27f);
             // 13 Oct (review): the last transfer's explorer link, and Cancel while the wallet is asked to sign.
-            _txButton = MarketKit.KitButton(MarketKit.TopRight(card, "ViewTx", 50f, 108f, 210f, 58f), "View tx", "Icon_Link", () => { if (_txUrl != null) Application.OpenURL(_txUrl); }, "Btn_Parchment", 24f, 28f);
+            _txButton = UiKit.KitButton(UiKit.TopRight(card, "ViewTx", 50f, 108f, 210f, 58f), "View tx", "Icon_Link", () => { if (_txUrl != null) Application.OpenURL(_txUrl); }, "Btn_Parchment", 24f, 28f, wrap: false, spacing: 10f);
             _txButton.gameObject.SetActive(false);
-            _cancelWallet = MarketKit.KitButton(MarketKit.TopRight(card, "CancelWallet", 270f, 108f, 210f, 58f), "Cancel", "Icon_Close", () => Web3Session.Instance.CancelWait(), "Btn_Red", 24f, 28f);
+            _cancelWallet = UiKit.KitButton(UiKit.TopRight(card, "CancelWallet", 270f, 108f, 210f, 58f), "Cancel", "Icon_Close", () => Web3Session.Instance.CancelWait(), "Btn_Red", 24f, 28f, wrap: false, spacing: 10f);
             _cancelWallet.gameObject.SetActive(false);
-            var host = MarketKit.Fill(card, "List", 46f, 34f, 40f, 180f);
-            _list = MarketKit.Scroll(host, 14f, new RectOffset(4, 16, 4, 10));
+            var host = UiKit.Fill(card, "List", 46f, 34f, 40f, 180f);
+            _list = UiKit.Scroll(host, 14f, new RectOffset(4, 16, 4, 10));
         }
 
         void ShowBalance()
@@ -99,7 +100,7 @@ namespace RoguePirates.Hackathon.UI
         void Status(string text, Color color)
         {
             _status.text = text;
-            _status.color = MarketKit.InkFor(color);
+            _status.color = HackUi.InkFor(color);
         }
 
         /// <summary>The status line with a transfer's explorer link (null hides the button).</summary>
@@ -169,12 +170,12 @@ namespace RoguePirates.Hackathon.UI
 
         void Render()
         {
-            MarketKit.Clear(_list);
+            UiKit.Clear(_list);
             ShowBalance();
             var myId = Web3Session.Instance.SignedIn && Web3Session.Instance.Profile != null ? Web3Session.Instance.Profile.playerId : null;
-            var dim = MarketKit.Hex(MarketKit.InkDim);
+            var dim = UiKit.Hex(UiKit.InkDim);
 
-            MarketKit.Section(_list, "Icon_Tag", "For sale", "RUM per hour and defence record help you judge an island");
+            UiKit.Section(_list, "Icon_Tag", "For sale", "RUM per hour and defence record help you judge an island");
             var any = false;
             if (_market?.listings != null)
                 foreach (var l in _market.listings)
@@ -182,109 +183,109 @@ namespace RoguePirates.Hackathon.UI
                     if (l == null || l.status != "active") continue;
                     any = true;
                     var mine = myId != null && l.seller != null && l.seller.playerId == myId;
-                    var row = MarketKit.Card(_list, "Listing", 176f, mine ? new Color(1f, 0.9f, 0.62f, 1f) : (Color?)null);
+                    var row = UiKit.Card(_list, "Listing", 176f, mine ? new Color(1f, 0.9f, 0.62f, 1f) : (Color?)null);
                     Picture(row, ImageFor(l), 144f);
                     var isl = l.island ?? new ListingIsland();
                     var info = Info(row, isl.name, isl.level, mine ? "your listing" : null);
-                    IconLine(info, 64f, "Chest_2", $"<color={MarketKit.Hex(MarketKit.InkGold)}>{isl.ratePerHour} RUM / hr</color>", 32f);
-                    var details = MarketKit.Strip(info, "Details", 0f, 110f, 0f, 40f);
-                    MarketKit.Row(details, 10f);
+                    IconLine(info, 64f, "Chest_2", $"<color={UiKit.Hex(UiKit.InkGold)}>{isl.ratePerHour} RUM / hr</color>", 32f);
+                    var details = UiKit.Strip(info, "Details", 0f, 110f, 0f, 40f);
+                    UiKit.Row(details, 10f);
                     IconText(details, "Icon_Shield", $"Defence: <color={RecordColor(isl.defenceRecord)}>{IslandRules.DefenceRecordLine(isl.defenceRecord)}</color>");
                     IconText(details, "Icon_Pin", $"{isl.slotName}, {isl.region}");
                     IconText(details, "Icon_User", $"{l.seller?.name} <color={dim}>{l.seller?.walletShort}</color>");
-                    MarketKit.Chip(MarketKit.Cell(row, "Price", 230f, 92f), HackathonRules.Sol(l.priceLamports), 38f, MarketKit.Ink, true);
+                    UiKit.Chip(UiKit.Cell(row, "Price", 230f, 92f), HackathonRules.Sol(l.priceLamports), 38f, UiKit.Ink, true);
                     var listing = l;
-                    if (mine) MarketKit.RowButton(row, "Cancel", null, () => Cancel(listing), 220f, 92f, "Btn_Red", 36f);
+                    if (mine) UiKit.RowButton(row, "Cancel", null, () => Cancel(listing), 220f, 92f, "Btn_Red", 36f);
                     else if (PendingTransfers.Has(PendingTransfers.Buy, l.listingId))
-                        MarketKit.RowButton(row, "Finish", null, () => Buy(listing), 220f, 92f, "Btn_Gold", 34f).interactable = Web3Session.Instance.SignedIn;
-                    else MarketKit.RowButton(row, "Buy", null, () => Buy(listing), 220f, 92f, "Btn_Gold", 38f).interactable = Web3Session.Instance.SignedIn;
+                        UiKit.RowButton(row, "Finish", null, () => Buy(listing), 220f, 92f, "Btn_Gold", 34f).interactable = Web3Session.Instance.SignedIn;
+                    else UiKit.RowButton(row, "Buy", null, () => Buy(listing), 220f, 92f, "Btn_Gold", 38f).interactable = Web3Session.Instance.SignedIn;
                 }
-            if (!any) MarketKit.Note(_list, "No islands for sale right now. List yours below!", 28f);
+            if (!any) UiKit.Note(_list, "No islands for sale right now. List yours below!", 28f);
 
             // 13 Oct (review): payments and NFT transfers signed but not answered by the server yet (no second transfer).
             var buys = PendingBuys();
             var lists = PendingLists();
             if (Web3Session.Instance.SignedIn && (buys.Count > 0 || lists.Count > 0))
             {
-                MarketKit.Section(_list, "Icon_Clock", "Unfinished", "signed transfers the server has not confirmed yet; finishing never pays again");
+                UiKit.Section(_list, "Icon_Clock", "Unfinished", "signed transfers the server has not confirmed yet; finishing never pays again");
                 foreach (var e in buys)
                 {
-                    var row = MarketKit.Card(_list, "PendingBuy", 104f);
-                    var c = MarketKit.Label(MarketKit.Cell(row, "Text", 0f, 80f),
+                    var row = UiKit.Card(_list, "PendingBuy", 104f);
+                    var c = UiKit.Label(UiKit.Cell(row, "Text", 0f, 80f),
                         $"<b>Purchase</b>   {HackathonRules.Sol(e.lamports)}   <color={dim}>payment {HackathonRules.ShortSig(e.signature)}</color>" +
                         (string.IsNullOrEmpty(e.lastError) ? string.Empty : $"\n<size=80%><color={dim}>last answer: {e.lastError}</color></size>"),
-                        28f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+                        28f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
                     c.textWrappingMode = TextWrappingModes.Normal;
                     var listingId = e.key;
                     var sig = e.signature;
-                    MarketKit.RowButton(row, "Finish purchase", null, () => FinishBuy(listingId), 290f, 76f, "Btn_Gold", 28f);
-                    MarketKit.RowButton(row, "Tx", "Icon_Link", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 130f, 76f, "Btn_Parchment", 28f);
+                    UiKit.RowButton(row, "Finish purchase", null, () => FinishBuy(listingId), 290f, 76f, "Btn_Gold", 28f);
+                    UiKit.RowButton(row, "Tx", "Icon_Link", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 130f, 76f, "Btn_Parchment", 28f);
                 }
                 foreach (var e in lists)
                 {
-                    var row = MarketKit.Card(_list, "PendingList", 104f);
-                    var c = MarketKit.Label(MarketKit.Cell(row, "Text", 0f, 80f),
+                    var row = UiKit.Card(_list, "PendingList", 104f);
+                    var c = UiKit.Label(UiKit.Cell(row, "Text", 0f, 80f),
                         $"<b>Listing</b>   {IslandName(e.key)}   {HackathonRules.Sol(e.lamports)}   <color={dim}>NFT transfer {HackathonRules.ShortSig(e.signature)}</color>" +
                         (string.IsNullOrEmpty(e.lastError) ? string.Empty : $"\n<size=80%><color={dim}>last answer: {e.lastError}</color></size>"),
-                        28f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+                        28f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
                     c.textWrappingMode = TextWrappingModes.Normal;
                     var islandId = e.key;
                     var sig = e.signature;
-                    MarketKit.RowButton(row, "Finish listing", null, () => FinishList(islandId), 270f, 76f, "Btn_Gold", 28f);
-                    MarketKit.RowButton(row, "Tx", "Icon_Link", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 130f, 76f, "Btn_Parchment", 28f);
+                    UiKit.RowButton(row, "Finish listing", null, () => FinishList(islandId), 270f, 76f, "Btn_Gold", 28f);
+                    UiKit.RowButton(row, "Tx", "Icon_Link", () => Application.OpenURL(HackathonRules.ExplorerTx(sig)), 130f, 76f, "Btn_Parchment", 28f);
                 }
             }
 
             // Sell.
             if (Web3Session.Instance.SignedIn)
             {
-                MarketKit.Section(_list, "Icon_Upload", "Sell your island", "Listed NFTs stay in escrow until sold or cancelled.");
+                UiKit.Section(_list, "Icon_Upload", "Sell your island", "Listed NFTs stay in escrow until sold or cancelled.");
                 var islands = _islands?.islands;
                 IslandView sellable = null;
                 if (islands != null) foreach (var i in islands) if (i != null && !i.listed && !PendingTransfers.Has(PendingTransfers.List, i.islandId)) { sellable = i; break; }
                 if (sellable == null)
-                    MarketKit.Note(_list, islands == null || islands.Length == 0 ? "You have no island yet (claim one on the Islands screen)."
+                    UiKit.Note(_list, islands == null || islands.Length == 0 ? "You have no island yet (claim one on the Islands screen)."
                         : lists.Count > 0 ? "Finish the listing above (its NFT is on its way to the escrow)." : "Your island is already listed.", 28f);
                 else
                 {
-                    var row = MarketKit.Card(_list, "Sell", 160f);
+                    var row = UiKit.Card(_list, "Sell", 160f);
                     Picture(row, sellable.nft?.imageUrl, 130f);
                     var info = Info(row, sellable.name, sellable.level, null);
                     var minted = sellable.nft != null && sellable.nft.Minted;
-                    var line = MarketKit.Label(MarketKit.Strip(info, "Nft", 0f, 70f, 0f, 40f),
-                        $"NFT {IslandUi.Short(sellable.nft?.mint)}" + (minted ? string.Empty : $"   <color={MarketKit.Hex(MarketKit.InkBad)}>not minted yet</color>"),
-                        28f, MarketKit.InkDim, TextAlignmentOptions.MidlineLeft, false, 18f);
+                    var line = UiKit.Label(UiKit.Strip(info, "Nft", 0f, 70f, 0f, 40f),
+                        $"NFT {IslandUi.Short(sellable.nft?.mint)}" + (minted ? string.Empty : $"   <color={UiKit.Hex(UiKit.InkBad)}>not minted yet</color>"),
+                        28f, UiKit.InkDim, TextAlignmentOptions.MidlineLeft, false, 18f);
                     line.richText = true;
-                    _price = MarketKit.Input(MarketKit.Cell(row, "Price", 210f, 86f), "Price SOL", 10, 34f);
+                    _price = UiKit.Input(UiKit.Cell(row, "Price", 210f, 86f), "Price SOL", 10, 34f);
                     _price.contentType = TMP_InputField.ContentType.DecimalNumber;
                     _price.text = "0.05";
                     var island = sellable;
-                    MarketKit.RowButton(row, "List", null, () => List(island), 220f, 92f, "Btn_Gold", 38f).interactable = minted;
+                    UiKit.RowButton(row, "List", null, () => List(island), 220f, 92f, "Btn_Gold", 38f).interactable = minted;
                 }
             }
 
             // My listings (history and anything to finish).
             if (_mine?.listings != null && _mine.listings.Length > 0)
             {
-                MarketKit.Section(_list, "Icon_Clock", "Your trades");
+                UiKit.Section(_list, "Icon_Clock", "Your trades");
                 foreach (var l in _mine.listings)
                 {
                     if (l == null) continue;
                     var seller = myId != null && l.seller != null && l.seller.playerId == myId;
-                    var row = MarketKit.Card(_list, "Trade", 104f);
-                    var color = l.status == "sold" ? MarketKit.InkGood : l.status == "active" ? MarketKit.InkGold : l.status == "cancelled" ? MarketKit.InkDim : MarketKit.InkBad;
-                    var c = MarketKit.Label(MarketKit.Cell(row, "Text", 0f, 80f),
-                        $"<b>{l.island?.name}</b>   <color={dim}>{(seller ? (l.status == "sold" ? "you sold it" : "your listing") : "you bought it")}</color>   {HackathonRules.Sol(l.priceLamports)}   <color={MarketKit.Hex(color)}><b>{l.status}</b></color>" +
-                        (string.IsNullOrEmpty(l.error) ? string.Empty : $"\n<size=80%><color={MarketKit.Hex(MarketKit.InkBad)}>{l.error}</color></size>"),
-                        28f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+                    var row = UiKit.Card(_list, "Trade", 104f);
+                    var color = l.status == "sold" ? UiKit.InkGood : l.status == "active" ? UiKit.InkGold : l.status == "cancelled" ? UiKit.InkDim : UiKit.InkBad;
+                    var c = UiKit.Label(UiKit.Cell(row, "Text", 0f, 80f),
+                        $"<b>{l.island?.name}</b>   <color={dim}>{(seller ? (l.status == "sold" ? "you sold it" : "your listing") : "you bought it")}</color>   {HackathonRules.Sol(l.priceLamports)}   <color={UiKit.Hex(color)}><b>{l.status}</b></color>" +
+                        (string.IsNullOrEmpty(l.error) ? string.Empty : $"\n<size=80%><color={UiKit.Hex(UiKit.InkBad)}>{l.error}</color></size>"),
+                        28f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
                     c.textWrappingMode = TextWrappingModes.Normal;
                     var listing = l;
-                    if (l.status == "paid") MarketKit.RowButton(row, "Complete", null, () => Complete(listing), 210f, 76f, "Btn_Gold", 30f);
-                    else if (l.status == "cancelling" && seller) MarketKit.RowButton(row, "Cancel again", null, () => Cancel(listing), 240f, 76f, "Btn_Red", 30f);
-                    else if (l.status == "active" && seller) MarketKit.RowButton(row, "Cancel", null, () => Cancel(listing), 190f, 76f, "Btn_Red", 30f);
+                    if (l.status == "paid") UiKit.RowButton(row, "Complete", null, () => Complete(listing), 210f, 76f, "Btn_Gold", 30f);
+                    else if (l.status == "cancelling" && seller) UiKit.RowButton(row, "Cancel again", null, () => Cancel(listing), 240f, 76f, "Btn_Red", 30f);
+                    else if (l.status == "active" && seller) UiKit.RowButton(row, "Cancel", null, () => Cancel(listing), 190f, 76f, "Btn_Red", 30f);
                     var url = !string.IsNullOrEmpty(l.transferExplorerUrl) ? l.transferExplorerUrl : HackathonRules.ExplorerTx(l.escrowSignature);
-                    if (!string.IsNullOrEmpty(url)) MarketKit.RowButton(row, "NFT tx", "Icon_Link", () => Application.OpenURL(url), 200f, 76f, "Btn_Parchment", 28f);
-                    if (!string.IsNullOrEmpty(l.nftMint)) MarketKit.RowButton(row, "NFT", "Icon_Link", () => Application.OpenURL(IslandRules.ExplorerAddress(listing.nftMint)), 160f, 76f, "Btn_Parchment", 28f);
+                    if (!string.IsNullOrEmpty(url)) UiKit.RowButton(row, "NFT tx", "Icon_Link", () => Application.OpenURL(url), 200f, 76f, "Btn_Parchment", 28f);
+                    if (!string.IsNullOrEmpty(l.nftMint)) UiKit.RowButton(row, "NFT", "Icon_Link", () => Application.OpenURL(IslandRules.ExplorerAddress(listing.nftMint)), 160f, 76f, "Btn_Parchment", 28f);
                 }
             }
         }
@@ -292,8 +293,8 @@ namespace RoguePirates.Hackathon.UI
         /// <summary>An island picture in a card, on a kit slot frame.</summary>
         static void Picture(RectTransform row, string url, float size)
         {
-            var frame = MarketKit.Cell(row, "Frame", size, size);
-            MarketKit.Paint(frame, "Slot_Card", 2.4f, new Color(0.2f, 0.45f, 0.7f, 1f), new Color(0.15f, 0.4f, 0.65f, 1f));
+            var frame = UiKit.Cell(row, "Frame", size, size);
+            UiKit.Paint(frame, "Slot_Card", 2.4f, new Color(0.2f, 0.45f, 0.7f, 1f), new Color(0.15f, 0.4f, 0.65f, 1f));
             var pic = IslandUi.Picture(frame, url, size - 12f);
             pic.GetComponent<LayoutElement>().ignoreLayout = true;
             var prt = (RectTransform)pic.transform;
@@ -306,39 +307,39 @@ namespace RoguePirates.Hackathon.UI
         /// <summary>The flexible middle of a card: the island's name with its level chip on top; returns the area.</summary>
         static RectTransform Info(RectTransform row, string name, int level, string note)
         {
-            var info = MarketKit.Cell(row, "Info", 0f, 150f);
-            var top = MarketKit.Strip(info, "Name", 0f, 4f, 0f, 58f);
-            MarketKit.Row(top, 22f);
-            var n = MarketKit.Label(MarketKit.Node(top, "Text"), name, 44f, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, true);
+            var info = UiKit.Cell(row, "Info", 0f, 150f);
+            var top = UiKit.Strip(info, "Name", 0f, 4f, 0f, 58f);
+            UiKit.Row(top, 22f);
+            var n = UiKit.Label(UiKit.Node(top, "Text"), name, 44f, UiKit.Ink, TextAlignmentOptions.MidlineLeft, true);
             var nle = n.gameObject.AddComponent<LayoutElement>();
             nle.flexibleWidth = 0f;
             nle.minHeight = 58f;
-            MarketKit.Chip(MarketKit.Cell(top, "Level", 112f, 50f), "Lv " + level, 30f);
-            if (!string.IsNullOrEmpty(note)) MarketKit.Chip(MarketKit.Cell(top, "Note", 190f, 50f), note, 26f, MarketKit.InkGold);
+            UiKit.Chip(UiKit.Cell(top, "Level", 112f, 50f), "Lv " + level, 30f);
+            if (!string.IsNullOrEmpty(note)) UiKit.Chip(UiKit.Cell(top, "Note", 190f, 50f), note, 26f, UiKit.InkGold);
             return info;
         }
 
         static void IconLine(RectTransform info, float y, string icon, string text, float size)
         {
-            var line = MarketKit.Strip(info, "Line", 0f, y, 0f, 44f);
-            MarketKit.Icon(MarketKit.TopLeft(line, "Icon", 0f, 2f, 40f, 40f), icon);
-            MarketKit.Label(MarketKit.Fill(line, "Text", 52f, 0f, 0f, 0f), text, size, MarketKit.Ink, TextAlignmentOptions.MidlineLeft, false, size * 0.6f);
+            var line = UiKit.Strip(info, "Line", 0f, y, 0f, 44f);
+            UiKit.Icon(UiKit.TopLeft(line, "Icon", 0f, 2f, 40f, 40f), icon);
+            UiKit.Label(UiKit.Fill(line, "Text", 52f, 0f, 0f, 0f), text, size, UiKit.Ink, TextAlignmentOptions.MidlineLeft, false, size * 0.6f);
         }
 
         static void IconText(RectTransform row, string icon, string text)
         {
-            MarketKit.Icon(MarketKit.Cell(row, "Icon", 32f, 32f), icon, MarketKit.InkDim);
-            var t = MarketKit.Label(MarketKit.Node(row, "Text"), text, 26f, MarketKit.InkDim, TextAlignmentOptions.MidlineLeft);
+            UiKit.Icon(UiKit.Cell(row, "Icon", 32f, 32f), icon, UiKit.InkDim);
+            var t = UiKit.Label(UiKit.Node(row, "Text"), text, 26f, UiKit.InkDim, TextAlignmentOptions.MidlineLeft);
             t.gameObject.AddComponent<LayoutElement>().flexibleWidth = 0f;
-            MarketKit.Cell(row, "Gap", 16f);
+            UiKit.Cell(row, "Gap", 16f);
         }
 
         /// <summary>Green ink for a strong record (75% and up), amber in between, red under 40%, dim with no raids.</summary>
         static string RecordColor(DefenceRecord r)
         {
-            if (r == null || r.raidsAgainst <= 0) return MarketKit.Hex(MarketKit.InkDim);
+            if (r == null || r.raidsAgainst <= 0) return UiKit.Hex(UiKit.InkDim);
             var p = IslandRules.SuccessPercent(r.defended, r.raidsAgainst) ?? 0;
-            return MarketKit.Hex(p >= 75 ? MarketKit.InkGood : p >= 40 ? MarketKit.InkGold : MarketKit.InkBad);
+            return UiKit.Hex(p >= 75 ? UiKit.InkGood : p >= 40 ? UiKit.InkGold : UiKit.InkBad);
         }
 
         string ImageFor(Listing l)

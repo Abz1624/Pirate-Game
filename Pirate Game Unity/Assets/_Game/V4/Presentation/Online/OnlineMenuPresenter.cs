@@ -1,4 +1,5 @@
 using System;
+using RoguePirates.UI;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Menu;
 using TMPro;
@@ -79,7 +80,7 @@ namespace RoguePirates.V4.Presentation.Online
             nrt.anchoredPosition = new Vector2(48f, -224f - OnlineUi.RowHeight - 6f);
             nrt.sizeDelta = new Vector2(560f, 40f);
             note.color = OnlineUi.TextColor; // over the scene, not on parchment
-            MenuKit.ButtonIcon(button, "Icon_Save", 30f);
+            UiKit.ButtonIcon(button, "Icon_Save", 30f);
         }
 
         void BuildChip(Transform parent)
@@ -93,9 +94,9 @@ namespace RoguePirates.V4.Presentation.Online
             rt.anchoredPosition = new Vector2(48f, -128f);
             rt.sizeDelta = new Vector2(420f, 84f);
             go.GetComponent<Image>().color = new Color(0.06f, 0.1f, 0.16f, 0.82f);
-            MenuKit.Paint(go.GetComponent<Image>(), "Panel_Card", 2.2f); // Hackathon UI (13 Oct): a parchment card
+            UiKit.Reskin(go.GetComponent<Image>(), "Panel_Card", 2.2f); // Hackathon UI (13 Oct): a parchment card
             _chip = go.GetComponent<Button>();
-            if (MenuKit.Ready)
+            if (UiKit.Ready)
             {
                 var c = ColorBlock.defaultColorBlock;
                 c.highlightedColor = new Color(1f, 0.97f, 0.9f, 1f);
@@ -107,7 +108,7 @@ namespace RoguePirates.V4.Presentation.Online
             dot.transform.SetParent(rt, false);
             var drt = (RectTransform)dot.transform;
             drt.anchorMin = drt.anchorMax = new Vector2(0f, 0.5f);
-            drt.sizeDelta = MenuKit.Ready ? new Vector2(22f, 22f) : new Vector2(18f, 18f);
+            drt.sizeDelta = UiKit.Ready ? new Vector2(22f, 22f) : new Vector2(18f, 18f);
             drt.anchoredPosition = new Vector2(24f, 0f);
             _dot = dot.GetComponent<Image>();
             _dot.raycastTarget = false;
@@ -227,7 +228,7 @@ namespace RoguePirates.V4.Presentation.Online
         {
             if (_chipName == null) return;
             var p = OnlineService.Active;
-            _chipName.text = MenuKit.InkRich(p != null ? p.name + "<color=#9aa4ad>" + (p.tag ?? string.Empty) + "</color>" : "New captain");
+            _chipName.text = UiKit.InkRich(p != null ? p.name + "<color=#9aa4ad>" + (p.tag ?? string.Empty) + "</color>" : "New captain");
             string status;
             Color dot;
             switch (OnlineService.State)
@@ -249,7 +250,7 @@ namespace RoguePirates.V4.Presentation.Online
             _chipStatus.text = status;
             _dot.color = dot;
             // Hackathon UI: the kit's coloured dots.
-            var kitDot = MenuKit.S(dot == OnlineUi.Good ? "Dot_Green" : dot == OnlineUi.Gold ? "Dot_Yellow" : "Dot_Beige");
+            var kitDot = UiKit.S(dot == OnlineUi.Good ? "Dot_Green" : dot == OnlineUi.Gold ? "Dot_Yellow" : "Dot_Beige");
             if (kitDot != null)
             {
                 _dot.sprite = kitDot;

@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using K = RoguePirates.Hackathon.UI.IslandKit;
+using K = RoguePirates.UI.UiKit;
 
 namespace RoguePirates.Hackathon.UI
 {
@@ -79,9 +79,9 @@ namespace RoguePirates.Hackathon.UI
             BuildHeader(rt);
             BuildStatus(rt);
             var body = K.Fill(rt, "Body", 0f, 0f, 0f, BodyTop);
-            var left = K.Columns(body, "MapCard", 0f, 0.5f, 0f, 8f);
+            var left = K.Cols(body, "MapCard", 0f, 0.5f, 0f, 8f);
             K.Paint(left, "Panel_Card", 1.2f);
-            var right = K.Columns(body, "DetailCard", 0.5f, 1f, 8f, 0f);
+            var right = K.Cols(body, "DetailCard", 0.5f, 1f, 8f, 0f);
             K.Paint(right, "Panel_Card", 1.2f);
             BuildMap(left);
             BuildDetail(right);
@@ -142,10 +142,10 @@ namespace RoguePirates.Hackathon.UI
         void BuildDetail(RectTransform right)
         {
             var tabs = K.Strip(right, "Tabs", 40f, 34f, 40f, 84f);
-            _tabMine = K.KitButton(K.Columns(tabs, "My island", 0f, 0.5f, 0f, 9f), "My island", null, () => Show(View.Mine), "Btn_Gold", 36f);
-            _tabHistory = K.KitButton(K.Columns(tabs, "Raid history", 0.5f, 1f, 9f, 0f), "Raid history", null, () => Show(View.History), "Btn_Parchment", 36f);
+            _tabMine = K.KitButton(K.Cols(tabs, "My island", 0f, 0.5f, 0f, 9f), "My island", null, () => Show(View.Mine), "Btn_Gold", 36f);
+            _tabHistory = K.KitButton(K.Cols(tabs, "Raid history", 0.5f, 1f, 9f, 0f), "Raid history", null, () => Show(View.History), "Btn_Parchment", 36f);
             var host = K.Fill(right, "List", 36f, 34f, 30f, 134f);
-            _list = K.Scroll(host, out _scroll, 12f, new RectOffset(2, 10, 2, 12));
+            _list = K.Scroll(host, out _scroll, 12f, new RectOffset(2, 10, 2, 12), 16f, 26f);
         }
 
         // ---------------------------------------------------------------- map art
@@ -301,7 +301,7 @@ namespace RoguePirates.Hackathon.UI
                 rt.sizeDelta = new Vector2(size, size * 1.12f);
                 var (dot, color) = MarkerArt(kind);
                 var img = go.GetComponent<Image>();
-                var sprite = K.Find(dot);
+                var sprite = K.S(dot);
                 img.sprite = sprite != null ? sprite : IslandUi.Circle;
                 img.color = sprite != null ? Color.white : color;
                 img.preserveAspect = true;
@@ -446,7 +446,7 @@ namespace RoguePirates.Hackathon.UI
             var bad = color == HackUi.Bad;
             var busy = color == HackUi.Gold;
             _status.color = busy ? new Color(1f, 0.88f, 0.5f, 1f) : K.OnWood;
-            var s = K.Find(bad ? "Banner_Maroon" : "Banner_Green");
+            var s = K.S(bad ? "Banner_Maroon" : "Banner_Green");
             if (s != null) _statusBg.sprite = s;
             else _statusBg.color = bad ? new Color(0.5f, 0.15f, 0.12f, 1f) : new Color(0.2f, 0.45f, 0.2f, 1f);
             _statusIcon.gameObject.SetActive(color == HackUi.Good);
@@ -485,7 +485,7 @@ namespace RoguePirates.Hackathon.UI
                 var fle = field.gameObject.AddComponent<LayoutElement>();
                 fle.flexibleWidth = 1f;
                 fle.minWidth = 200f;
-                _nameInput = MarketKit.Input(field, "Island name (3 to 16 letters)", 16, 30f);
+                _nameInput = K.Input(field, "Island name (3 to 16 letters)", 16, 30f);
                 var claim = K.Node(row, "ClaimButton");
                 var le = claim.gameObject.AddComponent<LayoutElement>();
                 le.preferredWidth = le.minWidth = 270f;
@@ -575,7 +575,7 @@ namespace RoguePirates.Hackathon.UI
         void IslandCard(IslandView island, bool mine)
         {
             var card = K.ListRow(_list, "Island", mine ? 292f : 262f, "Panel_Inset", 1.6f);
-            K.IslandPicture(K.TopLeft(card, "Picture", 22f, 22f, 164f, 164f), island.nft?.imageUrl);
+            HackUi.IslandPicture(K.TopLeft(card, "Picture", 22f, 22f, 164f, 164f), island.nft?.imageUrl);
             K.Label(K.Strip(card, "Name", 206f, 16f, 170f, 64f), island.name, 52f, K.Ink, TextAlignmentOptions.MidlineLeft, true, 28f);
             K.Tag(K.TopRight(card, "Level", 24f, 24f, 128f, 56f), "Tag_Tan", $"Lv {island.level}", 30f);
             K.Label(K.Strip(card, "Where", 206f, 84f, 24f, 40f), $"{island.slotName}  •  {island.region}", 30f, K.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
@@ -595,8 +595,8 @@ namespace RoguePirates.Hackathon.UI
                 if (minted)
                 {
                     var mint = nft.mint;
-                    K.KitButton(K.Columns(buttons, "View NFT", 0f, 0.5f, 0f, 9f), "View NFT", "Icon_Link", () => Application.OpenURL(IslandRules.ExplorerAddress(mint)), "Btn_Gold", 32f, 34f);
-                    K.KitButton(K.Columns(buttons, "Sell", 0.5f, 1f, 9f, 0f), "Sell", "Icon_Tag", () => { if (Market != null) Market.Open(); }, "Btn_Gold", 32f, 34f);
+                    K.KitButton(K.Cols(buttons, "View NFT", 0f, 0.5f, 0f, 9f), "View NFT", "Icon_Link", () => Application.OpenURL(IslandRules.ExplorerAddress(mint)), "Btn_Gold", 32f, 34f);
+                    K.KitButton(K.Cols(buttons, "Sell", 0.5f, 1f, 9f, 0f), "Sell", "Icon_Tag", () => { if (Market != null) Market.Open(); }, "Btn_Gold", 32f, 34f);
                 }
                 else K.KitButton(buttons, "Retry mint", "Icon_Refresh", RetryMint, "Btn_Gold", 32f, 34f);
                 return;
@@ -884,7 +884,7 @@ namespace RoguePirates.Hackathon.UI
 
                 // Picture: the raided island (its NFT when the map knows it) or the raider's black flag.
                 var pic = K.TopLeft(row, "Picture", 14f, 12f, 84f, 84f);
-                if (attacks) K.IslandPicture(pic, IslandImage(r.islandId));
+                if (attacks) HackUi.IslandPicture(pic, IslandImage(r.islandId));
                 else
                 {
                     K.Paint(pic, "Slot_Card", 3f, new Color(0.3f, 0.22f, 0.16f, 1f), new Color(0.2f, 0.14f, 0.1f, 1f));
@@ -893,7 +893,7 @@ namespace RoguePirates.Hackathon.UI
 
                 var who = attacks ? r.islandName : (string.IsNullOrEmpty(r.attacker?.name) ? "A raider" : r.attacker.name);
                 K.Label(K.Strip(row, "Name", 114f, 12f, 446f, 46f), who, 31f, K.Ink, TextAlignmentOptions.MidlineLeft, true, 18f);
-                var when = K.Ago(OnlineRules.ParseUtc(r.startedAt));
+                var when = HackUi.Ago(OnlineRules.ParseUtc(r.startedAt));
                 var detail = (attacks ? when : $"{when}  •  on {r.islandName}") + (r.seconds > 0 ? "  •  " + IslandRules.Clock(r.seconds) : string.Empty);
                 K.Label(K.Strip(row, "When", 114f, 58f, 446f, 38f), detail, 22f, K.InkDim, TextAlignmentOptions.MidlineLeft, false, 14f);
 

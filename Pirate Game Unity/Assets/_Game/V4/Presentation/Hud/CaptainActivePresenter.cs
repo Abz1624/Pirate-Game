@@ -1,3 +1,4 @@
+using RoguePirates.UI;
 using RoguePirates.V4.Views;
 using TMPro;
 using UnityEngine;
@@ -84,7 +85,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _label.textWrappingMode = TextWrappingModes.NoWrap;
             _label.overflowMode = TextOverflowModes.Ellipsis;
             // Hackathon UI (13 Oct, owner): the kit's bar track and gold fill instead of the flat box.
-            _kit = RoguePirates.V4.Presentation.Menu.MenuKit.HudBar(bg, _fill, "Bar_Fill_Gold", _label);
+            _kit = UiKit.HudBar(bg, _fill, "Bar_Fill_Gold", _label);
         }
 
         bool _kit;

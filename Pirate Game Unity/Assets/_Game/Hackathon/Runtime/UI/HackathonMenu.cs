@@ -1,3 +1,4 @@
+using RoguePirates.UI;
 using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Presentation.Online;
 using TMPro;
@@ -139,12 +140,12 @@ namespace RoguePirates.Hackathon.UI
             else
             {
                 // No art menu: a gold kit button (13 Oct, the art team's UI kit).
-                var rt = MarketKit.Node(main != null ? main : canvas, "HackathonDailyRace");
+                var rt = UiKit.Node(main != null ? main : canvas, "HackathonDailyRace");
                 rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.5f);
                 rt.pivot = new Vector2(1f, 0.5f);
                 rt.sizeDelta = new Vector2(300f, 86f);
                 rt.anchoredPosition = new Vector2(-48f, 230f);
-                button = MarketKit.KitButton(rt, "Daily Race", "Icon_Flag", null, "Btn_Gold", 30f, 36f);
+                button = UiKit.KitButton(rt, "Daily Race", "Icon_Flag", null, "Btn_Gold", 30f, 36f, wrap: false, spacing: 10f);
             }
             button.onClick.AddListener(panel.Open);
             return button;

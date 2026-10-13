@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-namespace RoguePirates.Hackathon.UI
+namespace RoguePirates.UI
 {
     /// <summary>
     /// Hackathon UI skin (13 Oct, the art team's UI pack): one asset (Resources/HackSkin) holding the kit's sprites, the
-    /// font and the ink colours the hackathon screens use. Swap art by replacing a PNG in Assets/_Game/Hackathon/Art/UI
+    /// font and the ink colours of the parchment screens. V5 M9i: in the shared UI assembly (RoguePirates.UI, below V4
+    /// Presentation and the hackathon assembly), read by <see cref="UiKit"/>. Swap art by replacing a PNG in Assets/_Game/Hackathon/Art/UI
     /// (same file name keeps the reference) or by dragging another sprite into the list; sprites are looked up by name
     /// (for example "Btn_Gold", "Panel_Card", "Icon_Close").
     /// </summary>

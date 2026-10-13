@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RoguePirates.UI;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Menu;
 using TMPro;
@@ -47,8 +48,8 @@ namespace RoguePirates.V4.Presentation.Online
             {
                 _title.gameObject.SetActive(false);
                 _title = kitTitle;
-                MenuKit.ButtonIcon(_close, "Icon_Close", 30f);
-                MenuKit.HeaderButton(head, _close, 26f, 220f, 68f);
+                UiKit.ButtonIcon(_close, "Icon_Close", 30f);
+                UiKit.HeaderButton(head, _close, 26f, 220f, 68f);
                 header.gameObject.SetActive(false);
             }
 
@@ -197,9 +198,9 @@ namespace RoguePirates.V4.Presentation.Online
             if (!gameObject.activeSelf) return;
             var active = OnlineService.Active;
             _title.text = _creating ? (_firstLaunch ? "Welcome, captain" : "New profile") : "Captain profile";
-            _active.text = MenuKit.InkRich(_creating ? "Choose a name" : active != null ? active.Display + (active.Registered ? $"  <size=70%><color=#9aa4ad>rating {active.rating}</color></size>" : string.Empty) : "No profile");
+            _active.text = UiKit.InkRich(_creating ? "Choose a name" : active != null ? active.Display + (active.Registered ? $"  <size=70%><color=#9aa4ad>rating {active.rating}</color></size>" : string.Empty) : "No profile");
             _status.text = StatusLabel(active);
-            _status.color = MenuKit.Ready ? (OnlineService.IsOnline ? MenuKit.InkGood : MenuKit.InkDim) : OnlineService.IsOnline ? OnlineUi.Good : OnlineUi.Dim;
+            _status.color = UiKit.Ready ? (OnlineService.IsOnline ? UiKit.InkGood : UiKit.InkDim) : OnlineService.IsOnline ? OnlineUi.Good : OnlineUi.Dim;
             OnlineUi.SetLabel(_save, _creating ? "Create" : "Save name");
             _cancel.gameObject.SetActive(_creating && OnlineService.Profiles.Profiles.Count > 0);
             _newButton.gameObject.SetActive(!_creating);
@@ -225,10 +226,10 @@ namespace RoguePirates.V4.Presentation.Online
                 forget.GetComponent<LayoutElement>().minWidth = 150f;
                 if (_confirmForget == id)
                 {
-                    if (MenuKit.Ready) MenuKit.StyleButton(forget, "Btn_Red");
+                    if (UiKit.Ready) UiKit.StyleButton(forget, "Btn_Red");
                     else forget.GetComponent<Image>().color = new Color(0.9f, 0.4f, 0.3f, 1f);
                 }
-                else MenuKit.StyleButton(forget, "Btn_Parchment");
+                else UiKit.StyleButton(forget, "Btn_Parchment");
                 _rows.Add(row.gameObject);
             }
         }
