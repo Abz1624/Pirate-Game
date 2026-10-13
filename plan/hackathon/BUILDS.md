@@ -12,6 +12,15 @@ table is still the 16:05 one from `fad370cf`).
 other starting weapons, baseDamage 20 -> 12.1, config 8ea655e3; run checks v8 deployed for it, which also accept the
 21:05 build's config 841839 and the 15:51 build's 83779c). Same profile and method; WebGL only.
 
+**Pause button rebuild, 13 Oct 14:17-14:43** at `4b1e0a49` (a kit pause button below the captain's panel at the top
+left: in a voyage, daily race or raid it, Escape and the Android back button open the pause menu (Resume, Settings,
+Quit); in a 1v1 it opens a "Match menu" (Resume, Leave match with a forfeit confirm) and the match keeps running).
+Same batch methods, APK first, then WebGL; compile check only (no tests, no device check, not installed on any phone).
+APK: Succeeded, 194.9 MB (204,414,763 bytes), 375 s, `Pirate Game Unity/Builds/Android/RoguePirates-hackathon.apk`.
+WebGL: Succeeded, 142.5 MB download, 920 s, `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` (served on
+localhost:8090); zip for hosting `Pirate Game Unity/Builds/RoguePirates-hackathon-webgl-20261013-1443.zip` (148.9 MB).
+Font, TMP, URP and graphics settings churn reverted.
+
 **Desktop WebGL rebuild, 13 Oct 11:45-12:28** (full parchment UI, 1v1 fixes, four weapons switched off, art and icons,
 storm edge, no Signal Buoy, Ledger and download buttons hidden). Batch mode:
 `Unity.exe -batchmode -nographics -quit -projectPath "Pirate Game Unity" -buildTarget WebGL -executeMethod
@@ -42,6 +51,8 @@ menu loads signed in. The server run checks are behind this build's config (shad
 
 | Build | Path | Size | Build time | Result |
 |---|---|---|---|---|
+| Android APK, pause button (13 Oct, `4b1e0a49`) | `Pirate Game Unity/Builds/Android/RoguePirates-hackathon.apk` | 194.9 MB | 375 s (done 14:23) | Succeeded, 0 errors (not installed) |
+| Desktop WebGL, pause button (13 Oct, `4b1e0a49`) | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/`; zip `Builds/RoguePirates-hackathon-webgl-20261013-1443.zip` | 142.5 MB download (data 134.2 MB, wasm 15.0 MB, Brotli) | 920 s (done 14:43) | Succeeded, 0 errors |
 | Desktop WebGL (playtest profile), round 2 + flail DPS | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 12 min (695 s, incremental, done 22:28) | Succeeded (report counts 1 error log, as in earlier builds) |
 | Desktop WebGL (playtest profile), round 2 (21:05, overwritten by 22:28) | `Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` | 120.2 MB download (data 105.8 MB, wasm 14.2 MB, Brotli) | 42 min (2545 s, done 21:05) | Succeeded, 0 errors |
 | Desktop WebGL (playtest profile), earlier | (overwritten by round 2) | 120.2 MB download (data 111.0 MB, wasm 14.8 MB, Brotli) | 34 min (final build, done 15:51; 37 min at 13:39, the first full build 45 min) | Succeeded (report counts 1 error log, as in the 13:39 build; the build itself succeeded) |
