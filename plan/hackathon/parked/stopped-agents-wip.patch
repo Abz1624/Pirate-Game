@@ -1,0 +1,1339 @@
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/ItemConfig.cs b/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/ItemConfig.cs
+index d317bc37..222d58d0 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/ItemConfig.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/ItemConfig.cs	
+@@ -36,6 +36,11 @@ namespace RoguePirates.V4.Config
+         [Tooltip("V5 M5 (Barnacle Crown): with at least seconds enemies within threshold m, a stack of + value damage a second, at most cap (+2 per extra copy, at most 20); it loses 2 stacks a second otherwise.")] SurroundedDamage = 18,
+         [Tooltip("V5 M5 (Shark Tooth Necklace): + value damage per copy (at most cap) against enemies above threshold of their hull.")] HealthyTargetDamage = 19,
+         [Tooltip("V5 M5 (Black Spot): elite kills drop + value per copy (at most cap) more gold and XP.")] EliteRewards = 20,
++        [Tooltip("Hackathon (Devil's Match): a weapon hit sets the enemy burning with chance value; a burning enemy that dies explodes for threshold damage in a radius-m blast.")] IgniteOnHit = 21,
++        [Tooltip("Hackathon (Hammerhead Helm): knockback the ship receives x (1 - value per copy), at most cap off.")] ReceivedKnockback = 22,
++        [Tooltip("Hackathon (Hammerhead Helm): sailing faster than threshold m/s into an enemy below full hull deals value damage, once every seconds per enemy.")] RamDamage = 23,
++        [Tooltip("Hackathon (Queen Anne's Fuse): a keg blast sets off a blast at the nearest enemy it missed within threshold m of its edge after seconds, at value of its damage; one generation per copy, at most cap.")] KegChainBlast = 24,
++        [Tooltip("Hackathon (Storm in a Bottle): every threshold chain-lightning hits, count strikes of value damage (radius m) over spreadSeconds at enemies within cap m; seconds cooldown.")] LightningBurst = 25,
+     }
+ 
+     /// <summary>One triggered effect of an item. Effects are per item, not per stack (V3 checked HasItem).</summary>
+@@ -47,6 +52,9 @@ namespace RoguePirates.V4.Config
+         public float threshold;
+         public float seconds;
+         public float cap;
++        [Tooltip("Hackathon: a blast or strike radius in metres (Devil's Match, Storm in a Bottle).")] public float radius;
++        [Tooltip("Hackathon: how many strikes (Storm in a Bottle).")] public int count;
++        [Tooltip("Hackathon: the seconds the strikes are spread over (Storm in a Bottle).")] public float spreadSeconds;
+         [Tooltip("The effect acts. Off for the effects V3 computes but never reads (register R-40): they stay inert until decided.")]
+         public bool active = true;
+     }
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/LogbookConfig.cs b/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/LogbookConfig.cs
+index fc502197..8ca97915 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/LogbookConfig.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Config/Schemas/LogbookConfig.cs	
+@@ -19,12 +19,16 @@ namespace RoguePirates.V4.Config
+         public int maxLevel = 10;
+         [Tooltip("Offered in Saltwind (V3 V3LogbookCatalog.AllIds).")] public bool inSaltwindPool = true;
+         [Tooltip("Order in V3's database (offer picks walk the Logbooks in this order).")] public int databaseOrder;
++        [Tooltip("Hackathon (13 Oct, owner): the Chaos Logbook. Each rank's card rolls (on the run's Loot stream) one of the Logbooks in randomStatFrom and shows it; taking it adds that Logbook's per-rank stat. stat and perLevelAdditive are not used.")]
++        public bool randomStat;
++        [Tooltip("The Logbooks a random-stat rank can roll (their stat and per-rank value).")] public string[] randomStatFrom = System.Array.Empty<string>();
+ 
+         public override void Validate(ConfigValidationReport report)
+         {
+             if (string.IsNullOrWhiteSpace(logbookId)) report.Error(this, nameof(logbookId), "missing id");
+             if (stat != -1) report.StatId(this, nameof(stat), stat);
+             if (maxLevel < 1) report.Error(this, nameof(maxLevel), "must be at least 1");
++            if (randomStat && (randomStatFrom == null || randomStatFrom.Length == 0)) report.Error(this, nameof(randomStatFrom), "a random-stat Logbook needs Logbooks to roll from");
+         }
+     }
+ }
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Data/Build/Items/cuttlefish_bone.asset b/Pirate Game Unity/Assets/_Game/V4/Data/Build/Items/cuttlefish_bone.asset
+index 48cde857..988c768b 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Data/Build/Items/cuttlefish_bone.asset	
++++ b/Pirate Game Unity/Assets/_Game/V4/Data/Build/Items/cuttlefish_bone.asset	
+@@ -16,7 +16,7 @@ MonoBehaviour:
+   schemaVersion: 1
+   balanceVersion: saltwind-v5-m4
+   itemId: cuttlefish_bone
+-  displayName: Cuttlefish Bone
++  displayName: Kraken Ink Sack
+   description: +9% damage. Evolves Squid Ink Pots into Black Tide at weapon level
+     5.
+   rarity: 1
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/admiral.asset b/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/admiral.asset
+index 55adf07b..9feb4b23 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/admiral.asset	
++++ b/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/admiral.asset	
+@@ -16,7 +16,7 @@ MonoBehaviour:
+   schemaVersion: 1
+   balanceVersion: saltwind-v5-m5
+   logbookId: admiral
+-  displayName: Admiral
++  displayName: Big Game Hunter
+   stat: 19
+   perLevelAdditive: 0.1
+   perLevelMultiplicative: 1
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/extra_hands.asset b/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/extra_hands.asset
+index 08341921..dd6e90bb 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/extra_hands.asset	
++++ b/Pirate Game Unity/Assets/_Game/V4/Data/Build/Logbooks/extra_hands.asset	
+@@ -16,7 +16,7 @@ MonoBehaviour:
+   schemaVersion: 1
+   balanceVersion: saltwind-playtest-r10
+   logbookId: extra_hands
+-  displayName: Extra Hands
++  displayName: Echo Arsenal
+   stat: 9
+   perLevelAdditive: 1
+   perLevelMultiplicative: 1
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset b/Pirate Game Unity/Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset
+index 1878c3be..33a01494 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset	
++++ b/Pirate Game Unity/Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset	
+@@ -183,3 +183,8 @@ MonoBehaviour:
+   - {fileID: 11400000, guid: 97904047ab853b84ebe123f928970ef6, type: 2}
+   - {fileID: 11400000, guid: c92ca86fe396b494b96643a9cd3e4121, type: 2}
+   - {fileID: 11400000, guid: 716cac02c473fe642ad734cd5f255207, type: 2}
++  - {fileID: 11400000, guid: d9b52da6371d458aba009a24d7649ac8, type: 2}
++  - {fileID: 11400000, guid: 2f09793628c44acbaff8c0bfb8b56b69, type: 2}
++  - {fileID: 11400000, guid: 4882c9dcf9a040fa88f85b3c5a625fdf, type: 2}
++  - {fileID: 11400000, guid: dd2912db7c0b4b869e3a2dc3aa546769, type: 2}
++  - {fileID: 11400000, guid: 8077b90e327043b3b2541c05a187faac, type: 2}
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Editor/MonteCarloExport.cs b/Pirate Game Unity/Assets/_Game/V4/Editor/MonteCarloExport.cs
+index 1dddc0be..fe4dc2ff 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Editor/MonteCarloExport.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Editor/MonteCarloExport.cs	
+@@ -283,6 +283,8 @@ namespace RoguePirates.V4.Editor
+             var logbooks = rt.All<LogbookConfig>().Where(l => !string.IsNullOrEmpty(l.logbookId)).OrderBy(l => l.logbookId, StringComparer.Ordinal).ToDictionary(l => l.logbookId, l => (object)new Dictionary<string, object>
+             {
+                 ["id"] = l.logbookId, ["name"] = l.displayName, ["stat"] = l.stat, ["add"] = l.perLevelAdditive, ["max"] = l.maxLevel, ["mult"] = l.perLevelMultiplicative, ["inPool"] = l.inSaltwindPool,
++                // Hackathon (13 Oct): the Chaos Logbook rolls one of these Logbooks' stats per rank (null for every other Logbook).
++                ["randomFrom"] = l.randomStat ? (l.randomStatFrom ?? Array.Empty<string>()).Cast<object>().ToList() : null,
+             });
+             var items = rt.All<ItemConfig>().Where(i => !string.IsNullOrEmpty(i.itemId)).OrderBy(i => i.itemId, StringComparer.Ordinal).ToDictionary(i => i.itemId, i => (object)new Dictionary<string, object>
+             {
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Foundation/Player/PlayerShipController.cs b/Pirate Game Unity/Assets/_Game/V4/Foundation/Player/PlayerShipController.cs
+index 3154b3ab..9f36a0bf 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Foundation/Player/PlayerShipController.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Foundation/Player/PlayerShipController.cs	
+@@ -263,6 +263,8 @@ namespace RoguePirates.V4.Foundation.Player
+         }
+         Vector3 _knockback;
+         float _knockbackDecay;
++        /// <summary>Hackathon (13 Oct, owner): knockback the ship receives (its island bounce) x this (Hammerhead Helm); null = x 1.</summary>
++        public System.Func<float> ReceivedKnockbackMultiplier;
+         /// <summary>Impacts that bounced the ship this run (tests and the playable check).</summary>
+         public int IslandImpactCount { get; private set; }
+         /// <summary>Impacts that cost hull this run.</summary>
+@@ -281,6 +283,7 @@ namespace RoguePirates.V4.Foundation.Player
+             _nextIslandImpactAt = IslandCooldownEnd(s.Cooldown);
+             // The resolver already took the inward speed out; push back off the shore (a fading push, see FixedUpdate).
+             var push = inwardSpeed * s.Restitution + s.PushSpeed;
++            if (ReceivedKnockbackMultiplier != null) push *= Mathf.Clamp01(ReceivedKnockbackMultiplier());
+             _knockback = normal * push;
+             _knockbackDecay = push / Mathf.Max(0.05f, s.BounceSeconds);
+             IslandImpactCount++;
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Foundation/UI/StatDisplay.cs b/Pirate Game Unity/Assets/_Game/V4/Foundation/UI/StatDisplay.cs
+index a7a50b08..21e728f0 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Foundation/UI/StatDisplay.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Foundation/UI/StatDisplay.cs	
+@@ -27,7 +27,7 @@ namespace RoguePirates.V4.Foundation.UI
+             StatId.Evasion => "Evasion",
+             StatId.Shield => "Shield",
+             StatId.Duration => "Duration",
+-            StatId.EliteDamage => "Elite Damage",
++            StatId.EliteDamage => "Elite & Boss Damage", // Hackathon (13 Oct, owner): Big Game Hunter (the Admiral Logbook) names the bosses it already counts
+             StatId.DoubloonGain => "Boss Loot", // V5 M5: the Plunderer Logbook raises boss gold
+             _ => stat.ToString()
+         };
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Effects/HazardRingPresenter.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Effects/HazardRingPresenter.cs
+index 96daff6d..d1e46252 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Effects/HazardRingPresenter.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Effects/HazardRingPresenter.cs	
+@@ -44,6 +44,9 @@ namespace RoguePirates.V4.Presentation.Effects
+             _patches = patches;
+             _paused = paused;
+             if (_material == null) _material = new Material(Shader.Find("Sprites/Default"));
++            // Hackathon (13 Oct): the shells' landing rings from the weapon prefab library's ring prefab (editable in the Editor).
++            var library = RoguePirates.V4.Foundation.Data.WeaponPrefabLibrary.Load();
++            _timedPrefab = library != null && library.landingRing != null && library.landingRing.GetComponent<LineRenderer>() != null ? library.landingRing : null;
+             if (_hazards != null && (_outline == null || _outline.Length != _hazards.Capacity)) Allocate(_hazards.Capacity);
+             if (_patches != null) AllocatePatches(_patches.Capacity);
+             while (_timedViews.Count < PrewarmTimed) AddTimedView();
+@@ -70,8 +73,24 @@ namespace RoguePirates.V4.Presentation.Effects
+ 
+         public int TimedRingCount => _timed.Count;
+ 
++        GameObject _timedPrefab;
++
+         void AddTimedView() =>
+-            _timedViews.Add((CreateRing("TimedOutline" + _timedViews.Count), CreateRing("TimedFill" + _timedViews.Count)));
++            _timedViews.Add((CreateTimedRing("TimedOutline" + _timedViews.Count), CreateTimedRing("TimedFill" + _timedViews.Count)));
++
++        /// <summary>A landing ring line: an instance of the library's ring prefab, else code-built.</summary>
++        LineRenderer CreateTimedRing(string name)
++        {
++            if (_timedPrefab == null) return CreateRing(name);
++            var go = Instantiate(_timedPrefab, transform, false);
++            go.name = name;
++            var line = go.GetComponent<LineRenderer>();
++            line.useWorldSpace = true;
++            line.loop = true;
++            line.positionCount = Segments;
++            go.SetActive(false);
++            return line;
++        }
+ 
+         void TickTimedRings()
+         {
+@@ -195,14 +214,20 @@ namespace RoguePirates.V4.Presentation.Effects
+             var child = new GameObject(name);
+             child.transform.SetParent(transform, false);
+             var line = child.AddComponent<LineRenderer>();
++            ConfigureRingLine(line);
++            line.material = _material;
++            child.SetActive(false);
++            return line;
++        }
++
++        /// <summary>The code-built ring line's settings (also what the landing ring prefab was built with, HackathonWeaponPrefabs).</summary>
++        public static void ConfigureRingLine(LineRenderer line)
++        {
+             line.useWorldSpace = true;
+             line.loop = true;
+             line.positionCount = Segments;
+             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+             line.receiveShadows = false;
+-            line.material = _material;
+-            child.SetActive(false);
+-            return line;
+         }
+ 
+         void Show(int i, bool visible) => ShowPair(_outline[i], _fill[i], visible);
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Hud/OfferCards.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Hud/OfferCards.cs
+index 2bc123c1..f6831176 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Hud/OfferCards.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Hud/OfferCards.cs	
+@@ -85,6 +85,7 @@ namespace RoguePirates.V4.Presentation.Hud
+                 {
+                     var logbook = config?.All<LogbookConfig>().FirstOrDefault(l => l.logbookId == o.Id);
+                     var mult = progression != null && o.Rarity >= 0 && o.Rarity < progression.rarityMultipliers.Length ? progression.rarityMultipliers[o.Rarity] : 1f;
++                    if (logbook != null && logbook.randomStat) return ChaosCard(o, logbook, config, views, mult);
+                     var line = logbook != null && StatResolver.IsStat(logbook.stat) ? StatDisplay.FormatLogbookBonus((StatId)logbook.stat, logbook.perLevelAdditive * mult) : string.Empty;
+                     if (logbook != null && logbook.stat == (int)StatId.Hull) line += " (also heals)";
+                     var card = Plain(o, o.CurrentLevel > 0 ? "Logbook Upgrade" : "New Logbook", config);
+@@ -95,10 +96,44 @@ namespace RoguePirates.V4.Presentation.Hud
+                     card.upgradeLines = Array.Empty<WeaponUpgradeLine>();
+                     return card;
+                 }
++                case OfferKind.NewRunItem:
++                {
++                    // Hackathon (13 Oct, owner): an item card showed its id ("whale_oil_barrel"); it shows the item's name,
++                    // like weapons and Logbooks.
++                    var item = config?.All<ItemConfig>().FirstOrDefault(i => i.itemId == o.Id);
++                    var card = Plain(o, "New Item", config);
++                    if (item != null && !string.IsNullOrWhiteSpace(item.displayName)) card.title = item.displayName;
++                    card.description = item != null ? item.description ?? string.Empty : string.Empty;
++                    return card;
++                }
+                 default: return Plain(o, string.Empty, config);
+             }
+         }
+ 
++        /// <summary>
++        /// Hackathon (13 Oct, owner): the Chaos Logbook's card shows the stat it rolled before it is taken ("Chaos: +10%
++        /// Damage"), then that stat from its current value to the next.
++        /// </summary>
++        public static LevelOffer ChaosCard(Offer o, LogbookConfig chaos, ConfigSetRuntime config, RoguePirates.V4.Views.IRunViews views, float mult)
++        {
++            var rolled = string.IsNullOrEmpty(o.RolledFrom) ? null : config?.All<LogbookConfig>().FirstOrDefault(l => l.logbookId == o.RolledFrom);
++            var card = Plain(o, o.CurrentLevel > 0 ? "Logbook Upgrade" : "New Logbook", config);
++            card.title = string.IsNullOrEmpty(chaos.displayName) ? chaos.logbookId : chaos.displayName;
++            var title = card.title;
++            if (rolled != null && StatResolver.IsStat(rolled.stat))
++            {
++                var bonus = rolled.perLevelAdditive * mult;
++                var line = $"{title}: {StatDisplay.FormatLogbookBonus((StatId)rolled.stat, bonus)}";
++                if (rolled.stat == (int)StatId.Hull) line += " (also heals)";
++                var numbers = CardStatLines.Logbook(rolled, bonus, views);
++                card.effectLines = numbers != null ? new[] { line }.Concat(numbers).ToArray() : new[] { line };
++            }
++            else card.effectLines = new[] { $"{title}: a random Logbook stat" };
++            card.description = string.Join("\n", card.effectLines);
++            card.upgradeLines = Array.Empty<WeaponUpgradeLine>();
++            return card;
++        }
++
+         static WeaponConfig Weapon(ConfigSetRuntime config, string id) => config?.All<WeaponConfig>().FirstOrDefault(w => w.weaponId == id);
+ 
+         static LevelOffer Fixed(LevelOfferKind kind, string id, string title, string category, string description) => new LevelOffer
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Online/PvpMenu.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Online/PvpMenu.cs
+index 4c2d9d75..27d92214 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Online/PvpMenu.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Online/PvpMenu.cs	
+@@ -477,6 +477,7 @@ namespace RoguePirates.V4.Presentation.Online
+         static string ShortLine(WeaponConfig w) => Plain(!string.IsNullOrEmpty(w.behaviorLine) ? w.behaviorLine : w.description);
+ 
+         static string ShortLine(LogbookConfig l) =>
++            l.randomStat ? "A random Logbook stat per rank" : // Hackathon (13 Oct): Chaos
+             l.stat < 0 ? "No effect" : StatDisplay.FormatLogbookBonus((StatId)l.stat, l.perLevelAdditive) + " per rank";
+ 
+         static string Detail(WeaponConfig w)
+@@ -493,7 +494,8 @@ namespace RoguePirates.V4.Presentation.Online
+ 
+         static string Detail(LogbookConfig l)
+         {
+-            var body = l.stat < 0 ? "Does nothing in this build."
++            var body = l.randomStat ? "Each rank adds the stat of a random Logbook, rolled when the rank is gained, up to " + l.maxLevel + " ranks." // Hackathon: Chaos
++                : l.stat < 0 ? "Does nothing in this build."
+                 : StatDisplay.FormatLogbookBonus((StatId)l.stat, l.perLevelAdditive) + (l.stat == (int)StatId.Hull ? " (also heals)" : string.Empty)
+                   + " for each rank, up to " + l.maxLevel + " ranks.";
+             return "<color=#ffd166><b>" + Name(l) + "</b></color>  <color=#9aa4ad>Logbook</color>\n" + body;
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Pooling/PoolCatalog.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Pooling/PoolCatalog.cs
+index e1992e6a..51a28020 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Pooling/PoolCatalog.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Pooling/PoolCatalog.cs	
+@@ -58,11 +58,19 @@ namespace RoguePirates.V4.Presentation.Pooling
+                 entry.ids.Add(id);
+             }
+             Add(settings != null ? settings.projectilePrefab : null, "default");
++            var library = RoguePirates.V4.Foundation.Data.WeaponPrefabLibrary.Load();
+             foreach (var w in config.All<WeaponConfig>())
+             {
+-                if (w.behavior != ConfigEnums.WeaponBehavior.Projectile && w.behavior != ConfigEnums.WeaponBehavior.Fan) continue;
++                // Hackathon (13 Oct): a weapon's own projectile prefab from the weapon prefab library (any behaviour: the
++                // summons' shots too) is prewarmed; it was a code-built placeholder pooled on first use.
++                var own = Weapons.ProjectileViewPresenter.LibraryProjectile(library, w.weaponId);
++                if (w.behavior != ConfigEnums.WeaponBehavior.Projectile && w.behavior != ConfigEnums.WeaponBehavior.Fan)
++                {
++                    Add(own, w.weaponId);
++                    continue;
++                }
+                 var art = Weapons.ProjectileViewPresenter.ArtProjectile(settings, w.weaponId); // Hackathon art pass
+-                Add(art != null ? art.projectileModel : w.projectileVisual != null && w.projectileVisual.prefab != null ? w.projectileVisual.prefab : settings != null ? settings.projectilePrefab : null, w.weaponId);
++                Add(art != null ? art.projectileModel : own != null ? own : w.projectileVisual != null && w.projectileVisual.prefab != null ? w.projectileVisual.prefab : settings != null ? settings.projectilePrefab : null, w.weaponId);
+             }
+             foreach (var (model, ids) in models)
+                 yield return new PoolDefinition(Weapons.ProjectileViewPresenter.KeyFor(model), model, catalog.projectileViewPrewarm, catalog.projectileViewCap,
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/ProjectileViewPresenter.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/ProjectileViewPresenter.cs
+index 2f6b32c3..f39d089a 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/ProjectileViewPresenter.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/ProjectileViewPresenter.cs	
+@@ -20,16 +20,18 @@ namespace RoguePirates.V4.Presentation.Weapons
+         readonly PoolService _pools;
+         readonly ConfigSetRuntime _config;
+         readonly DemoJuiceSettings _settings;
++        readonly WeaponPrefabLibrary _library;
+         readonly Dictionary<int, GameObject> _live = new Dictionary<int, GameObject>();
+         readonly HashSet<int> _prepared = new HashSet<int>();
+         readonly Dictionary<string, WeaponConfig> _weapons = new Dictionary<string, WeaponConfig>();
+         int _next;
+ 
+-        public ProjectileViewPresenter(PoolService pools, ConfigSetRuntime config, DemoJuiceSettings settings)
++        public ProjectileViewPresenter(PoolService pools, ConfigSetRuntime config, DemoJuiceSettings settings, WeaponPrefabLibrary library = null)
+         {
+             _pools = pools;
+             _config = config;
+             _settings = settings;
++            _library = library != null ? library : WeaponPrefabLibrary.Load();
+         }
+ 
+         public int LiveCount => _live.Count;
+@@ -46,7 +48,11 @@ namespace RoguePirates.V4.Presentation.Weapons
+             // Gunners' shots) gets its coloured placeholder, not the default cannonball.
+             // V5 M8z (7 Oct): which placeholder is the weapon's data (visual.placeholderLook).
+             var look = ConfigOf(weaponId)?.visual?.placeholderLook ?? WeaponPlaceholderLook.None;
+-            var placeholder = visual != null && visual.prefab != null ? null : WeaponPlaceholderModels.Projectile(look, _pools != null ? _pools.Staging : null);
++            // Hackathon (13 Oct): the weapon's own projectile prefab (the weapon prefab library: the monkeys' and parrots'
++            // shots, once coloured placeholders built in code) comes first, in its own colours.
++            var own = LibraryProjectile(_library, weaponId);
++            var placeholder = own != null ? own
++                : visual != null && visual.prefab != null ? null : WeaponPlaceholderModels.Projectile(look, _pools != null ? _pools.Staging : null);
+             var prefab = placeholder != null ? placeholder : visual != null && visual.prefab != null ? visual.prefab : _settings != null ? _settings.projectilePrefab : null;
+             var scaleMult = visual != null ? visual.scaleMultiplier : 1f;
+             var visualRadius = radius * (visual != null ? visual.radiusMultiplier : 1f);
+@@ -122,6 +128,10 @@ namespace RoguePirates.V4.Presentation.Weapons
+             _pools.Release(go);
+         }
+ 
++        /// <summary>Hackathon (13 Oct): the weapon prefab library's projectile for a weapon (null: none).</summary>
++        public static GameObject LibraryProjectile(WeaponPrefabLibrary library, string weaponId) =>
++            library != null ? library.Projectile(weaponId) : null;
++
+         ProjectileVisual VisualOf(string weaponId) => ConfigOf(weaponId)?.projectileVisual;
+ 
+         /// <summary>Hackathon art pass: the art team's projectile model for a weapon (null: none).</summary>
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.Maces.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.Maces.cs
+index 59924ac2..3dbb4eab 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.Maces.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.Maces.cs	
+@@ -35,6 +35,8 @@ namespace RoguePirates.V4.Presentation.Weapons
+         Matrix4x4 _linkLocal = Matrix4x4.identity;
+         Matrix4x4[] _linkMatrices;
+         GameObject _linkSource;
++        /// <summary>Hackathon (13 Oct): the weapon's chain line prefab (weapon prefab library), else a code-built line.</summary>
++        GameObject _chainPrefab;
+ 
+         /// <summary>Maces drawn this frame (tests).</summary>
+         public int MaceCount => _maceViews.Count;
+@@ -190,9 +192,29 @@ namespace RoguePirates.V4.Presentation.Weapons
+ 
+         LineRenderer CreateChain(int index)
+         {
++            // Hackathon (13 Oct): from the chain prefab when there is one (made at bind with the other chains).
++            if (_chainPrefab != null && _chainPrefab.GetComponent<LineRenderer>() != null)
++            {
++                var copy = Instantiate(_chainPrefab, transform, false);
++                copy.name = "MaceChain" + index;
++                var prefabLine = copy.GetComponent<LineRenderer>();
++                prefabLine.useWorldSpace = true;
++                prefabLine.positionCount = ChainPoints;
++                copy.SetActive(false);
++                return prefabLine;
++            }
+             var go = new GameObject("MaceChain" + index);
+             go.transform.SetParent(transform, false);
+             var line = go.AddComponent<LineRenderer>();
++            ConfigureChainLine(line);
++            line.sharedMaterial = ChainMaterial();
++            go.SetActive(false);
++            return line;
++        }
++
++        /// <summary>The code-built chain line's settings (also what the chain prefab was built with, HackathonWeaponPrefabs).</summary>
++        public static void ConfigureChainLine(LineRenderer line)
++        {
+             line.useWorldSpace = true;
+             line.positionCount = ChainPoints;
+             line.widthMultiplier = ChainWidth;
+@@ -200,15 +222,19 @@ namespace RoguePirates.V4.Presentation.Weapons
+             line.shadowCastingMode = ShadowCastingMode.Off;
+             line.receiveShadows = false;
+             line.startColor = line.endColor = ChainColor;
+-            line.sharedMaterial = ChainMaterial();
+-            go.SetActive(false);
+-            return line;
+         }
+ 
+         /// <summary>One shared material: dark iron links on a transparent strip (a small generated texture).</summary>
+         static Material ChainMaterial()
+         {
+             if (_chainMaterial != null) return _chainMaterial;
++            _chainMaterial = new Material(Shader.Find("Sprites/Default")) { name = "MaceChain", hideFlags = HideFlags.DontSave, mainTexture = ChainLinkTexture() };
++            return _chainMaterial;
++        }
++
++        /// <summary>The chain's link texture (16 x 4): an oval link ring then a short gap (also saved for the chain prefab).</summary>
++        public static Texture2D ChainLinkTexture()
++        {
+             var tex = new Texture2D(16, 4, TextureFormat.RGBA32, false) { name = "MaceChainLinks", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.DontSave };
+             for (var x = 0; x < 16; x++)
+             for (var y = 0; y < 4; y++)
+@@ -221,8 +247,7 @@ namespace RoguePirates.V4.Presentation.Weapons
+                 tex.SetPixel(x, y, new Color(shade, shade, shade, a));
+             }
+             tex.Apply();
+-            _chainMaterial = new Material(Shader.Find("Sprites/Default")) { name = "MaceChain", hideFlags = HideFlags.DontSave, mainTexture = tex };
+-            return _chainMaterial;
++            return tex;
+         }
+ 
+         void ClearMaces()
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.cs b/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.cs
+index 5d23aca0..7e0d8728 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Presentation/Weapons/WeaponVfxPresenter.cs	
+@@ -148,6 +148,7 @@ namespace RoguePirates.V4.Presentation.Weapons
+             _skiffModel = skiffModel;
+             _skiffScale = skiffScale;
+             _rules = rules;
++            _library = WeaponPrefabLibrary.Load(); // Hackathon (13 Oct): the weapon visuals that were built in code, as prefabs
+             _overlay = overlay;
+             _bladeHits = bladeHits != null ? bladeHits : DefaultBladeHits(weapons);
+             RegisterPools();
+@@ -568,18 +569,26 @@ namespace RoguePirates.V4.Presentation.Weapons
+             public Vector3 Center;
+             public float Radius, Left, Total, Width, StartFraction;
+             public Color Color;
++            /// <summary>Hackathon (13 Oct): the ring's line: a pooled instance of the weapon's pulse ring prefab
++            /// (<see cref="View"/> set), else a code-built line from <see cref="_freePulseLines"/>.</summary>
++            public LineRenderer Line;
++            public View View;
+         }
+ 
++        const string KindPulse = "pulse";
++        const int PrewarmPulse = 12; // two rings a pulse; the ink's shells and slick ticks overlap
+         const int PulseSegments = 48;
+         const float PulseHeight = 0.2f;
+         static readonly Color AuraPulseColor = new Color(1f, 0.82f, 0.3f, 0.95f);
+         readonly List<Pulse> _pulses = new List<Pulse>();
+-        readonly List<LineRenderer> _pulseLines = new List<LineRenderer>();
++        readonly List<LineRenderer> _freePulseLines = new List<LineRenderer>();
++        int _pulseLinesMade;
+         Material _pulseMaterial;
++        WeaponPrefabLibrary _library;
+         public int PulseCount => _pulses.Count;
+ 
+         /// <summary>An aura pulse without its weapon: a gold ring.</summary>
+-        public void AuraPulse(Vector3 center, float radius) => AddPulse(center, radius, AuraPulseColor, 0.5f, 0.3f, 0.45f);
++        public void AuraPulse(Vector3 center, float radius) => AddPulse(null, center, radius, AuraPulseColor, 0.5f, 0.3f, 0.45f);
+ 
+         public void WeaponPulse(string weaponId, Vector3 center, float radius)
+         {
+@@ -590,14 +599,56 @@ namespace RoguePirates.V4.Presentation.Weapons
+                     if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
+             var color = config != null ? config.aimOverlayColor : AuraPulseColor;
+             color.a = 0.95f;
+-            AddPulse(center, radius, color, 0.6f, 0.15f, 0.5f);
+-            AddPulse(center, radius * 0.8f, new Color(color.r, color.g, color.b, 0.6f), 0.75f, 0.05f, 0.3f);
++            var prefab = _library != null ? _library.PulseRing(weaponId) : null; // Hackathon (13 Oct): the weapon's ring prefab
++            AddPulse(prefab, center, radius, color, 0.6f, 0.15f, 0.5f);
++            AddPulse(prefab, center, radius * 0.8f, new Color(color.r, color.g, color.b, 0.6f), 0.75f, 0.05f, 0.3f);
+         }
+ 
+-        void AddPulse(Vector3 center, float radius, Color color, float seconds, float startFraction, float width)
++        void AddPulse(GameObject prefab, Vector3 center, float radius, Color color, float seconds, float startFraction, float width)
+         {
+             if (radius <= 0.05f) return;
+-            _pulses.Add(new Pulse { Center = center, Radius = radius, Left = seconds, Total = seconds, Width = width, StartFraction = startFraction, Color = color });
++            var pulse = new Pulse { Center = center, Radius = radius, Left = seconds, Total = seconds, Width = width, StartFraction = startFraction, Color = color };
++            if (prefab != null)
++            {
++                var go = Spawn(KindPulse, prefab, center, Quaternion.identity, null, out var pooled);
++                var line = go != null ? go.GetComponent<LineRenderer>() : null;
++                if (line != null)
++                {
++                    PreparePulseLine(line);
++                    pulse.Line = line;
++                    pulse.View = new View { Go = go, Pooled = pooled };
++                }
++                else if (go != null) Recycle(go, pooled);
++            }
++            if (pulse.Line == null)
++            {
++                if (_freePulseLines.Count > 0)
++                {
++                    pulse.Line = _freePulseLines[_freePulseLines.Count - 1];
++                    _freePulseLines.RemoveAt(_freePulseLines.Count - 1);
++                }
++                else pulse.Line = CreatePulseLine(_pulseLinesMade++);
++                pulse.Line.gameObject.SetActive(true);
++            }
++            DrawPulse(pulse); // at once: a pooled ring must not show its last use's circle for a frame
++            _pulses.Add(pulse);
++        }
++
++        /// <summary>What the code relies on in a pulse ring prefab's line: world-space points, a closed loop of
++        /// <see cref="PulseSegments"/> points (everything else is the prefab's).</summary>
++        static void PreparePulseLine(LineRenderer line)
++        {
++            line.useWorldSpace = true;
++            line.loop = true;
++            if (line.positionCount != PulseSegments) line.positionCount = PulseSegments;
++        }
++
++        void EndPulse(Pulse p)
++        {
++            if (p.View != null) { ReleaseView(p.View); return; }
++            if (p.Line == null) return;
++            p.Line.gameObject.SetActive(false);
++            _freePulseLines.Add(p.Line);
+         }
+ 
+         void TickPulses(float dt)
+@@ -606,29 +657,26 @@ namespace RoguePirates.V4.Presentation.Weapons
+             {
+                 var p = _pulses[i];
+                 p.Left -= dt;
+-                if (p.Left <= 0f) { _pulses.RemoveAt(i); continue; }
++                if (p.Left <= 0f || p.Line == null) { _pulses.RemoveAt(i); EndPulse(p); continue; }
+                 _pulses[i] = p;
+             }
+-            while (_pulseLines.Count < _pulses.Count) _pulseLines.Add(CreatePulseLine(_pulseLines.Count));
+-            for (var i = 0; i < _pulseLines.Count; i++)
++            for (var i = 0; i < _pulses.Count; i++) DrawPulse(_pulses[i]);
++        }
++
++        static void DrawPulse(in Pulse p)
++        {
++            var line = p.Line;
++            var t = 1f - p.Left / p.Total;                 // 0 to 1
++            var eased = 1f - (1f - t) * (1f - t);          // fast out, slow at the edge
++            var r = p.Radius * Mathf.Lerp(p.StartFraction, 1f, eased);
++            var c = p.Color;
++            c.a *= t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f; // holds at the full radius, then fades
++            line.startColor = line.endColor = c;
++            line.widthMultiplier = p.Width * Mathf.Lerp(1.2f, 0.7f, t);
++            for (var s = 0; s < PulseSegments; s++)
+             {
+-                var line = _pulseLines[i];
+-                var visible = i < _pulses.Count;
+-                if (line.gameObject.activeSelf != visible) line.gameObject.SetActive(visible);
+-                if (!visible) continue;
+-                var p = _pulses[i];
+-                var t = 1f - p.Left / p.Total;                 // 0 → 1
+-                var eased = 1f - (1f - t) * (1f - t);          // fast out, slow at the edge
+-                var r = p.Radius * Mathf.Lerp(p.StartFraction, 1f, eased);
+-                var c = p.Color;
+-                c.a *= t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f; // holds at the full radius, then fades
+-                line.startColor = line.endColor = c;
+-                line.widthMultiplier = p.Width * Mathf.Lerp(1.2f, 0.7f, t);
+-                for (var s = 0; s < PulseSegments; s++)
+-                {
+-                    var a = s * Mathf.PI * 2f / PulseSegments;
+-                    line.SetPosition(s, new Vector3(p.Center.x + Mathf.Cos(a) * r, PulseHeight, p.Center.z + Mathf.Sin(a) * r));
+-                }
++                var a = s * Mathf.PI * 2f / PulseSegments;
++                line.SetPosition(s, new Vector3(p.Center.x + Mathf.Cos(a) * r, PulseHeight, p.Center.z + Mathf.Sin(a) * r));
+             }
+         }
+ 
+@@ -638,14 +686,21 @@ namespace RoguePirates.V4.Presentation.Weapons
+             var go = new GameObject("WeaponPulse" + index);
+             go.transform.SetParent(transform, false);
+             var line = go.AddComponent<LineRenderer>();
++            ConfigurePulseLine(line);
++            line.sharedMaterial = _pulseMaterial;
++            go.SetActive(false);
++            return line;
++        }
++
++        /// <summary>The code-built pulse line's settings (also what the pulse ring prefabs were built with,
++        /// HackathonWeaponPrefabs).</summary>
++        public static void ConfigurePulseLine(LineRenderer line)
++        {
+             line.useWorldSpace = true;
+             line.loop = true;
+             line.positionCount = PulseSegments;
+             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+             line.receiveShadows = false;
+-            line.sharedMaterial = _pulseMaterial;
+-            go.SetActive(false);
+-            return line;
+         }
+ 
+         /// <summary>V3 OnBurningOilDropped: the burning trail prefab sized by the patch radius, for 1.6 s.</summary>
+@@ -768,8 +823,8 @@ namespace RoguePirates.V4.Presentation.Weapons
+             _sinking.Clear();
+             foreach (var c in _coins) ReleaseView(c.View);
+             _coins.Clear();
++            foreach (var p in _pulses) EndPulse(p);
+             _pulses.Clear();
+-            foreach (var line in _pulseLines) if (line != null) line.gameObject.SetActive(false);
+             ReleaseBlades(0);
+             foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
+             _orbitModels.Clear();
+@@ -1147,7 +1202,14 @@ namespace RoguePirates.V4.Presentation.Weapons
+                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
+                     EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging, _settings), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
+                 if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _), CoinsPerStrike * 8); // Hackathon: a chain of strikes
+-                if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace) PrewarmMaces(Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
++                if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace)
++                {
++                    var chain = _library != null ? _library.Chain(w.weaponId) : null; // Hackathon (13 Oct): the chain line prefab
++                    if (chain != null) _chainPrefab = chain;
++                    PrewarmMaces(Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
++                }
++                var pulse = _library != null ? _library.PulseRing(w.weaponId) : null; // Hackathon (13 Oct): the ring prefab, pooled before the run
++                if (pulse != null) EnsurePool(KindPulse, pulse, PrewarmPulse);
+                 PrewarmLob(w.weaponId); // Hackathon art pass: a lob model (the ink pot) is pooled before the run
+             }
+             foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/BuildModule.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/BuildModule.cs
+index 83c82eea..94bdd027 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/BuildModule.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/BuildModule.cs	
+@@ -92,6 +92,8 @@ namespace RoguePirates.V4.Composition
+             Items.FireAllWeapons += () => _bellPending = true;
+             Items.PulseRequested += (id, damage, radius, telegraph) => Weapons?.ItemPulse(id, damage, radius, telegraph); // V5 M5 Leviathan Heart
+             Items.CheatedDeath += id => Toasts?.Show($"{ItemConfig(id)?.displayName ?? id}: back from the brink!", 3f);
++            // Hackathon (13 Oct, owner): Storm in a Bottle.
++            Items.LightningBurstRequested += (id, strikes, spread, range, damage, radius) => Weapons?.ItemLightningBurst(id, strikes, spread, range, damage, radius);
+             Captain.ActiveUsed += OnActiveUsed;
+             Captain.HoldWithoutTarget = () => Experiment?.captainActiveHoldsWithoutTarget ?? false;
+             Captain.HasWeaponTarget = AnyEnemyInWeaponRange;
+@@ -294,6 +296,13 @@ namespace RoguePirates.V4.Composition
+         public void RollPowerup(Vector3 position, bool isBoss, bool isElite) => Powerups.TryRollOnKill(position, isBoss, isElite);
+         public void NotifyItemKill() => Items.NotifyKill();
+ 
++        /// <summary>Hackathon (13 Oct, owner): Devil's Match. A burning enemy died: with the item, it explodes.</summary>
++        public void BurningDeath(Vector3 position)
++        {
++            if (Items.IgniteChance(out var damage, out var radius, out var id) <= 0f) return;
++            Weapons?.ItemBlast(id, position, damage, radius, 0f);
++        }
++
+         /// <summary>
+         /// Before each weapon tick: Captain's Bell. V3 fired from NotifyKill after every kill subscriber had run; V4
+         /// fires on the next weapon tick so the burst's kills do not nest inside the outer kill (as since M5).
+@@ -357,6 +366,7 @@ namespace RoguePirates.V4.Composition
+                 ship.Damage.Damaged += OnShipDamaged;
+                 ship.Damage.PreventDeath = Items.TryCheatDeath; // V5 M5 Captain's Last Rum
+             }
++            if (ship != null) ship.ReceivedKnockbackMultiplier = Items.ReceivedKnockbackMultiplier; // Hackathon: Hammerhead Helm
+         }
+ 
+         void OnShipDamaged(float amount, bool crit) => Items.NotifyPlayerTookDamage();
+@@ -369,6 +379,7 @@ namespace RoguePirates.V4.Composition
+                 ship.Damage.Damaged -= OnShipDamaged;
+                 ship.Damage.PreventDeath = null;
+             }
++            if (ship != null) ship.ReceivedKnockbackMultiplier = null;
+             Pickups.ClearAll();
+         }
+ 
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/EnemyWorldModule.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/EnemyWorldModule.cs
+index 1075bd75..3f996bb9 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/EnemyWorldModule.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Composition/EnemyWorldModule.cs	
+@@ -108,6 +108,8 @@ namespace RoguePirates.V4.Composition
+             s.SpecialBehaviors = new EnemySpecialBehaviors(s);
+             Services = s;
+             Contracts = new EnemyWorldContracts(Simulation, Statuses);
++            // Hackathon (13 Oct): Devil's Match reads the dying unit's burn (its slot is freed after the kill fan-out).
++            KillTargets.IsBurning = unitId => Simulation.TryGetAgentByUnitId(unitId, out var slot) && Statuses.BurnStacks(slot) > 0f;
+             Hellfire = new HellfirePatches(Simulation, Statuses, HellfireEnvironment);
+             DifficultyCurveConfig curve = null; // cached: edits change the run's copy in place
+             Simulation.Curve = () => curve ??= _config?.Single<DifficultyCurveConfig>(); // M10
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Core/V4Game.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Core/V4Game.cs
+index c311fabb..5acb6256 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Core/V4Game.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Core/V4Game.cs	
+@@ -240,6 +240,7 @@ namespace RoguePirates.V4
+             _enemies.KillTargets.SpawnKillDrops = _build.SpawnKillDrops;
+             _enemies.KillTargets.RollPowerup = _build.RollPowerup;
+             _enemies.KillTargets.ItemKill = _build.NotifyItemKill;
++            _enemies.KillTargets.BurningDeath = _build.BurningDeath; // Hackathon: Devil's Match
+             _enemies.Services.PlayerIncomingDamage = _build.IncomingDamageMultiplier;
+             ship.IncomingDamage = _build.IncomingDamageMultiplier;
+             damageSink.IncomingDamage = _build.IncomingDamageMultiplier;
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Enemies/KillFanout.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Enemies/KillFanout.cs
+index 62787080..e18ad22e 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Enemies/KillFanout.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Enemies/KillFanout.cs	
+@@ -32,6 +32,10 @@ namespace RoguePirates.V4.Enemies
+         public Func<string, int> WeaponKillGold;
+         /// <summary>V5 M5: elite kill gold and XP × this (Black Spot); boss gold × this (the Plunderer Logbook).</summary>
+         public Func<float> EliteRewardMultiplier, BossGoldMultiplier;
++        /// <summary>Hackathon (13 Oct, owner): Devil's Match. The unit is burning as it dies (by unit id; it is still in its
++        /// slot), and what its death sets off (the blast, at its position; the build decides whether an item asks for it).</summary>
++        public Func<int, bool> IsBurning;
++        public Action<Vector3> BurningDeath;
+         float _xpCarry, _goldCarry;
+ 
+         static int Carry(float value, ref float carry)
+@@ -74,6 +78,7 @@ namespace RoguePirates.V4.Enemies
+             if (e.isBoss) BossKilled?.Invoke();
+             ItemKill?.Invoke();
+             if (!string.IsNullOrEmpty(e.lastHitWeaponId)) WeaponKill?.Invoke(e.lastHitWeaponId);
++            if (BurningDeath != null && IsBurning != null && IsBurning(e.id)) BurningDeath(e.position);
+         }
+ 
+         /// <summary>V3 SaltwindStageEconomyLogic.ResolveKillGoldDrop: ordinary kills drop gold on a Director-stream roll,
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/BuildWeaponModifiers.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/BuildWeaponModifiers.cs
+index f779f744..219ca858 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/BuildWeaponModifiers.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/BuildWeaponModifiers.cs	
+@@ -56,5 +56,10 @@ namespace RoguePirates.V4.Progression
+         public float ExplosionDamageMultiplier => _items.ExplosionDamageMultiplier();
+         public void ExplosionResolved() => _items.NotifyExplosionResolved();
+         public int ExtraLightningJumps => _items.ExtraLightningJumps();
++        // Hackathon (13 Oct, owner): Devil's Match, Queen Anne's Fuse, Hammerhead Helm, Storm in a Bottle.
++        public float IgniteChance(out float blastDamage, out float blastRadius, out string ledgerId) => _items.IgniteChance(out blastDamage, out blastRadius, out ledgerId);
++        public int KegChainGenerations(out float damageShare, out float reach, out float delay, out string ledgerId) => _items.KegChainGenerations(out damageShare, out reach, out delay, out ledgerId);
++        public bool RamDamage(out float damage, out float minSpeed, out float interval, out string ledgerId) => _items.RamDamage(out damage, out minSpeed, out interval, out ledgerId);
++        public void LightningChainEvent() => _items.NotifyLightningChainEvent();
+     }
+ }
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ItemModule.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ItemModule.cs
+index 3f14443f..cdf889b2 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ItemModule.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ItemModule.cs	
+@@ -95,6 +95,8 @@ namespace RoguePirates.V4.Progression
+             _frenzyBonus = 0f;
+             _pulseTimer = 0f;
+             _surroundStacks = 0f;
++            _chainEvents = 0;
++            _burstCooldown = 0f;
+         }
+ 
+         /// <summary>V3 TryAddItem: another stack (uncapped) and its stat changes; always succeeds.</summary>
+@@ -134,6 +136,7 @@ namespace RoguePirates.V4.Progression
+             _turnBuffTimer = Mathf.Max(0f, _turnBuffTimer - dt);
+             _nearMissBuffTimer = Mathf.Max(0f, _nearMissBuffTimer - dt);
+             _frenzyTimer = Mathf.Max(0f, _frenzyTimer - dt);
++            _burstCooldown = Mathf.Max(0f, _burstCooldown - dt); // Hackathon: Storm in a Bottle
+             TrackHeadingAndMovement();
+             TickPulse(dt);
+             TickSurrounded(dt);
+@@ -208,6 +211,69 @@ namespace RoguePirates.V4.Progression
+             return e == null ? 1f : Mathf.Min(e.cap, 1f + e.threshold * Mathf.Max(1, StackCount(id)));
+         }
+ 
++        // ---- Hackathon (13 Oct, owner): the Art Guide's designed items (D33) ----------------------------------------------
++
++        /// <summary>Storm in a Bottle: the strikes are due (item id, strikes, seconds they are spread over, range, damage, radius).</summary>
++        public event Action<string, int, float, float, float, float> LightningBurstRequested;
++        int _chainEvents;
++        float _burstCooldown;
++
++        /// <summary>Devil's Match: the chance a weapon hit sets the enemy burning (0 without the item), the blast a burning
++        /// enemy's death sets off and the item's id (its ledger id). One chance whatever the copies (the guide gives no
++        /// stacking).</summary>
++        public float IgniteChance(out float blastDamage, out float blastRadius, out string itemId)
++        {
++            var e = Effect(ItemEffectKind.IgniteOnHit, out itemId);
++            blastDamage = e != null ? e.threshold : 0f;
++            blastRadius = e != null ? e.radius : 0f;
++            return e != null ? Mathf.Clamp01(e.value) : 0f;
++        }
++
++        /// <summary>Hammerhead Helm: knockback the ship receives × this (1 - value per copy, at most cap off).</summary>
++        public float ReceivedKnockbackMultiplier()
++        {
++            var e = Effect(ItemEffectKind.ReceivedKnockback, out var id);
++            return e == null ? 1f : 1f - Mathf.Clamp01(Mathf.Min(e.cap, e.value * Mathf.Max(1, StackCount(id))));
++        }
++
++        /// <summary>Hammerhead Helm: the ram (damage, the speed it needs, seconds between rams on one enemy, the item id).</summary>
++        public bool RamDamage(out float damage, out float minSpeed, out float interval, out string itemId)
++        {
++            var e = Effect(ItemEffectKind.RamDamage, out itemId);
++            damage = e != null ? e.value : 0f;
++            minSpeed = e != null ? e.threshold : 0f;
++            interval = e != null ? Mathf.Max(0.05f, e.seconds) : 0f;
++            return e != null && damage > 0f;
++        }
++
++        /// <summary>Queen Anne's Fuse: the generations of secondary blasts a keg blast sets off (one per copy, at most cap; 0
++        /// without the item), their share of the keg's damage, their reach past the blast's edge and their delay.</summary>
++        public int KegChainGenerations(out float damageShare, out float reach, out float delay, out string itemId)
++        {
++            var e = Effect(ItemEffectKind.KegChainBlast, out itemId);
++            damageShare = e != null ? e.value : 0f;
++            reach = e != null ? e.threshold : 0f;
++            delay = e != null ? e.seconds : 0f;
++            return e == null ? 0 : Mathf.Min(Mathf.Max(1, Mathf.RoundToInt(e.cap)), Mathf.Max(1, StackCount(itemId)));
++        }
++
++        /// <summary>Storm in a Bottle: one chain-lightning hit (Lightning Mast, Tempest Mast). Every threshold hits, once the
++        /// cooldown is over, the burst is requested.</summary>
++        public void NotifyLightningChainEvent()
++        {
++            var e = Effect(ItemEffectKind.LightningBurst, out var id);
++            if (e == null) return;
++            _chainEvents++;
++            if (_chainEvents < Mathf.Max(1f, e.threshold) || _burstCooldown > 0f) return;
++            _chainEvents = 0;
++            _burstCooldown = e.seconds;
++            LightningBurstRequested?.Invoke(id, Mathf.Max(1, e.count), e.spreadSeconds, e.cap, e.value, e.radius);
++        }
++
++        /// <summary>Storm in a Bottle: chain hits counted toward the next burst, and the cooldown left (HUD and tests).</summary>
++        public int LightningChainEvents => _chainEvents;
++        public float LightningBurstCooldown => _burstCooldown;
++
+         /// <summary>V5 M5 Black Spot: elite kill gold and XP × this.</summary>
+         public float EliteRewardMultiplier()
+         {
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/OfferGenerator.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/OfferGenerator.cs
+index 2141b14c..b079e76f 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/OfferGenerator.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/OfferGenerator.cs	
+@@ -28,6 +28,9 @@ namespace RoguePirates.V4.Progression
+         public int CurrentLevel, NextLevel;
+         public bool IsWeapon, IsNew;
+         public UpgradeLine[] Lines;
++        /// <summary>Hackathon (13 Oct, owner): a Chaos Logbook card's rolled Logbook (its stat and per-rank value), shown on
++        /// the card and applied when taken; null for every other card.</summary>
++        public string RolledFrom;
+         public bool IsEmpty => Id == null;
+         /// <summary>V3's offer key (duplicate cards compare it).</summary>
+         public string Key => Kind == OfferKind.WeaponEvolution ? $"{Kind}:{Id}:{EvolutionId}" : $"{Kind}:{Id}";
+@@ -221,7 +224,7 @@ namespace RoguePirates.V4.Progression
+             if (newWeapon != null) result.Add(BuildNewWeaponOffer(newWeapon));
+ 
+             var logbook = PickLogbook(rng, state, levelsEmpty: true, newOnly: false);
+-            if (logbook != null) result.Add(BuildLogbookOffer(logbook, 0, RollRarity(rng, luck)));
++            if (logbook != null) result.Add(BuildLogbookOffer(logbook, 0, RollRarity(rng, luck), rng));
+         }
+ 
+         // ---- One card (V3 RollOffer, fill-state branch) ---------------------------------------------------------------
+@@ -317,7 +320,7 @@ namespace RoguePirates.V4.Progression
+         {
+             var lb = PickLogbook(rng, state, levelsEmpty: false, newOnly);
+             if (lb == null) return default;
+-            var offer = BuildLogbookOffer(lb, state.LogbookLevel(lb.logbookId), RollRarity(rng, luck));
++            var offer = BuildLogbookOffer(lb, state.LogbookLevel(lb.logbookId), RollRarity(rng, luck), rng);
+             return usedKeys.Contains(offer.Key) ? default : offer;
+         }
+ 
+@@ -538,12 +541,32 @@ namespace RoguePirates.V4.Progression
+             IsWeapon = true, IsNew = true, Lines = Array.Empty<UpgradeLine>(),
+         };
+ 
+-        static Offer BuildLogbookOffer(LogbookConfig def, int currentLevel, int rarity) => new Offer
++        Offer BuildLogbookOffer(LogbookConfig def, int currentLevel, int rarity, IOfferRandom rng) => new Offer
+         {
+             Kind = OfferKind.Logbook, Id = def.logbookId, Rarity = rarity, CurrentLevel = currentLevel, NextLevel = currentLevel + 1,
+             IsWeapon = false, IsNew = currentLevel <= 0, Lines = Array.Empty<UpgradeLine>(),
++            RolledFrom = def.randomStat ? RollRandomStat(def, rng)?.logbookId : null, // one Loot draw, only for Chaos
+         };
+ 
++        /// <summary>
++        /// Hackathon (13 Oct, owner): the Chaos Logbook's roll. One Loot draw picks one of its <c>randomStatFrom</c> Logbooks
++        /// that exists and raises a stat (in the listed order, so the same draw always gives the same Logbook); null when
++        /// none does (no draw then).
++        /// </summary>
++        public LogbookConfig RollRandomStat(LogbookConfig chaos, IOfferRandom rng)
++        {
++            if (chaos == null || !chaos.randomStat || chaos.randomStatFrom == null || rng == null) return null;
++            var candidates = new List<LogbookConfig>();
++            foreach (var id in chaos.randomStatFrom)
++            {
++                var lb = _logbooks().FirstOrDefault(l => l != null && l.logbookId == id);
++                if (lb != null && !lb.randomStat && lb.stat >= 0 && lb != chaos && !candidates.Contains(lb)) candidates.Add(lb);
++            }
++            if (candidates.Count == 0) return null;
++            var index = Mathf.Min(candidates.Count - 1, Mathf.FloorToInt(rng.LootFloat() * candidates.Count));
++            return candidates[index];
++        }
++
+         UpgradeLine[] RollUpgradePackage(WeaponConfig def, int rarity, IOfferRandom rng)
+         {
+             var p = P;
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ProgressionModule.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ProgressionModule.cs
+index eb13ad31..e59d3c93 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ProgressionModule.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Progression/ProgressionModule.cs	
+@@ -163,6 +163,7 @@ namespace RoguePirates.V4.Progression
+             var c = C;
+             _state.Clear();
+             _evolutions.Clear();
++            _chaosRolls.Clear();
+             _completedLevelUps = 0;
+             _offers.ResetForRun();
+             _state.Weapons.Add(startingWeapon);
+@@ -388,10 +389,23 @@ namespace RoguePirates.V4.Progression
+             var def = _logbook(offer.Id);
+             if (def == null) return;
+             var mult = C.rarityMultipliers[offer.Rarity];
+-            _stats.Add("logbook:" + def.logbookId, def.stat, def.perLevelAdditive * mult, def.perLevelMultiplicative);
+-            if (def.stat == (int)StatId.Hull) _ship?.SyncMaxHull(def.perLevelAdditive * mult);
++            // Hackathon (13 Oct, owner): a Chaos rank adds the stat its card rolled (a rank without a card, PvP or the console,
++            // rolls now on the same Loot stream); the source stays the Chaos Logbook's.
++            var stat = def;
++            if (def.randomStat)
++            {
++                stat = !string.IsNullOrEmpty(offer.RolledFrom) ? _logbook(offer.RolledFrom) : _offers.RollRandomStat(def, _rng);
++                if (stat == null || stat.randomStat) return;
++                _chaosRolls.Add(stat.logbookId);
++            }
++            _stats.Add("logbook:" + def.logbookId, stat.stat, stat.perLevelAdditive * mult, stat.perLevelMultiplicative);
++            if (stat.stat == (int)StatId.Hull) _ship?.SyncMaxHull(stat.perLevelAdditive * mult);
+         }
+ 
++        readonly List<string> _chaosRolls = new List<string>();
++        /// <summary>Hackathon: the Logbooks the Chaos ranks rolled this run, in order (tests, telemetry).</summary>
++        public IReadOnlyList<string> ChaosRolls => _chaosRolls;
++
+         // ---- Playtest (3 Oct, owner): the 1v1 build --------------------------------------------------------------------------
+ 
+         /// <summary>Set (PvP): level-ups apply at once through this instead of showing cards (the run never pauses).</summary>
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Pvp/PvpBotArsenal.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Pvp/PvpBotArsenal.cs
+index ed32fa78..37c2417e 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Pvp/PvpBotArsenal.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Pvp/PvpBotArsenal.cs	
+@@ -170,15 +170,26 @@ namespace RoguePirates.V4.Pvp
+ 
+         void RaiseLogbook(string id)
+         {
+-            if (!_logbookConfigs.TryGetValue(id, out var def)) return;
++            if (!_logbookConfigs.TryGetValue(id, out var book)) return;
+             var rarity = _progression != null && _progression.rarityMultipliers != null && _progression.rarityMultipliers.Length > 0 ? _progression.rarityMultipliers[0] : 1f;
+-            _stats.AddModifier(new StatModifier((StatId)def.stat, def.perLevelAdditive * rarity, def.perLevelMultiplicative));
+             _logbookLevels[id] = LogbookLevel(id) + 1;
++            var def = book.randomStat ? RollRandomStat(book) : book; // Hackathon (13 Oct): a Chaos rank rolls its stat
++            if (def == null || def.stat < 0 || def.stat > (int)StatId.MoveSpeed) return;
++            _stats.AddModifier(new StatModifier((StatId)def.stat, def.perLevelAdditive * rarity, def.perLevelMultiplicative));
+             if (def.stat != (int)StatId.Hull || def.perLevelAdditive <= 0f) return;
+             HullGained += def.perLevelAdditive * rarity;
+             HullAdded?.Invoke(def.perLevelAdditive * rarity);
+         }
+ 
++        /// <summary>Hackathon (13 Oct): the Chaos Logbook's rank, one of its listed Logbooks on the bot's own stream.</summary>
++        LogbookConfig RollRandomStat(LogbookConfig chaos)
++        {
++            var candidates = new List<LogbookConfig>();
++            foreach (var from in chaos.randomStatFrom ?? Array.Empty<string>())
++                if (_logbookConfigs.TryGetValue(from, out var l) && !l.randomStat && l.stat >= 0 && !candidates.Contains(l)) candidates.Add(l);
++            return candidates.Count == 0 ? null : candidates[Mathf.Min(candidates.Count - 1, (int)(_rng.NextDouble() * candidates.Count))];
++        }
++
+         /// <summary>Hull its Hull Logbooks added so far (the starting ranks are in it before the match hooks HullAdded).</summary>
+         public float HullGained { get; private set; }
+ 
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/PlayerProjectiles.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/PlayerProjectiles.cs
+index 55ccc1e1..afb324ae 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/PlayerProjectiles.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/PlayerProjectiles.cs	
+@@ -33,6 +33,8 @@ namespace RoguePirates.V4.Weapons
+     {
+         /// <summary>V5 M5: a hit's damage after target-dependent item bonuses (Shark Tooth Necklace); null = unchanged.</summary>
+         public System.Func<int, float, float> HitAdjust;
++        /// <summary>Hackathon (13 Oct): after a shot's hit (enemy slot, weapon id): Devil's Match may set it burning; null = nothing.</summary>
++        public System.Action<int, string> AfterHit;
+         const float MinGameplayHitRadius = 0.32f;
+         const float HitSlop = 0.16f;
+         const float MaxVerticalHitSeparation = 4f;
+@@ -174,6 +176,7 @@ namespace RoguePirates.V4.Weapons
+                         // V5 M8z (8 Oct, close): a credited pellet (lane bursts, follow-ups) has no weapon id (its look is the
+                         // plain shot's), so its hit and kill go to its ledger id, its weapon.
+                         _damage.ApplyDamage(ei, amount, p.IsCrit, weaponId: p.WeaponId ?? p.Traits.LedgerId);
++                        AfterHit?.Invoke(ei, p.WeaponId ?? p.Traits.LedgerId);
+                         if (p.Traits.TarOnHit)
+                         {
+                             var slow = _enemies.IsBoss(ei) ? p.Traits.TarSlowBoss : p.Traits.TarSlow;
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponBehaviors.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponBehaviors.cs
+index 5687d121..80e82660 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponBehaviors.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponBehaviors.cs	
+@@ -830,6 +830,7 @@ namespace RoguePirates.V4.Weapons
+     public sealed class MineBehavior : WeaponBehavior
+     {
+         public MineBehavior(WeaponCombat c) : base(c) { }
++        readonly HashSet<int> _blastHits = new HashSet<int>(); // Hackathon: the enemies a keg blast hit (Queen Anne's Fuse)
+         public override bool NeedsTarget => false;
+ 
+         public override WeaponFireOutcome Fire(WeaponSlot w)
+@@ -921,11 +922,14 @@ namespace RoguePirates.V4.Weapons
+             var id = keg.Source?.Id;
+             var blastRadius = Mathf.Max(keg.BlastRadius, keg.TriggerRadius) * C.Mods.PowderKegBlastRadiusMultiplier;
+             var explosion = C.Mods.ExplosionDamageMultiplier; // R-40 (1 unless the item effects are on)
++            var generations = C.Mods.KegChainGenerations(out var share, out var reach, out var delay, out var fuseId); // Hackathon: Queen Anne's Fuse
++            if (generations > 0) _blastHits.Clear();
+             C.Hooks.BeginDamageResolution();
+             for (var ai = 0; ai < C.Enemies.Capacity; ai++)
+             {
+                 if (!C.Enemies.IsActive(ai)) continue;
+                 if (!Touches(keg.Position, blastRadius, ai, keg.EliteReach)) continue;
++                if (generations > 0) _blastHits.Add(ai);
+                 var dmg = C.Calculator.RollAmount(keg.BaseDamage * keg.BlastDamageMultiplier, keg.DamageBonus, C.Enemies.IsEliteDamageTarget(ai), 0f,
+                     keg.ProcCoefficient, id, WeaponDamageKind.TriggeredItem) * explosion;
+                 if (C.Hooks.TryRegisterProcEvent()) C.DamageAndRecord(ai, id, dmg, false, id);
+@@ -937,6 +941,9 @@ namespace RoguePirates.V4.Weapons
+ 
+             C.Effects?.Explosion(keg.Position, blastRadius);
+             C.Mods.ExplosionResolved();
++            // Hackathon (13 Oct, owner): Queen Anne's Fuse sets off a smaller blast at the nearest enemy the keg missed.
++            if (generations > 0 && share > 0f)
++                C.QueueChainBlast(keg.Position, blastRadius, reach, delay, generations, keg.BaseDamage * keg.BlastDamageMultiplier * share, keg.DamageBonus, fuseId, _blastHits);
+             if (keg.Source != null && keg.Source.EvolutionEffect == Effect.WakeKegs)
+                 ChainNearbyKegs(keg.Position, keg.Source.Evolution.wakeKegs);
+             if (keg.View >= 0) C.Effects?.MineRemoved(keg.View);
+@@ -1084,6 +1091,7 @@ namespace RoguePirates.V4.Weapons
+                 var dmg = C.Calculator.RollAmount(def.baseDamage * damageScale, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(current), 0f, def.procCoefficient, def.weaponId);
+                 C.DamageAndRecord(current, def.weaponId, dmg, false);
+                 C.Damage.ApplyStatus(current, WeaponStatus.Shock, a.shockSeconds * w.DurationMult);
++                C.Mods.LightningChainEvent(); // Hackathon: Storm in a Bottle counts chain hits
+                 damageScale *= a.chainFalloff;
+ 
+                 var next = -1;
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponCombat.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponCombat.cs
+index 8e7f7ce3..6371fc13 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponCombat.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponCombat.cs	
+@@ -200,6 +200,16 @@ namespace RoguePirates.V4.Weapons
+         public float SlowFraction, SlowSeconds, DurationMult;
+         /// <summary>V5 M8z (D21): lands as a ring in its weapon's colour, not an explosion (WeaponEffectsVisual.pulseImpact).</summary>
+         public bool PulseImpact;
++        /// <summary>Hackathon (13 Oct): an item's strike rolls no crit (no combat draw) and may be drawn as lightning.</summary>
++        public bool NoCrit, Lightning;
++        /// <summary>Hackathon (Storm in a Bottle): aimed when it lands at the <see cref="SeekIndex"/>-th nearest enemy within
++        /// this range of the ship (0 = lands where it was placed); with none in range it fizzles.</summary>
++        public float SeekRange;
++        public int SeekIndex;
++        /// <summary>Hackathon (Queen Anne's Fuse): blasts it sets off in turn at the nearest enemy it missed within
++        /// <see cref="ChainReach"/> m of its edge, <see cref="ChainDelay"/> s later, with the same damage.</summary>
++        public int ChainGenerations;
++        public float ChainReach, ChainDelay;
+     }
+ 
+     /// <summary>V5 M8z (7 Oct, Q20): a weapon's firing to repeat after <see cref="Timer"/> seconds, <see cref="Left"/> more times.</summary>
+@@ -293,6 +303,20 @@ namespace RoguePirates.V4.Weapons
+             dmg = new DamageRoll(Healthy(enemyIndex, dmg.Amount), dmg.IsCrit);
+             Hooks.RecordHit(weaponId, dmg.Amount, dmg.IsCrit, isElite, isBoss);
+             Damage.ApplyDamage(enemyIndex, dmg.Amount, dmg.IsCrit, weaponId: weaponId);
++            AfterWeaponHit(enemyIndex, weaponId);
++        }
++
++        /// <summary>
++        /// Hackathon (13 Oct, owner): Devil's Match. After a weapon hit on an enemy that survived it, a roll on the combat
++        /// stream (only while the item is carried, so runs without it draw as before) may set it burning. The item's own
++        /// blasts never ignite.
++        /// </summary>
++        public void AfterWeaponHit(int enemyIndex, string weaponId)
++        {
++            if (Mods == null || Random == null || Enemies == null) return;
++            var chance = Mods.IgniteChance(out _, out _, out var itemId);
++            if (chance <= 0f || weaponId == itemId || !Enemies.IsActive(enemyIndex)) return;
++            if (Random.CombatFloat() < chance) Damage.ApplyStatus(enemyIndex, WeaponStatus.Burn, 1f);
+         }
+ 
+         /// <summary>
+@@ -306,6 +330,7 @@ namespace RoguePirates.V4.Weapons
+             amount = Healthy(index, amount);
+             if (ledgerId != null) Hooks.RecordHit(ledgerId, amount, isCrit, Enemies.IsElite(index), Enemies.IsBoss(index));
+             Damage.ApplyDamage(index, amount, isCrit, weaponId: weaponId ?? ledgerId); // V5 M8z (8 Oct, close)
++            AfterWeaponHit(index, weaponId ?? ledgerId); // Hackathon: Devil's Match
+         }
+ 
+         /// <summary>V5 M5 Shark Tooth Necklace: more damage to an enemy still above the threshold share of its hull (read
+@@ -317,6 +342,30 @@ namespace RoguePirates.V4.Weapons
+             return mult != 1f && Enemies.HpFraction(index) > threshold ? amount * mult : amount;
+         }
+ 
++        /// <summary>Hackathon (Queen Anne's Fuse): the next blast of a chain, at the nearest enemy the last blast missed
++        /// within <paramref name="reach"/> m of its edge (none: the chain ends), with the same damage.</summary>
++        public void QueueChainBlast(Vector3 center, float radius, float reach, float delay, int generationsLeft, float damage, float damageBonus,
++            string ledgerId, HashSet<int> hit)
++        {
++            if (generationsLeft <= 0 || Enemies == null) return;
++            var best = -1;
++            var bestDist = radius + reach;
++            for (var i = 0; i < Enemies.Capacity; i++)
++            {
++                if (!Enemies.IsActive(i) || (hit != null && hit.Contains(i))) continue;
++                var d = WeaponCombat.HorizontalDistance(center, Enemies.Position(i));
++                if (d > bestDist) continue;
++                bestDist = d;
++                best = i;
++            }
++            if (best < 0) return;
++            Strikes.Add(new DelayedStrike
++            {
++                Active = true, Position = Enemies.Position(best), Timer = Mathf.Max(0f, delay), Radius = radius, BaseDamage = damage, DamageBonus = damageBonus,
++                ProcCoefficient = 0f, WeaponId = ledgerId, NoCrit = true, ChainGenerations = generationsLeft - 1, ChainReach = reach, ChainDelay = delay,
++            });
++        }
++
+         /// <summary>The aim overlay (V3 NotifyFire).</summary>
+         public void NotifyAimed(WeaponSlot w, Vector3 aimDirection, int targetIndex = -1)
+         {
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponContracts.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponContracts.cs
+index 4c916634..f378d17e 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponContracts.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponContracts.cs	
+@@ -51,6 +51,8 @@ namespace RoguePirates.V4.Weapons
+         Vector3 MovementForward { get; }
+         /// <summary>A point in the ship's local space in world space (orbit blades circle the ship's transform).</summary>
+         Vector3 TransformPoint(Vector3 local);
++        /// <summary>Hackathon: the hull's contact radius (Hammerhead Helm's ram; the enemies' contact uses the same).</summary>
++        float ContactRadius => 1.15f;
+     }
+ 
+     /// <summary>
+@@ -85,6 +87,16 @@ namespace RoguePirates.V4.Weapons
+         void ExplosionResolved();
+         /// <summary>R-40: extra chain-lightning jumps (Stormglass); 0 unless the effect is on.</summary>
+         int ExtraLightningJumps { get; }
++
++        // Hackathon (13 Oct, owner): the Art Guide's designed items; none of them without the item.
++        /// <summary>Devil's Match: the chance a weapon hit sets the enemy burning (0 = none) and its id (its own blasts never ignite).</summary>
++        float IgniteChance(out float blastDamage, out float blastRadius, out string ledgerId) { blastDamage = 0f; blastRadius = 0f; ledgerId = null; return 0f; }
++        /// <summary>Queen Anne's Fuse: secondary blast generations a keg blast sets off (0 = none).</summary>
++        int KegChainGenerations(out float damageShare, out float reach, out float delay, out string ledgerId) { damageShare = 0f; reach = 0f; delay = 0f; ledgerId = null; return 0; }
++        /// <summary>Hammerhead Helm: the ram (false = none).</summary>
++        bool RamDamage(out float damage, out float minSpeed, out float interval, out string ledgerId) { damage = 0f; minSpeed = 0f; interval = 0f; ledgerId = null; return false; }
++        /// <summary>Storm in a Bottle: a chain-lightning hit landed.</summary>
++        void LightningChainEvent() { }
+     }
+ 
+     /// <summary>The combat stream of the run's random numbers (crit rolls, boarding sides).</summary>
+diff --git a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponManager.cs b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponManager.cs
+index a9a65b22..89c67e5e 100644
+--- a/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponManager.cs	
++++ b/Pirate Game Unity/Assets/_Game/V4/Runtime/Weapons/WeaponManager.cs	
+@@ -27,6 +27,10 @@ namespace RoguePirates.V4.Weapons
+         IReadOnlyList<ChainedMace> Maces => System.Array.Empty<ChainedMace>();
+         /// <summary>V5 M5 Leviathan Heart: a telegraphed blast on the densest crowd within 20 m.</summary>
+         void ItemPulse(string ledgerId, float damage, float radius, float telegraphSeconds) { }
++        /// <summary>Hackathon (Devil's Match): a blast at a point after a delay (no crit, no item procs).</summary>
++        void ItemBlast(string ledgerId, Vector3 at, float damage, float radius, float delay) { }
++        /// <summary>Hackathon (Storm in a Bottle): strikes spread over some seconds at enemies within range of the ship.</summary>
++        void ItemLightningBurst(string ledgerId, int strikes, float spreadSeconds, float range, float damage, float radius) { }
+     }
+ 
+     /// <summary>
+@@ -72,6 +76,7 @@ namespace RoguePirates.V4.Weapons
+             _summon = new SummonBehavior(combat);
+             _mace = new ChainedMaceBehavior(combat);
+             if (combat.Projectiles != null) combat.Projectiles.HitAdjust = combat.Healthy; // V5 M5
++            if (combat.Projectiles != null) combat.Projectiles.AfterHit = combat.AfterWeaponHit; // Hackathon: Devil's Match
+             _behaviors = new Dictionary<Behavior, WeaponBehavior>
+             {
+                 [Behavior.Projectile] = _projectile,
+@@ -111,6 +116,7 @@ namespace RoguePirates.V4.Weapons
+             if (_c.Hooks.AutoFireDisabled) return;
+             SyncLoadout();
+             TickWeapons(dt);
++            TickRam(dt); // Hackathon: Hammerhead Helm
+             _orbit.TickHits(_slots, dt);
+             MirrorLoadout();
+         }
+@@ -232,6 +238,93 @@ namespace RoguePirates.V4.Weapons
+             });
+         }
+ 
++        /// <summary>Hackathon (Devil's Match): a burning enemy's death explodes (resolved on the weapon tick, so a blast's
++        /// kills never nest inside the kill that set it off).</summary>
++        public void ItemBlast(string ledgerId, Vector3 at, float damage, float radius, float delay)
++        {
++            if (damage <= 0f || radius <= 0f) return;
++            _c.Strikes.Add(new DelayedStrike
++            {
++                Active = true, Position = at, Timer = Mathf.Max(0f, delay), Radius = radius, BaseDamage = damage, DamageBonus = 1f,
++                ProcCoefficient = 0f, WeaponId = ledgerId, NoCrit = true,
++            });
++        }
++
++        /// <summary>Hackathon (Storm in a Bottle): <paramref name="strikes"/> lightning strikes spread evenly over
++        /// <paramref name="spreadSeconds"/>, each aimed when it lands at a different enemy within <paramref name="range"/> of
++        /// the ship (nearest first).</summary>
++        public void ItemLightningBurst(string ledgerId, int strikes, float spreadSeconds, float range, float damage, float radius)
++        {
++            if (strikes <= 0 || damage <= 0f || range <= 0f) return;
++            for (var i = 0; i < strikes; i++)
++                _c.Strikes.Add(new DelayedStrike
++                {
++                    Active = true, Timer = strikes > 1 ? spreadSeconds * i / (strikes - 1) : 0f, Radius = Mathf.Max(0.5f, radius), BaseDamage = damage,
++                    DamageBonus = 1f, ProcCoefficient = 0f, WeaponId = ledgerId, NoCrit = true, Lightning = true, SeekRange = range, SeekIndex = i,
++                });
++        }
++
++        // ---- Hackathon (13 Oct, owner): Hammerhead Helm's ram ------------------------------------------------------------
++
++        readonly Dictionary<int, float> _ramReady = new Dictionary<int, float>();
++        readonly List<int> _ramExpired = new List<int>();
++        float _ramClock;
++
++        /// <summary>Sailing faster than the item's speed into an enemy below full hull rams it: item damage, once every
++        /// interval per enemy (by unit id). The enemy must touch the hull and lie ahead of the ship's motion.</summary>
++        void TickRam(float dt)
++        {
++            _ramClock += dt;
++            if (!_c.Mods.RamDamage(out var damage, out var minSpeed, out var interval, out var id)) return;
++            if (_c.Enemies == null || !_c.Enemies.Exists) return;
++            var v = _c.Ship.Velocity;
++            v.y = 0f;
++            var speed = v.magnitude;
++            if (speed <= minSpeed) return;
++            var heading = v / speed;
++            var p = _c.Ship.Position;
++            var hull = _c.Ship.ContactRadius;
++            if (_ramReady.Count > 256)
++            {
++                _ramExpired.Clear();
++                foreach (var kv in _ramReady) if (kv.Value <= _ramClock) _ramExpired.Add(kv.Key);
++                foreach (var k in _ramExpired) _ramReady.Remove(k);
++            }
++            for (var i = 0; i < _c.Enemies.Capacity; i++)
++            {
++                if (!_c.Enemies.IsActive(i) || _c.Enemies.HpFraction(i) >= 1f) continue;
++                var to = _c.Enemies.Position(i) - p;
++                to.y = 0f;
++                var reach = hull + _c.Enemies.Radius(i);
++                if (to.sqrMagnitude > reach * reach || Vector3.Dot(to, heading) <= 0f) continue;
++                var unit = _c.Enemies.UnitId(i);
++                if (_ramReady.TryGetValue(unit, out var ready) && ready > _ramClock) continue;
++                _ramReady[unit] = _ramClock + interval;
++                var dmg = _c.Calculator.RollAmount(damage, 1f, _c.Enemies.IsEliteDamageTarget(i), 0f, 0f, id, WeaponDamageKind.TriggeredItem);
++                _c.DamageAndRecord(i, id, dmg, false, id);
++                _c.Effects?.AreaImpact(p + heading * hull, 0.8f); // the bow spark
++            }
++        }
++
++        readonly HashSet<int> _strikeHits = new HashSet<int>();
++        readonly List<int> _seekScratch = new List<int>();
++
++        /// <summary>Hackathon (Storm in a Bottle): the <paramref name="index"/>-th nearest enemy within range of the ship (wraps).</summary>
++        int SeekTarget(float range, int index)
++        {
++            _seekScratch.Clear();
++            var p = _c.Ship.Position;
++            for (var i = 0; i < _c.Enemies.Capacity; i++)
++                if (_c.Enemies.IsActive(i) && WeaponCombat.WithinHorizontalRadius(p, _c.Enemies.Position(i), range)) _seekScratch.Add(i);
++            if (_seekScratch.Count == 0) return -1;
++            _seekScratch.Sort((a, b) =>
++            {
++                var c = WeaponCombat.HorizontalDistance(p, _c.Enemies.Position(a)).CompareTo(WeaponCombat.HorizontalDistance(p, _c.Enemies.Position(b)));
++                return c != 0 ? c : a.CompareTo(b);
++            });
++            return _seekScratch[index % _seekScratch.Count];
++        }
++
+         /// <summary>V3 TickDelayedStrikes: mortar shells and Tempest markers, one list.</summary>
+         void TickDelayedStrikes(float dt)
+         {
+@@ -244,6 +337,14 @@ namespace RoguePirates.V4.Weapons
+                 strike.Timer -= dt;
+                 if (strike.Timer > 0f) { list[i] = strike; continue; }
+ 
++                if (strike.SeekRange > 0f)
++                {
++                    // Hackathon (Storm in a Bottle): aimed as it lands; with no enemy in range it fizzles.
++                    var target = SeekTarget(strike.SeekRange, strike.SeekIndex);
++                    if (target < 0) { list.RemoveAt(i); continue; }
++                    strike.Position = _c.Enemies.Position(target);
++                }
++                _strikeHits.Clear();
+                 var hits = 0;
+                 var explosion = strike.AreaShell && !strike.PulseImpact ? _c.Mods.ExplosionDamageMultiplier : 1f;
+                 for (var ai = 0; ai < _c.Enemies.Capacity; ai++)
+@@ -257,8 +358,10 @@ namespace RoguePirates.V4.Weapons
+                     else if (Vector3.Distance(position, strike.Position) > strike.Radius)
+                         continue;
+                     hits++;
++                    _strikeHits.Add(ai);
+                     // V5 M8z (7 Oct, D21, Q32): elite damage (Admiral) on elites, the boss and minibosses; the ledger keeps elites.
+-                    var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, _c.Enemies.IsEliteDamageTarget(ai), 0f, strike.ProcCoefficient, strike.WeaponId);
++                    var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, _c.Enemies.IsEliteDamageTarget(ai), 0f, strike.ProcCoefficient, strike.WeaponId,
++                        strike.NoCrit ? WeaponDamageKind.TriggeredItem : WeaponDamageKind.DirectWeapon); // Hackathon: item strikes draw nothing
+                     if (strike.AreaShell && explosion != 1f) dmg = new DamageRoll(dmg.Amount * explosion, dmg.IsCrit); // R-40: mortar shells explode
+                     _c.ApplyWeaponDamage(ai, strike.WeaponId, dmg, _c.Enemies.IsElite(ai), _c.Enemies.IsBoss(ai));
+                     if (strike.SlowFraction > 0f) _c.Damage.ApplySlow(ai, strike.SlowFraction, strike.SlowSeconds); // V5 M8z (D21): the ink pot's splash slows at once
+@@ -273,8 +376,12 @@ namespace RoguePirates.V4.Weapons
+                     _c.Effects?.WaterSplash(strike.Position);
+                     if (strike.Whirlpool != null) OpenWhirlpool(strike);
+                 }
++                else if (strike.Lightning)
++                    _c.Effects?.LightningStrike(new Vector3(strike.Position.x, 0f, strike.Position.z), strike.Radius); // Hackathon: Storm in a Bottle
+                 else
+                     _c.Effects?.Explosion(strike.Position, strike.Radius);
++                if (strike.ChainGenerations > 0) // Hackathon: Queen Anne's Fuse
++                    _c.QueueChainBlast(strike.Position, strike.Radius, strike.ChainReach, strike.ChainDelay, strike.ChainGenerations, strike.BaseDamage, strike.DamageBonus, strike.WeaponId, _strikeHits);
+                 list.RemoveAt(i);
+             }
+         }
+@@ -515,6 +622,7 @@ namespace RoguePirates.V4.Weapons
+         public void ClearInFlight(bool effects)
+         {
+             _c.ClearInFlight();
++            _ramReady.Clear(); // Hackathon: Hammerhead Helm
+             _c.Projectiles?.ClearAll(effects);
+             _orbit.ClearHits();
+         }
+diff --git a/plan/playtest/montecarlo/sim.mjs b/plan/playtest/montecarlo/sim.mjs
+index 2793dcb7..92ebdbd1 100644
+--- a/plan/playtest/montecarlo/sim.mjs
++++ b/plan/playtest/montecarlo/sim.mjs
+@@ -250,8 +250,10 @@ export function simulateRun(data, params) {
+   // the session's next pick when it is possible, so the model's combat and XP constants are measured on the same build.
+   let pickIndex = 0;
+   const applyLogbook = (b, rarity) => {
+-    const add = b.add * P.rarityMult[rarity];
+     logbooks[b.id] = (logbooks[b.id] ?? 0) + 1;
++    // Hackathon (13 Oct): the Chaos Logbook adds a random listed Logbook's stat per rank (ProgressionModule.ApplyLogbook).
++    if (b.randomFrom) { const from = b.randomFrom.map(id => data.logbooks[id]).filter(x => x && !x.randomFrom && x.stat >= 0); if (!from.length) return; b = from[Math.floor(r() * from.length)]; }
++    const add = b.add * P.rarityMult[rarity];
+     if (b.stat === S.Hull) { maxHull += add; hull += add; } else if (b.stat === S.MoveSpeed) statAdd(S.MoveSpeed, add / 6.2); else if (b.stat === S.PickupRadius) statAdd(S.PickupRadius, add / 6); else statAdd(b.stat, add);
+   };
+   const upgradeWeapon = (w, rarity) => {

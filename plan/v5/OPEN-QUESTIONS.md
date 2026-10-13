@@ -128,3 +128,8 @@ Full plan: `plan/v5/phase-09c-multiship/PLAN.md` ("Product decisions"). The ones
   global time); single player byte-identical; the solo server voyage's odd second outcome is explained (a 0.2 s hit
   immunity read the process clock) and gone. Not yet met: the server-tick target at 200 enemies (best 8.0 ms vs 7), and
   in 4 of 6 load runs the enemies lost track of the ship (S1b is fixing this before the ship refactor).
+
+## After the hackathon (13 Oct)
+
+Questions H1-H14 from the hackathon interlude are in `plan/v5/V5_PLAN.md` section 9 (rev 17), each with a suggestion.
+H2 (the live devnet value flows) is needed before M9h starts; H8, H9 and H10 before M9i. The 11 Oct questions above are still open.

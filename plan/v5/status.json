@@ -1,15 +1,15 @@
 {
- "updated": "9 Oct 2026",
- "statusLine": "Paused for the hackathon demo: M9c stopped after S1 (tag v5-m9c-s1); S1b parked on wip/m9c-s1b. Waiting for the owner's demo priorities.",
+ "updated": "13 Oct 2026",
+ "statusLine": "Hackathon (12-13 Oct) merged into v5-live-game at a5a8be02 and folded into the plan (rev 17). Next: M9h (live-API safety switches, treasury bounds, full suites, the deep review's blockers), then M9i (run checks, fixes, art), then M9c resumes at S1b. Your answers needed: H2 first, then H8-H10, then the rest of H1-H14.",
  "statusOk": false,
  "facts": [
   [
    "Progress",
-   "M0-M8z done (M8z closed 8 Oct); plan rev 12: M9 split into M9a/M9b/M9c, M9a next"
+   "M0-M9b done; M9c paused after S1; hackathon merged (rev 17); M9h and M9i (hackathon carry-over) next, then M9c S1b"
   ],
   [
    "Tests",
-   "8 Oct (M8z close): EditMode 561/561 · PlayMode 88/88 · server 102/102"
+   "Last full run 12 Oct (c284e105): EditMode 787/791, PlayMode 130/134 (failures fixed in 72918c94 by targeted runs) · server 211/211 · Hackathon EditMode 33/33; 13 Oct commits compile-checked only"
   ],
   [
    "Gate",
@@ -17,7 +17,7 @@
   ],
   [
    "Branch",
-   "<code>v5-live-game</code> (playtest merged at <code>b5936c4d</code>, tag <code>playtest-r10</code>)"
+   "<code>v5-live-game</code> at <code>a5a8be02</code> (hackathon-demo fast-forwarded in); <code>main</code> at <code>63e6962a</code>; M9c S1b parked on <code>wip/m9c-s1b</code>"
   ]
  ],
  "phases": {
@@ -85,9 +85,21 @@
    "state": "done",
    "chip": "done 11 Oct · tag v5-m9b"
   },
+  "M9h": {
+   "state": "next",
+   "chip": "next · hackathon safety and gate (rev 17)"
+  },
+  "M9i": {
+   "state": "planned",
+   "chip": "after M9h · run checks, fixes, art"
+  },
   "M9c": {
    "state": "building",
-   "chip": "paused after S1 · hackathon demo first"
+   "chip": "paused after S1 · resumes at S1b after M9h and M9i"
+  },
+  "M5c": {
+   "state": "planned",
+   "chip": "after M9c · parked hackathon content"
   }
  },
  "log": [
@@ -585,18 +597,30 @@
    "when": "11 Oct",
    "commit": "",
    "what": "<strong>V5 paused for the hackathon demo</strong> (owner, 11 Oct). M9c stops after S1 (tag v5-m9c-s1); the unfinished S1b investigation is parked on branch <code>wip/m9c-s1b</code>. Demo priorities come next from the owner; the rest of M9c resumes after the submission."
+  },
+  {
+   "when": "12-13 Oct",
+   "commit": "a5a8be02",
+   "what": "<strong>Hackathon interlude</strong> (branch <code>hackathon-demo</code>, 88 commits, merged into <code>v5-live-game</code>). Built to demo quality on Solana devnet: wallet sign-in (SIWS), treasury and verified deposits/payouts, islands with Island NFTs, RUM and buildings, a 15-window defence designer, conquest and practice raids, a daily race, weekly SOL prizes, 1v1 SOL wagers, an escrow island market; in the game the parchment UI kit on every screen, Captain Marrow with real weapons, the chained-mace Anchor Flail, enemy damage x2, the snapshot minimap, the storm edge warning, four weapons switched off, the art team's models and icons, app icon and splash, the pause button; APK and desktop WebGL builds. Retro: <code>plan/hackathon/RETRO.md</code>. Plan rev 17 folds it in: <strong>M9h</strong> (safety and gate) and <strong>M9i</strong> (run checks, fixes, art) next, M9c resumes at S1b after them, the parked content becomes M5c, and the web3 phases now harden the hackathon code. Questions H1-H14 for you."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Read and answer</strong> the questions logged while you were away in <code>plan/v5/OPEN-QUESTIONS.md</code> (M9b close and M9c design).",
+   "<strong>Answer H1-H14</strong> (plan section 9, rev 17): wallets going forward, the live devnet value flows (H2, needed first for M9h; H8-H10 before M9i), wager rake, weekly prizes, islands, D4, the daily race, switched-off weapons, Ember, enemy damage x2, the UI kit, renames, demo switches, the Hackathon assembly.",
+   "<strong>Weapon art mapping and icons</strong> (TODO-FOR-YOU, 13 Oct): which art goes on which weapon; the unmapped icons.",
+   "<strong>Read the hackathon retro</strong>: <code>plan/hackathon/RETRO.md</code>; the deep review's findings land in <code>plan/hackathon/review/</code> and become M9h's and M9i's work list.",
+   "<strong>Read and answer</strong> the 11 Oct questions in <code>plan/v5/OPEN-QUESTIONS.md</code> (M9b close and M9c design).",
+   "Say whether to drop the stash \"ui-redesign WIP\" (superseded by the parchment kit) and when to fast-forward <code>main</code> to <code>a5a8be02</code>.",
    "Ram jolt (online): tell me if it bothers you.",
    "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [
-   "PvP draft on phones: tapping a card to read it also picks it (later)."
+   "PvP draft on phones: tapping a card to read it also picks it (later).",
+   "Art team: Kraken pale emission, CutthroatSkiff wake without a material, 2048 px ship textures (web cap 1024).",
+   "Phone: menu side buttons small; pause menu, level-up cards and the storm edge warning not yet checked on a device (M9i)."
   ],
   "done": [
+   "<strong>Hackathon demo</strong> (12-13 Oct): submitted; builds in <code>plan/hackathon/BUILDS.md</code>; devnet smoke 8/8; merged into V5 (rev 17).",
    "<strong>Railway config migrated</strong> (8 Oct): <code>railway.json</code> replaced by <code>.railway/railway.ts</code> before Railway's 1 Dec cut-off; deployed, nothing for you to do. New API variables now also need a line in <code>railway.ts</code> (the agent does this).",
    "<strong>Answered P11</strong> (6 Oct): raid economy option B with 4-hour shields (D19); Netcode matches server-authoritative (D19).",
    "<strong>Answered P1-P10</strong> (6 Oct, D18); playtest merged; API deployed.",
@@ -2421,6 +2445,11 @@
   {
    "title": "M9b parts 2a/2b review (9 Oct)",
    "summary": "<strong>Pass with fixes, no blockers.</strong> Ticket security, release exclusion, the Docker image and server authority are sound. Fixing: a reconnect during level-up cards could freeze the client; the level-up pull-back above the 0.5 m target (your call: fix now); a test for the client mode flag; clamps on client-sent pause ticks and offer re-sends; drop a joined player who never sends input; the ticket endpoint answers 503 without a server URL; evidence files.",
+   "rows": []
+  },
+  {
+   "title": "Plan rev 17 review (13 Oct): hackathon folded in",
+   "summary": "<strong>1 blocker, 5 majors, 4 minors: all addressed in rev 17.</strong> Blocker: M9h could not switch off every hackathon value flow (island sales carrying RUM-bought levels and store and vault RUM to SOL buyers, client-reported raid loot, human-vs-human stakes); now each is a switch in M9h and an option in H2. Majors: a claim-mint-sell loop drains the treasury (one claim per wallet ever, a daily mint budget, a float and alarm); D8 named for house stakes and treasury prizes; brewed RUM is capped per store (not per day) and voyage RUM is linear, so M10 flattens and caps it; the carry-over split into M9h (safety, gate) and M9i (run checks, fixes, art, after H8-H10); treasury bounds until M11 splits the key. Minors: jsdelivr wallet script integrity and the debug-signed APK in M13; per-wallet limits; outside NFT trades; fingerprints re-frozen at the end of M9i.",
    "rows": []
   }
  ]
