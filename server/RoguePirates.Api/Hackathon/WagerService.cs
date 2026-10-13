@@ -494,18 +494,23 @@ public sealed class WagerService
     }
 
     /// <summary>Runs <see cref="SettleLobbyAsync"/> in the background on its own scope (after a match end or a seat change).</summary>
-    public static void Kick(IServiceScopeFactory scopes, Guid lobbyId, ILogger log) => _ = Task.Run(async () =>
+    public static void Kick(IServiceScopeFactory scopes, Guid lobbyId, ILogger log)
     {
-        try
+        var scope = scopes.CreateScope();
+        var task = Task.Run(async () =>
         {
-            using var scope = scopes.CreateScope();
-            await scope.ServiceProvider.GetRequiredService<WagerService>().SettleLobbyAsync(lobbyId);
-        }
-        catch (Exception ex)
-        {
-            log.LogWarning(ex, "Wager settlement for lobby {LobbyId} failed (the sweeper retries)", lobbyId);
-        }
-    });
+            try
+            {
+                await scope.ServiceProvider.GetRequiredService<WagerService>().SettleLobbyAsync(lobbyId);
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Wager settlement for lobby {LobbyId} failed (the sweeper retries)", lobbyId);
+            }
+            finally { scope.Dispose(); }
+        });
+        scope.ServiceProvider.GetService<BackgroundSettlements>()?.Track(task);
+    }
 
     // ------------------------------------------------------------ reads
 
@@ -533,6 +538,41 @@ public sealed class WagerService
 
     async Task<Lobby> LoadLobbyAsync(Guid lobbyId) =>
         await _db.Lobbies.FirstOrDefaultAsync(l => l.Id == lobbyId) ?? throw new ApiException(404, "lobby_not_found", "No such lobby.");
+}
+
+/// <summary>
+/// The wager settlements started in the background by <see cref="WagerService.Kick"/> (after a seat leaves or a match
+/// ends). Nothing in the API waits for them (the sweeper retries anything they miss); <see cref="WhenIdleAsync"/> lets a
+/// caller (tests, shutdown) wait until every one started so far has finished.
+/// </summary>
+public sealed class BackgroundSettlements
+{
+    readonly object _gate = new();
+    readonly List<Task> _running = new();
+
+    public void Track(Task task)
+    {
+        lock (_gate)
+        {
+            _running.RemoveAll(t => t.IsCompleted);
+            _running.Add(task);
+        }
+    }
+
+    public async Task WhenIdleAsync()
+    {
+        while (true)
+        {
+            Task[] pending;
+            lock (_gate)
+            {
+                _running.RemoveAll(t => t.IsCompleted);
+                pending = _running.ToArray();
+            }
+            if (pending.Length == 0) return;
+            await Task.WhenAll(pending);
+        }
+    }
 }
 
 /// <summary>Hackathon: settles decided wagers, refunds closed lobbies and retries failed wager payouts (every SWEEP_SECONDS).</summary>

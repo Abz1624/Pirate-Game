@@ -376,7 +376,11 @@ public sealed class HotfixMoneyTests
         // the guest leaves; the refund's result is unknown (lost response), so the deposit is not "refunded" yet
         w.Rpc.ThrowAfterSend = new HttpRequestException("lost");
         await Ok(await guest.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "left" }));
+        // "left" starts a settlement in the background (WagerService.Kick) that may be mid-send; wait for it, then settle
+        // again ourselves: the second pass finds the live payout and sends nothing
+        await w.Host.Services.GetRequiredService<BackgroundSettlements>().WhenIdleAsync();
         await w.WithAsync(async sp => { await sp.GetRequiredService<WagerService>().SettleLobbyAsync(id); return 0; });
+        await w.Host.Services.GetRequiredService<BackgroundSettlements>().WhenIdleAsync();
         w.Rpc.ThrowAfterSend = null;
         Assert.Equal(Payout.Unconfirmed, Assert.Single(w.Payouts()).Status);
 

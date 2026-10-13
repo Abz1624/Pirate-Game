@@ -49,6 +49,7 @@ builder.Services.AddScoped<RoguePirates.Api.Solana.WalletAuthService>();
 builder.Services.AddScoped<RoguePirates.Api.Solana.LedgerService>();
 // Hackathon: 1v1 SOL wagers (+ sweeper), weekly leaderboard rewards (+ job), the daily race.
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.WagerService>();
+builder.Services.AddSingleton<RoguePirates.Api.Hackathon.BackgroundSettlements>();
 builder.Services.AddHostedService<RoguePirates.Api.Hackathon.WagerSweeper>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.RewardService>();
 builder.Services.AddHostedService<RoguePirates.Api.Hackathon.WeeklyRewardJob>();
