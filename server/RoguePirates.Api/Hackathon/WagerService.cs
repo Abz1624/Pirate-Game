@@ -647,10 +647,14 @@ public sealed class WagerSweeper : BackgroundService
             using var scope = scopes.CreateScope();
             await scope.ServiceProvider.GetRequiredService<IslandService>().ReconcileMintsAsync();
             await scope.ServiceProvider.GetRequiredService<TreasuryMonitor>().BalanceAsync();
+            // raids past their timeout are stored as abandoned here too (reads no longer write them)
+            await IslandLocks.Economy.WaitAsync();
+            try { await scope.ServiceProvider.GetRequiredService<RaidService>().ExpireStaleAsync(); }
+            finally { IslandLocks.Economy.Release(); }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            log.LogWarning(ex, "Mint reconcile or treasury check failed");
+            log.LogWarning(ex, "Mint reconcile, treasury check or raid expiry failed");
         }
         try
         {

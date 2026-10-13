@@ -70,16 +70,28 @@ builder.Services.AddOptions<CorsOptions>().Configure<IServiceProvider>((o, sp) =
     o.AddDefaultPolicy(p => p.SetIsOriginAllowed(settings.IsOriginAllowed).AllowAnyHeader().AllowAnyMethod());
 });
 
-// Per-IP fixed window on every write (POST/PUT/PATCH/DELETE); reads and WebSockets are not limited.
+// Per-IP fixed window on every write (POST/PUT/PATCH/DELETE). Reads and WebSockets are not limited, except reads that
+// call the Solana RPC for the caller (V5 M9h: GET /api/wallet/balance, RPC_READ_RATE_LIMIT_PER_MINUTE per IP; the
+// treasury balance is cached 30 s instead, and island and raid reads take no lock).
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
     {
-        if (HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsHead(ctx.Request.Method) || HttpMethods.IsOptions(ctx.Request.Method))
-            return RateLimitPartition.GetNoLimiter("read");
-        var limit = ctx.RequestServices.GetRequiredService<ApiSettings>().RateLimitPerMinute;
         var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        if (HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsHead(ctx.Request.Method) || HttpMethods.IsOptions(ctx.Request.Method))
+        {
+            if (!HttpMethods.IsOptions(ctx.Request.Method) && RpcReads.Is(ctx.Request.Path))
+            {
+                var rpcLimit = ctx.RequestServices.GetRequiredService<ApiSettings>().RpcReadRateLimitPerMinute;
+                return RateLimitPartition.GetFixedWindowLimiter("rpc:" + ip, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = rpcLimit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
+                });
+            }
+            return RateLimitPartition.GetNoLimiter("read");
+        }
+        var limit = ctx.RequestServices.GetRequiredService<ApiSettings>().RateLimitPerMinute;
         return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
@@ -171,3 +183,9 @@ app.MapIslandApi();
 app.Run();
 
 public partial class Program { }
+
+/// <summary>V5 M9h: GET endpoints that make a Solana RPC call per request (rate limited per IP).</summary>
+static class RpcReads
+{
+    public static bool Is(PathString path) => path.Equals("/api/wallet/balance", StringComparison.OrdinalIgnoreCase);
+}

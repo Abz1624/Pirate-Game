@@ -320,11 +320,12 @@ public sealed class RaidService
 
     // ---------- history ----------
 
+    /// <summary>V5 M9h: a read, without the economy lock and without writes: a started raid past its timeout is shown as
+    /// abandoned (the next raid start or result on that island stores it so).</summary>
     public async Task<object> MineAsync(Player player)
     {
-        await IslandLocks.Economy.WaitAsync();
-        try { await ExpireStaleAsync(); }
-        finally { IslandLocks.Economy.Release(); }
+        var cutoff = _clock.UtcNow - IslandRules.RaidTimeout;
+        string ResultOf(Raid r) => r.Result == Raid.Started && r.CreatedAt <= cutoff ? Raid.Abandoned : r.Result;
 
         var raids = await _db.Raids.AsNoTracking().Where(r => r.AttackerPlayerId == player.Id || r.DefenderPlayerId == player.Id)
             .OrderByDescending(r => r.CreatedAt).Take(100).ToListAsync();
@@ -341,7 +342,7 @@ public sealed class RaidService
             raidId = r.Id, islandId = r.IslandId, islandName = names.GetValueOrDefault(r.IslandId),
             attacker = new { playerId = r.AttackerPlayerId, name = players.GetValueOrDefault(r.AttackerPlayerId)?.Name, wallet = players.GetValueOrDefault(r.AttackerPlayerId)?.wallet },
             defender = new { playerId = r.DefenderPlayerId, name = players.GetValueOrDefault(r.DefenderPlayerId)?.Name, wallet = players.GetValueOrDefault(r.DefenderPlayerId)?.wallet },
-            result = r.Result, rumLooted = r.RumLooted, seconds = r.Seconds, startedAt = r.CreatedAt, finishedAt = r.FinishedAt,
+            result = ResultOf(r), rumLooted = r.RumLooted, seconds = r.Seconds, startedAt = r.CreatedAt, finishedAt = r.FinishedAt,
             guardianMinute = r.GuardianMinute, minuteReached = r.MinuteReached, guardianSunk = r.GuardianSunk,
             wager = r.WagerId is { } wid && wagers.TryGetValue(wid, out var w)
                 ? new { wagerId = w.Id, stakeLamports = w.StakeLamports, status = w.Status, payoutSignature = w.PayoutSig }

@@ -453,17 +453,17 @@ public sealed class IslandService
 
     public async Task<object> GetAsync(Guid id, Guid? viewerId, string baseUrl) => await AccruedViewAsync(id, viewerId, baseUrl);
 
+    /// <summary>V5 M9h: a read. The island is loaded untracked and accrued in memory for display only, without the economy
+    /// lock and without a write (every write accrues from the stored clock first, so nothing is lost); before, every GET
+    /// took the write lock and saved, so reads queued behind collects, builds and raids.</summary>
     async Task<object> AccruedViewAsync(Guid id, Guid? viewerId, string baseUrl)
     {
-        await IslandLocks.Economy.WaitAsync();
-        try
-        {
-            var s = await LoadAsync(id);
-            Accrue(s, _clock.UtcNow);
-            await _db.SaveChangesAsync();
-            return await ViewAsync(s, viewerId, baseUrl);
-        }
-        finally { IslandLocks.Economy.Release(); }
+        var island = await _db.Islands.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id)
+                     ?? throw new ApiException(404, "island_not_found", "No such island.");
+        var buildings = await _db.IslandBuildings.AsNoTracking().Where(b => b.IslandId == id).ToListAsync();
+        var s = new IslandState { Island = island, Buildings = buildings.ToDictionary(b => b.Kind) };
+        Accrue(s, _clock.UtcNow);
+        return await ViewAsync(s, viewerId, baseUrl);
     }
 
     /// <summary>The world map: every slot (claimed or free) and every claimed island's summary.</summary>
