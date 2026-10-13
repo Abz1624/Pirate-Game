@@ -852,7 +852,7 @@ known-good base.
   second arsenal's maces (simplest correct; pinned by a test, `e4f9e842`). MWA wallets with only
   `sign_and_send_transactions`: on "method not found" for `sign_transactions` the wallet signs and sends, the returned
   signature is persisted at once, "sent, unknown" kept (no signature: check the wallet before paying again; a late
-  signature is still persisted) (`b86d46ad`). Suites: EditMode 839/839, PlayMode PLAYMODE_RESULT.
+  signature is still persisted) (`b86d46ad`). Suites: EditMode 839/839, PlayMode 132/134 (the two load probes skip without RP_PROBE_SECONDS), as at `e851dcd3` plus 4 new EditMode tests.
 
 Remaining in M9i:
 - The review's other findings: client-reported PvP hull, raid results and race times (server authority: M13b, M15,

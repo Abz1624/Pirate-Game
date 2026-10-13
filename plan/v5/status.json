@@ -91,7 +91,7 @@
   },
   "M9i": {
    "state": "building",
-   "chip": "in progress · content back, run checks v9, prefabs; findings, device checks, H10, art left"
+   "chip": "in progress · content back, run checks v9, prefabs, client findings (UI kit, bot maces, MWA sign-and-send); device checks, H10, art left"
   },
   "M9c": {
    "state": "building",
@@ -617,6 +617,11 @@
    "when": "14 Oct",
    "commit": "d493701c",
    "what": "<strong>M9h review</strong> (v5-reviewer on the M9h diff): no blockers, 5 majors, 8 minors. Fixed and redeployed: a wager deposit must be a transfer made after the wager (an old top-up is never refunded through a wager), the balance limit as an endpoint policy (a trailing slash no longer skips it) keyed by token or IP, a 150-block margin before a pending mint counts as never landing, a lowered session lifetime shortens issued sessions, readable switch values with a startup error for typos. Server 260/262 twice (trx in <code>plan/v5/phase-09h-safety/</code>). Two questions for you below."
+  },
+  {
+   "when": "14 Oct",
+   "commit": "b86d46ad",
+   "what": "<strong>M9i client findings</strong>: one shared parchment UI kit (<code>HackSkin</code> and <code>UiKit</code> in a new assembly <code>RoguePirates.UI</code> below V4 Presentation and the hackathon; the seven copies and the reflection gone; every screen looks the same in 1920x1080 before/after screenshots, <code>plan/hackathon/screens/kit-*</code>; <code>424f3607</code>); the PvP bot keeps the chained mace and orbit blades out of its arsenal instead of drawing a second arsenal's maces (pinned by a test, <code>e4f9e842</code>); Mobile Wallet Adapter wallets that only offer <code>sign_and_send_transactions</code> now pay: the wallet signs and sends, its signature is saved at once, and when it may have sent without saying so you are told to check the wallet before paying again (<code>b86d46ad</code>). Suites: EditMode 839/839, PlayMode 132/134 (the two load probes skip as before)."
   }
  ],
  "todos": {
@@ -638,7 +643,7 @@
    "PvP draft on phones: tapping a card to read it also picks it (later).",
    "Art team: Kraken pale emission, CutthroatSkiff wake without a material, 2048 px ship textures (web cap 1024).",
    "The 13 Oct hackathon builds are <code>outdated_client</code> under run checks v9; the next build fixes it.",
-   "Review leftovers (M9i and later): one hot key for every treasury role (until M11); client-reported PvP hull, raid results and race times; NFT vs database ownership; one shared UI kit (7 copies); bot maces not drawn in PvP; MWA wallets with only <code>sign_and_send</code> unsupported; the client has no sign-out-everywhere button. Done in M9h: refused wager deposits refunded, no double mint, sessions expire, GET rate limits."
+   "Review leftovers (M9i and later): one hot key for every treasury role (until M11); client-reported PvP hull, raid results and race times; NFT vs database ownership; the client has no sign-out-everywhere button. Done in M9h: refused wager deposits refunded, no double mint, sessions expire, GET rate limits. Done in M9i (14 Oct): one shared UI kit, bot maces, MWA sign-and-send."
   ],
   "done": [
    "<strong>Answered H8 and H9</strong> (13 Oct, D30): everything skipped comes back now (four weapons, Cursed Chest Key, four designed items, Chaos Logbook); Ember keeps the flamethrower.",
@@ -1261,6 +1266,20 @@
    "check": "Live API after the deploy: /health, /api/switches, /api/treasury cache, revoke-all, a short wager deposit, a second claim, admin treasury and report, the balance rate limit",
    "result": "All as expected; 15 payouts (2.551 SOL, all sent) and 8 mints since 12 Oct; no payout pending or unconfirmed",
    "evidence": "plan/v5/phase-09h-safety/live-check-2026-10-13.md, plan/v5/phase-09h-safety/payouts-and-mints-since-12-oct.md"
+  },
+  {
+   "date": "14 Oct",
+   "phase": "M9i",
+   "check": "Shared UI kit (424f3607): 1920x1080 screenshots before/after of the menu, Islands, Market, Defence, PvP hub, Daily Race, Weekly board, pause menu; pixel diff",
+   "result": "Kit UI unchanged on all 8 screens (differences only in the animated scene, clocks and the run behind the pause menu); V4StructureTests.UiKit_IsOneSharedAssembly_BelowV4AndTheHackathon passes",
+   "evidence": "plan/hackathon/screens/kit-*-before.png, kit-*-after.png"
+  },
+  {
+   "date": "14 Oct",
+   "phase": "M9i",
+   "check": "Bot maces (e4f9e842) and MWA sign-and-send (b86d46ad): HackathonGameplayFixTests.PvpBot_NeverCarriesAWeaponItsViewsCannotDraw, Web3RulesTests (SignOnlyUnsupported, ReadSignAndSend); full suites in the Editor at 16:9",
+   "result": "EditMode 839/839 (835 + 4 new), PlayMode 132/134 (2 load probes skip without RP_PROBE_SECONDS), as at e851dcd3",
+   "evidence": "Pirate Game Unity/Assets/_Game/Tests, Pirate Game Unity/Assets/_Game/Hackathon/Tests"
   }
  ],
  "phaseResults": {
