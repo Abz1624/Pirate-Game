@@ -1,6 +1,8 @@
 using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Views;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RoguePirates.V4.Presentation.World
 {
@@ -8,6 +10,9 @@ namespace RoguePirates.V4.Presentation.World
     /// The four play-area edge walls (M14.9b; port of V3's V3PlayBoundsWallVisual): the wall panel prefab on each edge of
     /// the play bounds, fading in as the ship comes within 32 m of that edge (14 m ramp). Bounds from the world view, the
     /// ship from the ship view; the panels are created once at bind.
+    /// Hackathon (owner, 13 Oct): the red walls stay hidden; instead a pulsing "Storm edge!" warning shows at the top
+    /// of the screen while the ship is within <see cref="WarnDistance"/> of an edge (or beyond it, where the edge
+    /// damage applies).
     /// </summary>
     public sealed class BoundsWallPresenter : MonoBehaviour
     {
@@ -16,6 +21,10 @@ namespace RoguePirates.V4.Presentation.World
         const float FadeWidth = 14f;
         const float WallHeight = 42f; // demo: 3x taller (was 14)
         const float WallThickness = 1.2f;
+        static readonly bool ShowWalls = false;
+        /// <summary>Metres inside the edge at which the warning appears.</summary>
+        public const float WarnDistance = 10f;
+        const string WarningText = "STORM EDGE! TURN BACK";
 
         sealed class Wall
         {
@@ -28,6 +37,11 @@ namespace RoguePirates.V4.Presentation.World
         Wall _west, _east, _south, _north;
         float _lastHalfX = -1f, _lastHalfZ = -1f;
         Vector3 _lastCenter = new Vector3(float.NaN, 0f, float.NaN);
+        GameObject _warningCanvas;
+        TextMeshProUGUI _warning;
+
+        /// <summary>Whether the storm edge warning is on screen, for checks.</summary>
+        public bool WarningShown => _warningCanvas != null && _warningCanvas.activeSelf;
 
         public void Bind(IWorldView world, IShipView ship)
         {
@@ -43,6 +57,8 @@ namespace RoguePirates.V4.Presentation.World
                 _north = CreateWall("NorthWall", Vector3.forward, prefab);
             }
             _lastHalfX = -1f;
+            if (_warningCanvas == null) CreateWarning();
+            _warningCanvas.SetActive(false);
         }
 
         /// <summary>Whether the wall on an edge (0 west, 1 east, 2 south, 3 north) is showing.</summary>
@@ -67,14 +83,64 @@ namespace RoguePirates.V4.Presentation.World
                 SetFade(_east, 0f);
                 SetFade(_south, 0f);
                 SetFade(_north, 0f);
+                SetWarning(false);
                 return;
             }
 
             var local = _ship.Position - center;
-            SetFade(_west, EdgeFade(local.x + halfX));
-            SetFade(_east, EdgeFade(halfX - local.x));
-            SetFade(_south, EdgeFade(local.z + halfZ));
-            SetFade(_north, EdgeFade(halfZ - local.z));
+            var west = local.x + halfX;
+            var east = halfX - local.x;
+            var south = local.z + halfZ;
+            var north = halfZ - local.z;
+            SetFade(_west, ShowWalls ? EdgeFade(west) : 0f);
+            SetFade(_east, ShowWalls ? EdgeFade(east) : 0f);
+            SetFade(_south, ShowWalls ? EdgeFade(south) : 0f);
+            SetFade(_north, ShowWalls ? EdgeFade(north) : 0f);
+
+            var clearance = Mathf.Min(Mathf.Min(west, east), Mathf.Min(south, north));
+            SetWarning(halfX > 0f && halfZ > 0f && clearance < WarnDistance);
+            if (_warning != null && _warningCanvas.activeSelf)
+            {
+                var pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 8f);
+                _warning.alpha = Mathf.Lerp(0.55f, 1f, pulse);
+                _warning.transform.localScale = Vector3.one * Mathf.Lerp(1f, 1.08f, pulse);
+            }
+        }
+
+        void SetWarning(bool on)
+        {
+            if (_warningCanvas != null && _warningCanvas.activeSelf != on) _warningCanvas.SetActive(on);
+        }
+
+        void CreateWarning()
+        {
+            _warningCanvas = new GameObject("StormEdgeWarning", typeof(RectTransform));
+            _warningCanvas.transform.SetParent(transform, false);
+            var canvas = _warningCanvas.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 40;
+            var scaler = _warningCanvas.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            var textGo = new GameObject("Text", typeof(RectTransform));
+            textGo.transform.SetParent(_warningCanvas.transform, false);
+            var rt = (RectTransform)textGo.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.sizeDelta = new Vector2(1200f, 90f);
+            rt.anchoredPosition = new Vector2(0f, -110f);
+            _warning = textGo.AddComponent<TextMeshProUGUI>();
+            _warning.text = WarningText;
+            _warning.fontSize = 56f;
+            _warning.fontStyle = FontStyles.Bold;
+            _warning.color = new Color(1f, 0.32f, 0.25f, 1f);
+            _warning.alignment = TextAlignmentOptions.Center;
+            _warning.enableWordWrapping = false;
+            _warning.raycastTarget = false;
+            _warning.outlineWidth = 0.25f;
+            _warning.outlineColor = new Color32(0, 0, 0, 255);
         }
 
         static float EdgeFade(float clearance) =>
