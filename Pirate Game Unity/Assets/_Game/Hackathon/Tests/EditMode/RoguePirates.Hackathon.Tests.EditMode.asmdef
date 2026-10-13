@@ -3,6 +3,7 @@
     "rootNamespace": "RoguePirates.Hackathon.Tests",
     "references": [
         "RoguePirates.Hackathon",
+        "com.solana.unity_sdk",
         "RoguePirates.V4",
         "RoguePirates.V4.Presentation",
         "UnityEngine.TestRunner",
@@ -17,7 +18,8 @@
     "precompiledReferences": [
         "nunit.framework.dll",
         "Solana.Unity.Wallet.dll",
-        "Solana.Unity.Rpc.dll"
+        "Solana.Unity.Rpc.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

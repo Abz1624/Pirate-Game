@@ -124,5 +124,74 @@ namespace RoguePirates.Hackathon
             if (string.IsNullOrEmpty(rawResponse)) return false;
             return System.Text.RegularExpressions.Regex.IsMatch(rawResponse, @"""code""\s*:\s*-3200[23]\b");
         }
+
+        // ---------------------------------------------------------------- wallets that sign and send themselves
+
+        /// <summary>
+        /// V5 M9i: a Mobile Wallet Adapter wallet without <c>sign_transactions</c> (optional, and deprecated, in MWA 2.0; only
+        /// <c>sign_and_send_transactions</c> is mandatory) answers the game's sign request with JSON-RPC -32601 "method not
+        /// found". Nothing was signed, so the game can ask the wallet to sign and send instead.
+        /// </summary>
+        public static bool SignOnlyUnsupported(Exception e)
+        {
+            for (var x = e; x != null; x = x.InnerException)
+                if (x is Solana.Unity.SDK.MwaRpcException m && m.Code == Solana.Unity.SDK.MwaErrorCodes.MethodNotFound) return true;
+            return false;
+        }
+
+        /// <summary>What a wallet's own sign-and-send did with the SOL.</summary>
+        public enum WalletSend
+        {
+            /// <summary>Signed and sent: the signature is known (persist it at once).</summary>
+            Sent,
+            /// <summary>Nothing left the wallet (declined, refused, never signed or never submitted).</summary>
+            NotSent,
+            /// <summary>The wallet may have sent it but gave no signature (a dropped session, an unmapped error).</summary>
+            Unknown,
+        }
+
+        /// <summary>
+        /// V5 M9i: reads the SDK's typed result of <c>sign_and_send_transactions</c> for one transaction. A success or a partial
+        /// submit that names this transaction's signature is sent; the wallet's definite refusals (declined, unsupported,
+        /// unauthorized, invalid or too many payloads, signed but not submitted) are not; anything else is unknown, since the
+        /// wallet may have broadcast it.
+        /// </summary>
+        public static WalletSend ReadSignAndSend(SignAndSendTxResult result, out string signature, out string reason)
+        {
+            signature = null;
+            reason = null;
+            switch (result)
+            {
+                case SignAndSendTxResult.Success s:
+                    signature = SignatureBase58(s.Signatures != null && s.Signatures.Length > 0 ? s.Signatures[0] : null);
+                    if (signature != null) return WalletSend.Sent;
+                    reason = "the wallet returned no signature";
+                    return WalletSend.Unknown;
+                case SignAndSendTxResult.NotSubmitted ns:
+                    signature = SignatureBase58(ns.PartialSignatures != null && ns.PartialSignatures.Length > 0 ? ns.PartialSignatures[0] : null);
+                    if (signature != null) return WalletSend.Sent;
+                    reason = "the wallet signed it but could not send it";
+                    return WalletSend.NotSent;
+                case SignAndSendTxResult.UserDeclined _:
+                    reason = "Cancelled in the wallet.";
+                    return WalletSend.NotSent;
+                case SignAndSendTxResult.NotSupported _:
+                    reason = "this wallet cannot sign transactions for the game";
+                    return WalletSend.NotSent;
+                case SignAndSendTxResult.Unauthorized _:
+                    reason = "the wallet session expired; reconnect your wallet";
+                    return WalletSend.NotSent;
+                case SignAndSendTxResult.InvalidPayloads _:
+                case SignAndSendTxResult.TooManyPayloads _:
+                    reason = "the wallet refused the transaction";
+                    return WalletSend.NotSent;
+                case SignAndSendTxResult.Failed f:
+                    reason = string.IsNullOrEmpty(f.Message) ? "the wallet gave no answer" : f.Message;
+                    return WalletSend.Unknown;
+                default:
+                    reason = "the wallet gave no answer";
+                    return WalletSend.Unknown;
+            }
+        }
     }
 }

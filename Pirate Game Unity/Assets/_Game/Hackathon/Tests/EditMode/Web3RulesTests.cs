@@ -64,5 +64,53 @@ namespace RoguePirates.Hackathon.Tests
             CollectionAssert.AreEqual(sig, Encoders.Base58.DecodeData(Encoders.Base58.EncodeData(sig)));
             Assert.IsNull(Web3Rules.DetachedSignature(new byte[10]));
         }
+
+        // ---- V5 M9i: MWA wallets that only sign and send ----------------------------------------------------------------
+
+        [Test]
+        public void SignOnlyUnsupported_IsMethodNotFound_FromTheWallet_EvenWrapped()
+        {
+            var notFound = new Solana.Unity.SDK.MwaRpcException(Solana.Unity.SDK.MwaErrorCodes.MethodNotFound, "sign_transactions");
+            Assert.IsTrue(Web3Rules.SignOnlyUnsupported(notFound));
+            Assert.IsTrue(Web3Rules.SignOnlyUnsupported(new System.AggregateException(notFound)));
+            Assert.IsTrue(Web3Rules.SignOnlyUnsupported(new System.Exception("outer", notFound)));
+            Assert.IsFalse(Web3Rules.SignOnlyUnsupported(new Solana.Unity.SDK.MwaRpcException(Solana.Unity.SDK.MwaErrorCodes.NotSigned, "declined")),
+                "a declined signature is not a missing method");
+            Assert.IsFalse(Web3Rules.SignOnlyUnsupported(new System.Exception("timeout")));
+            Assert.IsFalse(Web3Rules.SignOnlyUnsupported(null));
+        }
+
+        [Test]
+        public void ReadSignAndSend_SentOnlyWithASignature_RefusalsNotSent_RestUnknown()
+        {
+            var raw = new byte[64];
+            for (var i = 0; i < raw.Length; i++) raw[i] = (byte)(i + 1);
+            var expected = Encoders.Base58.EncodeData(raw);
+
+            Assert.AreEqual(Web3Rules.WalletSend.Sent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.Success { Signatures = new[] { raw } }, out var sig, out _));
+            Assert.AreEqual(expected, sig, "the wallet's signature is the transaction id the caller persists");
+            Assert.AreEqual(Web3Rules.WalletSend.Unknown, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.Success { Signatures = new byte[0][] }, out sig, out _),
+                "a success without a signature may still have sent it");
+            Assert.IsNull(sig);
+
+            Assert.AreEqual(Web3Rules.WalletSend.Sent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.NotSubmitted { PartialSignatures = new[] { raw } }, out sig, out _),
+                "a partial submit naming this transaction landed it");
+            Assert.AreEqual(expected, sig);
+            Assert.AreEqual(Web3Rules.WalletSend.NotSent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.NotSubmitted { PartialSignatures = new byte[][] { null } }, out sig, out _));
+            Assert.IsNull(sig);
+
+            Assert.AreEqual(Web3Rules.WalletSend.NotSent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.UserDeclined(), out _, out var reason));
+            StringAssert.Contains("Cancelled", reason);
+            Assert.AreEqual(Web3Rules.WalletSend.NotSent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.NotSupported(), out _, out _));
+            Assert.AreEqual(Web3Rules.WalletSend.NotSent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.Unauthorized(), out _, out _));
+            Assert.AreEqual(Web3Rules.WalletSend.NotSent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.InvalidPayloads { Valid = new[] { false } }, out _, out _));
+            Assert.AreEqual(Web3Rules.WalletSend.NotSent, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.TooManyPayloads(), out _, out _));
+
+            Assert.AreEqual(Web3Rules.WalletSend.Unknown, Web3Rules.ReadSignAndSend(new SignAndSendTxResult.Failed { Code = 0, Message = "session closed" }, out sig, out reason),
+                "a dropped session may have sent it: never say nothing was taken");
+            Assert.IsNull(sig);
+            StringAssert.Contains("session closed", reason);
+            Assert.AreEqual(Web3Rules.WalletSend.Unknown, Web3Rules.ReadSignAndSend(null, out _, out _));
+        }
     }
 }

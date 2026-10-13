@@ -89,6 +89,8 @@ namespace RoguePirates.Hackathon
                     PendingTransfers.Forget(PendingTransfers.Deposit, lobbyId);
                     return new DepositResult { Error = t.Error ?? "The transfer was not made." };
                 }
+                // V5 M9i: a wallet that sends itself may have sent it without naming the signature: nothing to check.
+                if (!t.Ok && string.IsNullOrEmpty(t.Signature)) return new DepositResult { Error = t.Error, Sent = true };
                 if (!t.Ok) progress?.Invoke("The transfer was signed; checking whether devnet has it...");
             }
             return await CheckDeposit(lobbyId, progress, HackathonRules.Sol(w.stakeLamports));

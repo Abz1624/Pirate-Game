@@ -259,6 +259,7 @@ namespace RoguePirates.Hackathon
             var w = Wallet;
             Wallet = null;
             Kind = WalletKind.None;
+            _walletSendsItself = false;
             if (w == null) return;
             try { w.Logout(); }
             catch (Exception e) { Debug.LogWarning("Web3Session.Logout: " + e.Message); }
@@ -366,7 +367,8 @@ namespace RoguePirates.Hackathon
         /// the game sends it. Any failure after signing is "sent, unknown" (<see cref="TransferResult.MaybeSent"/>): the SOL
         /// may have left, so the caller keeps the signature and asks the server instead of saying nothing was taken. Only a
         /// node's definite preflight rejection (simulation or signature check failed: nothing was broadcast) or a refusal
-        /// before signing counts as not sent.
+        /// before signing counts as not sent. V5 M9i: an MWA wallet without sign_transactions signs and sends itself
+        /// (<see cref="WalletSignsAndSends"/>).
         /// </summary>
         public Task<TransferResult> TransferSol(string toAddress, double sol, string memo = null, Action<string> onSigned = null)
         {
@@ -420,9 +422,25 @@ namespace RoguePirates.Hackathon
                 var from = Wallet.Account.PublicKey;
                 var (tx, buildError) = await build(from);
                 if (buildError != null) return TransferResult.NotSent(Fail(buildError));
-                Transaction signed;
-                try { signed = await WaitForWallet(Wallet.SignTransaction(tx), SignTimeoutSeconds); }
-                catch (WalletWaitException e) { return TransferResult.NotSent(Fail(e.Message)); }
+                Transaction signed = null;
+                if (!_walletSendsItself)
+                {
+                    try { signed = await WaitForWallet(Wallet.SignTransaction(tx), SignTimeoutSeconds); }
+                    catch (WalletWaitException e) { return TransferResult.NotSent(Fail(e.Message)); }
+                    catch (Exception e) when (Wallet is SolanaWalletAdapter && Web3Rules.SignOnlyUnsupported(e))
+                    {
+                        // V5 M9i: an MWA wallet with only sign_and_send_transactions (nothing was signed).
+                        Debug.Log("Web3Session: the wallet has no sign_transactions; it signs and sends from now on.");
+                        _walletSendsItself = true;
+                    }
+                }
+                if (_walletSendsItself)
+                {
+                    // A fresh transaction (the first one went to the wallet; a new blockhash costs nothing).
+                    var (again, againError) = await build(from);
+                    if (againError != null) return TransferResult.NotSent(Fail(againError));
+                    return await WalletSignsAndSends(what, again, from, onSigned);
+                }
                 signature = Web3Rules.TransactionId(signed?.Signatures, from.Key);
                 if (signature == null) return TransferResult.NotSent(Fail(what + " failed: the wallet did not sign."));
                 LastTransferSignature = signature;
@@ -451,6 +469,77 @@ namespace RoguePirates.Hackathon
                 return new TransferResult(signature, Fail(what + " was signed and sent, but devnet's reply was unclear (" + Readable(e) + ")."), true);
             }
         }
+
+        /// <summary>The connected MWA wallet answered sign_transactions with "method not found": transfers go through its
+        /// sign_and_send_transactions (<see cref="WalletSignsAndSends"/>) until another wallet connects.</summary>
+        bool _walletSendsItself;
+
+        /// <summary>
+        /// V5 M9i: a Mobile Wallet Adapter wallet that only signs and sends (MWA 2.0's mandatory
+        /// <c>sign_and_send_transactions</c>). The signature comes back only once the wallet has sent the transaction, so it
+        /// is handed to <paramref name="onSigned"/> (persisted) the moment it arrives. "Sent, unknown" stays: when the wallet
+        /// may have sent it without naming the signature (a dropped session, an unmapped error, the game stopped waiting),
+        /// the result says the SOL may have left (<see cref="TransferResult.MaybeSent"/> with no signature) and the player is
+        /// told to check the wallet before paying again; only the wallet's definite refusals count as not sent.
+        /// </summary>
+        async Task<TransferResult> WalletSignsAndSends(string what, Transaction tx, PublicKey from, Action<string> onSigned)
+        {
+            if (!(Wallet is SolanaWalletAdapter adapter)) return TransferResult.NotSent(Fail(what + " failed: this wallet cannot send transactions itself."));
+            // The unsigned wire format: one zeroed signature slot for the fee payer, which the wallet fills.
+            tx.Signatures = new List<SignaturePubKeyPair> { new SignaturePubKeyPair { PublicKey = from, Signature = new byte[64] } };
+            Raise("Approve the transfer in your wallet (it sends it to devnet)...");
+            SignAndSendTxResult result;
+            Task<SignAndSendTxResult> send = null;
+            try
+            {
+                send = adapter.SignAndSendTransactions(new[] { tx }, new SignAndSendTransactionsOptions { Commitment = "confirmed" });
+                result = await WaitForWallet(send, SignTimeoutSeconds, false, true);
+            }
+            catch (WalletWaitException e)
+            {
+                // The wallet may still answer: a signature it gives later is kept too, so a retry checks instead of paying.
+                _ = KeepLateSignature(send, onSigned);
+                return new TransferResult(null, Fail(what + ": " + e.Message), true);
+            }
+            catch (OperationInFlightException e) { return TransferResult.NotSent(Fail(what + " failed: " + e.Message)); }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Web3Session." + what + " (wallet sends): " + e);
+                return new TransferResult(null, Fail(MaybeSentLine(what, Readable(e))), true);
+            }
+            var outcome = Web3Rules.ReadSignAndSend(result, out var signature, out var reason);
+            switch (outcome)
+            {
+                case Web3Rules.WalletSend.Sent:
+                    LastTransferSignature = signature;
+                    try { onSigned?.Invoke(signature); }
+                    catch (Exception e) { Debug.LogWarning("Web3Session: could not keep the signature: " + e.Message); }
+                    Done();
+                    _ = RefreshBalanceLater();
+                    return new TransferResult(signature, null, true);
+                case Web3Rules.WalletSend.NotSent:
+                    return TransferResult.NotSent(Fail(reason == "Cancelled in the wallet." ? reason + " Nothing was sent." : what + " failed: " + reason + "."));
+                default:
+                    return new TransferResult(null, Fail(MaybeSentLine(what, reason)), true);
+            }
+        }
+
+        /// <summary>A sign-and-send the game stopped waiting for: its signature, if the wallet still sends it, is persisted.</summary>
+        async Task KeepLateSignature(Task<SignAndSendTxResult> send, Action<string> onSigned)
+        {
+            if (send == null) return;
+            try
+            {
+                if (Web3Rules.ReadSignAndSend(await send, out var signature, out _) != Web3Rules.WalletSend.Sent) return;
+                LastTransferSignature = signature;
+                onSigned?.Invoke(signature);
+                Debug.Log("Web3Session: the wallet sent it after all; its signature is kept (" + signature + ").");
+            }
+            catch (Exception e) { Debug.LogWarning("Web3Session: a late wallet answer could not be read: " + e.Message); }
+        }
+
+        static string MaybeSentLine(string what, string reason) =>
+            what + " may have been sent by your wallet, but it did not say (" + reason + "). Check your wallet's activity before trying again.";
 
         static string SendFailureReason(Solana.Unity.Rpc.Core.Http.RequestResult<string> result)
         {
@@ -564,7 +653,9 @@ namespace RoguePirates.Hackathon
         public bool CanCancel => Busy && _waiting;
 
         /// <summary>Stops waiting for the wallet (the player closed it, or it never answered). Safe: a transfer is sent by the
-        /// game only after the wallet returns its signature, so a signature the wallet gives later is never sent.</summary>
+        /// game only after the wallet returns its signature, so a signature the wallet gives later is never sent. The one
+        /// exception is a wallet that sends itself (V5 M9i, <see cref="WalletSignsAndSends"/>): the player is told it may
+        /// still send.</summary>
         public void CancelWait()
         {
             if (_waiting) _cancelRequested = true;
@@ -572,8 +663,10 @@ namespace RoguePirates.Hackathon
 
         /// <summary>Waits for <paramref name="task"/>, at most <paramref name="seconds"/>, until <see cref="CancelWait"/>, or (the
         /// WebGL wallet chooser) until its close button hides the chooser before a wallet was picked. Throws
-        /// <see cref="WalletWaitException"/> with the player-facing reason; the abandoned task is left to the SDK.</summary>
-        async Task<T> WaitForWallet<T>(Task<T> task, float seconds, bool watchPicker = false)
+        /// <see cref="WalletWaitException"/> with the player-facing reason; the abandoned task is left to the SDK. V5 M9i:
+        /// <paramref name="walletSends"/> (a wallet that sends the transaction itself): stopping the wait cannot stop the
+        /// wallet, so the reason says it may still send it.</summary>
+        async Task<T> WaitForWallet<T>(Task<T> task, float seconds, bool watchPicker = false, bool walletSends = false)
         {
             _waiting = true;
             _cancelRequested = false;
@@ -584,8 +677,10 @@ namespace RoguePirates.Hackathon
             {
                 while (!task.IsCompleted)
                 {
-                    if (_cancelRequested) throw new WalletWaitException("Cancelled. Nothing was sent.");
-                    if (Time.realtimeSinceStartup > until) throw new WalletWaitException("The wallet did not answer in time. Nothing was sent; try again.");
+                    if (_cancelRequested)
+                        throw new WalletWaitException(walletSends ? "Stopped waiting. Your wallet may still send it: check its activity before trying again." : "Cancelled. Nothing was sent.");
+                    if (Time.realtimeSinceStartup > until)
+                        throw new WalletWaitException(walletSends ? "The wallet did not answer in time and may still send it: check its activity before trying again." : "The wallet did not answer in time. Nothing was sent; try again.");
                     if (picker != null && picker.Closed()) throw new WalletWaitException("The wallet choice was closed.");
                     await Awaitable.NextFrameAsync();
                 }

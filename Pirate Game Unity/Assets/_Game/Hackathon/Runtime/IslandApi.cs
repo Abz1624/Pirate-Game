@@ -253,6 +253,8 @@ namespace RoguePirates.Hackathon
                     PendingTransfers.Forget(PendingTransfers.Buy, l.listingId);
                     return new TradeResult { Error = t.Error ?? "The payment was not made." };
                 }
+                // V5 M9i: a wallet that sends itself may have sent it without naming the signature: nothing to check.
+                if (!t.Ok && string.IsNullOrEmpty(t.Signature)) return new TradeResult { Error = t.Error };
             }
             return await FinishBuy(l.listingId, progress);
         }
@@ -342,6 +344,7 @@ namespace RoguePirates.Hackathon
                     PendingTransfers.Forget(PendingTransfers.List, island.islandId);
                     return new TradeResult { Error = t.Error ?? "The NFT was not sent." };
                 }
+                if (!t.Ok && string.IsNullOrEmpty(t.Signature)) return new TradeResult { Error = t.Error }; // V5 M9i (as above)
             }
             return await FinishList(island.islandId, priceLamports, progress);
         }
