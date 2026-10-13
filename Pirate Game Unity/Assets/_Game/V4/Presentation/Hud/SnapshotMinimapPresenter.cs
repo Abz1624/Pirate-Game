@@ -107,7 +107,16 @@ namespace RoguePirates.V4.Presentation.Hud
             border.color = FrameGold;
             border.raycastTarget = false;
             var inner = Child(root, "Inner");
-            Stretch(inner, 3f);
+            // Hackathon UI (13 Oct, owner): a wood frame from the parchment kit instead of the flat gold border.
+            var wood = RoguePirates.V4.Presentation.Menu.MenuKit.S("Header_Wood");
+            if (wood != null)
+            {
+                border.sprite = wood;
+                border.type = wood.border.sqrMagnitude > 0f ? Image.Type.Sliced : Image.Type.Simple;
+                border.pixelsPerUnitMultiplier = 2f;
+                border.color = Color.white;
+            }
+            Stretch(inner, wood != null ? 6f : 3f);
             var innerImg = inner.gameObject.AddComponent<Image>();
             innerImg.sprite = MinimapUiSprites.White;
             innerImg.color = FrameDark;

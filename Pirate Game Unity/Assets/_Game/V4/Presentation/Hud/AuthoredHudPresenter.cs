@@ -378,6 +378,8 @@ namespace RoguePirates.V4.Presentation.Hud
             _boostLabel.textWrappingMode = TextWrappingModes.NoWrap;
             _boostLabel.overflowMode = TextOverflowModes.Ellipsis;
             _boostLabel.text = "Boost  ·  SHIFT";
+            // Hackathon UI (13 Oct, owner): the kit's bar track and green fill instead of the flat blue box.
+            _kitBoost = RoguePirates.V4.Presentation.Menu.MenuKit.HudBar(bg, _boostFill, "Bar_Fill_Green", _boostLabel);
 
             _boostButton = boostRoot.GetComponent<Button>();
             if (_boostButton == null) _boostButton = boostRoot.gameObject.AddComponent<Button>();
@@ -387,6 +389,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _boostButton.onClick.AddListener(OnBoostClicked);
         }
 
+        bool _kitBoost;
         static readonly Color BoostReadyColor = new Color(0.25f, 0.75f, 0.95f, 0.95f);
         static readonly Color BoostActiveColor = new Color(0.35f, 0.95f, 1f, 1f);
         static readonly Color BoostCoolingColor = new Color(0.45f, 0.55f, 0.65f, 0.9f);
@@ -452,6 +455,7 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 fill = 1f; color = BoostReadyColor; state = 3; seconds = -1;
             }
+            if (_kitBoost) color = state == 2 ? new Color(0.62f, 0.6f, 0.56f, 1f) : state == 1 ? new Color(0.75f, 1f, 1f, 1f) : Color.white;
             if (!Mathf.Approximately(_boostFill.fillAmount, fill)) _boostFill.fillAmount = fill;
             if (_boostFill.color != color) _boostFill.color = color;
             if (state == _lastBoostState && seconds == _lastBoostSeconds) return;

@@ -46,6 +46,17 @@ namespace RoguePirates.V4.Presentation.Hud
             toast._text.maxVisibleLines = 3;
             toast._text.richText = true;
             toast._text.color = RoguePirates.V4.Foundation.World.PlaceholderFactory.UiAccent;
+            // Hackathon UI (13 Oct, owner): a parchment card with ink text in the kit font (was a flat navy box).
+            if (RoguePirates.V4.Presentation.Menu.MenuKit.Ready)
+            {
+                rect.sizeDelta = new Vector2(640f, 112f);
+                // Clear of the item row at the bottom centre (the toast sat on its slots).
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.23f);
+                RoguePirates.V4.Presentation.Menu.MenuKit.Paint(bg, "Panel_Card", 1.8f).raycastTarget = false;
+                RoguePirates.V4.Presentation.Menu.MenuKit.InkText(toast._text, RoguePirates.V4.Presentation.Menu.MenuKit.Ink, 23f);
+                textRect.offsetMin = new Vector2(24f, 10f);
+                textRect.offsetMax = new Vector2(-24f, -10f);
+            }
             root.SetActive(false);
             return toast;
         }

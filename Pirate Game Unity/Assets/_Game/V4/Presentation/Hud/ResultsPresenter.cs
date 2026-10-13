@@ -4,6 +4,7 @@ using RoguePirates.V4.Foundation.Balance;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Events;
+using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Views;
 using TMPro;
 using UnityEngine;
@@ -84,7 +85,7 @@ namespace RoguePirates.V4.Presentation.Hud
             var results = _views.Results;
             if (_headline != null) _headline.text = SaltwindRunResultsLogic.BuildHeadline(results.ObjectiveSecured, results.ObjectiveSecured && results.EndedByDeath);
             SubmitOnline(); // Playtest (3 Oct, owner): before the text, so it shows "sending..."
-            if (_summary != null) _summary.text = BuildSummary();
+            if (_summary != null) _summary.text = Ink(BuildSummary());
             if (_summaryScroll != null) _summaryScroll.verticalNormalizedPosition = 1f; // open at the top
         }
 
@@ -103,7 +104,7 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 if (this == null || !_submitted) return;
                 _onlineLine = line;
-                if (IsShowing && _summary != null) _summary.text = BuildSummary();
+                if (IsShowing && _summary != null) _summary.text = Ink(BuildSummary());
             });
         }
 
@@ -193,8 +194,11 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             if (string.IsNullOrEmpty(message)) return;
             _views?.Toasts?.Show(message, seconds);
-            if (IsShowing && _summary != null) _summary.text = BuildSummary();
+            if (IsShowing && _summary != null) _summary.text = Ink(BuildSummary());
         }
+
+        /// <summary>Hackathon UI: the summary's gold line in a parchment ink.</summary>
+        static string Ink(string summary) => MenuKit.InkRich(summary);
 
         void BuildUi(Transform canvas)
         {
@@ -235,7 +239,41 @@ namespace RoguePirates.V4.Presentation.Hud
             if (RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles)
                 CreateButton("run_results_session", "Download voyage data", "Download this voyage's recorded data again.", new Vector2(0f, 96f),
                     () => ShowMessage(RoguePirates.V4.Telemetry.SessionFile.DownloadLast(), 3f));
+            ApplyKit();
             _panel.SetActive(false);
+        }
+
+        /// <summary>
+        /// Hackathon UI (13 Oct, owner): the results card in the parchment kit: a larger sheet, the headline on a wood
+        /// header with the skull, ink text, Retry Voyage gold and Main Menu parchment (kit icons), the kit scroll bar.
+        /// </summary>
+        void ApplyKit()
+        {
+            if (!MenuKit.Ready) return;
+            var rt = _panel.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(720f, 760f);
+            MenuKit.Sheet(_panel.GetComponent<Image>());
+            var head = MenuKit.WoodHeader(rt, "RESULTS", 104f, out var title, 24f);
+            head.SetAsLastSibling();
+            _headline.gameObject.SetActive(false);
+            _headline = title;
+            _headline.alignment = TextAlignmentOptions.MidlineLeft;
+            MenuKit.InkText(_summary, MenuKit.Ink, 24f);
+            var body = _summaryScroll.GetComponent<RectTransform>();
+            body.offsetMin = new Vector2(40f, 112f);
+            body.offsetMax = new Vector2(-28f, -122f);
+            _summary.margin = new Vector4(0f, 0f, 24f, 0f);
+            MenuKit.StyleScroll(_summaryScroll, 12f);
+            foreach (var b in _panel.GetComponentsInChildren<Button>(true))
+            {
+                var r = (RectTransform)b.transform;
+                r.sizeDelta = new Vector2(300f, 76f);
+                if (b == _retry) { r.anchoredPosition = new Vector2(-160f, 24f); MenuKit.StyleButton(b, "Btn_Gold"); MenuKit.ButtonIcon(b, "Icon_Refresh", 30f); }
+                else if (b == _menu) { r.anchoredPosition = new Vector2(160f, 24f); MenuKit.StyleButton(b, "Btn_Parchment"); MenuKit.ButtonIcon(b, "Icon_House", 30f); }
+                else { r.anchoredPosition = new Vector2(r.anchoredPosition.x * 1.4f, 112f); r.sizeDelta = new Vector2(400f, 64f); MenuKit.StyleButton(b, "Btn_Parchment"); MenuKit.ButtonIcon(b, "Icon_Save", 28f); }
+            }
+            // The download row (playtest builds) sits above the two main buttons: the body ends above it.
+            if (_panel.transform.Find("run_results_session") != null) body.offsetMin = new Vector2(40f, 188f);
         }
 
         /// <summary>

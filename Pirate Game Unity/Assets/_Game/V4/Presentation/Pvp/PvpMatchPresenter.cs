@@ -4,6 +4,7 @@ using RoguePirates.V4.Foundation.VFX;
 using RoguePirates.V4.Presentation.Effects;
 using RoguePirates.V4.Presentation.Hud;
 using RoguePirates.V4.Online;
+using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Presentation.Online;
 using RoguePirates.V4.Pvp;
 using TMPro;
@@ -111,6 +112,8 @@ namespace RoguePirates.V4.Presentation.Pvp
             _hud.offsetMax = new Vector2(0f, -12f);
             var bg = _hud.gameObject.AddComponent<Image>();
             bg.color = new Color(0.06f, 0.1f, 0.16f, 0.72f);
+            // Hackathon UI (13 Oct, owner): a dark wood plank from the kit (light text stays readable over it).
+            MenuKit.Paint(bg, "Header_Wood", 1.6f, new Color(1f, 1f, 1f, 0.94f));
             bg.raycastTarget = false;
             _clock = OnlineUi.TextAt(_hud, "Clock", "5:00", 54, TextAlignmentOptions.Center, Color.white, new Vector2(0.38f, 0.42f), new Vector2(0.62f, 1f), true);
             _myLine = OnlineUi.TextAt(_hud, "Me", string.Empty, 24, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor, new Vector2(0.02f, 0.62f), new Vector2(0.4f, 0.95f));
@@ -118,6 +121,8 @@ namespace RoguePirates.V4.Presentation.Pvp
             _myBar = Bar(_hud, new Vector2(0.02f, 0.44f), new Vector2(0.38f, 0.6f), OnlineUi.Good, false);
             _oppBar = Bar(_hud, new Vector2(0.62f, 0.44f), new Vector2(0.98f, 0.6f), Red, true);
             _storm = OnlineUi.TextAt(_hud, "Storm", string.Empty, 24, TextAlignmentOptions.Center, OnlineUi.Dim, new Vector2(0f, 0.04f), new Vector2(1f, 0.4f));
+            if (MenuKit.Font != null)
+                foreach (var t in new[] { _clock, _myLine, _oppLine, _storm }) t.font = MenuKit.Font;
             // The opponent's weapons: a row of chips under the HUD's right half.
             _chips = OnlineUi.Area(_hud, "OpponentWeapons", new Vector2(0.5f, 0f), new Vector2(1f, 0f));
             _chips.pivot = new Vector2(1f, 1f);
@@ -149,6 +154,7 @@ namespace RoguePirates.V4.Presentation.Pvp
             chip.SetParent(_chips, false);
             var bg = chip.gameObject.AddComponent<Image>();
             bg.color = new Color(0.45f, 0.08f, 0.06f, 0.85f);
+            MenuKit.Paint(bg, "Banner_Maroon", 2.4f); // Hackathon UI: the kit's maroon banner
             bg.raycastTarget = false;
             var layout = chip.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.padding = new RectOffset(8, 8, 3, 3);
@@ -169,6 +175,7 @@ namespace RoguePirates.V4.Presentation.Pvp
                 le.preferredWidth = le.preferredHeight = 28f;
             }
             var text = OnlineUi.Text(chip, "Name", $"{name} <color=#ffd166>{level}</color>", 20, TextAlignmentOptions.Center, Color.white);
+            if (MenuKit.Font != null) text.font = MenuKit.Font;
             text.textWrappingMode = TextWrappingModes.NoWrap;
             text.raycastTarget = false;
         }
@@ -187,6 +194,12 @@ namespace RoguePirates.V4.Presentation.Pvp
             f.type = Image.Type.Filled;
             f.fillMethod = Image.FillMethod.Horizontal;
             f.fillOrigin = fromRight ? (int)Image.OriginHorizontal.Right : (int)Image.OriginHorizontal.Left;
+            // Hackathon UI: the kit's bar track and fill (green for you, a red-tinted gold for the opponent).
+            if (MenuKit.HudBar(b, f, fromRight ? "Bar_Fill_Gold" : "Bar_Fill_Green", null))
+            {
+                f.fillOrigin = fromRight ? (int)Image.OriginHorizontal.Right : (int)Image.OriginHorizontal.Left;
+                f.color = fromRight ? new Color(1f, 0.42f, 0.36f, 1f) : Color.white;
+            }
             return f;
         }
 
@@ -206,6 +219,7 @@ namespace RoguePirates.V4.Presentation.Pvp
         void BuildEnd()
         {
             _end = OnlineUi.Panel(_canvas, "PvpEnd", new Vector2(0.24f, 0.12f), new Vector2(0.76f, 0.88f), 240);
+            MenuKit.Sheet(_end.GetComponent<Image>()); // Hackathon UI: the end card on parchment (its texts turn to ink)
             _endTitle = OnlineUi.TextAt(_end, "Title", string.Empty, 72, TextAlignmentOptions.Center, OnlineUi.Gold, new Vector2(0f, 0.84f), new Vector2(1f, 0.98f), true);
             _endReason = OnlineUi.TextAt(_end, "Reason", string.Empty, 30, TextAlignmentOptions.Center, OnlineUi.TextColor, new Vector2(0f, 0.76f), new Vector2(1f, 0.85f));
             _endStats = OnlineUi.TextAt(_end, "Stats", string.Empty, 28, TextAlignmentOptions.TopLeft, OnlineUi.TextColor, new Vector2(0.06f, 0.3f), new Vector2(0.94f, 0.75f));
@@ -214,7 +228,10 @@ namespace RoguePirates.V4.Presentation.Pvp
             _endRating = OnlineUi.TextAt(_end, "Rating", string.Empty, 30, TextAlignmentOptions.Center, OnlineUi.Gold, new Vector2(0f, 0.21f), new Vector2(1f, 0.3f));
             _endRematch = OnlineUi.TextAt(_end, "RematchStatus", string.Empty, 26, TextAlignmentOptions.Center, OnlineUi.Dim, new Vector2(0f, 0.15f), new Vector2(1f, 0.21f));
             _rematch = OnlineUi.Button(_end, "Rematch", () => _view.Rematch(), new Vector2(0.06f, 0.03f), new Vector2(0.48f, 0.13f));
-            OnlineUi.Button(_end, "Main Menu", () => _view.MainMenu(), new Vector2(0.52f, 0.03f), new Vector2(0.94f, 0.13f));
+            var menu = OnlineUi.Button(_end, "Main Menu", () => _view.MainMenu(), new Vector2(0.52f, 0.03f), new Vector2(0.94f, 0.13f));
+            MenuKit.ButtonIcon(_rematch, "Icon_Refresh", 30f);
+            MenuKit.StyleButton(menu, "Btn_Parchment");
+            MenuKit.ButtonIcon(menu, "Icon_House", 30f);
         }
 
         void BuildRing()
@@ -559,6 +576,7 @@ namespace RoguePirates.V4.Presentation.Pvp
             var winner = end != null ? end.winnerPlayerId : null;
             _endTitle.text = end == null ? "Match over" : string.IsNullOrEmpty(winner) ? "Draw" : winner == me ? "Victory!" : "Defeat";
             _endTitle.color = string.IsNullOrEmpty(winner) ? OnlineUi.TextColor : winner == me ? OnlineUi.Good : OnlineUi.Bad;
+            if (MenuKit.Ready) _endTitle.color = MenuKit.InkFor(_endTitle.color);
             _endReason.text = Reason(end != null ? end.reason : null, winner == me) + (end != null ? $"   ({OnlineRules.RunTime(end.durationSeconds)})" : string.Empty);
             var mine = PvpJson.Entry<EndStats>(json, "stats", me);
             var theirs = PvpJson.Entry<EndStats>(json, "stats", opp);
@@ -569,6 +587,7 @@ namespace RoguePirates.V4.Presentation.Pvp
                 Line("Level", mine?.level, theirs?.level) +
                 Line("Barrels", mine?.barrelsTaken, theirs?.barrelsTaken) +
                 Line("Final hull", mine != null ? mine.finalHp : (float?)null, theirs != null ? theirs.finalHp : (float?)null);
+            _endStats.text = MenuKit.Ready ? MenuKit.InkRich(_endStats.text) : _endStats.text;
             var rating = PvpJson.Entry<RatingChange>(json, "ratings", me);
             if (end != null && end.rated && rating != null && rating.after > 0)
                 _endRating.text = $"Rating {rating.before} -> {rating.after}  ({(rating.change >= 0 ? "+" : string.Empty)}{rating.change})";

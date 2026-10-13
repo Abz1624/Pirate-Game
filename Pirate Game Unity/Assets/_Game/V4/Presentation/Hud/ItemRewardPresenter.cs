@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RoguePirates.V4.Presentation.Menu;
 using RoguePirates.V4.Views;
 using TMPro;
 using UnityEngine;
@@ -90,7 +91,37 @@ namespace RoguePirates.V4.Presentation.Hud
             _name = Text(rt, "Name", textLeft, -32f, 34f, 26f, FontStyles.Bold, Color.white);
             _description = Text(rt, "Description", textLeft, -68f, 56f, 16f, FontStyles.Normal, new Color(0.85f, 0.88f, 0.92f, 1f));
             _description.enableWordWrapping = true;
+            ApplyKit(rt, outline, irt);
             Hide();
+        }
+
+        /// <summary>Hackathon UI (13 Oct, owner): the popup on a parchment card (no gold outline), the icon on a kit slot,
+        /// ink text in the kit font.</summary>
+        void ApplyKit(RectTransform rt, Outline outline, RectTransform icon)
+        {
+            if (!MenuKit.Ready) return;
+            outline.enabled = false;
+            rt.sizeDelta = new Vector2(Width + 80f, Height + 16f);
+            MenuKit.Paint(rt.GetComponent<Image>(), "Panel_Card", 1.6f).raycastTarget = false;
+            var slot = MenuKit.Node(rt, "Slot");
+            slot.anchorMin = slot.anchorMax = new Vector2(0f, 0.5f);
+            slot.pivot = new Vector2(0f, 0.5f);
+            slot.sizeDelta = new Vector2(IconSize + 12f, IconSize + 12f);
+            slot.anchoredPosition = new Vector2(16f, 0f);
+            MenuKit.Paint(slot, "Slot_Card", 2.4f).raycastTarget = false;
+            slot.SetAsFirstSibling();
+            icon.anchoredPosition = new Vector2(22f, 0f);
+            foreach (var (t, c) in new[] { (_header, MenuKit.InkGold), (_name, MenuKit.Ink), (_description, MenuKit.InkDim) })
+            {
+                MenuKit.InkText(t, c);
+                var r = t.rectTransform;
+                r.offsetMin = new Vector2(r.offsetMin.x + 12f, r.offsetMin.y - 6f);
+                r.offsetMax = new Vector2(-22f, r.offsetMax.y - 6f);
+            }
+            _header.fontSize = 17f;
+            _name.fontSize = 30f;
+            _description.fontSize = 18f;
+            _description.color = MenuKit.Ink;
         }
 
         static GameObject Child(Transform parent, string name, params Type[] extra)

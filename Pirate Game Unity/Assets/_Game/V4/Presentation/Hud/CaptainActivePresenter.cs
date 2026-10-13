@@ -83,7 +83,11 @@ namespace RoguePirates.V4.Presentation.Hud
             _label.raycastTarget = false;
             _label.textWrappingMode = TextWrappingModes.NoWrap;
             _label.overflowMode = TextOverflowModes.Ellipsis;
+            // Hackathon UI (13 Oct, owner): the kit's bar track and gold fill instead of the flat box.
+            _kit = RoguePirates.V4.Presentation.Menu.MenuKit.HudBar(bg, _fill, "Bar_Fill_Gold", _label);
         }
+
+        bool _kit;
 
         static Sprite _white; // made once (a filled Image needs a sprite)
 
@@ -109,7 +113,7 @@ namespace RoguePirates.V4.Presentation.Hud
             var remaining = Mathf.Max(0f, captain.ActiveCooldownRemaining);
             var ready = remaining <= 0f;
             _fill.fillAmount = ready ? 1f : 1f - remaining / duration;
-            _fill.color = ready ? ReadyColor : CoolingColor;
+            _fill.color = _kit ? (ready ? Color.white : new Color(0.62f, 0.6f, 0.56f, 1f)) : ready ? ReadyColor : CoolingColor;
             var seconds = ready ? -1 : Mathf.CeilToInt(remaining);
             var key = captain.ActiveKeyHint;
             if (seconds != _lastSeconds || key != _lastKey || captain.ActiveName != _lastName)
