@@ -211,6 +211,8 @@ public abstract class GameDb : DbContext
         {
             e.HasIndex(x => x.Slot).IsUnique();
             e.Property(x => x.NftStatus).HasMaxLength(16);
+            e.Property(x => x.PendingMint).HasMaxLength(Key); // V5 M9h (AddMintSafety)
+            e.HasIndex(x => x.MintSentAt);
             e.Property(x => x.MintError).HasMaxLength(256);
         });
         b.Entity<Raid>(e => e.HasIndex(x => x.DefenderPlayerId));

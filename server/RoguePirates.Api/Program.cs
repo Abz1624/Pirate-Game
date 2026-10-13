@@ -60,6 +60,8 @@ builder.Services.AddScoped<RoguePirates.Api.Hackathon.RaidService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.DefenceService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.MarketService>();
 builder.Services.AddScoped<RoguePirates.Api.Hackathon.DemoResetService>();
+// V5 M9h: the treasury balance (cached 30 s) and its low-float alarm.
+builder.Services.AddSingleton<RoguePirates.Api.Hackathon.TreasuryMonitor>();
 
 builder.Services.AddCors();
 builder.Services.AddOptions<CorsOptions>().Configure<IServiceProvider>((o, sp) =>

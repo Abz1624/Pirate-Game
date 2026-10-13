@@ -643,6 +643,17 @@ public sealed class WagerSweeper : BackgroundService
         }
         try
         {
+            // V5 M9h: pending Island NFT mints resolved on chain (never re-sent), and the treasury's low-float alarm
+            using var scope = scopes.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<IslandService>().ReconcileMintsAsync();
+            await scope.ServiceProvider.GetRequiredService<TreasuryMonitor>().BalanceAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogWarning(ex, "Mint reconcile or treasury check failed");
+        }
+        try
+        {
             // V5 M9h: expired sessions are deleted
             using var scope = scopes.CreateScope();
             var sp = scope.ServiceProvider;

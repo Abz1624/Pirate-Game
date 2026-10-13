@@ -177,6 +177,17 @@ public sealed class Island
     /// <summary>The owner's defence design (JSON: 15 one-minute windows + the guardian boss); null = the default design.</summary>
     public string? DefenceJson { get; set; }
     public DateTime? DefenceUpdatedAt { get; set; }
+    // ---- AddMintSafety (V5 M9h) ----
+    /// <summary>The mint address of the attempt in flight, stored with <see cref="MintSig"/> BEFORE the transaction is sent.
+    /// A retry first checks the chain for it: landed: minted; provably never landing (failed, or its blockhash expired
+    /// without it): cleared, and only then a new attempt. Null when no attempt is open.</summary>
+    public string? PendingMint { get; set; }
+    /// <summary>The last block height at which the pending mint transaction can land.</summary>
+    public long? MintLastValidBlockHeight { get; set; }
+    /// <summary>When the open (or landed) mint attempt was sent; the daily mint budget counts these.</summary>
+    public DateTime? MintSentAt { get; set; }
+    /// <summary>When the NFT was confirmed minted.</summary>
+    public DateTime? MintedAt { get; set; }
 }
 
 /// <summary>A structure on an island (rum_store, vault, defences, ...).</summary>

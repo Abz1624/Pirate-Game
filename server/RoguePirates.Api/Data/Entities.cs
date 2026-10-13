@@ -17,6 +17,10 @@ public sealed class Player
     public string? Email { get; set; }
     /// <summary>Hackathon: the player's RUM balance (islands, raids).</summary>
     public long Rum { get; set; }
+    // ---- AddMintSafety (V5 M9h) ----
+    /// <summary>When this profile (one per wallet) claimed its free island. One claim ever: selling the island never
+    /// frees another free claim (no claim, mint, sell, claim loop on the treasury).</summary>
+    public DateTime? IslandClaimedAt { get; set; }
 }
 
 /// <summary>Every accepted run (counts runs played).</summary>

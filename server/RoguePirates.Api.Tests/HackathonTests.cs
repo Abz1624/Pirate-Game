@@ -62,7 +62,9 @@ public sealed class FakeSolanaRpc : ISolanaRpc
     public Task<long> GetMinimumBalanceForRentExemptionAsync(int dataLength, CancellationToken ct = default) => Task.FromResult(1461600L);
     public Task<IReadOnlyList<TokenHolding>> GetTokenAccountsByOwnerAsync(string owner, string mint, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<TokenHolding>>(Holdings.Where(h => h.Owner == owner && h.Mint == mint).ToList());
-    public Task<bool> AccountExistsAsync(string address, CancellationToken ct = default) => Task.FromResult(true);
+    /// <summary>V5 M9h: addresses the "chain" does not have (every other account exists).</summary>
+    public ConcurrentDictionary<string, bool> MissingAccounts { get; } = new();
+    public Task<bool> AccountExistsAsync(string address, CancellationToken ct = default) => Task.FromResult(!MissingAccounts.ContainsKey(address));
     public Task<string> RequestAirdropAsync(string address, long lamports, CancellationToken ct = default) => Task.FromResult(HackathonTests.RandomSignature());
 }
 

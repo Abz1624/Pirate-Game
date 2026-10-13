@@ -17,6 +17,10 @@ public sealed record PreparedTransfer(byte[] Tx, string Signature, long LastVali
 /// <summary>An NFT minted by the treasury.</summary>
 public sealed record MintedNft(string Mint, string Signature, string Owner);
 
+/// <summary>V5 M9h: a signed NFT mint not sent yet: its bytes, the new mint's address, the signature and the block height it
+/// must land by. The caller stores the mint address and signature before sending, so a retry can check the chain first.</summary>
+public sealed record PreparedMint(byte[] Tx, string Mint, string Signature, long LastValidBlockHeight);
+
 /// <summary>
 /// Hackathon (devnet): Solana operations on Solnet. Signature checks are local (ed25519); chain reads and writes go
 /// through <see cref="ISolanaRpc"/>. The treasury (also the escrow) keypair comes from TREASURY_SECRET_KEY and is never
@@ -230,8 +234,13 @@ public sealed class SolanaService
         return (status, height);
     }
 
-    /// <summary>Mints a one-of-one NFT (SPL mint with 0 decimals, supply 1, Metaplex metadata and master edition) to the wallet.</summary>
-    public async Task<MintedNft> MintNftAsync(string ownerWallet, string name, string symbol, string uri, CancellationToken ct = default)
+    /// <summary>
+    /// Builds and signs a one-of-one NFT mint (SPL mint with 0 decimals, supply 1, Metaplex metadata and master edition, to
+    /// the owner's wallet) without sending it. Every step is one transaction, so either all of it lands or none does. The
+    /// mint keypair is fresh and thrown away: once the transaction's blockhash expires unlanded, the mint can never be
+    /// created at that address, and a new attempt uses a new one.
+    /// </summary>
+    public async Task<PreparedMint> PrepareNftMintAsync(string ownerWallet, string name, string symbol, string uri, CancellationToken ct = default)
     {
         var treasury = Treasury;
         if (!IsValidAddress(ownerWallet)) throw new ApiException(400, "invalid_wallet", "Not a Solana address.");
@@ -241,8 +250,8 @@ public sealed class SolanaService
         var mint = new Account();
         var owner = new PublicKey(ownerWallet);
         var rent = await Wrap(() => _rpc.GetMinimumBalanceForRentExemptionAsync((int)TokenProgram.MintAccountDataSize, ct));
-        var blockhash = await Wrap(() => _rpc.GetLatestBlockhashAsync(ct));
-        var tx = new TransactionBuilder().SetRecentBlockHash(blockhash).SetFeePayer(treasury)
+        var bh = await Wrap(() => _rpc.GetLatestBlockhashInfoAsync(ct));
+        var tx = new TransactionBuilder().SetRecentBlockHash(bh.Blockhash).SetFeePayer(treasury)
             .AddInstruction(SystemProgram.CreateAccount(treasury.PublicKey, mint.PublicKey, (ulong)rent, TokenProgram.MintAccountDataSize, TokenProgram.ProgramIdKey))
             .AddInstruction(TokenProgram.InitializeMint(mint.PublicKey, 0, treasury.PublicKey, treasury.PublicKey))
             .AddInstruction(Metaplex.CreateAtaIdempotent(treasury.PublicKey, owner, mint.PublicKey))
@@ -250,9 +259,27 @@ public sealed class SolanaService
             .AddInstruction(Metaplex.CreateMetadataAccountV3(mint.PublicKey, treasury.PublicKey, treasury.PublicKey, treasury.PublicKey, name, symbol, uri))
             .AddInstruction(Metaplex.CreateMasterEditionV3(mint.PublicKey, treasury.PublicKey, treasury.PublicKey, treasury.PublicKey))
             .Build(new List<Account> { treasury, mint });
-        var sig = await SendAndConfirmAsync(tx, ct);
-        _log.LogInformation("Minted NFT {Mint} to {Owner} ({Sig})", mint.PublicKey.Key, ownerWallet, sig);
-        return new MintedNft(mint.PublicKey.Key, sig, ownerWallet);
+        return new PreparedMint(tx, mint.PublicKey.Key, SignatureOf(tx), bh.LastValidBlockHeight);
+    }
+
+    /// <summary>V5 M9h: whether a mint account and its Metaplex metadata account exist on chain (a landed mint has both).</summary>
+    public async Task<(bool mint, bool metadata)> MintAccountsAsync(string mint, CancellationToken ct = default)
+    {
+        if (!IsValidAddress(mint)) return (false, false);
+        var m = await Wrap(() => _rpc.AccountExistsAsync(mint, ct));
+        if (!m) return (false, false);
+        var meta = await Wrap(() => _rpc.AccountExistsAsync(Metaplex.MetadataPda(new PublicKey(mint)).Key, ct));
+        return (true, meta);
+    }
+
+    /// <summary>Mints a one-of-one NFT to the wallet and waits for it (the devnet smoke test; islands use
+    /// <see cref="PrepareNftMintAsync"/> so the mint is recorded before it is sent).</summary>
+    public async Task<MintedNft> MintNftAsync(string ownerWallet, string name, string symbol, string uri, CancellationToken ct = default)
+    {
+        var prep = await PrepareNftMintAsync(ownerWallet, name, symbol, uri, ct);
+        var sig = await SendAndConfirmAsync(prep.Tx, ct);
+        _log.LogInformation("Minted NFT {Mint} to {Owner} ({Sig})", prep.Mint, ownerWallet, sig);
+        return new MintedNft(prep.Mint, sig, ownerWallet);
     }
 
     /// <summary>Moves an NFT held by the treasury (escrow) to the wallet; creates the wallet's token account if needed.</summary>

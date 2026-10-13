@@ -28,10 +28,12 @@ public sealed class IslandService
     readonly SolanaService _sol;
     readonly IClock _clock;
     readonly IConfiguration _config;
+    readonly ApiSettings _settings;
     readonly ILogger<IslandService> _log;
 
-    public IslandService(GameDb db, SolanaService sol, IClock clock, IConfiguration config, ILogger<IslandService> log)
+    public IslandService(GameDb db, SolanaService sol, IClock clock, IConfiguration config, ApiSettings settings, ILogger<IslandService> log)
     {
+        _settings = settings;
         _db = db;
         _sol = sol;
         _clock = clock;
@@ -172,7 +174,7 @@ public sealed class IslandService
             isMine = mine,
             nft = new
             {
-                status = i.NftStatus, mint = i.NftMint, mintSignature = i.MintSig, error = i.MintError,
+                status = i.NftStatus, mint = i.NftMint, mintSignature = i.MintSig, error = i.MintError, pendingMint = i.PendingMint,
                 explorerUrl = i.NftMint == null ? null : $"https://explorer.solana.com/address/{i.NftMint}?cluster={_sol.Cluster}",
                 metadataUrl = MetadataUrl(baseUrl, i.Id), imageUrl = ImageUrl(baseUrl, i.Slot),
             },
@@ -202,6 +204,21 @@ public sealed class IslandService
 
     // ---------- claim and mint ----------
 
+    /// <summary>V5 M9h: a pending mint attempt younger than this is left to the request that sent it (the sweep skips it).</summary>
+    public static readonly TimeSpan MintSweepAfter = TimeSpan.FromMinutes(2);
+
+    DateTime DayStart => DateTime.SpecifyKind(_clock.UtcNow.Date, DateTimeKind.Utc);
+
+    /// <summary>Island NFT mints sent today (UTC), landed or in flight: the daily mint budget counts these.</summary>
+    public Task<int> MintsTodayAsync()
+    {
+        var day = DayStart;
+        return _db.Islands.CountAsync(i => i.MintSentAt != null && i.MintSentAt >= day);
+    }
+
+    ApiException MintBudgetUsed() => new(429, "mint_budget",
+        $"Today's Island NFT mints ({_settings.MintDailyBudget}, MINT_DAILY_BUDGET) are used up; try again after 00:00 UTC.");
+
     public async Task<object> ClaimAsync(Player player, string? rawName, string baseUrl)
     {
         RequireWallet(player);
@@ -213,6 +230,13 @@ public sealed class IslandService
         {
             if (await _db.Islands.AnyAsync(i => i.OwnerPlayerId == player.Id))
                 throw new ApiException(409, "already_has_island", "You already have an island (one per player for now).");
+            // V5 M9h (C9h.2): one free claim per wallet ever, so claim, mint, sell, claim again cannot drain the treasury
+            var me = await _db.Players.FirstAsync(p => p.Id == player.Id);
+            if (me.IslandClaimedAt != null)
+                throw new ApiException(409, "island_claim_used",
+                    "Each wallet claims one free island, and this one already did; buy an island on the market instead.");
+            // V5 M9h: the daily mint budget (the treasury pays each mint); a claim is refused rather than left without its NFT
+            if (_sol.TreasuryOn && await MintsTodayAsync() >= _settings.MintDailyBudget) throw MintBudgetUsed();
             var taken = await _db.Islands.Select(i => i.Slot).ToListAsync();
             var free = IslandRules.Slots.Select(s => s.Index).Except(taken).ToList();
             if (free.Count == 0) throw new ApiException(409, "world_full", "Every island on the map is claimed.");
@@ -224,6 +248,7 @@ public sealed class IslandService
             _db.Islands.Add(island);
             foreach (var kind in IslandRules.Kinds)
                 _db.IslandBuildings.Add(new IslandBuilding { IslandId = island.Id, Kind = kind, Level = IslandRules.StartLevel(kind), UpdatedAt = now });
+            me.IslandClaimedAt = now;
             await _db.SaveChangesAsync();
             _log.LogInformation("Island {Id} '{Name}' claimed by {Player} at slot {Slot}", island.Id, name, player.Id, island.Slot);
         }
@@ -233,7 +258,8 @@ public sealed class IslandService
         return await ViewAsync(await LoadAsync(island.Id), player.Id, baseUrl);
     }
 
-    /// <summary>Retries the Island NFT mint (owner only) when it is still pending.</summary>
+    /// <summary>Retries the Island NFT mint (owner only) when it is still pending. A mint sent before is checked on chain
+    /// first and never sent twice (V5 M9h).</summary>
     public async Task<object> RetryMintAsync(Player player, Guid islandId, string baseUrl)
     {
         RequireWallet(player);
@@ -243,18 +269,31 @@ public sealed class IslandService
         if (!_sol.TreasuryOn) throw new ApiException(503, "treasury_off", "The treasury wallet is not configured on this server.");
         await TryMintAsync(islandId, baseUrl);
         var after = await LoadAsync(islandId);
+        await _db.Entry(after.Island).ReloadAsync();
         if (after.Island.NftStatus != NftMinted)
-            throw new ApiException(502, "mint_failed", "The mint failed: " + after.Island.MintError);
+        {
+            var error = after.Island.MintError ?? "";
+            if (error.StartsWith("mint_budget", StringComparison.Ordinal)) throw MintBudgetUsed();
+            if (error.StartsWith("mint_in_flight", StringComparison.Ordinal))
+                throw new ApiException(409, "mint_in_flight", "The last mint was sent and may still land; it is checked on chain before any new attempt. Try again in a minute.");
+            throw new ApiException(502, "mint_failed", "The mint failed: " + error);
+        }
         return await ViewAsync(after, player.Id, baseUrl);
     }
 
-    /// <summary>Mints the Island NFT to the owner's wallet; a failure leaves the island pending with the error.</summary>
+    /// <summary>
+    /// Mints the Island NFT to the owner's wallet; a failure leaves the island pending with the error. V5 M9h (the review's
+    /// double-mint finding): an attempt already sent (<see cref="Island.PendingMint"/>) is resolved on chain first and a new
+    /// one is made only when the old one provably never lands; the new mint address and signature are stored before the
+    /// send; a send or confirmation whose result is unknown leaves the attempt pending for the sweep.
+    /// </summary>
     async Task TryMintAsync(Guid islandId, string baseUrl)
     {
         await IslandLocks.Mint.WaitAsync();
         try
         {
             var island = await _db.Islands.FirstAsync(i => i.Id == islandId);
+            await _db.Entry(island).ReloadAsync();
             if (island.NftStatus == NftMinted) return;
             if (!_sol.TreasuryOn)
             {
@@ -262,23 +301,143 @@ public sealed class IslandService
                 await _db.SaveChangesAsync();
                 return;
             }
-            var wallet = await _db.Players.Where(p => p.Id == island.OwnerPlayerId).Select(p => p.WalletAddress).FirstAsync();
-            try
+            if (island.PendingMint != null)
             {
-                var nft = await _sol.MintNftAsync(wallet!, "Rogue Island: " + island.Name, IslandRules.NftSymbol, MetadataUrl(baseUrl, island.Id));
-                island.NftMint = nft.Mint;
-                island.MintSig = nft.Signature;
-                island.NftStatus = NftMinted;
-                island.MintError = null;
+                var open = await ResolvePendingMintAsync(island);
+                await _db.SaveChangesAsync();
+                if (open || island.NftStatus == NftMinted) return;
             }
+            if (await MintsTodayAsync() >= _settings.MintDailyBudget)
+            {
+                island.MintError = Clip("mint_budget: " + MintBudgetUsed().Message, 256);
+                await _db.SaveChangesAsync();
+                return;
+            }
+
+            var wallet = await _db.Players.Where(p => p.Id == island.OwnerPlayerId).Select(p => p.WalletAddress).FirstAsync();
+            PreparedMint prep;
+            try { prep = await _sol.PrepareNftMintAsync(wallet!, "Rogue Island: " + island.Name, IslandRules.NftSymbol, MetadataUrl(baseUrl, island.Id)); }
             catch (ApiException ex)
             {
                 island.MintError = Clip($"{ex.Code}: {ex.Message}", 256);
-                _log.LogWarning("Island {Id} mint failed: {Error}", island.Id, island.MintError);
+                await _db.SaveChangesAsync();
+                _log.LogWarning("Island {Id} mint not prepared: {Error}", island.Id, island.MintError);
+                return;
             }
+            // recorded before the send: whatever happens next, the attempt is found and checked on chain
+            island.PendingMint = prep.Mint;
+            island.MintSig = prep.Signature;
+            island.MintLastValidBlockHeight = prep.LastValidBlockHeight;
+            island.MintSentAt = _clock.UtcNow;
+            island.MintError = null;
             await _db.SaveChangesAsync();
+
+            try { await _sol.SendPreparedAsync(prep.Tx); }
+            catch (ApiException ex) when (ex.Code == "tx_rejected")
+            {
+                ClearPendingMint(island, $"{ex.Code}: {ex.Message}"); // a preflight rejection: nothing was forwarded
+                await _db.SaveChangesAsync();
+                _log.LogWarning("Island {Id} mint rejected: {Error}", island.Id, island.MintError);
+                return;
+            }
+            catch (Exception)
+            {
+                island.MintError = "mint_in_flight: sent, result unknown; it is checked on chain before any new attempt.";
+                await _db.SaveChangesAsync();
+                return;
+            }
+            string? status;
+            try { status = await _sol.WaitForConfirmationAsync(prep.Signature, _sol.ConfirmTimeout, CancellationToken.None); }
+            catch (Exception) { status = null; }
+            if (status is "confirmed" or "finalized") MarkMinted(island);
+            else if (status == "failed") ClearPendingMint(island, "tx_failed: the mint failed on chain; nothing was created.");
+            else island.MintError = "mint_in_flight: sent but not confirmed in time; it is checked on chain before any new attempt.";
+            await _db.SaveChangesAsync();
+            if (island.NftStatus == NftMinted)
+                _log.LogInformation("Island {Id} NFT {Mint} minted to {Owner} ({Sig})", island.Id, island.NftMint, wallet, island.MintSig);
         }
         finally { IslandLocks.Mint.Release(); }
+    }
+
+    void MarkMinted(Island island)
+    {
+        island.NftMint = island.PendingMint;
+        island.PendingMint = null;
+        island.MintLastValidBlockHeight = null;
+        island.NftStatus = NftMinted;
+        island.MintError = null;
+        island.MintedAt = _clock.UtcNow;
+    }
+
+    static void ClearPendingMint(Island island, string error)
+    {
+        island.PendingMint = null;
+        island.MintSig = null;
+        island.MintLastValidBlockHeight = null;
+        island.MintSentAt = null; // never landed: costs nothing against the budget
+        island.MintError = Clip(error, 256);
+    }
+
+    /// <summary>
+    /// Resolves an attempt already sent (the caller holds the mint lock and saves). Returns true while it may still land
+    /// (left pending: no new attempt); false once it is resolved: minted (the mint and its metadata exist, or the signature
+    /// confirmed), or cleared (failed on chain, or the blockhash expired and the mint account does not exist).
+    /// </summary>
+    async Task<bool> ResolvePendingMintAsync(Island island)
+    {
+        try
+        {
+            var (mintExists, metadataExists) = await _sol.MintAccountsAsync(island.PendingMint!);
+            if (mintExists && metadataExists) { MarkMinted(island); return false; }
+            if (island.MintSig != null)
+            {
+                var (status, height) = await _sol.SignatureStatusAsync(island.MintSig);
+                if (status is "confirmed" or "finalized") { MarkMinted(island); return false; }
+                if (status == "failed") { ClearPendingMint(island, "tx_failed: the mint failed on chain; nothing was created."); return false; }
+                if (status == null && !mintExists && island.MintLastValidBlockHeight is { } last && height > last)
+                {
+                    // re-read after the height: a mint that appeared meanwhile wins
+                    if ((await _sol.MintAccountsAsync(island.PendingMint!)).mint) { MarkMinted(island); return false; }
+                    ClearPendingMint(island, "mint_not_landed: the earlier mint expired without landing; retry.");
+                    return false;
+                }
+            }
+            island.MintError = "mint_in_flight: the last mint was sent and may still land; it is checked on chain before any new attempt.";
+            return true;
+        }
+        catch (ApiException ex)
+        {
+            island.MintError = Clip($"mint_in_flight: could not check the last mint on chain ({ex.Code}); nothing new was sent.", 256);
+            return true;
+        }
+    }
+
+    /// <summary>V5 M9h: the sweep resolves pending mint attempts older than <see cref="MintSweepAfter"/> (landed: minted;
+    /// never landing: cleared for the owner's retry; it never sends a new mint). Returns how many changed.</summary>
+    public async Task<int> ReconcileMintsAsync()
+    {
+        if (!_sol.TreasuryOn) return 0;
+        var before = _clock.UtcNow - MintSweepAfter;
+        var ids = await _db.Islands.AsNoTracking()
+            .Where(i => i.NftStatus == NftPending && i.PendingMint != null && (i.MintSentAt == null || i.MintSentAt <= before))
+            .OrderBy(i => i.CreatedAt).Take(20).Select(i => i.Id).ToListAsync();
+        var changed = 0;
+        foreach (var id in ids)
+        {
+            await IslandLocks.Mint.WaitAsync();
+            try
+            {
+                var island = await _db.Islands.FirstAsync(i => i.Id == id);
+                await _db.Entry(island).ReloadAsync();
+                if (island.NftStatus == NftMinted || island.PendingMint == null) continue;
+                var open = await ResolvePendingMintAsync(island);
+                await _db.SaveChangesAsync();
+                if (!open) changed++;
+                if (island.NftStatus == NftMinted) _log.LogInformation("Island {Id}: pending mint {Mint} found on chain; minted", id, island.NftMint);
+            }
+            finally { IslandLocks.Mint.Release(); }
+        }
+        return changed;
     }
 
     // ---------- reads ----------
