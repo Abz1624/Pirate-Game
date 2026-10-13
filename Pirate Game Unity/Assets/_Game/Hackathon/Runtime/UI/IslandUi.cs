@@ -142,6 +142,16 @@ namespace RoguePirates.Hackathon.UI
             return img;
         }
 
+        /// <summary>A picture loaded from <paramref name="url"/> filling <paramref name="rt"/> (hidden until it loads).</summary>
+        public static RawImage PictureIn(RectTransform rt, string url)
+        {
+            var img = rt.gameObject.AddComponent<RawImage>();
+            img.color = new Color(1f, 1f, 1f, 0f);
+            img.raycastTarget = false;
+            _ = LoadInto(img, url);
+            return img;
+        }
+
         static readonly Dictionary<string, Texture2D> Pictures = new Dictionary<string, Texture2D>();
 
         static async Task LoadInto(RawImage img, string url)

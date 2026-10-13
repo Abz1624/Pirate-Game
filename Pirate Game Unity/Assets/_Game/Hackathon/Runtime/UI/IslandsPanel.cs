@@ -8,6 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using K = RoguePirates.Hackathon.UI.IslandKit;
 
 namespace RoguePirates.Hackathon.UI
 {
@@ -17,13 +18,25 @@ namespace RoguePirates.Hackathon.UI
     /// /api/islands/mine: claim with a name, the Island NFT, RUM with a filling bar and Collect, buildings with Upgrade,
     /// defence and shield), a tapped island's raid panel (Captain Marrow defends; loot and the RUM fee, no SOL stake; Raid starts
     /// the raid voyage, <see cref="RaidHud"/>) and the raid history (GET /api/raids/mine).
+    /// 13 Oct: redrawn in the art team's parchment kit after the owner's references (wood header with the skull
+    /// medallion, green status banner, the sea chart on a parchment card with a wooden legend, and a parchment card with
+    /// My island / Raid history tabs: island card, RUM plank, building rows, defence and history rows with result tags).
     /// </summary>
     public sealed class IslandsPanel : MonoBehaviour
     {
         enum View { Mine, Island, History }
 
-        RectTransform _map, _markers, _list;
+        // Layout (canvas units; the canvas is at least 1920 x 1080).
+        const float HeaderHeight = 124f;
+        const float StatusTop = 132f;
+        const float StatusHeight = 58f;
+        const float BodyTop = 202f;
+
+        RectTransform _map, _markers, _list, _rumPill;
+        ScrollRect _scroll;
         TextMeshProUGUI _rum, _status, _shield;
+        Image _statusBg, _statusIcon;
+        Color _statusColor;
         Button _close, _tabMine, _tabHistory;
         IslandWorld _world;
         MyIslands _mine;
@@ -35,7 +48,6 @@ namespace RoguePirates.Hackathon.UI
         RaidStart _pendingRaid;
         TMP_InputField _nameInput;
         DateTime? _shieldUntil;
-        string _shieldPrefix;
 
         public bool IsOpen => gameObject.activeSelf;
         public IslandWorld World => _world;
@@ -51,71 +63,112 @@ namespace RoguePirates.Hackathon.UI
 
         public static IslandsPanel Create(Transform canvas)
         {
-            var rt = HackUi.Panel(canvas, "HackathonIslands", new Vector2(0.03f, 0.04f), new Vector2(0.97f, 0.96f), 227);
+            var rt = HackUi.Panel(canvas, "HackathonIslands", new Vector2(0.015f, 0.02f), new Vector2(0.985f, 0.98f), 227);
+            rt.GetComponent<Image>().color = new Color(0.02f, 0.06f, 0.1f, 0.55f);
             var panel = rt.gameObject.AddComponent<IslandsPanel>();
             panel.Build(rt);
             return panel;
         }
 
+        // ---------------------------------------------------------------- build
+
         void Build(RectTransform rt)
         {
-            var header = HackUi.TopStrip(rt, "Header", 14f, 80f);
-            HackUi.TextAt(header, "Title", "Islands", 46, TextAlignmentOptions.MidlineLeft, HackUi.Gold, Vector2.zero, new Vector2(0.22f, 1f), true);
-            _rum = HackUi.TextAt(header, "Rum", string.Empty, 28, TextAlignmentOptions.MidlineLeft, HackUi.TextColor, new Vector2(0.2f, 0f), new Vector2(0.5f, 1f));
-            HackUi.Button(header, "Market", () => { if (Market != null) Market.Open(); }, new Vector2(0.5f, 0.06f), new Vector2(0.66f, 0.94f));
-            HackUi.Button(header, "Refresh", Refresh, new Vector2(0.675f, 0.06f), new Vector2(0.835f, 0.94f));
-            _close = HackUi.Button(header, "Close", Close, new Vector2(0.845f, 0.06f), new Vector2(1f, 0.94f));
+            BuildHeader(rt);
+            BuildStatus(rt);
+            var body = K.Fill(rt, "Body", 0f, 0f, 0f, BodyTop);
+            var left = K.Columns(body, "MapCard", 0f, 0.5f, 0f, 8f);
+            K.Paint(left, "Panel_Card", 1.2f);
+            var right = K.Columns(body, "DetailCard", 0.5f, 1f, 8f, 0f);
+            K.Paint(right, "Panel_Card", 1.2f);
+            BuildMap(left);
+            BuildDetail(right);
+        }
 
-            _status = HackUi.StatusBar(rt, 100f, 48f);
+        void BuildHeader(RectTransform rt)
+        {
+            var head = K.Strip(rt, "Header", 0f, 0f, 0f, HeaderHeight);
+            K.Paint(head, "Header_Wood", 1f, null, new Color(0.32f, 0.2f, 0.1f, 1f));
 
-            // Left: the map (square, as large as fits).
-            var left = HackUi.Area(rt, "MapArea", Vector2.zero, new Vector2(0.5f, 1f), new Vector4(24f, 20f, 10f, 164f));
-            var holder = HackUi.Area(left, "MapHolder", Vector2.zero, Vector2.one, new Vector4(0f, 44f, 0f, 0f));
-            var mapGo = new GameObject("Map", typeof(RectTransform), typeof(Image), typeof(AspectRatioFitter), typeof(RectMask2D));
-            mapGo.transform.SetParent(holder, false);
-            _map = (RectTransform)mapGo.transform;
-            _map.anchorMin = Vector2.zero;
-            _map.anchorMax = Vector2.one;
-            _map.offsetMin = _map.offsetMax = Vector2.zero;
-            mapGo.GetComponent<Image>().color = new Color(0.09f, 0.33f, 0.47f, 1f);
-            var fit = mapGo.GetComponent<AspectRatioFitter>();
-            fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            fit.aspectRatio = 1f;
+            // The skull medallion over the plank's left end, as in the reference.
+            var medal = K.TopLeft(head, "Medallion", -14f, -14f, 152f, 152f);
+            var mimg = K.Paint(medal, "Medallion_Frame", 1f, null, new Color(0f, 0f, 0f, 0f));
+            mimg.preserveAspect = true;
+            if (mimg.sprite != null)
+            {
+                var disc = K.Fill(medal, "Disc", 34f, 34f, 34f, 34f).gameObject.AddComponent<Image>();
+                disc.sprite = IslandUi.Circle;
+                disc.color = new Color(0.96f, 0.88f, 0.7f, 1f);
+                disc.raycastTarget = false;
+            }
+            K.Paint(K.Fill(medal, "Skull", 44f, 46f, 44f, 42f), "Icon_Skull_Crossbones", 1f, K.Ink, new Color(0f, 0f, 0f, 0f)).preserveAspect = true;
+
+            K.Label(K.TopLeft(head, "Title", 150f, 8f, 290f, 104f), "Islands", 72f, K.OnWood, TextAlignmentOptions.MidlineLeft, true, 40f);
+
+            _rumPill = K.TopLeft(head, "Rum", 450f, 22f, 300f, 80f);
+            var pill = _rumPill.gameObject.AddComponent<Image>();
+            pill.color = new Color(0f, 0f, 0f, 0.22f);
+            pill.raycastTarget = false;
+            K.Icon(K.TopLeft(_rumPill, "Barrel", 6f, 4f, 72f, 72f), "Barrel");
+            _rum = K.Label(K.Fill(_rumPill, "Value", 88f, 0f, 10f, 0f), string.Empty, 40f, K.OnWood, TextAlignmentOptions.MidlineLeft, true, 22f);
+
+            _close = K.KitButton(K.TopRight(head, "Close", 24f, 20f, 230f, 84f), "Close", null, Close, "Btn_Gold", 36f);
+            K.KitButton(K.TopRight(head, "Refresh", 268f, 20f, 230f, 84f), "Refresh", null, Refresh, "Btn_Gold", 36f);
+            K.KitButton(K.TopRight(head, "Market", 512f, 20f, 230f, 84f), "Market", null, () => { if (Market != null) Market.Open(); }, "Btn_Gold", 36f);
+        }
+
+        void BuildStatus(RectTransform rt)
+        {
+            var strip = K.Strip(rt, "Status", 8f, StatusTop, 8f, StatusHeight);
+            _statusBg = K.Paint(strip, "Banner_Green", 1f, null, new Color(0.2f, 0.45f, 0.2f, 1f));
+            _statusIcon = K.Paint(K.TopLeft(strip, "Icon", 26f, 7f, 44f, 44f), "Icon_Check_Green", 1f, null, new Color(0f, 0f, 0f, 0f));
+            _statusIcon.preserveAspect = true;
+            _status = K.Label(K.Fill(strip, "Text", 84f, 2f, 28f, 2f), string.Empty, 28f, K.OnWood, TextAlignmentOptions.MidlineLeft, true, 16f);
+            _status.textWrappingMode = TextWrappingModes.Normal;
+        }
+
+        void BuildMap(RectTransform left)
+        {
+            _map = K.Fill(left, "Map", 34f, 108f, 34f, 34f);
+            _map.gameObject.AddComponent<Image>().color = new Color(0.08f, 0.35f, 0.56f, 1f);
+            _map.gameObject.AddComponent<RectMask2D>();
             DrawSea(_map);
-            _markers = HackUi.Area(_map, "Markers", Vector2.zero, Vector2.one);
+            _markers = K.Fill(_map, "Markers");
             Legend(left);
+        }
 
-            // Right: tabs and the detail list.
-            var right = HackUi.Area(rt, "Detail", new Vector2(0.5f, 0f), Vector2.one, new Vector4(10f, 20f, 24f, 164f));
-            var tabs = HackUi.Area(right, "Tabs", new Vector2(0f, 1f), Vector2.one);
-            tabs.offsetMin = new Vector2(0f, -76f);
-            _tabMine = HackUi.Button(tabs, "My island", () => Show(View.Mine), new Vector2(0f, 0f), new Vector2(0.49f, 1f));
-            _tabHistory = HackUi.Button(tabs, "Raid history", () => Show(View.History), new Vector2(0.51f, 0f), new Vector2(1f, 1f));
-            var body = HackUi.Area(right, "Body", Vector2.zero, Vector2.one, new Vector4(0f, 0f, 0f, 88f));
-            _list = HackUi.ScrollList(body, "Scroll", Vector4.zero);
-            _list.GetComponent<VerticalLayoutGroup>().spacing = 8f;
+        void BuildDetail(RectTransform right)
+        {
+            var tabs = K.Strip(right, "Tabs", 40f, 34f, 40f, 84f);
+            _tabMine = K.KitButton(K.Columns(tabs, "My island", 0f, 0.5f, 0f, 9f), "My island", null, () => Show(View.Mine), "Btn_Gold", 36f);
+            _tabHistory = K.KitButton(K.Columns(tabs, "Raid history", 0.5f, 1f, 9f, 0f), "Raid history", null, () => Show(View.History), "Btn_Parchment", 36f);
+            var host = K.Fill(right, "List", 36f, 34f, 30f, 134f);
+            _list = K.Scroll(host, out _scroll, 12f, new RectOffset(2, 10, 2, 12));
         }
 
         // ---------------------------------------------------------------- map art
 
         static void DrawSea(RectTransform map)
         {
-            // Grid lines (a chart look) and a lighter shallows band.
+            // Grid lines (a chart look).
             for (var i = 1; i < 10; i++)
             {
                 Line(map, new Vector2(i / 10f, 0f), new Vector2(i / 10f, 1f), 2f, true);
                 Line(map, new Vector2(0f, i / 10f), new Vector2(1f, i / 10f), 2f, false);
             }
             // Region names (the server's regions sit roughly here).
-            Region(map, "Saltwind Reach", 0.25f, 0.96f);
-            Region(map, "Coral Shallows", 0.72f, 0.96f);
+            Region(map, "Saltwind Reach", 0.25f, 0.95f);
+            Region(map, "Coral Shallows", 0.72f, 0.95f);
             Region(map, "Black Tide", 0.2f, 0.62f);
             Region(map, "Maelstrom Deep", 0.68f, 0.62f);
             Region(map, "Ember Isles", 0.3f, 0.04f);
             Region(map, "Golden Wake", 0.78f, 0.04f);
-            var compass = HackUi.TextAt(map, "Compass", "N\n<size=60%>^</size>", 30, TextAlignmentOptions.Center, new Color(1f, 1f, 1f, 0.5f),
-                new Vector2(0.005f, 0.74f), new Vector2(0.07f, 0.84f), true);
+            var compass = K.Label(K.Node(map, "Compass"), "N\n<size=60%>^</size>", 34f, new Color(1f, 1f, 1f, 0.6f), TextAlignmentOptions.Center, true);
             compass.textWrappingMode = TextWrappingModes.Normal;
+            var crt = compass.rectTransform;
+            crt.anchorMin = new Vector2(0.005f, 0.72f);
+            crt.anchorMax = new Vector2(0.07f, 0.84f);
+            crt.offsetMin = crt.offsetMax = Vector2.zero;
         }
 
         static void Line(RectTransform map, Vector2 a, Vector2 b, float width, bool vertical)
@@ -133,48 +186,53 @@ namespace RoguePirates.Hackathon.UI
 
         static void Region(RectTransform map, string name, float x, float y)
         {
-            var t = HackUi.TextAt(map, name, name.ToUpperInvariant(), 20, TextAlignmentOptions.Center, new Color(0.85f, 0.95f, 1f, 0.32f),
-                new Vector2(x - 0.2f, y - 0.03f), new Vector2(x + 0.2f, y + 0.03f), true);
-            t.characterSpacing = 6f;
+            var t = K.Label(K.Node(map, name), name.ToUpperInvariant(), 24f, new Color(0.85f, 0.93f, 1f, 0.45f), TextAlignmentOptions.Center, true);
+            var rt = t.rectTransform;
+            rt.anchorMin = new Vector2(x - 0.2f, y - 0.03f);
+            rt.anchorMax = new Vector2(x + 0.2f, y + 0.03f);
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            t.characterSpacing = 4f;
         }
 
-        static readonly (IslandRules.Marker kind, string label, Color color)[] LegendItems =
+        static readonly (IslandRules.Marker kind, string label, string dot, Color color)[] LegendItems =
         {
-            (IslandRules.Marker.Mine, "Yours", new Color(1f, 0.82f, 0.3f)),
-            (IslandRules.Marker.Raidable, "Raidable", new Color(0.95f, 0.35f, 0.3f)),
-            (IslandRules.Marker.Shielded, "Shielded", new Color(0.45f, 0.75f, 1f)),
-            (IslandRules.Marker.Listed, "On market", new Color(0.75f, 0.5f, 0.95f)),
-            (IslandRules.Marker.Free, "Free", new Color(0.85f, 0.8f, 0.65f, 0.55f)),
+            (IslandRules.Marker.Mine, "Yours", "Dot_Yellow", new Color(1f, 0.82f, 0.3f)),
+            (IslandRules.Marker.Raidable, "Raidable", "Dot_Red", new Color(0.95f, 0.35f, 0.3f)),
+            (IslandRules.Marker.Shielded, "Shielded", "Dot_Blue", new Color(0.45f, 0.75f, 1f)),
+            (IslandRules.Marker.Listed, "On market", "Dot_Purple", new Color(0.75f, 0.5f, 0.95f)),
+            (IslandRules.Marker.Free, "Free", "Dot_Beige", new Color(0.85f, 0.8f, 0.65f, 1f)),
         };
 
-        static Color MarkerColor(IslandRules.Marker kind)
+        static (string dot, Color color) MarkerArt(IslandRules.Marker kind)
         {
-            foreach (var l in LegendItems) if (l.kind == kind) return l.color;
-            return new Color(0.7f, 0.7f, 0.7f);
+            foreach (var l in LegendItems) if (l.kind == kind) return (l.dot, l.color);
+            return ("Dot_Beige", new Color(0.7f, 0.7f, 0.7f));
         }
 
         static void Legend(RectTransform left)
         {
-            var strip = HackUi.Area(left, "Legend", Vector2.zero, new Vector2(1f, 0f));
-            strip.pivot = new Vector2(0.5f, 0f);
-            strip.offsetMin = new Vector2(0f, -2f);
-            strip.offsetMax = new Vector2(0f, 34f);
+            var strip = K.BottomStrip(left, "Legend", 30f, 30f, 30f, 66f);
+            K.Paint(strip, "Header_Wood", 1.4f, new Color(0.62f, 0.5f, 0.45f, 1f), new Color(0.25f, 0.15f, 0.08f, 1f));
             var h = strip.gameObject.AddComponent<HorizontalLayoutGroup>();
             h.childAlignment = TextAnchor.MiddleCenter;
-            h.spacing = 8f;
+            h.spacing = 10f;
+            h.padding = new RectOffset(16, 16, 8, 8);
             h.childControlWidth = h.childControlHeight = true;
             h.childForceExpandWidth = false;
-            foreach (var (_, label, color) in LegendItems)
+            h.childForceExpandHeight = false;
+            foreach (var (_, label, dot, color) in LegendItems)
             {
-                var dot = new GameObject("Dot", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
-                dot.transform.SetParent(strip, false);
-                dot.GetComponent<Image>().sprite = IslandUi.Circle;
-                dot.GetComponent<Image>().color = color;
-                var le = dot.GetComponent<LayoutElement>();
-                le.preferredWidth = le.minWidth = 20f;
-                le.preferredHeight = 20f;
-                var t = HackUi.Text(strip, label, label, 22, TextAlignmentOptions.MidlineLeft, HackUi.Dim);
-                t.gameObject.AddComponent<LayoutElement>().preferredWidth = t.GetPreferredValues(label).x + 14f;
+                var d = K.Node(strip, "Dot");
+                var img = K.Paint(d, dot, 1f, null, color);
+                if (img.sprite == null) img.sprite = IslandUi.Circle;
+                img.preserveAspect = true;
+                var le = d.gameObject.AddComponent<LayoutElement>();
+                le.preferredWidth = le.minWidth = 34f;
+                le.preferredHeight = le.minHeight = 38f;
+                var t = K.Label(K.Node(strip, label), label, 28f, K.OnWood, TextAlignmentOptions.MidlineLeft);
+                var tle = t.gameObject.AddComponent<LayoutElement>();
+                tle.preferredWidth = t.GetPreferredValues(label).x + 18f;
+                tle.minWidth = tle.preferredWidth * 0.7f;
             }
         }
 
@@ -194,43 +252,45 @@ namespace RoguePirates.Hackathon.UI
                 if (!string.IsNullOrEmpty(s.islandId)) byId.TryGetValue(s.islandId, out island);
                 var kind = island == null ? IslandRules.Marker.Free : IslandRules.MarkerOf(island);
                 var (ax, ay) = IslandRules.MapAnchor(s.x, s.y, _world.mapWidth, _world.mapHeight);
-                var size = island == null ? 22f : 40f;
+                var size = island == null ? 28f : 44f;
                 var go = new GameObject("Slot" + s.slot, typeof(RectTransform), typeof(Image), typeof(Button));
                 go.transform.SetParent(_markers, false);
                 var rt = (RectTransform)go.transform;
                 rt.anchorMin = rt.anchorMax = new Vector2(ax, ay);
-                rt.sizeDelta = new Vector2(size, size);
+                rt.sizeDelta = new Vector2(size, size * 1.12f);
+                var (dot, color) = MarkerArt(kind);
                 var img = go.GetComponent<Image>();
-                img.sprite = IslandUi.Circle;
-                img.color = MarkerColor(kind);
-                if (s.slot == _selectedSlot)
+                var sprite = K.Find(dot);
+                img.sprite = sprite != null ? sprite : IslandUi.Circle;
+                img.color = sprite != null ? Color.white : color;
+                img.preserveAspect = true;
+                if (s.slot == _selectedSlot || kind == IslandRules.Marker.Mine)
                 {
-                    var ring = new GameObject("Selected", typeof(RectTransform), typeof(Image));
-                    ring.transform.SetParent(go.transform, false);
-                    ring.transform.SetAsFirstSibling();
-                    var rrt = (RectTransform)ring.transform;
-                    rrt.anchorMin = Vector2.zero;
-                    rrt.anchorMax = Vector2.one;
-                    rrt.offsetMin = new Vector2(-10f, -10f);
-                    rrt.offsetMax = new Vector2(10f, 10f);
-                    ring.GetComponent<Image>().sprite = IslandUi.Circle;
-                    ring.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.45f);
-                    ring.GetComponent<Image>().raycastTarget = false;
+                    var ring = K.Node(go.transform, "Selected");
+                    ring.SetAsFirstSibling();
+                    ring.anchorMin = Vector2.zero;
+                    ring.anchorMax = Vector2.one;
+                    ring.offsetMin = new Vector2(-12f, -12f);
+                    ring.offsetMax = new Vector2(12f, 12f);
+                    var rimg = K.Paint(ring, "Pin_Selected_Ring", 1f, s.slot == _selectedSlot ? Color.white : new Color(1f, 0.9f, 0.5f, 1f), new Color(1f, 1f, 1f, 0.45f));
+                    if (rimg.sprite == null) rimg.sprite = IslandUi.Circle;
+                    rimg.preserveAspect = true;
                 }
                 var slot = s;
                 var picked = island;
                 go.GetComponent<Button>().onClick.AddListener(() => Select(slot, picked));
                 var label = island != null ? island.name : s.name;
-                var t = HackUi.Text(rt, "Name", label, island != null ? 20 : 15, TextAlignmentOptions.Top,
-                    island != null ? HackUi.TextColor : new Color(0.9f, 0.95f, 1f, 0.55f), island != null);
+                var mine = kind == IslandRules.Marker.Mine;
+                var t = K.Label(K.Node(rt, "Name"), label, island != null ? 24f : 19f,
+                    mine ? new Color(1f, 0.85f, 0.35f, 1f) : island != null ? Color.white : new Color(0.92f, 0.96f, 1f, 0.8f), TextAlignmentOptions.Top, island != null);
                 var trt = t.rectTransform;
                 trt.anchorMin = new Vector2(0.5f, 0f);
                 trt.anchorMax = new Vector2(0.5f, 0f);
                 trt.pivot = new Vector2(0.5f, 1f);
-                trt.sizeDelta = new Vector2(220f, 28f);
+                trt.sizeDelta = new Vector2(240f, 30f);
                 trt.anchoredPosition = new Vector2(0f, -2f);
-                t.outlineWidth = 0.15f;
-                t.outlineColor = new Color32(0, 20, 40, 200);
+                t.outlineWidth = 0.18f;
+                t.outlineColor = new Color32(0, 25, 50, 220);
                 MarkerCount++;
             }
         }
@@ -282,16 +342,18 @@ namespace RoguePirates.Hackathon.UI
 
         void Render()
         {
-            _rum.text = _mine != null ? $"<color=#ffd166>{_mine.rum}</color> RUM" : string.Empty;
+            _rumPill.gameObject.SetActive(_mine != null);
+            _rum.text = _mine != null ? $"{_mine.rum} RUM" : string.Empty;
             DrawMarkers();
             Show(_view);
         }
 
         void Show(View view)
         {
+            var changed = view != _view;
             _view = view;
-            Tint(_tabMine, view == View.Mine);
-            Tint(_tabHistory, view == View.History);
+            K.SetStyle(_tabMine, view == View.Mine ? "Btn_Gold" : "Btn_Parchment");
+            K.SetStyle(_tabHistory, view == View.History ? "Btn_Gold" : "Btn_Parchment");
             ClearList();
             switch (view)
             {
@@ -299,12 +361,7 @@ namespace RoguePirates.Hackathon.UI
                 case View.Island: ShowIsland(); break;
                 case View.History: ShowHistory(); break;
             }
-        }
-
-        static void Tint(Button b, bool on)
-        {
-            if (b == null) return;
-            b.GetComponent<Image>().color = on ? new Color(1f, 0.78f, 0.3f, 1f) : new Color(0.55f, 0.45f, 0.25f, 1f);
+            if (changed && _scroll != null) _scroll.verticalNormalizedPosition = 1f;
         }
 
         void Select(IslandSlotView slot, IslandView island)
@@ -322,32 +379,36 @@ namespace RoguePirates.Hackathon.UI
             }
             _view = View.Island;
             Render();
+            if (_scroll != null) _scroll.verticalNormalizedPosition = 1f;
         }
 
         void ClearList()
         {
             _shield = null;
             _shieldUntil = null;
-            for (var i = _list.childCount - 1; i >= 0; i--)
-            {
-                var c = _list.GetChild(i).gameObject;
-                c.SetActive(false);
-                Destroy(c);
-            }
+            K.Clear(_list);
         }
 
+        /// <summary>The green banner under the header (maroon for errors; the tick shows for a success).</summary>
         void Status(string text, Color color)
         {
             if (_status == null) return;
+            _statusColor = color;
             _status.text = text;
-            _status.color = color;
+            var bad = color == HackUi.Bad;
+            var busy = color == HackUi.Gold;
+            _status.color = busy ? new Color(1f, 0.88f, 0.5f, 1f) : K.OnWood;
+            var s = K.Find(bad ? "Banner_Maroon" : "Banner_Green");
+            if (s != null) _statusBg.sprite = s;
+            else _statusBg.color = bad ? new Color(0.5f, 0.15f, 0.12f, 1f) : new Color(0.2f, 0.45f, 0.2f, 1f);
+            _statusIcon.gameObject.SetActive(color == HackUi.Good);
         }
 
         void Update()
         {
             if (_shield == null || !_shieldUntil.HasValue) return;
             var left = IslandRules.TimeLeft(DateTime.UtcNow, _shieldUntil);
-            _shield.text = left == null ? _shieldPrefix + "no shield" : _shieldPrefix + "<color=#7fc8ff>shielded for " + left + "</color>";
+            _shield.text = left == null ? "None (raidable)" : $"<color=#2a5f8f>Shielded for {left}</color>";
         }
 
         // ---------------------------------------------------------------- my island
@@ -357,97 +418,154 @@ namespace RoguePirates.Hackathon.UI
             LastRaidBlock();
             if (!Web3Session.Instance.SignedIn)
             {
-                IslandUi.TextRow(_list, "Connect a wallet (Wallet button, top of the menu) to claim an island. Claiming mints your Island NFT on Solana devnet.", 28);
+                K.TextRow(_list, "<b>Connect a wallet</b> (Wallet button, top of the menu) to claim an island. Claiming mints your Island NFT on Solana devnet.", 28f, null, "Panel_Inset");
                 return;
             }
             var me = MyIsland;
             if (me == null)
             {
-                IslandUi.TextRow(_list, "<color=#ffd166><b>Claim your island</b></color>\nName it, and the crew settles a free spot on the map. " +
-                                        "Your island is minted as an NFT to your wallet, brews RUM every hour, and Captain Marrow defends it against raiders.", 27);
-                var row = HackUi.Row(_list, IslandUi.ButtonRow, new Color(0f, 0f, 0f, 0f));
+                K.TextRow(_list, $"<size=130%><b>Claim your island</b></size>\nName it, and the crew settles a free spot on the map. " +
+                                 "Your island is minted as an NFT to your wallet, brews RUM every hour, and Captain Marrow defends it against raiders.", 27f, null, "Panel_Inset");
+                var row = K.ListRow(_list, "Claim", 92f);
+                var h = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+                h.spacing = 16f;
+                h.padding = new RectOffset(4, 4, 4, 4);
+                h.childControlWidth = h.childControlHeight = true;
+                h.childForceExpandWidth = false;
+                h.childForceExpandHeight = true;
                 _nameInput = HackUi.Input(row, "Island name (3 to 16 letters)", 16);
-                IslandUi.RowButton(row, "Claim island", Claim, 240f);
+                K.Paint((RectTransform)_nameInput.transform, "Input_Field", 1.4f, null, new Color(0.97f, 0.92f, 0.8f, 1f)).raycastTarget = true;
+                if (_nameInput.textComponent != null) { _nameInput.textComponent.color = K.Ink; if (K.Font != null) _nameInput.textComponent.font = K.Font; }
+                var claim = K.Node(row, "ClaimButton");
+                var le = claim.gameObject.AddComponent<LayoutElement>();
+                le.preferredWidth = le.minWidth = 270f;
+                K.KitButton(claim, "Claim island", "Icon_Flag", Claim, "Btn_Gold", 32f);
                 return;
             }
 
             // More than one island (bought on the market): pick which one to manage.
             if (_mine.islands.Length > 1)
             {
-                var picks = new List<(string, Action)>();
+                var picks = new List<(string, string, Action, string)>();
                 for (var i = 0; i < _mine.islands.Length; i++)
                 {
                     var index = i;
                     var isl = _mine.islands[i];
                     if (isl == null) continue;
-                    picks.Add(((index == _mineIndex ? "> " : string.Empty) + isl.name, () => { _mineIndex = index; Show(View.Mine); }));
+                    picks.Add((isl.name, null, () => { _mineIndex = index; Show(View.Mine); }, index == _mineIndex ? "Btn_Gold" : "Btn_Parchment"));
                 }
-                IslandUi.ButtonRowOf(_list, picks.ToArray());
+                K.ButtonRow(_list, 76f, picks.ToArray());
             }
 
-            // Header: picture, name, NFT.
-            var head = HackUi.Row(_list, 176f, IslandUi.MineTint);
-            IslandUi.Picture(head, me.nft?.imageUrl, 160f);
-            var nftLine = me.nft == null ? string.Empty
-                : me.nft.Minted ? $"NFT <color=#7fd68b>minted</color>  {IslandUi.Short(me.nft.mint)}"
-                : $"NFT <color=#ff8c73>{me.nft.status}</color>" + (string.IsNullOrEmpty(me.nft.error) ? string.Empty : $"  <size=80%>{me.nft.error}</size>");
-            var info = HackUi.Cell(head, $"<color=#ffd166><size=120%><b>{me.name}</b></size></color>\n{me.slotName}, {me.region}   Level {me.level}\n{nftLine}" +
-                                         (me.listed ? "\n<color=#c08cff>Listed on the market</color>" : string.Empty), 0f, 26, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
-            info.textWrappingMode = TextWrappingModes.Normal;
-            if (me.nft != null && me.nft.Minted)
-                IslandUi.ButtonRowOf(_list, ("View NFT on explorer", () => Application.OpenURL(IslandRules.ExplorerAddress(me.nft.mint))),
-                    ("Sell on market", () => { if (Market != null) Market.Open(); }));
-            else
-                IslandUi.ButtonRowOf(_list, ("Retry mint", RetryMint));
+            IslandCard(me, true);
 
-            // RUM.
+            // RUM plank.
             var rum = me.rum ?? new IslandRum();
-            HackUi.Section(_list, "RUM", $"{rum.ratePerHour} RUM per hour");
-            IslandUi.TextRow(_list, $"<color=#ff8c73>Exposed {rum.exposed}</color> (raiders can loot it)   " +
-                                    $"<color=#7fc8ff>Vault {rum.vault}</color> (always safe)", 25);
-            IslandUi.Bar(_list, IslandRules.RumFill(rum.total, rum.cap), $"{rum.total} / {rum.cap} RUM", new Color(0.85f, 0.55f, 0.15f, 1f));
-            IslandUi.ButtonRowOf(_list, ($"Collect {rum.total} RUM", Collect));
+            var plank = K.ListRow(_list, "Rum", 246f, "Header_Wood", 1f, null);
+            K.Icon(K.TopLeft(plank, "Barrel", 22f, 28f, 124f, 124f), "Barrel");
+            K.Label(K.TopLeft(plank, "Title", 166f, 16f, 220f, 58f), "RUM", 50f, K.OnWood, TextAlignmentOptions.MidlineLeft, true);
+            K.Label(K.Strip(plank, "Split", 360f, 22f, 30f, 44f), $"<color=#e8c27a>Exposed</color> {rum.exposed}  •  <color=#e8c27a>Vault</color> {rum.vault}",
+                28f, K.OnWood, TextAlignmentOptions.MidlineRight, false, 16f);
+            K.Label(K.TopLeft(plank, "Rate", 166f, 74f, 320f, 42f), $"{rum.ratePerHour} / hr", 34f, K.OnWood, TextAlignmentOptions.MidlineLeft, true);
+            K.Label(K.Strip(plank, "Note", 400f, 72f, 30f, 40f), "Exposed RUM can be looted; the vault is safe.", 21f, new Color(0.95f, 0.85f, 0.7f, 0.85f), TextAlignmentOptions.MidlineRight, false, 14f);
+            var track = K.Strip(plank, "Bar", 166f, 124f, 220f, 32f);
+            K.Paint(track, "Bar_Track", 1f, null, new Color(0.2f, 0.12f, 0.06f, 1f));
+            var fill = K.Fill(track, "Fill", 4f, 4f, 4f, 4f);
+            fill.anchorMax = new Vector2(Mathf.Max(0.001f, IslandRules.RumFill(rum.total, rum.cap)), 1f);
+            K.Paint(fill, "Bar_Fill_Gold", 1f, null, new Color(0.95f, 0.7f, 0.2f, 1f));
+            K.Label(K.TopRight(plank, "Amount", 28f, 114f, 186f, 50f), $"{rum.total} / {rum.cap}", 36f, K.OnWood, TextAlignmentOptions.MidlineRight, true, 20f);
+            K.KitButton(K.Strip(plank, "Collect", 24f, 164f, 24f, 66f), $"Collect {rum.total} RUM", null, Collect, "Btn_Gold", 34f);
 
             // Buildings.
-            HackUi.Section(_list, "Buildings", "upgrade with RUM");
+            K.SectionHead(_list, "Icon_House", "Buildings", "upgrade with RUM");
             foreach (var kind in IslandRules.BuildingKinds)
             {
                 var b = me.Building(kind);
                 if (b == null) continue;
-                var row = HackUi.Row(_list, IslandUi.ButtonRow, IslandUi.RowTint);
+                var row = K.ListRow(_list, kind, 112f, "Panel_Inset", 2.2f);
+                K.Icon(K.TopLeft(row, "Icon", 16f, 12f, 88f, 88f), BuildingArt(kind));
                 var at = b.level >= b.maxLevel;
-                var cell = HackUi.Cell(row, $"<b>{IslandRules.BuildingName(kind)}</b>  Lv {b.level}/{b.maxLevel}\n<size=80%><color=#9aa4ad>{IslandRules.BuildingEffect(kind, b.level)}</color></size>",
-                    0f, 25, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
-                cell.textWrappingMode = TextWrappingModes.Normal;
+                K.Label(K.Strip(row, "Name", 122f, 14f, 392f, 46f), IslandRules.BuildingName(kind), 32f, K.Ink, TextAlignmentOptions.MidlineLeft, true, 20f);
+                K.Label(K.Strip(row, "Effect", 122f, 60f, 392f, 38f), IslandRules.BuildingEffect(kind, b.level), 23f, K.InkDim, TextAlignmentOptions.MidlineLeft, false, 15f);
+                K.Tag(K.TopRight(row, "Level", 266f, 30f, 112f, 52f), "Tag_Tan", $"Lv {b.level}/{b.maxLevel}", 26f);
                 var captured = kind;
-                var up = IslandUi.RowButton(row, at ? "Max level" : $"Upgrade {b.nextCost}", () => Upgrade(captured), 240f);
+                var up = K.KitButton(K.TopRight(row, "Upgrade", 16f, 18f, 236f, 76f), at ? "Max level" : $"{b.nextCost} RUM", at ? null : "Icon_Arrow_Up", () => Upgrade(captured), "Btn_Gold", 30f, 32f);
                 up.interactable = !at && !me.listed;
             }
 
             // Defence and shield.
-            HackUi.Section(_list, "Defence");
-            IslandUi.TextRow(_list, $"{HackathonRules.CaptainName} guards it with your design: 15 one-minute waves and the guardian. " +
-                                    "Raiders must sink the guardian to conquer it.", 25);
+            K.SectionHead(_list, "Icon_Shield", "Defence");
+            K.TextRow(_list, $"{HackathonRules.CaptainName} guards it with your design: 15 one-minute waves and the guardian. " +
+                             "Raiders must sink the guardian to conquer it.", 25f);
             var islandId = me.islandId;
             var islandName = me.name;
-            var defenceButtons = IslandUi.ButtonRowOf(_list, ("Design defences", () => OpenDefence(islandId, islandName)),
-                ("Test defences", () => StartPractice(islandId, islandName)));
+            var defenceButtons = K.ButtonRow(_list, 92f, ("Design defences", "Icon_Gear", () => OpenDefence(islandId, islandName), "Btn_Gold"),
+                ("Test defences", "Icon_Swords", () => StartPractice(islandId, islandName), "Btn_Gold"));
             defenceButtons[0].interactable = !me.listed;
             defenceButtons[1].interactable = !_busy;
-            IslandUi.TextRow(_list, "<color=#9aa4ad>Test defences: sail a practice raid against your saved design. No RUM fee, no loot, no shield, nothing recorded.</color>", 22);
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>Defence record</b></color>   {IslandRules.DefenceRecordLine(me.defenceRecord)}", 25);
-            _shieldPrefix = "<color=#ffd166><b>Shield</b></color>   ";
-            _shield = IslandUi.TextRow(_list, _shieldPrefix, 25);
+            K.TextRow(_list, "Test defences: sail a practice raid against your saved design. No RUM fee, no loot, no shield, nothing recorded.", 21f, K.InkDim);
+            K.InfoRow(_list, "Icon_Trophy", "Defence record:", IslandRules.DefenceRecordLine(me.defenceRecord));
+            _shield = K.InfoRow(_list, "Icon_Shield", "Shield:", me.shielded ? "<color=#2a5f8f>Shielded</color>" : "None (raidable)");
             _shieldUntil = OnlineRules.ParseUtc(me.shieldUntil);
-            _shield.text = _shieldPrefix + (me.shielded ? "<color=#7fc8ff>shielded</color>" : "no shield (raidable by other captains)");
             Update();
+        }
+
+        static string BuildingArt(string kind)
+        {
+            switch (kind)
+            {
+                case "rum_store": return "Barrel";
+                case "vault": return "Chest_2";
+                case "cannon_tower": return "Cannons";
+                default: return "Icon_Shield";
+            }
+        }
+
+        /// <summary>The island card: picture, name, level tag, spot and region, NFT state; mine adds View NFT / Sell.</summary>
+        void IslandCard(IslandView island, bool mine)
+        {
+            var card = K.ListRow(_list, "Island", mine ? 292f : 262f, "Panel_Inset", 1.6f);
+            K.IslandPicture(K.TopLeft(card, "Picture", 22f, 22f, 164f, 164f), island.nft?.imageUrl);
+            K.Label(K.Strip(card, "Name", 206f, 16f, 170f, 64f), island.name, 52f, K.Ink, TextAlignmentOptions.MidlineLeft, true, 28f);
+            K.Tag(K.TopRight(card, "Level", 24f, 24f, 128f, 56f), "Tag_Tan", $"Lv {island.level}", 30f);
+            K.Label(K.Strip(card, "Where", 206f, 84f, 24f, 40f), $"{island.slotName}  •  {island.region}", 30f, K.Ink, TextAlignmentOptions.MidlineLeft, false, 18f);
+
+            if (mine)
+            {
+                var nft = island.nft;
+                var minted = nft != null && nft.Minted;
+                if (minted) K.Icon(K.TopLeft(card, "Tick", 206f, 132f, 38f, 38f), "Icon_Check_Green");
+                var nftLine = nft == null ? "No NFT yet"
+                    : minted ? $"<color={K.Hex(K.InkGood)}>NFT minted</color>  <size=80%>{IslandUi.Short(nft.mint)}</size>"
+                    : $"<color={K.Hex(K.InkBad)}>NFT {nft.status}</color>" + (string.IsNullOrEmpty(nft.error) ? string.Empty : $"  <size=75%>{nft.error}</size>");
+                if (island.listed) nftLine += "  •  <color=#6a3d9a>Listed on the market</color>";
+                K.Label(K.Strip(card, "Nft", minted ? 252f : 206f, 130f, 24f, 42f), nftLine, 29f, K.Ink, TextAlignmentOptions.MidlineLeft, true, 16f);
+
+                var buttons = K.Strip(card, "Buttons", 22f, 198f, 22f, 76f);
+                if (minted)
+                {
+                    var mint = nft.mint;
+                    K.KitButton(K.Columns(buttons, "View NFT", 0f, 0.5f, 0f, 9f), "View NFT", "Icon_Link", () => Application.OpenURL(IslandRules.ExplorerAddress(mint)), "Btn_Gold", 32f, 34f);
+                    K.KitButton(K.Columns(buttons, "Sell", 0.5f, 1f, 9f, 0f), "Sell", "Icon_Tag", () => { if (Market != null) Market.Open(); }, "Btn_Gold", 32f, 34f);
+                }
+                else K.KitButton(buttons, "Retry mint", "Icon_Refresh", RetryMint, "Btn_Gold", 32f, 34f);
+                return;
+            }
+
+            var owner = island.owner != null ? $"Owner  <b>{island.owner.name}</b>  <color={K.Hex(K.InkDim)}>{island.owner.walletShort}</color>" : "Owner  -";
+            K.Label(K.Strip(card, "Owner", 206f, 128f, 24f, 40f), owner, 27f, K.Ink, TextAlignmentOptions.MidlineLeft, false, 16f);
+            var (tag, text) = island.listed ? ("Tag_Blue", "On the market")
+                : island.shielded ? ("Tag_Blue", "Shielded " + (IslandRules.TimeLeft(DateTime.UtcNow, OnlineRules.ParseUtc(island.shieldUntil)) ?? string.Empty))
+                : island.raidInProgress ? ("Tag_Red", "Under attack")
+                : island.raidable ? ("Tag_Red", "Raidable") : ("Tag_Tan", "Not raidable");
+            K.Tag(K.TopLeft(card, "State", 206f, 182f, 260f, 56f), tag, text.Trim(), 26f);
         }
 
         void LastRaidBlock()
         {
             var last = RaidHud.LastResult;
             if (last == null) return;
-            IslandUi.TextRow(_list, "<color=#ffd166><b>Last raid</b></color>\n" + last, 26, null, 44f, new Color(1f, 0.82f, 0.4f, 0.12f));
+            K.TextRow(_list, "<b>Last raid</b>\n" + last, 26f, null, "Panel_Inset");
         }
 
         async void Claim()
@@ -523,7 +641,7 @@ namespace RoguePirates.Hackathon.UI
         async void KeepStatusRefresh()
         {
             var text = _status.text;
-            var color = _status.color;
+            var color = _statusColor;
             var request = ++_requests;
             var (world, _) = await IslandApi.World();
             if (this == null || request != _requests) return;
@@ -551,47 +669,43 @@ namespace RoguePirates.Hackathon.UI
             {
                 IslandSlotView slot = null;
                 if (_world?.slots != null) foreach (var s in _world.slots) if (s != null && s.slot == _selectedSlot) slot = s;
-                IslandUi.TextRow(_list, slot == null ? "Tap an island on the map." :
-                    $"<color=#ffd166><b>{slot.name}</b></color>  ({slot.region})\nUnclaimed waters. Claiming settles a random free spot like this one.", 27);
-                IslandUi.ButtonRowOf(_list, ("Back to my island", () => Show(View.Mine)));
+                K.TextRow(_list, slot == null ? "Tap an island on the map." :
+                    $"<size=130%><b>{slot.name}</b></size>\n{slot.region}\nUnclaimed waters. Claiming settles a random free spot like this one.", 27f, null, "Panel_Inset");
+                BackButton();
                 return;
             }
 
-            var head = HackUi.Row(_list, 176f, IslandUi.RowTint);
-            IslandUi.Picture(head, island.nft?.imageUrl, 160f);
-            var owner = island.owner != null ? $"{island.owner.name}  <color=#9aa4ad>{island.owner.walletShort}</color>" : "-";
-            var state = island.listed ? "<color=#c08cff>On the market</color>"
-                : island.shielded ? "<color=#7fc8ff>Shielded</color> " + (IslandRules.TimeLeft(DateTime.UtcNow, OnlineRules.ParseUtc(island.shieldUntil)) ?? string.Empty)
-                : island.raidInProgress ? "<color=#ff8c73>Under attack right now</color>"
-                : island.raidable ? "<color=#ff8c73>Raidable</color>" : string.Empty;
-            var cell = HackUi.Cell(head, $"<color=#ffd166><size=120%><b>{island.name}</b></size></color>\n{island.slotName}, {island.region}   Level {island.level}\nOwner {owner}\n{state}",
-                0f, 26, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
-            cell.textWrappingMode = TextWrappingModes.Normal;
-
+            IslandCard(island, false);
             var exposed = island.rum != null ? island.rum.exposed : 0;
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>Key stats</b></color>   {IslandRules.KeyStats(island.rum != null ? island.rum.ratePerHour : 0, island.defenceRecord)}", 25);
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>Defender: {HackathonRules.CaptainName}</b></color>, {HackathonRules.CaptainTitle}\n" +
-                                    "<b>Conquest:</b> survive the island's designed waves (15 minutes) and sink its guardian, the Barnacle King. " +
-                                    "There is no beacon: he rises on his own at the minute the owner set (the raid HUD counts down to it). " +
-                                    "Reaching the guardian's minute without sinking it is a partial win.", 25);
-            IslandUi.TextRow(_list, $"<color=#ffd166><b>Loot</b></color>   exposed RUM {exposed}   win <color=#7fd68b>{exposed * 25 / 100}</color>   partial {exposed * 25 / 200}   " +
-                                    $"\n<color=#9aa4ad>Fee {IslandRules.RaidFeeRum} RUM (you have {(_mine != null ? _mine.rum : 0)}). A raided island gets a 4 h shield.</color>", 25);
+            K.InfoRow(_list, "Barrel", "RUM per hour", (island.rum != null ? island.rum.ratePerHour : 0).ToString());
+            K.InfoRow(_list, "Icon_Trophy", "Defence record:", IslandRules.DefenceRecordLine(island.defenceRecord));
+            K.SectionHead(_list, "Icon_Skull_Crossbones", $"Defender: {HackathonRules.CaptainName}", HackathonRules.CaptainTitle);
+            K.TextRow(_list, "<b>Conquest:</b> survive the island's designed waves (15 minutes) and sink its guardian, the Barnacle King. " +
+                             "There is no beacon: he rises on his own at the minute the owner set (the raid HUD counts down to it). " +
+                             "Reaching the guardian's minute without sinking it is a partial win.", 24f, null, "Panel_Inset");
+            K.InfoRow(_list, "Chest_2", "Loot (exposed " + exposed + ")", $"win <color={K.Hex(K.InkGood)}>{exposed * 25 / 100}</color>  •  partial {exposed * 25 / 200}");
+            K.InfoRow(_list, "Icon_Tag", "Raid fee", $"{IslandRules.RaidFeeRum} RUM  (you have {(_mine != null ? _mine.rum : 0)})");
+            K.TextRow(_list, "A raided island gets a 4 h shield.", 21f, K.InkDim);
 
-            if (island.isMine) return;
-            if (!Web3Session.Instance.SignedIn) { IslandUi.TextRow(_list, "Connect a wallet to raid.", 26, HackUi.Bad); return; }
+            if (island.isMine) { BackButton(); return; }
+            if (!Web3Session.Instance.SignedIn) { K.TextRow(_list, "Connect a wallet to raid.", 26f, K.InkBad); BackButton(); return; }
 
             if (_pendingRaid != null && _pendingRaid.islandId == island.islandId)
             {
-                IslandUi.TextRow(_list, "Raid started.", 25, HackUi.Gold);
-                IslandUi.ButtonRowOf(_list, ("Set sail: raid!", SetSail));
+                K.TextRow(_list, "Raid started.", 25f, K.InkGold);
+                K.ButtonRow(_list, 96f, ("Set sail: raid!", "Icon_Ship_Wheel", (Action)SetSail, "Btn_Gold"));
+                BackButton();
                 return;
             }
 
-            var raid = IslandUi.ButtonRowOf(_list, ($"Raid {island.name}", () => StartRaid(island)))[0];
+            var raid = K.ButtonRow(_list, 96f, ($"Raid {island.name}", "Icon_Swords", () => StartRaid(island), "Btn_Gold"))[0];
             raid.interactable = island.raidable && !_busy;
             if (!island.raidable)
-                IslandUi.TextRow(_list, island.listed ? "Listed islands cannot be raided." : island.shielded ? "Shielded: try again later." : "Not raidable right now.", 24, HackUi.Dim);
+                K.TextRow(_list, island.listed ? "Listed islands cannot be raided." : island.shielded ? "Shielded: try again later." : "Not raidable right now.", 24f, K.InkDim);
+            BackButton();
         }
+
+        void BackButton() => K.ButtonRow(_list, 80f, ("Back to my island", "Icon_Chevron_Left", () => Show(View.Mine), "Btn_Parchment"));
 
         async void StartRaid(IslandView island)
         {
@@ -653,36 +767,80 @@ namespace RoguePirates.Hackathon.UI
 
         async void ShowHistory()
         {
-            if (!Web3Session.Instance.SignedIn) { IslandUi.TextRow(_list, "Connect a wallet to see your raids.", 26); return; }
-            IslandUi.TextRow(_list, "Loading your raids...", 24, HackUi.Dim);
+            if (!Web3Session.Instance.SignedIn) { K.TextRow(_list, "Connect a wallet to see your raids.", 26f, null, "Panel_Inset"); return; }
+            K.TextRow(_list, "Loading your raids...", 24f, K.InkDim);
             var (raids, error) = await IslandApi.MyRaids();
             if (this == null || _view != View.History) return;
             ClearList();
-            if (error != null) { IslandUi.TextRow(_list, error, 24, HackUi.Bad); return; }
+            if (error != null) { K.TextRow(_list, error, 24f, K.InkBad, "Panel_Inset"); return; }
             LastRaidBlock();
-            HackUi.Section(_list, "Your raids");
+            K.SectionHead(_list, "Icon_Swords", "Your raids");
             Rows(raids.attacks, true);
-            HackUi.Section(_list, "Raids on your islands");
+            K.SectionHead(_list, "Icon_Shield", "Raids on your island");
             Rows(raids.defences, false);
         }
 
         void Rows(RaidRow[] rows, bool attacks)
         {
-            if (rows == null || rows.Length == 0) { IslandUi.TextRow(_list, attacks ? "No raids yet. Tap a red island on the map." : "Nobody has raided you yet.", 24, HackUi.Dim); return; }
+            if (rows == null || rows.Length == 0)
+            {
+                K.TextRow(_list, attacks ? "No raids yet. Tap a red island on the map." : "Nobody has raided you yet.", 24f, K.InkDim, "Panel_Inset");
+                return;
+            }
             foreach (var r in rows)
             {
                 if (r == null) continue;
-                var row = HackUi.Row(_list, 96f, IslandUi.RowTint);
-                var color = r.result == "won" ? "#7fd68b" : r.result == "partial" ? "#ffd166" : r.result == "lost" ? "#ff8c73" : "#9aa4ad";
-                var who = attacks ? r.islandName : $"{r.attacker?.name} on {r.islandName}";
-                var when = OnlineRules.ParseUtc(r.startedAt);
-                var c = HackUi.Cell(row, $"<b>{who}</b>   <color={color}>{r.result}</color>   {(attacks ? "+" : "-")}{r.rumLooted} RUM" +
-                                         (r.seconds > 0 ? "   " + IslandRules.Clock(r.seconds) : string.Empty) +
-                                         (when.HasValue ? $"\n<size=80%><color=#9aa4ad>{when.Value.ToLocalTime():dd MMM HH:mm}</color></size>" : string.Empty),
-                    0f, 23, TextAlignmentOptions.MidlineLeft, HackUi.TextColor);
-                c.textWrappingMode = TextWrappingModes.Normal;
-                c.overflowMode = TextOverflowModes.Overflow;
+                var row = K.ListRow(_list, "Raid", 108f, "Panel_Inset", 2.2f);
+
+                // Picture: the raided island (its NFT when the map knows it) or the raider's black flag.
+                var pic = K.TopLeft(row, "Picture", 14f, 12f, 84f, 84f);
+                if (attacks) K.IslandPicture(pic, IslandImage(r.islandId));
+                else
+                {
+                    K.Paint(pic, "Slot_Card", 3f, new Color(0.3f, 0.22f, 0.16f, 1f), new Color(0.2f, 0.14f, 0.1f, 1f));
+                    K.Icon(K.Fill(pic, "Flag", 14f, 14f, 14f, 14f), "Icon_Skull_Crossbones", K.OnWood);
+                }
+
+                var who = attacks ? r.islandName : (string.IsNullOrEmpty(r.attacker?.name) ? "A raider" : r.attacker.name);
+                K.Label(K.Strip(row, "Name", 114f, 12f, 446f, 46f), who, 31f, K.Ink, TextAlignmentOptions.MidlineLeft, true, 18f);
+                var when = K.Ago(OnlineRules.ParseUtc(r.startedAt));
+                var detail = (attacks ? when : $"{when}  •  on {r.islandName}") + (r.seconds > 0 ? "  •  " + IslandRules.Clock(r.seconds) : string.Empty);
+                K.Label(K.Strip(row, "When", 114f, 58f, 446f, 38f), detail, 22f, K.InkDim, TextAlignmentOptions.MidlineLeft, false, 14f);
+
+                var (tag, label) = ResultTag(r.result, attacks);
+                K.Tag(K.TopRight(row, "Result", 262f, 28f, 172f, 52f), tag, label, 25f);
+
+                var loot = K.TopRight(row, "Loot", 14f, 24f, 236f, 60f);
+                if (r.rumLooted > 0)
+                {
+                    K.Icon(K.TopLeft(loot, "Barrel", 0f, 6f, 48f, 48f), "Barrel");
+                    K.Label(K.Fill(loot, "Value", 56f), (attacks ? "+" : "-") + r.rumLooted + " RUM", 30f, attacks ? K.InkGood : K.InkBad, TextAlignmentOptions.MidlineLeft, true, 18f);
+                }
+                else K.Label(K.Fill(loot, "Value", 8f), attacks ? "No loot" : "0 RUM lost", 27f, K.InkDim, TextAlignmentOptions.MidlineLeft, false, 16f);
             }
+        }
+
+        /// <summary>The tag of a raid result, from the raider's side (Won / Lost) or the owner's (Raided / Defended).</summary>
+        static (string sprite, string label) ResultTag(string result, bool attacks)
+        {
+            switch (result)
+            {
+                case "won": return attacks ? ("Tag_Green", "Won") : ("Tag_Red", "Raided");
+                case "partial": return attacks ? ("Tag_Tan", "Partial") : ("Tag_Tan", "Partly raided");
+                case "lost": return attacks ? ("Tag_Red", "Lost") : ("Tag_Green", "Defended");
+                case "started": return attacks ? ("Tag_Blue", "In progress") : ("Tag_Blue", "Under attack");
+                case "abandoned": return attacks ? ("Tag_Tan", "Abandoned") : ("Tag_Green", "Defended");
+                case "expired": return attacks ? ("Tag_Tan", "Expired") : ("Tag_Green", "Defended");
+            }
+            return ("Tag_Tan", string.IsNullOrEmpty(result) ? "-" : result);
+        }
+
+        string IslandImage(string islandId)
+        {
+            if (_world?.islands != null)
+                foreach (var i in _world.islands)
+                    if (i != null && i.islandId == islandId) return i.nft?.imageUrl;
+            return null;
         }
     }
 }
