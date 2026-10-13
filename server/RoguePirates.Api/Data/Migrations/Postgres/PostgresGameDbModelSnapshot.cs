@@ -551,6 +551,9 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
 
@@ -560,6 +563,8 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                         .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
 
                     b.HasIndex("PlayerId");
 

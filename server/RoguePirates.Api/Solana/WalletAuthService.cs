@@ -118,6 +118,8 @@ public sealed partial class WalletAuthService
             // link the wallet to the caller's guest profile (keeps their name, rating and runs)
             player = await _db.Players.FirstAsync(p => p.Id == current.Id);
             player.WalletAddress = wallet;
+            // V5 M9h: the guest token is rotated away; from now on the profile is reached through wallet sessions only
+            player.TokenHash = UnusableTokenHash();
         }
         if (player == null)
         {
@@ -127,7 +129,7 @@ public sealed partial class WalletAuthService
                 Id = Guid.NewGuid(),
                 Name = DefaultName(req.Name, wallet),
                 // wallet players sign in with sessions; this column must stay unique, so it gets an unusable random hash
-                TokenHash = Tokens.Hash("wallet:" + Tokens.NewToken()),
+                TokenHash = UnusableTokenHash(),
                 CreatedAt = now,
                 Rating = Elo.Start,
                 WalletAddress = wallet,
@@ -135,13 +137,51 @@ public sealed partial class WalletAuthService
             _db.Players.Add(player);
         }
         var token = Tokens.NewToken();
-        _db.PlayerSessions.Add(new PlayerSession { PlayerId = player.Id, TokenHash = Tokens.Hash(token), CreatedAt = now });
+        _db.PlayerSessions.Add(NewSession(player.Id, token, now));
         await _db.SaveChangesAsync();
         return new
         {
             playerId = player.Id, token, name = player.Name, tag = PlayerTags.For(player.Id),
             wallet = player.WalletAddress, email = player.Email, isNew,
         };
+    }
+
+    /// <summary>A unique Player.TokenHash no bearer token hashes to (wallet profiles sign in with sessions).</summary>
+    public static string UnusableTokenHash() => Tokens.Hash("wallet:" + Tokens.NewToken());
+
+    PlayerSession NewSession(Guid playerId, string token, DateTime now) => new()
+    {
+        PlayerId = playerId, TokenHash = Tokens.Hash(token), CreatedAt = now, LastUsedAt = now,
+        ExpiresAt = now + TimeSpan.FromDays(_settings.SessionLifetimeDays),
+    };
+
+    /// <summary>
+    /// V5 M9h: POST /api/auth/sessions/revoke-all ("sign out everywhere"). Every wallet session of the profile is deleted,
+    /// the caller's included, and the profile's own token is rotated. A wallet profile signs in again with its wallet. A
+    /// guest profile (no wallet) cannot, so it gets its new token back in the answer (shown once, like POST /api/profiles).
+    /// </summary>
+    public async Task<object> RevokeAllAsync(Player player)
+    {
+        var sessions = await _db.PlayerSessions.Where(s => s.PlayerId == player.Id).ExecuteDeleteAsync();
+        var tracked = await _db.Players.FirstAsync(p => p.Id == player.Id);
+        string? token = null;
+        if (tracked.WalletAddress == null)
+        {
+            token = Tokens.NewToken();
+            tracked.TokenHash = Tokens.Hash(token);
+        }
+        else tracked.TokenHash = UnusableTokenHash();
+        await _db.SaveChangesAsync();
+        return new { playerId = player.Id, revokedSessions = sessions, guestTokenRotated = token != null, token, signedOut = token == null };
+    }
+
+    /// <summary>Deletes sessions that expired more than a day ago (the sweep runs it). Returns how many.</summary>
+    public static Task<int> PurgeExpiredAsync(GameDb db, DateTime now, TimeSpan lifetime)
+    {
+        var cutoff = now - TimeSpan.FromDays(1);
+        var legacyCutoff = cutoff - lifetime;
+        return db.PlayerSessions.Where(s => (s.ExpiresAt != null && s.ExpiresAt < cutoff) || (s.ExpiresAt == null && s.CreatedAt < legacyCutoff))
+            .ExecuteDeleteAsync();
     }
 
     static string DefaultName(string? requested, string wallet)

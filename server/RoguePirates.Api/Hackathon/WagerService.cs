@@ -641,5 +641,17 @@ public sealed class WagerSweeper : BackgroundService
         {
             log.LogWarning(ex, "Market refund sweep failed");
         }
+        try
+        {
+            // V5 M9h: expired sessions are deleted
+            using var scope = scopes.CreateScope();
+            var sp = scope.ServiceProvider;
+            await WalletAuthService.PurgeExpiredAsync(sp.GetRequiredService<GameDb>(), sp.GetRequiredService<IClock>().UtcNow,
+                sp.GetRequiredService<PlayerAuth>().SessionLifetime);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogWarning(ex, "Session purge failed");
+        }
     }
 }

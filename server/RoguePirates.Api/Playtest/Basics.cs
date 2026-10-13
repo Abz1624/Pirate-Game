@@ -132,19 +132,44 @@ public static class Elo
 /// <summary>Resolves the player from "Authorization: Bearer &lt;token&gt;".</summary>
 public sealed class PlayerAuth
 {
+    /// <summary>A session's expiry is moved forward at most this often (one write an hour, not one per request).</summary>
+    public static readonly TimeSpan SlideEvery = TimeSpan.FromHours(1);
+
     readonly GameDb _db;
-    public PlayerAuth(GameDb db) => _db = db;
+    readonly IClock _clock;
+    readonly ApiSettings _settings;
+
+    public PlayerAuth(GameDb db, IClock clock, ApiSettings settings)
+    {
+        _db = db;
+        _clock = clock;
+        _settings = settings;
+    }
+
+    public TimeSpan SessionLifetime => TimeSpan.FromDays(_settings.SessionLifetimeDays);
+
+    /// <summary>When a session stops working (sessions from before M9h have no ExpiresAt: CreatedAt + the lifetime).</summary>
+    public static DateTime ExpiryOf(PlayerSession s, TimeSpan lifetime) => s.ExpiresAt ?? s.CreatedAt + lifetime;
 
     public async Task<Player?> FromTokenAsync(string? token)
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length > 128) return null;
         var hash = Tokens.Hash(token.Trim());
+        // a guest profile's own token (guests have no other way back in, so it does not expire; it rotates on revoke-all
+        // and stops working when a wallet is linked to the profile)
         var player = await _db.Players.FirstOrDefaultAsync(p => p.TokenHash == hash);
         if (player != null) return player;
         // Hackathon: wallet sign-ins issue one session per sign-in (several devices stay signed in)
         var session = await _db.PlayerSessions.AsNoTracking().FirstOrDefaultAsync(s => s.TokenHash == hash);
         if (session == null) return null;
-        // (no expiry check on the clock here: sessions carry ExpiresAt for later use; null = no expiry)
+        // V5 M9h: sessions expire SESSION_LIFETIME_DAYS (30) after their last use
+        var now = _clock.UtcNow;
+        var lifetime = SessionLifetime;
+        var expires = ExpiryOf(session, lifetime);
+        if (now >= expires) return null;
+        if (now + lifetime - expires >= SlideEvery)
+            await _db.PlayerSessions.Where(s => s.Id == session.Id)
+                .ExecuteUpdateAsync(u => u.SetProperty(s => s.ExpiresAt, now + lifetime).SetProperty(s => s.LastUsedAt, now));
         return await _db.Players.FirstOrDefaultAsync(p => p.Id == session.PlayerId);
     }
 

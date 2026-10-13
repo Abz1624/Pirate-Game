@@ -534,6 +534,9 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("TEXT");
 
@@ -543,6 +546,8 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
 
                     b.HasIndex("PlayerId");
 

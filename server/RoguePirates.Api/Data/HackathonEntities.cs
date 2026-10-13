@@ -26,7 +26,12 @@ public sealed class PlayerSession
     /// <summary>SHA-256 (hex) of the bearer token.</summary>
     public string TokenHash { get; set; } = "";
     public DateTime CreatedAt { get; set; }
+    /// <summary>V5 M9h: the session stops working at this time; each use moves it to now + SESSION_LIFETIME_DAYS
+    /// (sliding). Null (sessions from before M9h): CreatedAt + the lifetime.</summary>
     public DateTime? ExpiresAt { get; set; }
+    // ---- AddSessionExpiry (V5 M9h) ----
+    /// <summary>When the session was last used (updated at most once an hour, with the expiry).</summary>
+    public DateTime? LastUsedAt { get; set; }
 }
 
 /// <summary>A SOL transfer from a player's wallet to the treasury, verified on chain. The signature is unique, so a

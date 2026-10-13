@@ -251,8 +251,9 @@ public sealed class HackathonTests
         Assert.Equal(guest.Id, res.GetProperty("playerId").GetGuid());
         Assert.Equal("Anne Bonny", res.GetProperty("name").GetString());
         Assert.False(res.GetProperty("isNew").GetBoolean());
-        // the guest token keeps working
-        var me = await (await guest.Http.GetAsync("/api/profiles/me")).ReadJson();
+        // V5 M9h: the guest token is rotated on the link; the wallet session reaches the same profile
+        Assert.Equal(HttpStatusCode.Unauthorized, (await guest.Http.GetAsync("/api/profiles/me")).StatusCode);
+        var me = await (await host.As(res.GetProperty("token").GetString()!).GetAsync("/api/profiles/me")).ReadJson();
         Assert.Equal(wallet.PublicKey.Key, me.GetProperty("wallet").GetString());
     }
 

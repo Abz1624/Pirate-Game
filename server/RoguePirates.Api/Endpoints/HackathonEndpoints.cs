@@ -31,6 +31,13 @@ public static class HackathonEndpoints
             finally { AuthLock.Release(); }
         });
 
+        // V5 M9h: sign out everywhere (every wallet session; a guest profile gets a fresh token back)
+        app.MapPost("/api/auth/sessions/revoke-all", async (HttpContext ctx, PlayerAuth players, WalletAuthService auth) =>
+        {
+            ctx.Response.Headers.CacheControl = "no-store";
+            return Results.Ok(await auth.RevokeAllAsync(await players.RequireAsync(ctx)));
+        });
+
         app.MapPut("/api/profile/email", async (HttpContext ctx, EmailRequest req, PlayerAuth players, WalletAuthService auth) =>
             Results.Ok(await auth.SetEmailAsync(await players.RequireAsync(ctx), req)));
 

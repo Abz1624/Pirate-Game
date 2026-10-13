@@ -119,6 +119,7 @@ public abstract class GameDb : DbContext
             e.HasIndex(x => x.TokenHash).IsUnique();
             e.HasIndex(x => x.PlayerId);
             e.Property(x => x.TokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.ExpiresAt); // V5 M9h: the purge of expired sessions
         });
         b.Entity<SolanaDeposit>(e =>
         {
