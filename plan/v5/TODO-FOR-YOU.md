@@ -13,6 +13,7 @@
       AddMintSafety) went out on 13 Oct without a fresh backup: both add columns; one rotates the own token of wallet
       profiles (guests that linked a wallet now use their wallet session), one marks island owners and sellers as having
       used their free claim.
+- [ ] **Two M9h review questions**: (1) the session migration replaced the own token of wallet profiles (guests that linked a wallet) without a fresh backup, and this cannot be undone: approve after the fact, and from now on count overwriting a column as data-destroying (backup and your OK first)? (2) Should the demo reset give a reset wallet its free island claim back (today it stays used)?
 - [ ] M9h's gate: the full EditMode and PlayMode suites, the independent review, then your check (read the report; one
       voyage and one unstaked 1v1 vs Captain Marrow on the desktop build).
 

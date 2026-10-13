@@ -612,11 +612,17 @@
    "when": "13-14 Oct",
    "commit": "5b60789e",
    "what": "<strong>M9h server safety</strong> (plan rev 19). Your H2 answer recorded as D31: nothing is switched off; human SOL stakes, raid loot, island sales carrying RUM and the fixed race salt are now switches that default on (<code>WAGERS_HUMAN_ENABLED</code>, <code>RAID_LOOT_ENABLED</code>, <code>ISLAND_SALE_CARRIES_RUM</code>, <code>DAILY_RACE_FIXED_SALT</code>; <code>GET /api/switches</code>) (<code>457cadab</code>). Wager deposits refused after the transfer (too small, wrong memo) are refunded once (<code>457cadab</code>); sessions expire 30 days after their last use, sign-out-everywhere, the guest token rotates on a wallet link (<code>0c41dff7</code>); one free island per wallet ever, 20 mints a day, a 2 SOL treasury float with an alarm, the owner's treasury view and payouts-and-mints report, and Island NFT mints recorded before the send and checked on chain before any retry (<code>f63f859e</code>); balance reads rate limited, the treasury cached 30 s, island and raid reads lock-free (<code>46603027</code>); README (<code>5b60789e</code>). Server 258/260, run twice. Deployed (migrations AddSessionExpiry and AddMintSafety applied; no fresh database backup was taken); live checks pass: switches read back, a 999,000-lamport short deposit refunded, revoke-all, wallet B's second claim refused, the 31st balance call limited (<code>plan/v5/phase-09h-safety/</code>)."
+  },
+  {
+   "when": "14 Oct",
+   "commit": "d493701c",
+   "what": "<strong>M9h review</strong> (v5-reviewer on the M9h diff): no blockers, 5 majors, 8 minors. Fixed and redeployed: a wager deposit must be a transfer made after the wager (an old top-up is never refunded through a wager), the balance limit as an endpoint policy (a trailing slash no longer skips it) keyed by token or IP, a 150-block margin before a pending mint counts as never landing, a lowered session lifetime shortens issued sessions, readable switch values with a startup error for typos. Server 260/262 twice (trx in <code>plan/v5/phase-09h-safety/</code>). Two questions for you below."
   }
  ],
  "todos": {
   "next": [
    "<strong>Read the M9h server report</strong> (<code>plan/v5/phase-09h-safety/</code>): the switch states (all on, your H2 answer), every payout and mint since 12 Oct, the treasury float (22.6 SOL, float 2 SOL). To turn a flow off, set its variable to <code>false</code> on Railway (list in <code>server/README.md</code>).",
+   "<strong>Two M9h review questions</strong>: (1) the session migration rotated wallet profiles' own token without a fresh backup and cannot be undone: approve after the fact, and should overwriting a column count as data-destroying (backup and your OK first) from now on? (2) Should the demo reset give a reset wallet its free island claim back?",
    "<strong>Answer H10</strong> (enemy damage x2: keep it or back to x1).",
    "<strong>Answer the review questions R1-R4</strong> (plan section 9): island value for SOL vs the RUM rule, NFT vs database ownership and royalties, legal review of wagers, a server treasury scan as a safety net.",
    "<strong>Back up the Railway database</strong> before the next migration (the M9h migrations AddSessionExpiry and AddMintSafety went out on 13 Oct without a fresh backup: both add columns; one rotates the own token of wallet profiles, one marks island owners and sellers as having claimed).",
@@ -2511,6 +2517,11 @@
   {
    "title": "Plan rev 17 review (13 Oct): hackathon folded in",
    "summary": "<strong>1 blocker, 5 majors, 4 minors: all addressed in rev 17.</strong> Blocker: M9h could not switch off every hackathon value flow (island sales carrying RUM-bought levels and store and vault RUM to SOL buyers, client-reported raid loot, human-vs-human stakes); now each is a switch in M9h and an option in H2. Majors: a claim-mint-sell loop drains the treasury (one claim per wallet ever, a daily mint budget, a float and alarm); D8 named for house stakes and treasury prizes; brewed RUM is capped per store (not per day) and voyage RUM is linear, so M10 flattens and caps it; the carry-over split into M9h (safety, gate) and M9i (run checks, fixes, art, after H8-H10); treasury bounds until M11 splits the key. Minors: jsdelivr wallet script integrity and the debug-signed APK in M13; per-wallet limits; outside NFT trades; fingerprints re-frozen at the end of M9i.",
+   "rows": []
+  },
+  {
+   "title": "M9h server safety review (14 Oct)",
+   "summary": "<strong>No blockers, 5 majors, 8 minors.</strong> Majors: the session migration's token rotation went out without a fresh backup and cannot be undone (your call, below); no test evidence in the phase folder (added); any earlier transfer could be refunded through a wager (fixed: only transfers after the wager); the IP rate limit depends on Railway's X-Forwarded-For (now keyed by token when sent; a probe is open); a trailing slash skipped the balance limit (fixed). Minors fixed: switch typos logged, mint expiry margin, lifetime lowering, separate sweep steps, an admin count; kept with a reason: claims racing at the mint budget, demo reset and claims (your call), the lock test.",
    "rows": []
   }
  ]

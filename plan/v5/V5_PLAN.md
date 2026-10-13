@@ -789,7 +789,8 @@ Unity hackathon client, gameplay, simulator and content, a full test-suite run w
 - The review's read finding: `GET /api/wallet/balance` limited per IP (`RPC_READ_RATE_LIMIT_PER_MINUTE` 30; live: the
   31st call 429), `/api/treasury` cached 30 s, island and raid reads without the economy lock and without writes.
 - C9h.3 partly: `server/README.md` limits now say devnet SOL moves, with the switches and bounds.
-- Server suite 258/260 (2 devnet skips), run twice.
+- Server suite 258/260 (2 devnet skips), run twice; after the review fixes 260/262 twice (`plan/v5/phase-09h-safety/server-tests-m9h.trx`).
+- Independent review of the diff (v5-reviewer, 14 Oct): no blockers, 5 majors, 8 minors (`plan/v5/phase-09h-safety/PLAN.md`). Fixed in `d493701c` and redeployed: wager deposits only from transfers made after the wager (`400 tx_too_old`), the balance limit as an endpoint policy keyed by token or IP, a 150-block margin before a mint counts as never landing, a lowered session lifetime shortens issued sessions, switch values on/off and yes/no with unrecognised ones logged. Open for the owner: the `AddSessionExpiry` token rotation was deployed without a fresh backup and cannot be undone (approve after the fact; count column overwrites as data-destroying from now on), and whether demo reset gives a wallet its free claim back. Open check: what Railway's edge puts in `X-Forwarded-For` (a two-network probe).
 
 Remaining in M9h:
 - One hot key for every treasury role (until M11, D7): bounded as above, not split.
@@ -843,11 +844,20 @@ known-good base.
   Mortar shell wired; the art still to make is in `plan/hackathon/ART-PENDING.md` (page
   https://claude.ai/artifact/FxC5XjXzQ1nArDTAXtQ3cZ).
 - T9i.x: goldens and the M9c fingerprints re-frozen with only the expected lines moving (`4d0461d6`).
+- I9i.1 client findings (14 Oct): one shared parchment UI kit: `HackSkin` and `UiKit` in a new assembly
+  `RoguePirates.UI` below V4 Presentation and the hackathon (references neither), the seven copies and the reflection
+  gone, every screen's look unchanged (1920x1080 before/after of the menu, Islands, Market, Defence, PvP hub, Daily Race,
+  Weekly board, pause menu in `plan/hackathon/screens/kit-*`; pixel diff only in the animated scene and clocks;
+  `424f3607`). Bot maces: the bot keeps the chained mace (and orbit blades) out of its arsenal rather than drawing a
+  second arsenal's maces (simplest correct; pinned by a test, `e4f9e842`). MWA wallets with only
+  `sign_and_send_transactions`: on "method not found" for `sign_transactions` the wallet signs and sends, the returned
+  signature is persisted at once, "sent, unknown" kept (no signature: check the wallet before paying again; a late
+  signature is still persisted) (`b86d46ad`). Suites: EditMode 839/839, PlayMode PLAYMODE_RESULT.
 
 Remaining in M9i:
 - The review's other findings: client-reported PvP hull, raid results and race times (server authority: M13b, M15,
-  M17, M22); NFT vs database ownership (M26); GET rate limits; one shared UI kit (7 copies today, loaded by reflection);
-  bot maces not drawn in PvP; MWA wallets that only offer `sign_and_send` unsupported.
+  M17, M22); NFT vs database ownership (M26); GET rate limits. The MWA sign-and-send path needs the device check below
+  (a wallet without `sign_transactions`).
 - Device checks: deposit, buy, list, cancel and an app kill mid-transfer on desktop WebGL and Android MWA; shop taps on
   a phone; the pause menu, level-up cards and storm edge warning on a device (D9); menu side buttons at least 48 px.
 - The 13 Oct hackathon builds answer `outdated_client` under v9; the next build fixes it.
