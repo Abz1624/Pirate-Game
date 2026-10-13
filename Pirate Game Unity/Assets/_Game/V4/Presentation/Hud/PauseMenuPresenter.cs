@@ -52,8 +52,23 @@ namespace RoguePirates.V4.Presentation.Hud
             v.childControlWidth = true;
             v.childForceExpandHeight = false;
             _resume = SettingsPanel.CreateButton(_panel, "Resume", Resume);
-            SettingsPanel.CreateButton(_panel, "Settings", OpenSettings);
-            SettingsPanel.CreateButton(_panel, "Quit to menu", Quit);
+            var settings = SettingsPanel.CreateButton(_panel, "Settings", OpenSettings);
+            var quit = SettingsPanel.CreateButton(_panel, "Quit to menu", Quit);
+            // Hackathon UI (13 Oct, owner): the parchment kit (a sheet under a wood "Paused" header, kit buttons with icons).
+            if (MenuKit.Ready)
+            {
+                _panel.sizeDelta = new Vector2(560f, 440f);
+                MenuKit.Sheet(shade.GetComponent<Image>());
+                v.padding = new RectOffset(48, 48, 120, 44);
+                v.spacing = 20f;
+                MenuKit.WoodHeader(_panel, "Paused", 92f, out _, 24f);
+                MenuKit.StyleButton(_resume, "Btn_Gold");
+                MenuKit.ButtonIcon(_resume, "Icon_Play");
+                MenuKit.StyleButton(settings, "Btn_Parchment");
+                MenuKit.ButtonIcon(settings, "Icon_Gear");
+                MenuKit.StyleButton(quit, "Btn_Parchment");
+                MenuKit.ButtonIcon(quit, "Icon_House");
+            }
             _settings = SettingsPanel.Create(root);
             shade.SetActive(false);
         }

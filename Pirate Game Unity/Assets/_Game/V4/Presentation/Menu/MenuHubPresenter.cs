@@ -18,11 +18,21 @@ namespace RoguePirates.V4.Presentation.Menu
         public enum Screen { None, Modes, Shop, Collection, Profile }
 
         static readonly Color Panel = new Color(0.06f, 0.1f, 0.16f, 0.97f);
-        static readonly Color Text = new Color(0.95f, 0.93f, 0.88f, 1f);
-        static readonly Color[] RarityColors =
+        static readonly Color DarkText = new Color(0.95f, 0.93f, 0.88f, 1f);
+        static readonly Color[] DarkRarityColors =
         {
             new Color(0.8f, 0.8f, 0.8f), new Color(0.45f, 0.85f, 0.45f), new Color(0.4f, 0.65f, 1f), new Color(0.75f, 0.5f, 1f), new Color(1f, 0.8f, 0.3f),
         };
+        // Hackathon UI (13 Oct, owner): ink on the parchment kit (rarity inks dark enough to read on paper).
+        static readonly Color[] InkRarityColors =
+        {
+            new Color(0.24f, 0.14f, 0.06f), new Color(0.17f, 0.45f, 0.14f), new Color(0.12f, 0.33f, 0.62f), new Color(0.45f, 0.2f, 0.62f), new Color(0.6f, 0.34f, 0.02f),
+        };
+        static Color Text => MenuKit.Ready ? MenuKit.Ink : DarkText;
+        static Color Muted => MenuKit.Ready ? MenuKit.InkDim : new Color(0.6f, 0.6f, 0.6f);
+        static Color[] RarityColors => MenuKit.Ready ? InkRarityColors : DarkRarityColors;
+        readonly List<Button> _tabButtons = new List<Button>();
+        RectTransform _scroll;
         static readonly (StoreCategory cat, string name)[] Tabs =
         {
             (StoreCategory.Weapon, "Weapons"), (StoreCategory.Logbook, "Logbooks"), (StoreCategory.Item, "Items"), (StoreCategory.Captain, "Captains"),
@@ -51,7 +61,8 @@ namespace RoguePirates.V4.Presentation.Menu
             rt.anchorMax = new Vector2(0.94f, 0.94f);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             go.GetComponent<Image>().color = Panel;
-            SettingsPanel.DrawOnTop(go, 200);
+            MenuKit.Sheet(go.GetComponent<Image>());
+            SettingsPanel.DrawOnTop(go, MenuKit.Ready ? 226 : 200); // Hackathon UI: above the wallet strip (210)
             var hub = go.AddComponent<MenuHubPresenter>();
             hub._meta = meta;
             hub._voyage = voyage;
@@ -77,6 +88,35 @@ namespace RoguePirates.V4.Presentation.Menu
             var close = SettingsPanel.CreateButton(header, "Close", Close);
             _close = close;
             Place(close.transform, new Vector2(0.86f, 0.1f), new Vector2(1f, 0.9f));
+            if (MenuKit.Ready)
+            {
+                // Hackathon UI (13 Oct, owner): wood header (skull, title), the RUM count on a tag and a gold Close in it.
+                var head = MenuKit.WoodHeader(rt, string.Empty, 100f, out var kitTitle, 620f);
+                _title.gameObject.SetActive(false);
+                _title = kitTitle;
+                MenuKit.StyleButton(close, "Btn_Gold");
+                MenuKit.ButtonIcon(close, "Icon_Close", 30f);
+                MenuKit.HeaderButton(head, close, 28f, 220f, 72f);
+                var tag = MenuKit.Node(head, "Rum");
+                tag.anchorMin = tag.anchorMax = new Vector2(1f, 0.5f);
+                tag.pivot = new Vector2(1f, 0.5f);
+                tag.sizeDelta = new Vector2(330f, 64f);
+                tag.anchoredPosition = new Vector2(-268f, 0f);
+                MenuKit.Paint(tag, "Tag_Tan", 1.6f).raycastTarget = false;
+                _balance.transform.SetParent(tag, false);
+                var balRt = _balance.rectTransform;
+                balRt.anchorMin = Vector2.zero;
+                balRt.anchorMax = Vector2.one;
+                balRt.offsetMin = balRt.offsetMax = Vector2.zero;
+                _balance.alignment = TextAlignmentOptions.Center;
+                _balance.enableAutoSizing = true;
+                _balance.fontSizeMin = 20f;
+                _balance.fontSizeMax = 32f;
+                _balance.margin = new Vector4(14f, 0f, 14f, 0f);
+                MenuKit.InkText(_balance, MenuKit.Ink);
+                _balance.fontStyle = FontStyles.Bold;
+                header.gameObject.SetActive(false);
+            }
 
             _tabs = Strip("Tabs", rt, true, 88f, 120f).gameObject;
             var tl = _tabs.AddComponent<HorizontalLayoutGroup>();
@@ -86,7 +126,9 @@ namespace RoguePirates.V4.Presentation.Menu
             foreach (var (cat, name) in Tabs)
             {
                 var c = cat;
-                SettingsPanel.CreateButton(_tabs.transform, name, () => ShowShop(c));
+                var tab = SettingsPanel.CreateButton(_tabs.transform, name, () => ShowShop(c));
+                MenuKit.StyleButton(tab, "Btn_Parchment");
+                _tabButtons.Add(tab);
             }
 
             var scroll = new GameObject("Scroll", typeof(RectTransform), typeof(ScrollRect), typeof(Image), typeof(Mask));
@@ -96,7 +138,8 @@ namespace RoguePirates.V4.Presentation.Menu
             srt.anchorMax = new Vector2(1f, 1f);
             srt.offsetMin = new Vector2(24f, 88f);
             srt.offsetMax = new Vector2(-24f, -296f);
-            scroll.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.15f);
+            _scroll = srt;
+            scroll.GetComponent<Image>().color = MenuKit.Ready ? new Color(0.45f, 0.3f, 0.15f, 0.08f) : new Color(0f, 0f, 0f, 0.15f);
             scroll.GetComponent<Mask>().showMaskGraphic = true;
             var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
             content.transform.SetParent(scroll.transform, false);
@@ -114,6 +157,8 @@ namespace RoguePirates.V4.Presentation.Menu
             var sr = scroll.GetComponent<ScrollRect>();
             sr.content = _list;
             sr.horizontal = false;
+            MenuKit.StyleScroll(sr);
+            if (MenuKit.Ready) v.padding = new RectOffset(12, 30, 12, 12); // room for the kit scroll bar
 
             var footer = Strip("Footer", rt, false, 72f, 8f);
             _message = Label(footer, "Message", 28, TextAlignmentOptions.Center, Vector2.zero, Vector2.one);
@@ -157,6 +202,7 @@ namespace RoguePirates.V4.Presentation.Menu
             t.alignment = align;
             t.color = Text;
             t.raycastTarget = false;
+            if (MenuKit.Ready) MenuKit.InkText(t, MenuKit.Ink);
             return t;
         }
 
@@ -168,6 +214,9 @@ namespace RoguePirates.V4.Presentation.Menu
             _title.text = title;
             _tabs.SetActive(tabs);
             _message.text = string.Empty;
+            // Hackathon UI: the list starts under the tabs (or right under the header without them).
+            if (MenuKit.Ready && _scroll != null) _scroll.offsetMax = new Vector2(-24f, tabs ? -228f : -128f);
+            if (MenuKit.Ready) ((RectTransform)_tabs.transform).anchoredPosition = new Vector2(0f, -122f);
             RefreshBalance();
             // Gamepad: start on Close; automatic navigation reaches the tabs and rows.
             UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(_close.gameObject);
@@ -214,6 +263,7 @@ namespace RoguePirates.V4.Presentation.Menu
             var go = new GameObject("Row", typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
             go.transform.SetParent(_list, false);
             go.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
+            MenuKit.Paint(go.GetComponent<Image>(), "Panel_Inset", 2.2f);
             go.GetComponent<LayoutElement>().preferredHeight = 88f;
             var h = go.GetComponent<HorizontalLayoutGroup>();
             h.padding = new RectOffset(20, 12, 8, 8);
@@ -240,11 +290,18 @@ namespace RoguePirates.V4.Presentation.Menu
             label.fontSize = 30;
             label.color = color;
             label.alignment = TextAlignmentOptions.MidlineLeft;
+            if (MenuKit.Ready)
+            {
+                MenuKit.InkText(label, color);
+                label.textWrappingMode = TextWrappingModes.NoWrap;
+                label.overflowMode = TextOverflowModes.Ellipsis;
+            }
             if (buttonText != null)
             {
                 var b = SettingsPanel.CreateButton(go.transform, buttonText, () => click?.Invoke());
                 b.GetComponent<LayoutElement>().minWidth = 260f;
                 b.interactable = interactable;
+                MenuKit.StyleButton(b, "Btn_Gold");
             }
             _rows.Add(go);
             return label;
@@ -258,13 +315,14 @@ namespace RoguePirates.V4.Presentation.Menu
             ClearRows();
             Row("Voyage: sail Saltwind, fight the fleet, beat the Barnacle King", Text, "Sail", () => { Close(); _voyage?.Invoke(); });
             foreach (var mode in new[] { "Island Raids", "Island Race", "1v1 Arena", "Hunt (4 players)" })
-                Row(mode, new Color(0.6f, 0.6f, 0.6f), "Coming", null, false);
+                Row(mode, Muted, "Coming", null, false);
         }
 
         public void ShowShop(StoreCategory category = StoreCategory.Weapon)
         {
             _category = category;
             Open(Screen.Shop, "Shop", true);
+            for (var i = 0; i < _tabButtons.Count && i < Tabs.Length; i++) MenuKit.StyleButton(_tabButtons[i], Tabs[i].cat == category ? "Btn_Gold" : "Btn_Parchment");
             RefreshShop();
         }
 
