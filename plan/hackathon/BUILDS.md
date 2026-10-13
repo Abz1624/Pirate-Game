@@ -12,6 +12,13 @@ table is still the 16:05 one from `fad370cf`).
 other starting weapons, baseDamage 20 -> 12.1, config 8ea655e3; run checks v8 deployed for it, which also accept the
 21:05 build's config 841839 and the 15:51 build's 83779c). Same profile and method; WebGL only.
 
+**Desktop WebGL rebuild, 13 Oct 11:45-12:28** (full parchment UI, 1v1 fixes, four weapons switched off, art and icons,
+storm edge, no Signal Buoy, Ledger and download buttons hidden). Batch mode:
+`Unity.exe -batchmode -nographics -quit -projectPath "Pirate Game Unity" -buildTarget WebGL -executeMethod
+RoguePirates.Hackathon.Editor.HackathonApkCli.BuildWebGL`. Succeeded, 142.4 MB download, 2454 s,
+`Pirate Game Unity/Builds/WebGL-Desktop-Hackathon/RoguePirates/` (served on localhost:8090; menu loads, no console
+errors); zip for hosting `Pirate Game Unity/Builds/RoguePirates-hackathon-webgl-20261013-1228.zip`.
+
 **APK rebuild, 13 Oct 11:35-11:41** at `e7f6a121` (UI polish and Seeker pass: hub Close and the 1v1 draft's Ready were
 under the panel's click blocker, fixed; 1v1 hub selects a mode and a stake, then Start hosts; Islands region names clear
 of markers; wallet panel and 1v1 lobby sized to content; Defence status ink on parchment; touch HUD says READY / USE
