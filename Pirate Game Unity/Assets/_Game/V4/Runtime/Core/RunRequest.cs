@@ -159,10 +159,24 @@ namespace RoguePirates.V4
             return allow;
         }
 
+        /// <summary>
+        /// Hackathon (13 Oct, review): the next run is an island raid with this designed defence. Taken by the next run when
+        /// it consumes its request (<see cref="Consume"/>), so it can only ever reach that one run.
+        /// </summary>
+        public static void RequestRaid(Spawning.RaidSchedule.Plan plan) => PendingRaid = plan;
+
+        /// <summary>A raid requested for the next run and not consumed yet.</summary>
+        public static Spawning.RaidSchedule.Plan PendingRaid { get; private set; }
+
+        public static void ClearRaid() => PendingRaid = null;
+
         /// <summary>Reads and clears the request.</summary>
         public static (int seed, bool retry) Consume()
         {
             var result = (Seed, IsRetry);
+            // The run's raid schedule is the requested one or none: a stale schedule never reaches a normal voyage.
+            Spawning.RaidSchedule.StartRun(PendingRaid);
+            PendingRaid = null;
             ConsumedSource = Seed != 0 ? PendingSource : SeedSource.Local;
             ConsumedIssuedRunId = ConsumedSource == SeedSource.Issued ? PendingIssuedRunId : null;
             Seed = 0;

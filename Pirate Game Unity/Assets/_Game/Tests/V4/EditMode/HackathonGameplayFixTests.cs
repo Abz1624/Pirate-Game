@@ -74,6 +74,28 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(RunState.PlayerDead, host.State);
         }
 
+        /// <summary>13 Oct (review): a goal run ends through the normal end path: pending level-ups closed, the end recorded
+        /// in the telemetry, and it is reached through the HUD command (no presentation write into the run).</summary>
+        [Test]
+        public void GoalRun_CancelsPendingLevelUps_RecordsTelemetry_ThroughTheHudCommand()
+        {
+            var host = new Host();
+            var cancelled = 0;
+            var telemetry = new RoguePirates.V4.Telemetry.RunTelemetry("test", 6, true, () => 12f, () => 1);
+            var life = new RunLifecycle(host, telemetry, null) { CancelPendingLevelUps = () => cancelled++ };
+            var commands = new RoguePirates.V4.Views.HudCommands(null, null, null, null, null, goal => life.CompleteGoalRun(goal));
+            RoguePirates.V4.Views.IHudCommands contract = commands;
+            contract.CompleteGoal("daily_race");
+            Assert.AreEqual(RunState.RunComplete, host.State);
+            Assert.AreEqual(1, cancelled, "pending level-ups are cancelled, as at a sinking");
+            var json = telemetry.ExportJsonSummary();
+            StringAssert.Contains("run_goal_complete", json);
+            StringAssert.Contains("daily_race", json);
+            contract.CompleteGoal("daily_race");
+            Assert.AreEqual(1, cancelled, "an ended run is left alone");
+            Assert.AreEqual(0, new RoguePirates.V4.Views.HudCommands(null, null, null, null).CompleteGoal("x"), "a 1v1 has no goal end");
+        }
+
         // ---- d: enemy damage x2 ------------------------------------------------------------------------------------------
 
         [Test]

@@ -13,7 +13,7 @@ namespace RoguePirates.Hackathon.UI
     /// starts a voyage on the day's seed (V4's requested-seed path); this HUD (added when that run starts, V4's
     /// <see cref="V4Game.RunStarted"/>) shows the goal, the kills and the race clock (the run's own time, so pauses do not
     /// count). At the target kills the time is posted to POST /api/race/daily/entry and the rank shown. Hackathon playtest
-    /// (12 Oct, owner): the voyage then ends (<see cref="RunLifecycle.CompleteGoalRun"/>) and a race results panel shows the
+    /// (12 Oct, owner): the voyage then ends (<see cref="RunLifecycle.CompleteGoalRun"/>, through the run's IHudCommands.CompleteGoal) and a race results panel shows the
     /// time, the rank and the way back to port.
     /// </summary>
     public sealed class DailyRaceHud : MonoBehaviour
@@ -151,7 +151,9 @@ namespace RoguePirates.Hackathon.UI
                 _finishTime = Math.Round(time, 1);
                 Post(kills, log.Level != null ? log.Level() : 1);
                 // The goal is reached: the voyage ends here with the race results.
-                if (_game.Lifecycle != null) _rumSettled = _game.Lifecycle.CompleteGoalRun();
+                // 13 Oct (review): through the run's command (its normal end path), not a write into the run.
+                if (_game.Context != null && _game.Context.TryGet<RoguePirates.V4.Views.IRunViews>(out var views) && views?.Commands != null)
+                    _rumSettled = views.Commands.CompleteGoal("daily_race");
                 ShowResults();
             }
             _clock.text = _finished

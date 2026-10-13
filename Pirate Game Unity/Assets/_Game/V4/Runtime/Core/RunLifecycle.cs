@@ -76,16 +76,38 @@ namespace RoguePirates.V4
         /// the match); the voyage's death flow (Rum, results) does not run.</summary>
         public Action PvpSunk;
 
-        /// <summary>Hackathon playtest (12 Oct, owner: "in Daily Race, end the game after the goal is reached"): a goal run
-        /// ends as a win: the ship stops, the Rum earned so far is settled once (as at death, not ended by death) and the
-        /// run goes to RunComplete. Returns the Rum settled (0 when the run had already ended).</summary>
-        public int CompleteGoalRun()
+        /// <summary>Cancels the run's pending level-up choices (the shell sets it: the build's pending offers).</summary>
+        public Action CancelPendingLevelUps;
+
+        /// <summary>
+        /// Hackathon playtest (12 Oct, owner: "in Daily Race, end the game after the goal is reached"): a goal run (the daily
+        /// race at its kills, an island raid at its end) ends as a win through the same end-of-run path as a sinking: pending
+        /// level-ups cancelled, the ship stopped, the Rum earned so far settled once (not ended by death), the settlement and
+        /// the end recorded in the telemetry, then RunComplete. Reached through <see cref="Views.IHudCommands.CompleteGoal"/>.
+        /// Returns the Rum settled (0 when the run had already ended).
+        /// </summary>
+        public int CompleteGoalRun(string goal = "goal")
         {
             if (_run == null || !_run.Exists || _run.State == RunState.RunComplete || _run.State == RunState.PlayerDead) return 0;
+            CancelPendingLevelUps?.Invoke();
             SetShipMovement?.Invoke(false);
             var rum = _rewards != null ? _rewards.Settle(_run.RunId, false) : 0;
+            RecordSettlement(rum);
             _run.SetState(RunState.RunComplete);
+            _telemetry?.Record("run_goal_complete", new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["goal"] = goal ?? "goal", ["objectiveSecured"] = _run.ObjectiveSecured, ["rum"] = rum,
+            });
             return rum;
+        }
+
+        void RecordSettlement(int rum)
+        {
+            if (_rewards != null && _rewards.SettlementApplied)
+                _telemetry?.RecordMarksSettlement(rum, true, rum,
+                    _rewards.SettledRumOf(RumSource.QualifyingMinute), _rewards.SettledRumOf(RumSource.SpecialLandmark),
+                    _rewards.SettledRumOf(RumSource.ScheduledElite), _rewards.SettledRumOf(RumSource.BossVictory),
+                    _rewards.SettledRumOf(RumSource.OvertimeMinute)); // (the export has no slot for the gold row: the total includes it)
         }
 
         public void OnPlayerDied(Action trySecureIfBossDead, Action cancelPendingLevelUps)
@@ -98,11 +120,7 @@ namespace RoguePirates.V4
             if (_run == null || !_run.Exists || _run.State == RunState.RunComplete) return; // V3: FinalizeRunOnDeath ran once
             _run.SetState(RunState.PlayerDead);
             var rum = _rewards != null ? _rewards.Settle(_run.RunId, true) : 0;
-            if (_rewards != null && _rewards.SettlementApplied)
-                _telemetry?.RecordMarksSettlement(rum, true, rum,
-                    _rewards.SettledRumOf(RumSource.QualifyingMinute), _rewards.SettledRumOf(RumSource.SpecialLandmark),
-                    _rewards.SettledRumOf(RumSource.ScheduledElite), _rewards.SettledRumOf(RumSource.BossVictory),
-                    _rewards.SettledRumOf(RumSource.OvertimeMinute)); // (the export has no slot for the gold row: the total includes it)
+            RecordSettlement(rum);
             _run.SetState(RunState.RunComplete); // run gold itself is not kept; the "gold" Rum row converts what is left
             _telemetry?.RecordPlayerDeath(_run.ObjectiveSecured);
             Toast?.Invoke("Run ended.", 4f);

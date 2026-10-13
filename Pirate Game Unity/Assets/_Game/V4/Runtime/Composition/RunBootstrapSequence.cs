@@ -174,6 +174,7 @@ namespace RoguePirates.V4.Composition
             {
                 // (M14.9: player damage feedback is the presenters', from the PlayerDamaged event.)
                 Lifecycle.StageProfile ??= _stageProfile.Identity;
+                Lifecycle.CancelPendingLevelUps ??= () => Build?.CancelPendingLevelUps(); // a goal run's end (as a sinking's)
                 Lifecycle.BeginRunTracking();
             }
             Build?.ResetForRun(); // V3 reset its floor powerups and items here

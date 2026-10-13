@@ -12,8 +12,12 @@ namespace RoguePirates.V4.Views
         readonly RoguePirates.V4.Rewards.UnlockService _unlocks;
         readonly Func<bool> _pause;
 
-        public HudCommands(Action boost, Action retry, Action menu, RoguePirates.V4.Rewards.UnlockService unlocks, Func<bool> pause = null)
+        readonly Func<string, int> _completeGoal;
+
+        public HudCommands(Action boost, Action retry, Action menu, RoguePirates.V4.Rewards.UnlockService unlocks, Func<bool> pause = null,
+            Func<string, int> completeGoal = null)
         {
+            _completeGoal = completeGoal;
             _boost = boost;
             _retry = retry;
             _menu = menu;
@@ -22,6 +26,7 @@ namespace RoguePirates.V4.Views
         }
 
         public bool TogglePause() => _pause != null && _pause();
+        public int CompleteGoal(string goal) => _completeGoal != null ? _completeGoal(goal) : 0;
 
         /// <summary>V5 M7: the player's pause on top of the run's own (a level-up or a chest choice is never overridden).</summary>
         public static bool TogglePause(RoguePirates.V4.Foundation.Core.RunManager run)

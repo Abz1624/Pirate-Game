@@ -34,11 +34,12 @@ namespace RoguePirates.Hackathon.UI
             var defence = raid.defence;
             var seed = defence != null && defence.seed != 0 ? defence.seed : raid.defender != null && raid.defender.seed != 0 ? raid.defender.seed : raid.GetHashCode();
             RunRequest.RequestSeed(seed);
-            Arm(defence);
+            Arm(defence, raid.practice);
         }
 
-        /// <summary>Sets the spawn schedule from a raid's design (also used by tests).</summary>
-        public static void Arm(RaidDefence defence)
+        /// <summary>Requests the next run's raid schedule from a raid's design (also used by tests). The run takes it when it
+        /// starts (<see cref="RunRequest.Consume"/>), so it never outlives that one run.</summary>
+        public static void Arm(RaidDefence defence, bool practice = false)
         {
             var design = DefenceRules.Normalize(defence?.design);
             var window = defence != null && defence.windowSeconds > 0 ? defence.windowSeconds : DefenceRules.WindowSeconds;
@@ -49,7 +50,7 @@ namespace RoguePirates.Hackathon.UI
                         entries.Add(new RaidSchedule.Entry { StartSecond = (w.minute - 1) * window, Kind = e.kind, Count = e.count });
             var guardianAt = defence?.design?.guardian != null && defence.design.guardian.arrivesAtSecond > 0
                 ? defence.design.guardian.arrivesAtSecond : (design.guardian.minute - 1) * window;
-            RaidSchedule.Set(entries, guardianAt, window);
+            RunRequest.RequestRaid(new RaidSchedule.Plan(entries, guardianAt, window, practice));
         }
 
         /// <summary>The last raid's result line (the Islands screen shows it).</summary>
@@ -97,15 +98,17 @@ namespace RoguePirates.Hackathon.UI
         {
             var raid = _pending;
             _pending = null;
-            if (raid == null || game == null || game.IsPvp || game.RunLog == null)
+            // The run consumed its request before this event: it is a raid only when it took a raid schedule.
+            if (raid == null || game == null || game.IsPvp || game.RunLog == null || !RaidSchedule.Active)
             {
+                if (raid != null) Debug.LogWarning("RaidHud: the run did not start as the raid; it plays as a normal voyage.");
                 RaidSchedule.Clear(); // never let a schedule reach a normal voyage
                 PracticeActive = false;
                 return;
             }
             RoguePirates.V4.Rewards.IRumView rumView = null;
             if (game.Context != null) game.Context.TryGet(out rumView);
-            ApplyPracticeRules(rumView as RoguePirates.V4.Rewards.RewardModule, raid.practice);
+            ApplyPracticeRules(rumView as RoguePirates.V4.Rewards.RewardModule, RaidSchedule.Practice);
             var hud = game.gameObject.AddComponent<RaidHud>();
             hud._game = game;
             hud._raid = raid;
@@ -292,6 +295,13 @@ namespace RoguePirates.Hackathon.UI
             else if (sunk) End("sunk");
         }
 
+        void CompleteRun(string why)
+        {
+            if (_game == null || _game.Context == null) return;
+            if (_game.Context.TryGet<RoguePirates.V4.Views.IRunViews>(out var views) && views?.Commands != null)
+                views.Commands.CompleteGoal(_raid.practice ? "practice_raid_" + why : "raid_" + why);
+        }
+
         /// <summary>The window the raid reached, for the result (a sunk guardian always counts its own minute).</summary>
         int MinuteReached(bool guardianSunk)
         {
@@ -307,6 +317,9 @@ namespace RoguePirates.Hackathon.UI
             var minute = MinuteReached(won);
             var partial = !won && minute >= GuardianMinute;
             RaidSchedule.Clear();
+            // 13 Oct (review): the raid's end is the voyage's end (as the daily race's goal): the run's normal end path
+            // settles the Rum, closes level-ups and shows the run as complete. A sinking already ended the run.
+            if (why != "sunk") CompleteRun(why);
             _clock.text = won ? $"<color={BoardKit.GoodHex}>ISLAND CONQUERED</color>" : partial ? $"<color={BoardKit.GoldHex}>THE GUARDIAN HOLDS</color>" : $"<color={BoardKit.BadHex}>RAID FAILED</color>";
             Say(won ? "My King... sunk. Take yer plunder. Marrow never forgets." : partial ? "Ye reached my King and still ye fled. Scurry home with yer crumbs!" : "Another hull for the reef! Come back when ye can sail.", 6f);
             _resultBox.gameObject.SetActive(true);

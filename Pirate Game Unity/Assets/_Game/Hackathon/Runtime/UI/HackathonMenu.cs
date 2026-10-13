@@ -40,6 +40,8 @@ namespace RoguePirates.Hackathon.UI
         {
             var online = FindFirstObjectByType<OnlineMenuPresenter>();
             if (online == null) return null;
+            // Back at the menu: no raid schedule is running or waiting (13 Oct, review).
+            RoguePirates.V4.Spawning.RaidSchedule.Clear();
             var existing = online.GetComponent<HackathonMenu>();
             if (existing != null) return existing;
             var canvas = online.transform.parent;

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using RoguePirates.Hackathon.UI;
+using RoguePirates.V4;
 using RoguePirates.V4.Spawning;
 
 namespace RoguePirates.Hackathon.Tests
@@ -21,7 +22,7 @@ namespace RoguePirates.Hackathon.Tests
         };
 
         [TearDown]
-        public void Clear() => RaidSchedule.Clear();
+        public void Clear() { RaidSchedule.Clear(); RunRequest.Consume(); RaidSchedule.Clear(); }
 
         [Test]
         public void Normalize_FillsAllWindowsInOrder_DropsZeroCounts()
@@ -72,18 +73,39 @@ namespace RoguePirates.Hackathon.Tests
         }
 
         [Test]
-        public void Arm_BuildsTheRaidSchedule()
+        public void Arm_BuildsTheRaidSchedule_ForTheNextRunOnly()
         {
             Assert.IsFalse(RaidSchedule.Active);
-            RaidHud.Arm(new RaidDefence { seed = 7, timeLimitSeconds = 960, windowSeconds = 60, design = Sample() });
+            RaidHud.Arm(new RaidDefence { seed = 7, timeLimitSeconds = 960, windowSeconds = 60, design = Sample() }, true);
+            Assert.IsFalse(RaidSchedule.Active, "requested, not running: the menu's voyage is not a raid yet");
+            Assert.IsNotNull(RunRequest.PendingRaid);
+            RunRequest.Consume(); // the raid voyage starts
             Assert.IsTrue(RaidSchedule.Active);
+            Assert.IsTrue(RaidSchedule.Practice, "the practice flag rides with the plan");
             Assert.AreEqual(60f, RaidSchedule.GuardianSeconds);
             Assert.AreEqual(2, RaidSchedule.Entries.Count);
             Assert.AreEqual("deckhand_dinghy", RaidSchedule.Entries[0].Kind);
             Assert.AreEqual(0f, RaidSchedule.Entries[0].StartSecond);
             Assert.AreEqual(120f, RaidSchedule.Entries[1].StartSecond);
             Assert.AreEqual(4, RaidSchedule.Entries[1].Count);
-            RaidSchedule.Clear();
+            RunRequest.Consume(); // the next voyage
+            Assert.IsFalse(RaidSchedule.Active, "a later voyage never inherits the raid");
+        }
+
+        /// <summary>13 Oct (review): a raid armed but never started (the run did not take it) cannot turn the next normal
+        /// voyage into a raid, and the menu clears a waiting request.</summary>
+        [Test]
+        public void StaleRaid_NeverReachesALaterVoyage()
+        {
+            RaidHud.Arm(new RaidDefence { design = Sample() });
+            RaidSchedule.Clear(); // back at the menu
+            Assert.IsNull(RunRequest.PendingRaid);
+            RunRequest.Consume();
+            Assert.IsFalse(RaidSchedule.Active);
+            RaidHud.Arm(new RaidDefence { design = Sample() });
+            RunRequest.Consume(); // taken by the run it was armed for (here: not a raid run, e.g. a 1v1)
+            RaidSchedule.Clear(); // that run's raid HUD did not attach: it clears
+            RunRequest.Consume(); // the next normal voyage
             Assert.IsFalse(RaidSchedule.Active);
         }
 

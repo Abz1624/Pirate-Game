@@ -254,6 +254,9 @@ namespace RoguePirates.V4.Views
         string PurchaseUnlockGoal();
         /// <summary>V5 M7: pauses a running run or resumes one the player paused; true when it is now paused by the player.</summary>
         bool TogglePause() => false;
+        /// <summary>Hackathon (13 Oct, review): a goal run (the daily race, an island raid) reached its end: the run ends as
+        /// a win through its normal end-of-run path (<see cref="RunLifecycle.CompleteGoalRun"/>). Returns the Rum settled.</summary>
+        int CompleteGoal(string goal) => 0;
     }
 
     public sealed class RunViews : IRunViews
