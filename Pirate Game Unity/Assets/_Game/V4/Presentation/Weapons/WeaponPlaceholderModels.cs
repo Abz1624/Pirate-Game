@@ -69,6 +69,20 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>A gold coin (the Cursed Doubloons' strike).</summary>
         public static GameObject Coin(Transform staging) => Get("Placeholder_Doubloon", BuildCoin, staging);
 
+        /// <summary>Hackathon (13 Oct, owner): the gold barrel's collect-particle coin (its CoinParticles material) on a
+        /// unit quad, for the Cursed Doubloons; the presenter turns it to the camera.</summary>
+        public static GameObject CoinSprite(Transform staging, Material coinMaterial) => Get("Doubloon_CoinSprite", () =>
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            var collider = go.GetComponent<Collider>();
+            if (collider != null) Object.DestroyImmediate(collider);
+            var renderer = go.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = coinMaterial;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            return go;
+        }, staging);
+
         /// <summary>Hackathon (12 Oct): a spiked iron ball (the Anchor Flail's chained mace), or the art team's anchor
         /// (<paramref name="art"/>) when set.</summary>
         public static GameObject Mace(Transform staging, DemoJuiceSettings art = null) =>

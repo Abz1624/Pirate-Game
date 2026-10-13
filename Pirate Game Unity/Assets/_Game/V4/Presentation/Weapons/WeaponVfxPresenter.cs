@@ -251,13 +251,22 @@ namespace RoguePirates.V4.Presentation.Weapons
             public Vector3 From, To;
             /// <summary>Flight time so far (negative = still waiting at the ship), the flight's length and arc height.</summary>
             public float T, Flight, Arc;
-            public bool Landed, Splash;
+            public bool Landed, Splash, Billboard;
+            public float Scale, Spin;
         }
 
+        // Hackathon (13 Oct, owner: "the enemies are dying before the coins hit them"): the sim's damage is instant at the
+        // strike, so the coins now cross to the enemy in a fast, flat throw (at most ~0.1 s, all three nearly together)
+        // and reach it while its death is still starting. Presentation only.
         const int CoinsPerStrike = 3;
         const float CoinGravity = 24f;
-        const float CoinFlightSpeed = 34f;
-        const float CoinStagger = 0.05f;
+        const float CoinFlightSpeed = 220f;
+        const float CoinMinFlight = 0.04f, CoinMaxFlight = 0.1f;
+        const float CoinStagger = 0.015f;
+        const float CoinSpriteSize = 1.1f;
+        Material _coinSpriteMaterial;
+        bool _coinSpriteLooked;
+        Camera _coinCamera;
         readonly List<Coin> _coins = new List<Coin>();
         public int CoinCount => _coins.Count;
 
@@ -270,9 +279,18 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>A coin's position (tests).</summary>
         public Vector3 CoinPosition(int index) => _coins[index].View.Go != null ? _coins[index].View.Go.transform.position : Vector3.zero;
 
-        /// <summary>The keg pickup's gold coin (the juice settings' gold pickup model), else the coloured placeholder.</summary>
-        GameObject CoinModel(out float scale)
+        /// <summary>The gold barrel's collect-particle coin (hackathon, 13 Oct, owner) on a camera-facing quad; else the
+        /// keg pickup's gold coin (the juice settings' gold pickup model), else the coloured placeholder.</summary>
+        GameObject CoinModel(out float scale, out bool billboard)
         {
+            billboard = false;
+            var sprite = CoinSpriteMaterial();
+            if (sprite != null)
+            {
+                billboard = true;
+                scale = CoinSpriteSize;
+                return WeaponPlaceholderModels.CoinSprite(_pools != null ? _pools.Staging : null, sprite);
+            }
             if (_settings != null && _settings.goldPickupPrefab != null)
             {
                 scale = _settings.goldFlyingCoinScale;
@@ -282,12 +300,37 @@ namespace RoguePirates.V4.Presentation.Weapons
             return WeaponPlaceholderModels.Coin(_pools != null ? _pools.Staging : null);
         }
 
+        /// <summary>The material of the gold barrel's coin particles (the one named for coins), looked up once.</summary>
+        Material CoinSpriteMaterial()
+        {
+            if (_coinSpriteLooked) return _coinSpriteMaterial;
+            _coinSpriteLooked = true;
+            var barrel = _settings != null ? _settings.goldBarrelPickupPrefab : null;
+            if (barrel == null) return null;
+            foreach (var r in barrel.GetComponentsInChildren<ParticleSystemRenderer>(true))
+            {
+                var m = r.sharedMaterial;
+                if (m != null && m.name.IndexOf("Coin", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    _coinSpriteMaterial = m;
+                    break;
+                }
+            }
+            return _coinSpriteMaterial;
+        }
+
+        Quaternion CoinFacing(Quaternion fallback)
+        {
+            if (_coinCamera == null || !_coinCamera.isActiveAndEnabled) _coinCamera = Camera.main;
+            return _coinCamera != null ? _coinCamera.transform.rotation : fallback;
+        }
+
         // V5 M8z (7 Oct): the coins are the weapon's data (visual.placeholderLook), not its id.
         bool StrikeIsDoubloons() => _aimedFrame == Time.frameCount && VisualOf(_aimedWeapon)?.placeholderLook == WeaponPlaceholderLook.Doubloons;
 
         void CoinBurst(Vector3 position, float radius)
         {
-            var coin = CoinModel(out var scale);
+            var coin = CoinModel(out var scale, out var billboard);
             var target = position;
             target.y = 0.7f;
             var from = _ship != null && _ship.Exists ? _ship.Position + Vector3.up * 1.1f : target + Vector3.up * 4f;
@@ -296,8 +339,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             var dist = flat.magnitude;
             var dir = dist > 0.01f ? flat / dist : Vector3.forward;
             var side = Vector3.Cross(Vector3.up, dir);
-            var flight = Mathf.Clamp(dist / CoinFlightSpeed, 0.12f, 0.4f);
-            var arc = 0.8f + dist * 0.12f;
+            var flight = Mathf.Clamp(dist / CoinFlightSpeed, CoinMinFlight, CoinMaxFlight);
+            var arc = 0.4f + dist * 0.03f;
             for (var i = 0; i < CoinsPerStrike; i++)
             {
                 // A small fan, no random draw (the presenter draws none): middle, left, right.
@@ -310,6 +353,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 {
                     View = new View { Go = go, Pooled = pooled }, From = from + side * lateral * 0.3f, To = target + side * lateral,
                     T = -i * CoinStagger, Flight = flight, Arc = arc, Left = 0.45f, Splash = i == 0,
+                    Billboard = billboard, Scale = scale, Spin = i * 1.3f,
                 });
             }
         }
@@ -328,7 +372,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     c.T += dt;
                     var k = Mathf.Clamp01(c.T / Mathf.Max(0.01f, c.Flight));
                     t.position = Vector3.Lerp(c.From, c.To, k) + Vector3.up * (c.Arc * 4f * k * (1f - k));
-                    t.rotation = Quaternion.Euler(0f, 1080f * dt, 0f) * t.rotation;
+                    SpinCoin(ref c, t, dt, 1080f);
                     if (k >= 1f)
                     {
                         // The hit: it glances off the enemy and falls.
@@ -352,9 +396,23 @@ namespace RoguePirates.V4.Presentation.Weapons
                 var p = t.position + c.Velocity * dt;
                 if (p.y < 0.05f) { p.y = 0.05f; c.Velocity = Vector3.zero; }
                 t.position = p;
-                t.rotation = Quaternion.Euler(0f, 900f * dt, 0f) * t.rotation;
+                SpinCoin(ref c, t, dt, 900f);
                 _coins[i] = c;
             }
+        }
+
+        /// <summary>A model coin spins about the vertical; a sprite coin faces the camera and flips (its width follows
+        /// the spin, like the barrel's coin particles turning).</summary>
+        void SpinCoin(ref Coin c, Transform t, float dt, float degreesPerSecond)
+        {
+            if (!c.Billboard)
+            {
+                t.rotation = Quaternion.Euler(0f, degreesPerSecond * dt, 0f) * t.rotation;
+                return;
+            }
+            c.Spin += degreesPerSecond * Mathf.Deg2Rad * dt;
+            t.rotation = CoinFacing(t.rotation);
+            t.localScale = new Vector3(c.Scale * Mathf.Max(0.15f, Mathf.Abs(Mathf.Cos(c.Spin))), c.Scale, c.Scale);
         }
 
         /// <summary>V3 OnLongNineBeam: the laser beam prefab's line from the muzzle for laserBeamDuration.</summary>
@@ -1146,7 +1204,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 }
                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
                     EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging, _settings), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
-                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _), CoinsPerStrike * 8); // Hackathon: a chain of strikes
+                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _, out _), CoinsPerStrike * 8); // Hackathon: a chain of strikes
                 if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace) PrewarmMaces(Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
                 PrewarmLob(w.weaponId); // Hackathon art pass: a lob model (the ink pot) is pooled before the run
             }
