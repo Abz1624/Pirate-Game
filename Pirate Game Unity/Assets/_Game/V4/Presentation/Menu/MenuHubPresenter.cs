@@ -359,8 +359,9 @@ namespace RoguePirates.V4.Presentation.Menu
             ClearRows();
             foreach (var (cat, name) in Tabs)
             {
-                var owned = _meta.Owned(cat);
-                var total = _meta.All.Count(e => e.Category == cat);
+                // Switched-off weapons (UnlockConfig.disabledWeaponIds) are out of the game: not listed or counted.
+                var owned = _meta.Owned(cat).Where(e => cat != StoreCategory.Weapon || RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(e.ContentId)).ToList();
+                var total = _meta.All.Count(e => e.Category == cat && (cat != StoreCategory.Weapon || RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(e.ContentId)));
                 Row($"{name}: {owned.Count} of {total}", Text);
                 foreach (var e in owned) Row("   " + e.DisplayName, RarityColors[Mathf.Clamp(e.Rarity, 0, 4)], icon: IconOf(cat, e.ContentId));
             }
@@ -382,7 +383,7 @@ namespace RoguePirates.V4.Presentation.Menu
                 Row($"Most kills in a run: {best.kills}", Text);
                 Row($"Longest run: {Mathf.FloorToInt(longest / 60f)}:{Mathf.FloorToInt(longest % 60f):00}", Text);
             }
-            foreach (var (cat, name) in Tabs) Row($"{name} owned: {_meta.Owned(cat).Count}", Text);
+            foreach (var (cat, name) in Tabs) Row($"{name} owned: {_meta.Owned(cat).Count(e => cat != StoreCategory.Weapon || RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(e.ContentId))}", Text);
         }
     }
 }

@@ -259,6 +259,10 @@ namespace RoguePirates.V4.Presentation.Menu
             tr.offsetMax = new Vector2(-rightRoom, 0f);
             title = Label(tr, text, height * 0.5f, OnWood, TextAlignmentOptions.MidlineLeft, true, height * 0.3f);
             head.SetAsFirstSibling();
+            // The panel's click blocker stays the back-most child: in front of the header it ate the header's buttons
+            // (the hub's Close on the Profile and Collection screens did nothing).
+            var blocker = panel.Find("Blocker");
+            if (blocker != null) blocker.SetAsFirstSibling();
             return head;
         }
 
