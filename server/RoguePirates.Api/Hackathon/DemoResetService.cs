@@ -74,6 +74,20 @@ public sealed class DemoResetService
             : null;
         IQueryable<WeeklyReward> Rewards() => _db.WeeklyRewards.Where(x => week != null && x.WeekStart == week);
         var rewardPayoutIds = week == null ? new List<long?>() : await Rewards().Select(r => r.PayoutId).ToListAsync();
+        // 13 Oct hotfix: a week whose rewards were paid (or may have been: pending/unconfirmed) is never deleted, so it
+        // cannot be recorded and paid again
+        var paidRewards = 0;
+        if (week != null)
+        {
+            var rows = await Rewards().Select(r => new { r.Id, r.MapId, r.Rank, r.PayoutId }).ToListAsync();
+            var refs = rows.Select(r => "wr:" + r.Id).Concat(rows.Select(r => RewardService.RewardRef(week.Value, r.MapId, r.Rank))).ToList();
+            var rowPayoutIds = rows.Where(r => r.PayoutId != null).Select(r => r.PayoutId!.Value).ToList();
+            paidRewards = await _db.Payouts.CountAsync(p => p.Status != Payout.Failed
+                && (rowPayoutIds.Contains(p.Id) || (p.Reason == RewardService.Reason && p.RefId != null && refs.Contains(p.RefId))));
+            if (paidRewards > 0 && !dryRun)
+                throw new ApiException(409, "rewards_paid",
+                    $"The week of {week:yyyy-MM-dd} has {paidRewards} reward payout(s) sent or in flight; its rewards are kept (clear another week, or leave clearWeeklyRewards off).");
+        }
 
         int runLogs, runVerdicts, runs, weeklyBests, raceEntries, raids, buildings, islandRows, listings, rewards;
         if (dryRun)
@@ -112,7 +126,9 @@ public sealed class DemoResetService
         if (skipped.Count > 0)
             notes.Add("Islands with an open market listing were skipped: close or finish the listing first.");
         if (week != null)
-            notes.Add("Payout records stay as history. With the week's rewards deleted, the hourly job pays that week again once it is the previous week.");
+            notes.Add(paidRewards > 0
+                ? "This week has reward payouts sent or in flight: a real run refuses to delete its rewards (rewards_paid)."
+                : "No reward of this week was paid; with its rows deleted, the hourly job records and pays it once the week has ended.");
 
         return new
         {
@@ -138,6 +154,7 @@ public sealed class DemoResetService
                 weekStart = week,
                 rows = rewardPayoutIds.Count,
                 payoutsKept = rewardPayoutIds.Count(x => x != null),
+                paidPayouts = paidRewards,
             },
             notes,
         };

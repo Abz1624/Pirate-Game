@@ -76,7 +76,7 @@ public sealed class IslandStatsPracticeTests
         Assert.Equal(120, Trait(meta0, "Rum Per Hour").GetInt32());
 
         // raid 1: the raider loses (the island held)
-        await EarnRumAsync(raider, 1000);
+        await EarnRumAsync(host, raider, 1000);
         var r1 = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }))).GetProperty("raidId").GetGuid();
         host.Clock.Advance(TimeSpan.FromSeconds(30));
         await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{r1}/result", new { won = false, seconds = 20, guardianSunk = false, minuteReached = 1 }));

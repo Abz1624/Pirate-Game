@@ -50,6 +50,26 @@ public static class IslandRules
     /// <summary>RUM a wallet player earns from a voyage (POST /api/runs): kills / 10, rounded down.</summary>
     public static long RumForRun(int kills) => Math.Max(0, kills) / 10;
 
+    /// <summary>The design's soft cap curve: <c>cap * (1 - 0.5^(amount / half))</c>, rounded down. Gives half the cap at
+    /// <paramref name="half"/> and approaches the cap. (Its slope at 0 is cap*ln2/half, which can exceed 1: callers also
+    /// take the minimum with the raw amount, so the curve only ever reduces.)</summary>
+    public static long SoftCap(double amount, int cap, int half) =>
+        amount <= 0 ? 0 : (long)Math.Floor(cap * (1 - Math.Pow(0.5, amount / Math.Max(1, half))));
+
+    /// <summary>
+    /// 13 Oct hotfix: the RUM a voyage credits (kills are client-reported). The run's raw RUM goes through the per-run
+    /// soft cap; the day's runs go through the per-day soft cap, and the run credits what it adds to the day's total
+    /// (never more than its raw RUM). <paramref name="earlierRunsKillsToday"/>: the kills of the player's earlier runs
+    /// this UTC day.
+    /// </summary>
+    public static long CappedRumForRun(int kills, IEnumerable<int> earlierRunsKillsToday, int runCap, int runHalf, int dayCap, int dayHalf)
+    {
+        long PerRun(int k) => Math.Min(RumForRun(k), SoftCap(RumForRun(k), runCap, runHalf));
+        var before = earlierRunsKillsToday.Sum(k => PerRun(k));
+        var run = PerRun(kills);
+        return Math.Clamp(SoftCap(before + run, dayCap, dayHalf) - SoftCap(before, dayCap, dayHalf), 0, run);
+    }
+
     /// <summary>Per building kind: the level it starts at, its max level, and the RUM cost to reach level n (index n).</summary>
     static readonly Dictionary<string, (int Start, int Max, long[] Cost)> Buildings = new()
     {

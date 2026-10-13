@@ -48,6 +48,7 @@ public sealed class DemoResetTests
         using var host = new ApiHost(new Dictionary<string, string?>
         {
             ["ADMIN_KEY"] = AdminKey,
+            ["WEEKLY_REWARD_CHECKED_ONLY"] = "false", // these runs have no logs
             ["TREASURY_SECRET_KEY"] = Encoders.Base58.EncodeData(treasury.PrivateKey.KeyBytes),
         }, s =>
         {
@@ -101,10 +102,13 @@ public sealed class DemoResetTests
             return scope.ServiceProvider.GetRequiredService<GameDb>().Payouts.ToList();
         }
 
-        // like the smoke test: the current week is paid
+        // 13 Oct hotfix: the current week can no longer be paid (the smoke test used to); it is paid once it has ended
         var week = WeekMath.WeekStart(now);
         var admin = host.Anon();
         admin.DefaultRequestHeaders.Add("X-Admin-Key", AdminKey);
+        Assert.Equal("week_not_ended", await ErrorOf(await admin.PostAsJsonAsync("/api/admin/rewards/weekly", new { weekStart = week.ToString("yyyy-MM-dd") })));
+        Assert.Empty(Payouts());
+        host.Clock.Advance(TimeSpan.FromDays(7));
         await Ok(await admin.PostAsJsonAsync("/api/admin/rewards/weekly", new { weekStart = week.ToString("yyyy-MM-dd") }));
         Assert.Equal(3, Payouts().Count);
 
@@ -113,7 +117,7 @@ public sealed class DemoResetTests
         Assert.Equal(HttpStatusCode.Forbidden, (await host.Anon().PostAsJsonAsync("/api/admin/demo/reset", new { wallets })).StatusCode);
         Assert.Equal("nothing_to_reset", await ErrorOf(await admin.PostAsJsonAsync("/api/admin/demo/reset", new { wallets = Array.Empty<string>() })));
 
-        void AssertCounts(JsonElement res)
+        void AssertCounts(JsonElement res, bool withRewards = true)
         {
             var d = res.GetProperty("deleted");
             Assert.Equal(3, d.GetProperty("runs").GetInt32());
@@ -123,11 +127,16 @@ public sealed class DemoResetTests
             Assert.Equal(1, d.GetProperty("islands").GetInt32());
             Assert.Equal(1, d.GetProperty("islandBuildings").GetInt32());
             Assert.Equal(2, d.GetProperty("marketListings").GetInt32());
-            Assert.Equal(3, d.GetProperty("weeklyRewards").GetInt32());
+            if (withRewards)
+            {
+                Assert.Equal(3, d.GetProperty("weeklyRewards").GetInt32());
+                Assert.Equal(3, res.GetProperty("weeklyRewards").GetProperty("payoutsKept").GetInt32());
+                Assert.Equal(3, res.GetProperty("weeklyRewards").GetProperty("paidPayouts").GetInt32());
+            }
+            else Assert.Equal(JsonValueKind.Null, res.GetProperty("weeklyRewards").ValueKind);
             Assert.Equal(aIsland, res.GetProperty("releasedIslands")[0].GetProperty("id").GetGuid());
             Assert.Equal(aListedIsland, res.GetProperty("skippedIslands")[0].GetProperty("id").GetGuid());
             Assert.Equal("listing_open", res.GetProperty("skippedIslands")[0].GetProperty("reason").GetString());
-            Assert.Equal(3, res.GetProperty("weeklyRewards").GetProperty("payoutsKept").GetInt32());
             Assert.Equal(new[] { true, true, false }, res.GetProperty("wallets").EnumerateArray().Select(x => x.GetProperty("found").GetBoolean()));
         }
 
@@ -135,13 +144,18 @@ public sealed class DemoResetTests
         var dry = await Ok(await admin.PostAsJsonAsync("/api/admin/demo/reset", new { wallets, clearWeeklyRewards = true, weekStart = weekText }));
         Assert.True(dry.GetProperty("dryRun").GetBoolean());
         AssertCounts(dry);
-        Assert.Equal(3, (await Ok(await host.Anon().GetAsync("/api/leaderboard/weekly"))).GetProperty("entries").GetArrayLength());
+        Assert.Equal(3, (await Ok(await host.Anon().GetAsync("/api/leaderboard/weekly/previous"))).GetProperty("entries").GetArrayLength());
 
-        var done = await Ok(await admin.PostAsJsonAsync("/api/admin/demo/reset", new { wallets, clearWeeklyRewards = true, weekStart = weekText, dryRun = false }));
+        // 13 Oct hotfix: a paid week's rewards are never deleted (deleting them let the week be recorded and paid again)
+        var refused = await admin.PostAsJsonAsync("/api/admin/demo/reset", new { wallets, clearWeeklyRewards = true, weekStart = weekText, dryRun = false });
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        Assert.Equal("rewards_paid", await ErrorOf(refused));
+
+        var done = await Ok(await admin.PostAsJsonAsync("/api/admin/demo/reset", new { wallets, dryRun = false }));
         Assert.False(done.GetProperty("dryRun").GetBoolean());
-        AssertCounts(done);
+        AssertCounts(done, withRewards: false);
 
-        var board = (await Ok(await host.Anon().GetAsync("/api/leaderboard/weekly"))).GetProperty("entries").EnumerateArray().ToList();
+        var board = (await Ok(await host.Anon().GetAsync("/api/leaderboard/weekly/previous"))).GetProperty("entries").EnumerateArray().ToList();
         Assert.Single(board);
         Assert.Equal(100, board[0].GetProperty("kills").GetInt32());
         Assert.Equal(3, Payouts().Count); // payouts stay as history
@@ -151,7 +165,7 @@ public sealed class DemoResetTests
             var db = scope.ServiceProvider.GetRequiredService<GameDb>();
             Assert.Equal(new[] { c.Id }, db.Runs.Select(r => r.PlayerId).ToList());
             Assert.Equal(new[] { c.Id }, db.WeeklyBests.Select(r => r.PlayerId).ToList());
-            Assert.Empty(db.WeeklyRewards.ToList());
+            Assert.Equal(3, db.WeeklyRewards.Count()); // kept: they were paid
             Assert.Equal(new[] { c.Id }, db.DailyRaceEntries.Select(e => e.PlayerId).ToList());
             Assert.Equal(new[] { aListedIsland, cIsland }.OrderBy(x => x), db.Islands.Select(i => i.Id).ToList().OrderBy(x => x));
             Assert.Equal(2, db.IslandBuildings.Count());
@@ -160,14 +174,46 @@ public sealed class DemoResetTests
             Assert.Equal(3, db.Players.Count()); // profiles are kept
         }
 
-        // the week can be paid again (to the remaining players) once it is recomputed
-        var redo = await Ok(await admin.PostAsJsonAsync("/api/admin/rewards/weekly", new { weekStart = weekText, dryRun = true }));
-        Assert.Equal(c.Id, redo.GetProperty("winners")[0].GetProperty("playerId").GetGuid());
+        // paying the week again sends nothing new
+        await Ok(await admin.PostAsJsonAsync("/api/admin/rewards/weekly", new { weekStart = weekText }));
+        Assert.Equal(3, Payouts().Count);
 
         // a second real run finds nothing more (the skipped island stays skipped)
         var again = await Ok(await admin.PostAsJsonAsync("/api/admin/demo/reset", new { wallets, dryRun = false }));
         Assert.Equal(0, again.GetProperty("deleted").GetProperty("runs").GetInt32());
         Assert.Equal(JsonValueKind.Null, again.GetProperty("weeklyRewards").ValueKind);
         Assert.Equal(1, again.GetProperty("skippedIslands").GetArrayLength());
+    }
+
+    /// <summary>13 Oct hotfix: even if a paid week's reward rows were deleted (by hand, or by the old demo reset), paying
+    /// the week again pays no place twice: payouts are keyed by (week, map, rank).</summary>
+    [Fact]
+    public async Task WeeklyRewards_RowsDeletedAfterPaying_AreNeverPaidTwice()
+    {
+        var rpc = new FakeSolanaRpc();
+        var treasury = new Account();
+        using var host = new ApiHost(new Dictionary<string, string?>
+        {
+            ["ADMIN_KEY"] = AdminKey, ["WEEKLY_REWARD_CHECKED_ONLY"] = "false",
+            ["TREASURY_SECRET_KEY"] = Encoders.Base58.EncodeData(treasury.PrivateKey.KeyBytes),
+        }, s => { s.RemoveAll<ISolanaRpc>(); s.AddSingleton<ISolanaRpc>(rpc); });
+        var a = await SignInAsync(host);
+        await Ok(await a.Http.PostAsJsonAsync("/api/runs", new { kills = 50, runSeconds = 600, level = 10 }));
+        var week = WeekMath.WeekStart(host.Clock.UtcNow).ToString("yyyy-MM-dd");
+        host.Clock.Advance(TimeSpan.FromDays(7));
+        var admin = host.Anon();
+        admin.DefaultRequestHeaders.Add("X-Admin-Key", AdminKey);
+        await Ok(await admin.PostAsJsonAsync("/api/admin/rewards/weekly", new { weekStart = week }));
+        using (var scope = host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+            Assert.Single(db.Payouts.ToList());
+            db.WeeklyRewards.RemoveRange(db.WeeklyRewards);
+            await db.SaveChangesAsync();
+        }
+        await Ok(await admin.PostAsJsonAsync("/api/admin/rewards/weekly", new { weekStart = week }));
+        using (var scope = host.Services.CreateScope())
+            Assert.Single(scope.ServiceProvider.GetRequiredService<GameDb>().Payouts.ToList());
+        Assert.Single(rpc.Sent);
     }
 }

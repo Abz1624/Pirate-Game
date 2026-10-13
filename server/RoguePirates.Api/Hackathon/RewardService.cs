@@ -56,9 +56,15 @@ public sealed class RewardService
         }
     }
 
-    public bool CheckedOnly => bool.TryParse(_config["WEEKLY_REWARD_CHECKED_ONLY"], out var b) && b;
+    /// <summary>Only runs that passed the server's run checks earn SOL (13 Oct hotfix: default true; WEEKLY_REWARD_CHECKED_ONLY=false
+    /// pays on client-reported totals, which a modified client can fake).</summary>
+    public bool CheckedOnly => !(bool.TryParse(_config["WEEKLY_REWARD_CHECKED_ONLY"], out var b) && !b);
 
-    static string RewardRef(long rewardId) => "wr:" + rewardId;
+    /// <summary>The payout key of a reward: (week, map, rank) (13 Oct hotfix), so a week's rows deleted and recorded again
+    /// can never pay the same place twice.</summary>
+    public static string RewardRef(DateTime week, string map, int rank) => $"wr:{week:yyyyMMdd}:{map}:{rank}";
+    /// <summary>The key used before the hotfix (by row id); still checked so rewards paid then are not paid again.</summary>
+    static string LegacyRewardRef(long rewardId) => "wr:" + rewardId;
 
     DateTime PreviousWeek => WeekMath.WeekStart(_clock.UtcNow).AddDays(-7);
 
@@ -94,6 +100,9 @@ public sealed class RewardService
         var map = RunService.NormalizeMap(mapId);
         if (week > WeekMath.WeekStart(_clock.UtcNow))
             throw new ApiException(400, "future_week", "That week has not started.");
+        // 13 Oct hotfix: a week is paid only once it has ended (its board can still change while it runs)
+        if (!dryRun && week.AddDays(7) > _clock.UtcNow)
+            throw new ApiException(409, "week_not_ended", $"The week of {week:yyyy-MM-dd} ends {week.AddDays(7):yyyy-MM-dd} 00:00 UTC; it is paid after that (a dry run works now).");
 
         var existing = await _db.WeeklyRewards.AnyAsync(r => r.WeekStart == week && r.MapId == map);
         if (dryRun)
@@ -135,7 +144,8 @@ public sealed class RewardService
         {
             var wallet = await _db.Players.AsNoTracking().Where(p => p.Id == r.PlayerId).Select(p => p.WalletAddress).FirstOrDefaultAsync();
             if (wallet == null) continue;
-            var payout = await PayoutOnce.PayAsync(_db, _ledger, _clock, _log, r.PlayerId, wallet, r.Lamports, Reason, RewardRef(r.Id));
+            var payout = await LegacyPayoutAsync(r, wallet, week)
+                         ?? await PayoutOnce.PayAsync(_db, _ledger, _clock, _log, r.PlayerId, wallet, r.Lamports, Reason, RewardRef(week, map, r.Rank));
             if (payout != null && r.PayoutId != payout.Id)
             {
                 r.PayoutId = payout.Id;
@@ -144,6 +154,22 @@ public sealed class RewardService
         }
         _log.LogInformation("Weekly rewards {Week:yyyy-MM-dd} {Map}: {Count} places", week, map, rewards.Count);
         return await ViewAsync(week, map, dryRun: false);
+    }
+
+    /// <summary>
+    /// A reward payout made before the hotfix (keyed by row id) that this reward must not repeat: the row's own legacy
+    /// payout, or (rows deleted by a demo reset and recorded again) a live legacy-keyed reward payout to the same wallet
+    /// of the same amount made since the week started. Conservative on purpose: when in doubt, do not pay again.
+    /// </summary>
+    async Task<Payout?> LegacyPayoutAsync(WeeklyReward r, string wallet, DateTime week)
+    {
+        var own = LegacyRewardRef(r.Id);
+        var rows = await _db.Payouts.AsNoTracking()
+            .Where(p => p.Reason == Reason && p.Status != Payout.Failed && p.RefId != null
+                        && (p.RefId == own || (p.Wallet == wallet && p.Lamports == r.Lamports && p.CreatedAt >= week)))
+            .OrderByDescending(p => p.Id).ToListAsync();
+        return rows.FirstOrDefault(p => p.RefId == own)
+               ?? rows.FirstOrDefault(p => p.RefId!.Length > 3 && p.RefId[3..].All(char.IsDigit));
     }
 
     object TableView() => Table.Select((l, i) => new { rank = i + 1, lamports = l, sol = l / (double)SolanaService.LamportsPerSol });

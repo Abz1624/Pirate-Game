@@ -84,8 +84,15 @@ public sealed class IslandTests
 
     internal static async Task<long> RumAsync(Wallet w) => (await Ok(await w.Http.GetAsync("/api/islands/mine"))).GetProperty("rum").GetInt64();
 
-    internal static async Task EarnRumAsync(Wallet w, int kills) =>
-        await Ok(await w.Http.PostAsJsonAsync("/api/runs", new { kills, runSeconds = 1200, level = 10 }));
+    /// <summary>Gives the wallet kills / 10 RUM directly (voyage RUM is soft-capped per run and per day since 13 Oct, so
+    /// tests that need a RUM balance seed it; RUM from runs is tested on its own).</summary>
+    internal static async Task EarnRumAsync(ApiHost host, Wallet w, int kills)
+    {
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+        var rum = kills / 10;
+        Assert.Equal(1, await db.Players.Where(p => p.WalletAddress == w.Key).ExecuteUpdateAsync(u => u.SetProperty(p => p.Rum, p => p.Rum + rum)));
+    }
 
     static string Deposit(FakeSolanaRpc rpc, string from, string to, long lamports, string? memo = null)
     {
@@ -150,7 +157,7 @@ public sealed class IslandTests
         var island = await ClaimAsync(a);
         var id = island.GetProperty("islandId").GetGuid();
         Assert.Equal("pending", island.GetProperty("nft").GetProperty("status").GetString());
-        Assert.Contains("solana_rpc_error", island.GetProperty("nft").GetProperty("error").GetString());
+        Assert.Contains("tx_rejected", island.GetProperty("nft").GetProperty("error").GetString()); // 13 Oct: preflight rejections are named, raw node text is not returned
 
         await AssertError(await a.Http.PostAsync($"/api/islands/{id}/mint", null), HttpStatusCode.BadGateway, "mint_failed");
         rpc.FailSends = false;
@@ -229,10 +236,10 @@ public sealed class IslandTests
         using var _h = host;
         var a = await SignInAsync(host);
         var id = (await ClaimAsync(a)).GetProperty("islandId").GetGuid();
-        await EarnRumAsync(a, 1500); // 150 RUM
+        await EarnRumAsync(host, a, 1500); // 150 RUM
         await AssertError(await a.Http.PostAsJsonAsync($"/api/islands/{id}/build", new { kind = "walls" }), HttpStatusCode.BadRequest, "insufficient_rum");
         Assert.Equal(150, await RumAsync(a));
-        await EarnRumAsync(a, 500); // 200
+        await EarnRumAsync(host, a, 500); // 200
         var built = await Ok(await a.Http.PostAsJsonAsync($"/api/islands/{id}/build", new { kind = "walls" }));
         Assert.Equal(0, built.GetProperty("rum").GetInt64());
         Assert.Equal(1.25, built.GetProperty("island").GetProperty("defence").GetProperty("hullMultiplier").GetDouble());
@@ -252,7 +259,7 @@ public sealed class IslandTests
 
         await AssertError(await owner.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }), HttpStatusCode.BadRequest, "own_island");
         await AssertError(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }), HttpStatusCode.BadRequest, "insufficient_rum");
-        await EarnRumAsync(raider, 300); // 30 RUM
+        await EarnRumAsync(host, raider, 300); // 30 RUM
 
         var start = await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }));
         var raidId = start.GetProperty("raidId").GetGuid();
@@ -270,7 +277,7 @@ public sealed class IslandTests
 
         // one raid at a time per island
         var third = await SignInAsync(host);
-        await EarnRumAsync(third, 300);
+        await EarnRumAsync(host, third, 300);
         await AssertError(await third.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }), HttpStatusCode.Conflict, "raid_in_progress");
 
         await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 500 }), HttpStatusCode.BadRequest, "invalid_seconds");
@@ -307,8 +314,8 @@ public sealed class IslandTests
         var b = await SignInAsync(host);
         var ia = (await ClaimAsync(a, "Alpha")).GetProperty("islandId").GetGuid();
         var ib = (await ClaimAsync(b, "Bravo")).GetProperty("islandId").GetGuid();
-        await EarnRumAsync(a, 1000);
-        await EarnRumAsync(b, 1000);
+        await EarnRumAsync(host, a, 1000);
+        await EarnRumAsync(host, b, 1000);
         host.Clock.Advance(TimeSpan.FromHours(4)); // both: exposed 192
 
         // a loses against b's island: nothing moves, no shield
@@ -339,7 +346,7 @@ public sealed class IslandTests
         var owner = await SignInAsync(host);
         var raider = await SignInAsync(host);
         var id = (await ClaimAsync(owner)).GetProperty("islandId").GetGuid();
-        await EarnRumAsync(raider, 600);
+        await EarnRumAsync(host, raider, 600);
         var raidId = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }))).GetProperty("raidId").GetGuid();
         host.Clock.Advance(TimeSpan.FromMinutes(20) + TimeSpan.FromSeconds(1));
         await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 100 }), HttpStatusCode.Conflict, "raid_expired");
@@ -357,7 +364,7 @@ public sealed class IslandTests
         var owner = await SignInAsync(host);
         var raider = await SignInAsync(host);
         var id = (await ClaimAsync(owner)).GetProperty("islandId").GetGuid();
-        await EarnRumAsync(raider, 600);
+        await EarnRumAsync(host, raider, 600);
         var rumBefore = await RumAsync(raider);
 
         await AssertError(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id, stakeLamports = 10_000_000 }), HttpStatusCode.BadRequest, "raid_stakes_off");
@@ -405,7 +412,7 @@ public sealed class IslandTests
         var owner = await SignInAsync(host);
         var raider = await SignInAsync(host);
         var id = (await ClaimAsync(owner)).GetProperty("islandId").GetGuid();
-        await EarnRumAsync(raider, 600);
+        await EarnRumAsync(host, raider, 600);
         var raidId = await LegacyStakedRaidAsync(host, raider, id, 10_000_000);
 
         host.Clock.Advance(TimeSpan.FromSeconds(60));
@@ -471,7 +478,7 @@ public sealed class IslandTests
 
         // the listed island is locked
         Assert.True((await Ok(await buyer.Http.GetAsync($"/api/islands/{islandId}"))).GetProperty("listed").GetBoolean());
-        await EarnRumAsync(buyer, 600);
+        await EarnRumAsync(host, buyer, 600);
         await AssertError(await buyer.Http.PostAsJsonAsync("/api/raids/start", new { islandId }), HttpStatusCode.Conflict, "island_listed");
         await AssertError(await seller.Http.PostAsync($"/api/islands/{islandId}/collect", null), HttpStatusCode.Conflict, "island_listed");
         await AssertError(await seller.Http.PostAsJsonAsync($"/api/market/{listingId}/buy", new { signature = HackathonTests.RandomSignature() }), HttpStatusCode.BadRequest, "own_listing");

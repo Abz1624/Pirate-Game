@@ -18,13 +18,15 @@ public sealed partial class RunService
     readonly IClock _clock;
     readonly ILogger<RunService> _log;
     readonly PlausibilityService _checks;
+    readonly ApiSettings _settings;
 
-    public RunService(GameDb db, IClock clock, ILogger<RunService> log, PlausibilityService checks)
+    public RunService(GameDb db, IClock clock, ILogger<RunService> log, PlausibilityService checks, ApiSettings settings)
     {
         _db = db;
         _clock = clock;
         _log = log;
         _checks = checks;
+        _settings = settings;
     }
 
     public static string NormalizeMap(string? mapId)
@@ -110,7 +112,12 @@ public sealed partial class RunService
                 _db.RunVerdicts.Add(verdict);
                 await _db.SaveChangesAsync();
                 // hackathon: wallet players earn RUM from voyages (kills / 10), added atomically
-                if (player.WalletAddress != null && Hackathon.IslandRules.RumForRun(req.Kills) is > 0 and var rum)
+                // 13 Oct hotfix: soft-capped per run and per UTC day (ApiSettings.RumRunCap..RumDayHalf), since kills are client-reported
+                var dayStart = now.Date;
+                var earlierKills = player.WalletAddress == null ? new List<int>()
+                    : await _db.Runs.Where(r => r.PlayerId == player.Id && r.SubmittedAt >= dayStart && r.Id != run.Id).Select(r => r.Kills).ToListAsync();
+                if (player.WalletAddress != null
+                    && Hackathon.IslandRules.CappedRumForRun(req.Kills, earlierKills, _settings.RumRunCap, _settings.RumRunHalf, _settings.RumDayCap, _settings.RumDayHalf) is > 0 and var rum)
                 {
                     await _db.Players.Where(p => p.Id == player.Id).ExecuteUpdateAsync(u => u.SetProperty(p => p.Rum, p => p.Rum + rum));
                     rumEarned = rum;
