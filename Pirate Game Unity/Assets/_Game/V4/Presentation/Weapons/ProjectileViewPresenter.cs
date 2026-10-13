@@ -35,6 +35,29 @@ namespace RoguePirates.V4.Presentation.Weapons
         public int LiveCount => _live.Count;
         /// <summary>Demo: the artists' per-weapon VFX profiles (projectile model and trail).</summary>
         public Effects.VfxProfilePlayer Profiles { get; set; }
+        /// <summary>Hackathon (13 Oct): the weapon prefab catalog (a weapon's projectile prefab; null: as before).</summary>
+        public WeaponVisualCatalog Visuals { get; set; }
+
+        readonly Dictionary<int, string> _liveWeapon = new Dictionary<int, string>();
+        // The shots that ended this frame (whose splash a splash at their spot is): a small fixed ring, no allocation.
+        const int EndedSlots = 16;
+        readonly Vector3[] _endedAt = new Vector3[EndedSlots];
+        readonly string[] _endedWeapon = new string[EndedSlots];
+        readonly int[] _endedFrame = new int[EndedSlots];
+        int _nextEnded;
+
+        /// <summary>The weapon of a shot that ended this frame within 1.5 m of <paramref name="position"/> (null: none).</summary>
+        public string EndedNear(Vector3 position)
+        {
+            for (var i = 0; i < EndedSlots; i++)
+            {
+                if (_endedFrame[i] != Time.frameCount || _endedWeapon[i] == null) continue;
+                var dx = _endedAt[i].x - position.x;
+                var dz = _endedAt[i].z - position.z;
+                if (dx * dx + dz * dz <= 1.5f * 1.5f) return _endedWeapon[i];
+            }
+            return null;
+        }
 
         /// <summary>The pool key for a model (the catalog derives these from the weapons, so they are prewarmed).</summary>
         public static string KeyFor(GameObject prefab) => prefab != null ? KeyPrefix + prefab.name : null;
@@ -69,14 +92,28 @@ namespace RoguePirates.V4.Presentation.Weapons
                 placeholder = art.projectileModel;
             }
 
+            // Hackathon (13 Oct): the weapon's projectile prefab (a copy of the model above, in its folder) is drawn
+            // instead, prepared as the model it copies (harpoon, cannonball trails); its tuning scales it and says whether
+            // it keeps its own colours (else it is tinted with the weapon's colour, as the cannonballs are).
+            var source = prefab;
+            var own = Visuals != null && (profile == null || !profile.enabled || profile.prefab == null) ? Visuals.Get(weaponId, WeaponVisualSlot.Projectile) : null;
+            var tint = placeholder == null;
+            if (own != null)
+            {
+                prefab = own;
+                scale *= WeaponVisualTuning.Scale(own);
+                var tuning = WeaponVisualTuning.Of(own);
+                if (tuning != null) tint = !tuning.keepOwnColours;
+            }
+
             var key = KeyFor(prefab);
             if (key == null) return -1;
             if (!_pools.Has(key)) _pools.Register(new PoolDefinition(key, prefab, 0, 0, ConfigEnums.PoolOverflowPolicy.Grow, "projectile (on demand)"));
             var go = _pools.Acquire(key, position, Quaternion.identity);
             if (go == null) return -1;
 
-            var isHarpoon = _settings != null && _settings.harpoonProjectilePrefab != null && prefab == _settings.harpoonProjectilePrefab;
-            var cannonballTrail = VfxParticleUtil.UsesCannonballTrail(prefab, _settings);
+            var isHarpoon = _settings != null && _settings.harpoonProjectilePrefab != null && source == _settings.harpoonProjectilePrefab;
+            var cannonballTrail = VfxParticleUtil.UsesCannonballTrail(source, _settings);
             if (_prepared.Add(go.GetInstanceID()))
             {
                 StripPhysics(go);
@@ -96,11 +133,12 @@ namespace RoguePirates.V4.Presentation.Weapons
                 VfxParticleUtil.ClearMotionTrails(go);
                 VfxParticleUtil.SetTrailEmitting(go, true);
             }
-            if (placeholder == null) Tint(go.transform, color); // a placeholder keeps its own colours (shared materials)
+            if (tint) Tint(go.transform, color); // a placeholder keeps its own colours (shared materials)
 
             Profiles?.Attach(Profiles.Slot(VfxSubject.Weapon, weaponId, VfxSlotKind.Trail), go.transform);
             var handle = _next++;
             _live[handle] = go;
+            _liveWeapon[handle] = weaponId;
             return handle;
         }
 
@@ -115,7 +153,13 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             if (!_live.TryGetValue(handle, out var go)) return;
             _live.Remove(handle);
+            _liveWeapon.TryGetValue(handle, out var weaponId);
+            _liveWeapon.Remove(handle);
             if (go == null) return;
+            _endedAt[_nextEnded] = go.transform.position;
+            _endedWeapon[_nextEnded] = weaponId;
+            _endedFrame[_nextEnded] = Time.frameCount;
+            _nextEnded = (_nextEnded + 1) % EndedSlots;
             Profiles?.Detach(go.transform);
             VfxParticleUtil.SetTrailEmitting(go, false);
             VfxParticleUtil.ClearMotionTrails(go);
@@ -123,6 +167,10 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         ProjectileVisual VisualOf(string weaponId) => ConfigOf(weaponId)?.projectileVisual;
+
+        /// <summary>Hackathon (13 Oct): a weapon's projectile prefab in the weapon prefab catalog (null: none).</summary>
+        public static GameObject CatalogProjectile(WeaponVisualCatalog visuals, string weaponId) =>
+            visuals != null ? visuals.Get(weaponId, WeaponVisualSlot.Projectile) : null;
 
         /// <summary>Hackathon art pass: the art team's projectile model for a weapon (null: none).</summary>
         public static ArtWeaponModel ArtProjectile(DemoJuiceSettings settings, string weaponId)

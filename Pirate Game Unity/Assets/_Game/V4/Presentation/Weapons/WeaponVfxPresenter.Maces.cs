@@ -47,13 +47,23 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>Chain links drawn last frame (tests; 0 without the art team's links).</summary>
         public int ChainLinksDrawn { get; private set; }
 
-        GameObject MaceModel() => WeaponPlaceholderModels.Mace(_pools != null ? _pools.Staging : null, _settings);
-        bool ArtMace => _settings != null && _settings.maceArtModel != null;
+        // Hackathon (13 Oct): the mace weapon whose prefabs (anchor, chain link, chain line) are drawn.
+        string _maceWeapon;
+
+        GameObject MaceModel()
+        {
+            var weapon = _maceWeapon ?? (Visuals != null ? Equipped(Config.ConfigEnums.WeaponBehavior.ChainedMace) : null);
+            return Pick(weapon, WeaponVisualSlot.Mace, WeaponPlaceholderModels.Mace(_pools != null ? _pools.Staging : null, _settings));
+        }
+
+        /// <summary>The art team's anchor (or a copy of it): it has the ChainAttach child the chain meets.</summary>
+        static bool IsArtMace(GameObject model) => model != null && model.transform.Find("ChainAttach") != null;
 
         /// <summary>Pools the mace model and makes the chains (one per mace an attack can throw, and two spare) at bind,
         /// so a throw creates no object while the run plays.</summary>
-        void PrewarmMaces(int count)
+        void PrewarmMaces(string weaponId, int count)
         {
+            _maceWeapon = weaponId;
             while (_chains.Count < count) _chains.Add(CreateChain(_chains.Count));
             PrepareLinks(count);
             if (_pools == null) return;
@@ -63,7 +73,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>The art team's link mesh and an instancing copy of its material (once per link model).</summary>
         void PrepareLinks(int chains)
         {
-            var source = _settings != null ? _settings.maceChainLinkModel : null;
+            var source = Pick(_maceWeapon, WeaponVisualSlot.ChainLink, _settings != null ? _settings.maceChainLinkModel : null);
             if (source == null || !SystemInfo.supportsInstancing) { _linkMesh = null; return; }
             if (_linkSource != source)
             {
@@ -91,17 +101,18 @@ namespace RoguePirates.V4.Presentation.Weapons
                 _maceViews.RemoveAt(_maceViews.Count - 1);
                 _maceAttach.RemoveAt(_maceAttach.Count - 1);
             }
+            var model = MaceModel();
             if (count > 0)
             {
-                var model = MaceModel();
+                var art = IsArtMace(model);
                 while (_maceViews.Count < count)
                 {
-                    var go = Spawn(KindMace, model, maces[_maceViews.Count].Position, Quaternion.identity, ArtMace ? 1f : 1.25f, out var pooled);
+                    var go = Spawn(KindMace, model, maces[_maceViews.Count].Position, Quaternion.identity, art ? 1f : 1.25f, out var pooled);
                     if (go == null) break;
                     var prep = Prepare(go);
                     if (!prep.Done) { StripPhysics(go); prep.Done = true; }
                     _maceViews.Add(new View { Go = go, Pooled = pooled });
-                    _maceAttach.Add(ArtMace ? go.transform.Find("ChainAttach") : null);
+                    _maceAttach.Add(art ? go.transform.Find("ChainAttach") : null);
                 }
             }
             while (_chains.Count < _maceViews.Count) _chains.Add(CreateChain(_chains.Count)); // only past the prewarmed ones
@@ -109,8 +120,9 @@ namespace RoguePirates.V4.Presentation.Weapons
             var shipPos = _ship != null && _ship.Exists ? _ship.Position : Vector3.zero;
             var rail = shipPos + Vector3.up * 1.6f;
             var links = _linkMesh != null && _linkMaterial != null && _linkMatrices != null;
-            var spin = Quaternion.Euler(Time.time * 720f, Time.time * 260f, 0f);
-            var roll = Quaternion.Euler(0f, 0f, Time.time * 420f);
+            var spinMult = WeaponVisualTuning.Spin(model);
+            var spin = Quaternion.Euler(Time.time * 720f * spinMult, Time.time * 260f * spinMult, 0f);
+            var roll = Quaternion.Euler(0f, 0f, Time.time * 420f * spinMult);
             var drawn = 0;
             for (var i = 0; i < _chains.Count; i++)
             {
@@ -150,7 +162,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         int LayLinks(LineRenderer line, int drawn)
         {
             var spacing = Mathf.Max(0.05f, _settings.maceChainLinkSpacing);
-            var linkScale = spacing * LinkOverlap;
+            var linkScale = spacing * LinkOverlap * WeaponVisualTuning.Scale(_linkSource);
             var next = spacing * 0.5f; // where the next link goes, along the current segment
             var n = 0;
             for (var p = 1; p < ChainPoints && drawn < _linkMatrices.Length && n < MaxLinksPerChain; p++)
@@ -190,9 +202,30 @@ namespace RoguePirates.V4.Presentation.Weapons
 
         LineRenderer CreateChain(int index)
         {
+            // Hackathon (13 Oct): the mace weapon's chain prefab (a LineRenderer at its root), else code-built.
+            var prefab = Pick(_maceWeapon, WeaponVisualSlot.Chain, null);
+            if (prefab != null && prefab.GetComponent<LineRenderer>() != null)
+            {
+                var own = Instantiate(prefab, transform, false);
+                own.name = "MaceChain" + index;
+                var ownLine = own.GetComponent<LineRenderer>();
+                ownLine.useWorldSpace = true;
+                ownLine.positionCount = ChainPoints;
+                own.SetActive(false);
+                return ownLine;
+            }
             var go = new GameObject("MaceChain" + index);
             go.transform.SetParent(transform, false);
             var line = go.AddComponent<LineRenderer>();
+            ConfigureChainLine(line);
+            line.sharedMaterial = ChainMaterial();
+            go.SetActive(false);
+            return line;
+        }
+
+        /// <summary>The code-built chain line's settings (the chain prefab is built with these, HackathonWeaponPrefabs).</summary>
+        public static void ConfigureChainLine(LineRenderer line)
+        {
             line.useWorldSpace = true;
             line.positionCount = ChainPoints;
             line.widthMultiplier = ChainWidth;
@@ -200,15 +233,19 @@ namespace RoguePirates.V4.Presentation.Weapons
             line.shadowCastingMode = ShadowCastingMode.Off;
             line.receiveShadows = false;
             line.startColor = line.endColor = ChainColor;
-            line.sharedMaterial = ChainMaterial();
-            go.SetActive(false);
-            return line;
         }
 
         /// <summary>One shared material: dark iron links on a transparent strip (a small generated texture).</summary>
         static Material ChainMaterial()
         {
             if (_chainMaterial != null) return _chainMaterial;
+            _chainMaterial = new Material(Shader.Find("Sprites/Default")) { name = "MaceChain", hideFlags = HideFlags.DontSave, mainTexture = ChainLinkTexture() };
+            return _chainMaterial;
+        }
+
+        /// <summary>The chain's link texture (16 x 4: an oval link ring, then a short gap to the next).</summary>
+        public static Texture2D ChainLinkTexture()
+        {
             var tex = new Texture2D(16, 4, TextureFormat.RGBA32, false) { name = "MaceChainLinks", wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.DontSave };
             for (var x = 0; x < 16; x++)
             for (var y = 0; y < 4; y++)
@@ -221,8 +258,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 tex.SetPixel(x, y, new Color(shade, shade, shade, a));
             }
             tex.Apply();
-            _chainMaterial = new Material(Shader.Find("Sprites/Default")) { name = "MaceChain", hideFlags = HideFlags.DontSave, mainTexture = tex };
-            return _chainMaterial;
+            return tex;
         }
 
         void ClearMaces()

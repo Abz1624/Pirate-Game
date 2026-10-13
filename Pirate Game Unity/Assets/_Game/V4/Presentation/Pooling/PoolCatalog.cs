@@ -58,8 +58,13 @@ namespace RoguePirates.V4.Presentation.Pooling
                 entry.ids.Add(id);
             }
             Add(settings != null ? settings.projectilePrefab : null, "default");
+            var visuals = Weapons.WeaponVisualCatalog.Load();
             foreach (var w in config.All<WeaponConfig>())
             {
+                // Hackathon (13 Oct): a weapon's projectile prefab from the weapon prefab catalog (any behaviour: a summon's
+                // shots too) is prewarmed; without one, a projectile or pellet weapon's model as before.
+                var own = Weapons.ProjectileViewPresenter.CatalogProjectile(visuals, w.weaponId);
+                if (own != null) { Add(own, w.weaponId); continue; }
                 if (w.behavior != ConfigEnums.WeaponBehavior.Projectile && w.behavior != ConfigEnums.WeaponBehavior.Fan) continue;
                 var art = Weapons.ProjectileViewPresenter.ArtProjectile(settings, w.weaponId); // Hackathon art pass
                 Add(art != null ? art.projectileModel : w.projectileVisual != null && w.projectileVisual.prefab != null ? w.projectileVisual.prefab : settings != null ? settings.projectilePrefab : null, w.weaponId);

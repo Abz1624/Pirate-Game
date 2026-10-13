@@ -4,6 +4,8 @@
 #     (lift: raises a ship whose deck sat at or under the water at its old model's draft; owner, 13 Oct)
 #   projectile;<weapon id>   (the chainshot art as the weapon's projectile)
 #   lob;<weapon id>          (the ink pot art lobbed at the weapon's predicted-area shells)
+#   weaponvisual;<weapon id>;<visual>;<asset>;<child, optional>   (13 Oct: art copied into the weapon's prefab folder for that
+#     visual by Tools/Rogue Pirates/Weapons/Build Weapon Prefabs, HackathonWeaponPrefabs; visual = a WeaponVisualSlot name)
 enemy;boarding_barge;Assets/3D Models/Enemies/ships/BOARDING BARGE/BOARDING_BARGE.fbx;ship;
 enemy;bomb_ketch;Assets/3D Models/Enemies/ships/BOMB_KETCH/BOOMB_KETCH.fbx;ship;
 enemy;cutthroat_skiff;Assets/GameObject/CutthroatSkiff.prefab;ship;;0.2
@@ -21,3 +23,7 @@ enemy;elite_hammerhead;Assets/3D Models/Enemies/Hammer_Shark_Crown/Hammer_Shark_
 enemy;elite_kraken_spawn;Assets/3D Models/Enemies/Kraken_Crown/Kraken_Crown.fbx;creature;Bone|Armature_Swim
 projectile;chainshot
 lob;squid_ink_pots
+weaponvisual;mortar;Lob;Assets/GameObject/Guns/MortarBarrage/Prefabs/Mortar_FireShell_VFX.prefab
+weaponvisual;mortar;Launch;Assets/GameObject/Guns/MortarBarrage/Prefabs/Mortar_Muzzle_VFX.prefab
+weaponvisual;maelstrom_charge;Whirlpool;Assets/GameObject/Guns/Maelstrom Charge.prefab;Strike/Whirlpool
+weaponvisual;siren_bell;Aura;Assets/GameObject/Guns/TidalAura/TidalAura_VFX.prefab

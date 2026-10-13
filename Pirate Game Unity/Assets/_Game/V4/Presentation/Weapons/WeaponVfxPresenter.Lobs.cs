@@ -27,32 +27,40 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>A lobbed model's position (tests).</summary>
         public Vector3 LobPosition(int index) => _lobs[index].View.Go != null ? _lobs[index].View.Go.transform.position : Vector3.zero;
 
-        Foundation.Data.ArtWeaponModel AimedLobArt()
+        /// <summary>A weapon's lob model (the weapon prefab catalog's, else the juice settings' art) with its scale and arc
+        /// (the art's, else 1 and 5 m; times the prefab's tuning for the arc). Null: the weapon throws nothing.</summary>
+        GameObject LobOf(string weaponId, out float scale, out float arc, out int prewarm)
         {
-            if (_settings == null || _aimedFrame != Time.frameCount) return null;
-            var art = _settings.WeaponArt(_aimedWeapon);
-            return art != null && art.lobModel != null ? art : null;
+            var art = _settings != null ? _settings.WeaponArt(weaponId) : null;
+            var prefab = Pick(weaponId, WeaponVisualSlot.Lob, art != null ? art.lobModel : null); // Hackathon (13 Oct)
+            scale = art != null && art.lobModel != null ? art.lobScale : 1f;
+            arc = (art != null && art.lobModel != null ? art.lobArcHeight : 5f) * WeaponVisualTuning.Arc(prefab);
+            prewarm = art != null && art.lobModel != null ? Mathf.Max(1, art.lobPrewarm) : 6;
+            return prefab;
         }
 
         void PrewarmLob(string weaponId)
         {
-            var art = _settings != null ? _settings.WeaponArt(weaponId) : null;
-            if (art == null || art.lobModel == null || _pools == null) return;
-            EnsurePool(KindLob, art.lobModel, Mathf.Max(1, art.lobPrewarm));
+            if (_pools == null) return;
+            var prefab = LobOf(weaponId, out _, out _, out var prewarm);
+            if (prefab != null) EnsurePool(KindLob, prefab, prewarm);
         }
 
-        /// <summary>Throws the aimed weapon's lob model at a shell's landing point (false: no lob model).</summary>
+        /// <summary>Throws the aimed weapon's lob model at a shell's landing point (false: no lob model). Hackathon (13 Oct):
+        /// the weapon's launch prefab bursts at the ship as it is thrown.</summary>
         bool TryLob(Vector3 target, float seconds)
         {
-            var art = AimedLobArt();
-            if (art == null) return false;
+            if (_settings == null || _aimedFrame != Time.frameCount) return false;
+            var model = LobOf(_aimedWeapon, out var scale, out var arc, out _);
+            if (model == null) return false;
             var from = _ship != null && _ship.Exists ? _ship.Position + Vector3.up * 1.6f : target;
-            var go = Spawn(KindLob, art.lobModel, from, Quaternion.identity, art.lobScale, out var pooled);
+            var go = Spawn(KindLob, model, from, Quaternion.identity, scale, out var pooled);
             if (go == null) return false;
             var prep = Prepare(go);
             if (!prep.Done) { StripPhysics(go); prep.Done = true; }
             foreach (var trail in go.GetComponentsInChildren<TrailRenderer>(true)) trail.Clear();
-            _lobs.Add(new Lob { View = new View { Go = go, Pooled = pooled }, From = from, To = target, Flight = Mathf.Max(0.15f, seconds), Arc = art.lobArcHeight });
+            _lobs.Add(new Lob { View = new View { Go = go, Pooled = pooled }, From = from, To = target, Flight = Mathf.Max(0.15f, seconds), Arc = arc });
+            PlayLaunch(_aimedWeapon, from, target);
             return true;
         }
 

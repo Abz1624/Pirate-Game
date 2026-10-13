@@ -42,6 +42,9 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         public bool IsEmitting => _emitting;
+        /// <summary>Hackathon (13 Oct): the weapon prefab catalog (the stream weapon's stream prefab; null: the juice settings').</summary>
+        public WeaponVisualCatalog Visuals { get; set; }
+        string _streamWeapon;
 
         void LateUpdate()
         {
@@ -78,6 +81,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 var w = slots[i];
                 if (w.Config == null || w.Config.behavior != ConfigEnums.WeaponBehavior.ConeStream) continue;
                 any = true;
+                if (_streamWeapon == null) _streamWeapon = w.Config.weaponId;
                 if (w.StreamRemaining > 0f) return w;
             }
             return null;
@@ -88,6 +92,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (_mount != null) return true;
             if (_unavailable) return false;
             var prefab = _settings != null ? (_settings.flamethrowerStreamPrefab != null ? _settings.flamethrowerStreamPrefab : _settings.flamethrowerPrefab) : null;
+            var own = Visuals != null ? Visuals.Get(_streamWeapon, WeaponVisualSlot.Stream) : null; // Hackathon (13 Oct)
+            if (own != null) prefab = own;
             if (prefab == null) { _unavailable = true; return false; }
 
             // As V3: take the prefab's flame particle system (its name has "Flame", else the first), not the whole gun.
@@ -107,7 +113,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             visual.name = "FlamethrowerStream";
             visual.transform.localPosition = Vector3.zero;
             visual.transform.localRotation = source.localRotation;
-            visual.transform.localScale = Vector3.one * ((_settings != null ? _settings.flamethrowerScale : 1f) * VisualScaleMult);
+            visual.transform.localScale = Vector3.one * ((_settings != null ? _settings.flamethrowerScale : 1f) * VisualScaleMult * WeaponVisualTuning.Scale(prefab));
+            visual.transform.localPosition = Vector3.up * WeaponVisualTuning.Height(prefab);
             visual.SetActive(true);
             Kill(template);
             foreach (var c in visual.GetComponentsInChildren<Collider>(true)) Kill(c);

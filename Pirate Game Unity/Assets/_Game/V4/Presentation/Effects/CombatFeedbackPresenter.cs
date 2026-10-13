@@ -64,6 +64,11 @@ namespace RoguePirates.V4.Presentation.Effects
         readonly List<Group> _groups = new List<Group>(MaxGroups);
         /// <summary>Demo: the artists' VFX profiles (weapon hits and kills, enemy spawns and deaths, the ship's hits and sinking).</summary>
         public VfxProfilePlayer Profiles { get; set; }
+        /// <summary>Hackathon (13 Oct): the weapon prefab catalog (each weapon's hit and crit sparks; null: the shared ones). Set before Bind.</summary>
+        public Weapons.WeaponVisualCatalog Visuals { get; set; }
+
+        GameObject PickHit(string weaponId, Weapons.WeaponVisualSlot slot, GameObject fallback) =>
+            Visuals != null && weaponId != null ? Visuals.Pick(weaponId, slot, fallback) : fallback;
 
         public void Bind(PoolService pools, ICombatEventReader events, ConfigSetRuntime config, DemoJuiceSettings settings, Func<Transform> ship,
             CameraShakePresenter shake, DamageNumberPresenter numbers)
@@ -79,13 +84,24 @@ namespace RoguePirates.V4.Presentation.Effects
             {
                 // Prewarm for peak load (M14.15: six weapons and ~70 enemies peaked at 33 hit sparks, 11 highlights).
                 _fx.Register(_s.enemyHitPrefab, 40);
-                _fx.Register(_s.critHitPrefab, 12);
-                _fx.Register(_s.cannonImpactPrefab != null ? _s.cannonImpactPrefab : _s.weaponExplosionPrefab, 24);
+                // Hackathon (13 Oct): with the weapon prefab catalog the weapons' crits and cannon impacts are their own copies
+                // (prewarmed below); the shared ones stay for hits without a weapon prefab (items).
+                _fx.Register(_s.critHitPrefab, Visuals != null ? 4 : 12);
+                _fx.Register(_s.cannonImpactPrefab != null ? _s.cannonImpactPrefab : _s.weaponExplosionPrefab, Visuals != null ? 2 : 24);
                 _fx.Register(_s.enemyKillPrefab, 16);
                 _fx.Register(_s.eliteKillExplosionPrefab, 4);
                 _fx.Register(_s.bossKillExplosionPrefab, Mathf.Max(1, _s.bossDeathBurstCount));
                 _fx.Register(_s.damageHighlightPrefab, 16);
                 _fx.Register(_s.levelUpBurstPrefab, 2);
+                // Hackathon (13 Oct): each weapon's own hit and crit sparks (a run has at most six weapons; they grow past this).
+                if (Visuals != null && config != null)
+                    foreach (var w in config.All<WeaponConfig>())
+                    {
+                        var set = w != null ? Visuals.Find(w.weaponId) : null;
+                        if (set == null) continue;
+                        _fx.Register(set.hit, 12);
+                        _fx.Register(set.critHit, 3);
+                    }
                 _fx.Prewarm();
             }
             if (_config != null)
@@ -195,6 +211,14 @@ namespace RoguePirates.V4.Presentation.Effects
             if (_fx.Play(prefab, position, Quaternion.identity, scale, lifetime) != null) EffectsPlayed++;
         }
 
+        /// <summary>A weapon hit prefab with its tuning (scale, lifetime, height; 1 and 0 without one).</summary>
+        void PlayTuned(GameObject prefab, Vector3 position, float scale, float lifetime = 0f)
+        {
+            position.y += Weapons.WeaponVisualTuning.Height(prefab);
+            if (lifetime > 0f) lifetime *= Weapons.WeaponVisualTuning.Lifetime(prefab);
+            Play(prefab, position, scale * Weapons.WeaponVisualTuning.Scale(prefab), lifetime);
+        }
+
         /// <summary>Demo: the whirlpool where the boss is about to rise (it swirls until just after the boss appears).</summary>
         void OnBossArriving(Vector3 position)
         {
@@ -217,19 +241,21 @@ namespace RoguePirates.V4.Presentation.Effects
             var effect = HitEffect(weaponId);
             // Playtest (3 Oct, owner): a weapon with no hit effect (the Powder Kegs, which have their own blast) still
             // shows a small spark on each enemy it hits, so every hit reads.
+            // Hackathon (13 Oct): the weapon's own hit and crit prefabs (WeaponVisualCatalog); their tuning scales them.
             if (effect == ConfigEnums.WeaponHitEffect.None)
             {
-                if (_s.enemyHitPrefab != null) Play(_s.enemyHitPrefab, position + Vector3.up * 0.35f, _s.enemyHitScale * 0.8f);
+                var spark = PickHit(weaponId, Weapons.WeaponVisualSlot.Hit, _s.enemyHitPrefab);
+                if (spark != null) PlayTuned(spark, position + Vector3.up * 0.35f, _s.enemyHitScale * 0.8f);
                 return;
             }
             var mult = profile != null && !profile.HasPrefab ? profile.ScaleOrOne : 1f;
             if (effect == ConfigEnums.WeaponHitEffect.CannonImpact)
             {
-                var prefab = _s.cannonImpactPrefab != null ? _s.cannonImpactPrefab : _s.weaponExplosionPrefab;
-                if (prefab != null) { Play(prefab, position + Vector3.up * 0.45f, _s.cannonImpactScale * (crit ? 1.12f : 1f) * mult, 0.55f); return; }
+                var prefab = PickHit(weaponId, Weapons.WeaponVisualSlot.Hit, _s.cannonImpactPrefab != null ? _s.cannonImpactPrefab : _s.weaponExplosionPrefab);
+                if (prefab != null) { PlayTuned(prefab, position + Vector3.up * 0.45f, _s.cannonImpactScale * (crit ? 1.12f : 1f) * mult, 0.55f); return; }
             }
-            var hit = crit && _s.critHitPrefab != null ? _s.critHitPrefab : _s.enemyHitPrefab;
-            Play(hit, position + Vector3.up * 0.35f, (crit ? _s.critHitScale : _s.enemyHitScale) * mult);
+            var hit = crit && _s.critHitPrefab != null ? PickHit(weaponId, Weapons.WeaponVisualSlot.CritHit, _s.critHitPrefab) : PickHit(weaponId, Weapons.WeaponVisualSlot.Hit, _s.enemyHitPrefab);
+            PlayTuned(hit, position + Vector3.up * 0.35f, (crit ? _s.critHitScale : _s.enemyHitScale) * mult);
         }
 
         /// <summary>V3 CombatVfxController.OnKill → JuiceVfxBroker.PlayKill.</summary>

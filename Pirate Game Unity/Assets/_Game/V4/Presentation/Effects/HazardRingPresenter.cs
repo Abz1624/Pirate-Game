@@ -14,7 +14,7 @@ namespace RoguePirates.V4.Presentation.Effects
     /// </summary>
     public sealed class HazardRingPresenter : MonoBehaviour
     {
-        const int PrewarmTimed = 8;
+        const int PrewarmTimedCount = 8;
         const int Segments = 40;
         const float Height = 0.15f;
         static readonly Color TrapColor = new Color(1f, 0.25f, 0.15f, 0.95f);
@@ -46,8 +46,8 @@ namespace RoguePirates.V4.Presentation.Effects
             if (_material == null) _material = new Material(Shader.Find("Sprites/Default"));
             if (_hazards != null && (_outline == null || _outline.Length != _hazards.Capacity)) Allocate(_hazards.Capacity);
             if (_patches != null) AllocatePatches(_patches.Capacity);
-            while (_timedViews.Count < PrewarmTimed) AddTimedView();
-            _timed.Clear();
+            PrewarmTimed(null, PrewarmTimedCount);
+            ClearTimed();
         }
 
         static readonly Color TimedColor = new Color(1f, 0.45f, 0.1f, 0.95f);
@@ -56,22 +56,65 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             public Vector3 Center;
             public float Radius, Total, Left;
+            public int View;
+        }
+
+        /// <summary>A timed ring's outline and fill lines, drawn from a weapon's landing ring prefab (null: code-built).</summary>
+        sealed class TimedView
+        {
+            public LineRenderer Outline, Fill;
+            public GameObject Prefab;
+            public bool Busy;
         }
 
         readonly List<TimedRing> _timed = new List<TimedRing>();
-        readonly List<(LineRenderer outline, LineRenderer fill)> _timedViews = new List<(LineRenderer, LineRenderer)>();
+        readonly List<TimedView> _timedViews = new List<TimedView>();
 
         /// <summary>
         /// A landing ring whose inner ring fills over exactly <paramref name="seconds"/> of run time (V4 mortar shells, R-27
-        /// fix: V3's reticle showed 1.1 s for a 0.6 s shell).
+        /// fix: V3's reticle showed 1.1 s for a 0.6 s shell). Hackathon (13 Oct): <paramref name="prefab"/> is the
+        /// weapon's landing ring prefab (a LineRenderer, from the weapon prefab catalog; null: the code-built ring); its
+        /// <see cref="RoguePirates.V4.Presentation.Weapons.WeaponVisualTuning"/> sets the width and colour.
         /// </summary>
-        public void ShowTimedRing(Vector3 center, float radius, float seconds) =>
-            _timed.Add(new TimedRing { Center = center, Radius = radius, Total = Mathf.Max(0.01f, seconds), Left = seconds });
+        public void ShowTimedRing(Vector3 center, float radius, float seconds, GameObject prefab = null) =>
+            _timed.Add(new TimedRing { Center = center, Radius = radius, Total = Mathf.Max(0.01f, seconds), Left = seconds, View = AcquireTimedView(prefab) });
 
         public int TimedRingCount => _timed.Count;
 
-        void AddTimedView() =>
-            _timedViews.Add((CreateRing("TimedOutline" + _timedViews.Count), CreateRing("TimedFill" + _timedViews.Count)));
+        /// <summary>Makes at least <paramref name="count"/> ring views of <paramref name="prefab"/> before the run (null: code-built).</summary>
+        public void PrewarmTimed(GameObject prefab, int count)
+        {
+            var have = 0;
+            foreach (var v in _timedViews) if (v.Prefab == prefab) have++;
+            for (; have < count; have++) AddTimedView(prefab);
+        }
+
+        int AddTimedView(GameObject prefab)
+        {
+            var n = _timedViews.Count;
+            var prefix = prefab != null ? prefab.name + "_" : "";
+            _timedViews.Add(new TimedView { Outline = CreateRing(prefix + "TimedOutline" + n, prefab), Fill = CreateRing(prefix + "TimedFill" + n, prefab), Prefab = prefab });
+            return n;
+        }
+
+        int AcquireTimedView(GameObject prefab)
+        {
+            for (var i = 0; i < _timedViews.Count; i++)
+                if (!_timedViews[i].Busy && _timedViews[i].Prefab == prefab) { _timedViews[i].Busy = true; return i; }
+            var added = AddTimedView(prefab); // past the prewarm (counted nowhere: as before, it only grows)
+            _timedViews[added].Busy = true;
+            return added;
+        }
+
+        void ClearTimed()
+        {
+            _timed.Clear();
+            foreach (var v in _timedViews)
+            {
+                v.Busy = false;
+                ShowPair(v.Outline, v.Fill, false);
+            }
+        }
 
         void TickTimedRings()
         {
@@ -80,20 +123,26 @@ namespace RoguePirates.V4.Presentation.Effects
             {
                 var ring = _timed[i];
                 if (!paused) ring.Left -= Time.deltaTime;
-                if (ring.Left <= 0f) { _timed.RemoveAt(i); continue; }
+                if (ring.Left <= 0f)
+                {
+                    var done = _timedViews[ring.View];
+                    done.Busy = false;
+                    ShowPair(done.Outline, done.Fill, false);
+                    _timed.RemoveAt(i);
+                    continue;
+                }
                 _timed[i] = ring;
             }
-            while (_timedViews.Count < _timed.Count) AddTimedView();
-            for (var i = 0; i < _timedViews.Count; i++)
+            for (var i = 0; i < _timed.Count; i++)
             {
-                var (outline, fill) = _timedViews[i];
-                var visible = i < _timed.Count;
-                ShowPair(outline, fill, visible);
-                if (!visible) continue;
                 var ring = _timed[i];
+                var view = _timedViews[ring.View];
+                ShowPair(view.Outline, view.Fill, true);
                 var progress = 1f - Mathf.Clamp01(ring.Left / ring.Total);
-                SetCircle(outline, ring.Center, ring.Radius, TimedColor, 0.3f);
-                SetCircle(fill, ring.Center, Mathf.Max(0.05f, ring.Radius * progress), new Color(TimedColor.r, TimedColor.g, TimedColor.b, 0.55f + 0.4f * progress), 0.45f);
+                var width = Weapons.WeaponVisualTuning.Width(view.Prefab);
+                var color = Weapons.WeaponVisualTuning.Colour(view.Prefab, TimedColor);
+                SetCircle(view.Outline, ring.Center, ring.Radius, color, 0.3f * width);
+                SetCircle(view.Fill, ring.Center, Mathf.Max(0.05f, ring.Radius * progress), new Color(color.r, color.g, color.b, color.a / TimedColor.a * (0.55f + 0.4f * progress)), 0.45f * width);
             }
         }
 
@@ -148,14 +197,35 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             var patches = _patches;
             if (patches == null || _patchOutline == null) return;
+            var width = Weapons.WeaponVisualTuning.Width(_patchPrefab);
+            var color = Weapons.WeaponVisualTuning.Colour(_patchPrefab, PatchColor);
             for (var i = 0; i < _patchOutline.Length; i++)
             {
                 var live = patches.TryGet(i, out var center, out var radius, out var lifeLeft);
                 ShowPair(_patchOutline[i], _patchFill[i], live);
                 if (!live) continue;
-                SetCircle(_patchOutline[i], center, radius, PatchColor, 0.3f);
-                SetCircle(_patchFill[i], center, Mathf.Max(0.05f, radius * lifeLeft), new Color(PatchColor.r, PatchColor.g, PatchColor.b, 0.45f + 0.5f * lifeLeft), 0.45f);
+                SetCircle(_patchOutline[i], center, radius, color, 0.3f * width);
+                SetCircle(_patchFill[i], center, Mathf.Max(0.05f, radius * lifeLeft), new Color(color.r, color.g, color.b, color.a / PatchColor.a * (0.45f + 0.5f * lifeLeft)), 0.45f * width);
             }
+        }
+
+        GameObject _patchPrefab;
+
+        /// <summary>Hackathon (13 Oct): the burning patches' rings from the flame weapon's patch ring prefab (a
+        /// LineRenderer, from the weapon prefab catalog), remade before the run when it changes.</summary>
+        public void UsePatchRing(GameObject prefab)
+        {
+            if (prefab == _patchPrefab) return;
+            _patchPrefab = prefab;
+            if (_patchOutline == null) return;
+            var count = _patchOutline.Length;
+            for (var i = 0; i < count; i++)
+            {
+                if (_patchOutline[i] != null) Kill(_patchOutline[i].gameObject);
+                if (_patchFill[i] != null) Kill(_patchFill[i].gameObject);
+            }
+            _patchOutline = null;
+            AllocatePatches(count);
         }
 
         void AllocatePatches(int count)
@@ -165,9 +235,15 @@ namespace RoguePirates.V4.Presentation.Effects
             _patchFill = new LineRenderer[count];
             for (var i = 0; i < count; i++)
             {
-                _patchOutline[i] = CreateRing("PatchOutline" + i);
-                _patchFill[i] = CreateRing("PatchFill" + i);
+                _patchOutline[i] = CreateRing("PatchOutline" + i, _patchPrefab);
+                _patchFill[i] = CreateRing("PatchFill" + i, _patchPrefab);
             }
+        }
+
+        static void Kill(UnityEngine.Object o)
+        {
+            if (o == null) return;
+            if (Application.isPlaying) Destroy(o); else DestroyImmediate(o);
         }
 
         static void ShowPair(LineRenderer outline, LineRenderer fill, bool visible)
@@ -190,19 +266,37 @@ namespace RoguePirates.V4.Presentation.Effects
             }
         }
 
-        LineRenderer CreateRing(string name)
+        /// <summary>A ring line: an instance of <paramref name="prefab"/> (a LineRenderer at its root; Hackathon), else code-built.</summary>
+        LineRenderer CreateRing(string name, GameObject prefab = null)
         {
+            if (prefab != null && prefab.GetComponent<LineRenderer>() != null)
+            {
+                var go = Instantiate(prefab, transform, false);
+                go.name = name;
+                var own = go.GetComponent<LineRenderer>();
+                own.useWorldSpace = true;
+                own.loop = true;
+                own.positionCount = Segments;
+                go.SetActive(false);
+                return own;
+            }
             var child = new GameObject(name);
             child.transform.SetParent(transform, false);
             var line = child.AddComponent<LineRenderer>();
+            ConfigureRingLine(line);
+            line.material = _material;
+            child.SetActive(false);
+            return line;
+        }
+
+        /// <summary>The code-built ring line's settings (the weapon ring prefabs are built with these, HackathonWeaponPrefabs).</summary>
+        public static void ConfigureRingLine(LineRenderer line)
+        {
             line.useWorldSpace = true;
             line.loop = true;
             line.positionCount = Segments;
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;
-            line.material = _material;
-            child.SetActive(false);
-            return line;
         }
 
         void Show(int i, bool visible) => ShowPair(_outline[i], _fill[i], visible);

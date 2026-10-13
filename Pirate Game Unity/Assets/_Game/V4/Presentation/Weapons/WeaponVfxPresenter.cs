@@ -94,6 +94,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             public bool Pooled;
             public Material OwnedMaterial;
             public ParticleSystem[] Particles;
+            /// <summary>Hackathon: a keg's weapon (its blast is that weapon's).</summary>
+            public string WeaponId;
         }
 
         PoolService _pools;
@@ -109,7 +111,12 @@ namespace RoguePirates.V4.Presentation.Weapons
         Vector3 _lastSplashPos;
 
         /// <summary>M14.9b: draws the timed landing rings (set by the presentation root).</summary>
-        public Effects.HazardRingPresenter HazardRings { get; set; }
+        public Effects.HazardRingPresenter HazardRings
+        {
+            get => _hazardRings;
+            set { _hazardRings = value; PrewarmRings(); } // Hackathon: the weapons' own landing and patch rings
+        }
+        Effects.HazardRingPresenter _hazardRings;
         public int SplashesPlayed { get; private set; }
         /// <summary>Demo: the artists' per-weapon VFX profiles (muzzle).</summary>
         public Effects.VfxProfilePlayer Profiles { get; set; }
@@ -184,6 +191,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             SyncBlades();
             SyncOrbitModels();
             SyncMaces(); // Hackathon (12 Oct): the Anchor Flail's chained maces (WeaponVfxPresenter.Maces.cs)
+            SyncAuras(); // Hackathon (13 Oct): a weapon's aura prefab round the ship (WeaponVfxPresenter.Visuals.cs)
         }
 
         /// <summary>Ends timed effects (V3 VfxAutoReturn / Destroy(go, t)): scaled time, starting the frame after spawn.</summary>
@@ -193,6 +201,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             TickCoins(dt);
             TickPulses(dt);
             TickLobs(dt); // Hackathon art pass: the ink pots in flight (WeaponVfxPresenter.Lobs.cs)
+            TickWhirlpools(dt); // Hackathon (13 Oct): the Maelstrom's whirlpool art (WeaponVfxPresenter.Visuals.cs)
             for (var i = _timed.Count - 1; i >= 0; i--)
             {
                 var t = _timed[i];
@@ -213,9 +222,11 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>V3 OnWeaponFired: the weapon's muzzle prefab (its CannonSmoke child when it has one) for 0.35 s.</summary>
         public void Fired(string weaponId, Vector3 origin, Vector3 direction)
         {
+            _firedWeapon = weaponId;
+            _firedFrame = Time.frameCount;
             var rotation = direction.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(direction.normalized, Vector3.up) : Quaternion.identity;
             if (ProfileMuzzle(weaponId, origin, rotation, out var profileScale)) return;
-            var prefab = ResolveMuzzlePrefab(weaponId);
+            var prefab = Pick(weaponId, WeaponVisualSlot.Muzzle, ResolveMuzzlePrefab(weaponId)); // Hackathon: the weapon's muzzle prefab
             if (prefab == null) return;
             var scale = _settings.shootingVfxScale * profileScale;
             if (_settings.TryGetWeaponVfx(weaponId, out var binding) && binding.muzzleScaleMult > 0f)
@@ -252,7 +263,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             /// <summary>Flight time so far (negative = still waiting at the ship), the flight's length and arc height.</summary>
             public float T, Flight, Arc;
             public bool Landed, Splash, Billboard;
-            public float Scale, Spin;
+            public float Scale, Spin, SpinMult;
+            public string WeaponId;
         }
 
         // Hackathon (13 Oct, owner: "the enemies are dying before the coins hit them"): the sim's damage is instant at the
@@ -281,9 +293,16 @@ namespace RoguePirates.V4.Presentation.Weapons
 
         /// <summary>The gold barrel's collect-particle coin (hackathon, 13 Oct, owner) on a camera-facing quad; else the
         /// keg pickup's gold coin (the juice settings' gold pickup model), else the coloured placeholder.</summary>
-        GameObject CoinModel(out float scale, out bool billboard)
+        GameObject CoinModel(out float scale, out bool billboard, string weaponId = null)
         {
             billboard = false;
+            var own = Pick(weaponId, WeaponVisualSlot.Coin, null); // Hackathon: the weapon's coin prefab
+            if (own != null)
+            {
+                billboard = WeaponVisualTuning.Of(own) is { faceCamera: true };
+                scale = billboard ? CoinSpriteSize : _settings != null ? _settings.goldFlyingCoinScale : 1f;
+                return own;
+            }
             var sprite = CoinSpriteMaterial();
             if (sprite != null)
             {
@@ -328,9 +347,12 @@ namespace RoguePirates.V4.Presentation.Weapons
         // V5 M8z (7 Oct): the coins are the weapon's data (visual.placeholderLook), not its id.
         bool StrikeIsDoubloons() => _aimedFrame == Time.frameCount && VisualOf(_aimedWeapon)?.placeholderLook == WeaponPlaceholderLook.Doubloons;
 
-        void CoinBurst(Vector3 position, float radius)
+        void CoinBurst(string weaponId, Vector3 position, float radius)
         {
-            var coin = CoinModel(out var scale, out var billboard);
+            var coin = CoinModel(out var scale, out var billboard, weaponId);
+            var arcMult = WeaponVisualTuning.Arc(coin);
+            var spinMult = WeaponVisualTuning.Spin(coin);
+            var tunedScale = scale * WeaponVisualTuning.Scale(coin);
             var target = position;
             target.y = 0.7f;
             var from = _ship != null && _ship.Exists ? _ship.Position + Vector3.up * 1.1f : target + Vector3.up * 4f;
@@ -340,7 +362,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             var dir = dist > 0.01f ? flat / dist : Vector3.forward;
             var side = Vector3.Cross(Vector3.up, dir);
             var flight = Mathf.Clamp(dist / CoinFlightSpeed, CoinMinFlight, CoinMaxFlight);
-            var arc = 0.4f + dist * 0.03f;
+            var arc = (0.4f + dist * 0.03f) * arcMult;
             for (var i = 0; i < CoinsPerStrike; i++)
             {
                 // A small fan, no random draw (the presenter draws none): middle, left, right.
@@ -352,8 +374,8 @@ namespace RoguePirates.V4.Presentation.Weapons
                 _coins.Add(new Coin
                 {
                     View = new View { Go = go, Pooled = pooled }, From = from + side * lateral * 0.3f, To = target + side * lateral,
-                    T = -i * CoinStagger, Flight = flight, Arc = arc, Left = 0.45f, Splash = i == 0,
-                    Billboard = billboard, Scale = scale, Spin = i * 1.3f,
+                    T = -i * CoinStagger, Flight = flight, Arc = arc, Left = 0.45f * WeaponVisualTuning.Lifetime(coin), Splash = i == 0,
+                    Billboard = billboard, Scale = tunedScale, Spin = i * 1.3f, SpinMult = spinMult, WeaponId = weaponId,
                 });
             }
         }
@@ -372,7 +394,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     c.T += dt;
                     var k = Mathf.Clamp01(c.T / Mathf.Max(0.01f, c.Flight));
                     t.position = Vector3.Lerp(c.From, c.To, k) + Vector3.up * (c.Arc * 4f * k * (1f - k));
-                    SpinCoin(ref c, t, dt, 1080f);
+                    SpinCoin(ref c, t, dt, 1080f * c.SpinMult);
                     if (k >= 1f)
                     {
                         // The hit: it glances off the enemy and falls.
@@ -380,7 +402,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                         var back = c.From - c.To;
                         back.y = 0f;
                         c.Velocity = (back.sqrMagnitude > 0.0001f ? back.normalized : Vector3.zero) * 2.5f + Vector3.up * 5f;
-                        if (c.Splash) WaterSplash(c.To);
+                        if (c.Splash) WaterSplashFor(c.WeaponId, c.To);
                     }
                     _coins[i] = c;
                     continue;
@@ -396,7 +418,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 var p = t.position + c.Velocity * dt;
                 if (p.y < 0.05f) { p.y = 0.05f; c.Velocity = Vector3.zero; }
                 t.position = p;
-                SpinCoin(ref c, t, dt, 900f);
+                SpinCoin(ref c, t, dt, 900f * c.SpinMult);
                 _coins[i] = c;
             }
         }
@@ -418,8 +440,10 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>V3 OnLongNineBeam: the laser beam prefab's line from the muzzle for laserBeamDuration.</summary>
         public void Beam(Vector3 origin, Vector3 direction, float range, float halfWidth)
         {
-            if (_settings == null || _settings.laserBeamPrefab == null) return;
-            var prefab = _settings.laserBeamPrefab;
+            // Hackathon: the beam of the weapon that fired this frame (the lane weapon fires, then draws its beam).
+            var weapon = _firedFrame == Time.frameCount ? _firedWeapon : Equipped(ConfigEnums.WeaponBehavior.Projectile, c => c.lane.enabled && c.lane.beam);
+            var prefab = Pick(weapon, WeaponVisualSlot.Beam, _settings != null ? _settings.laserBeamPrefab : null);
+            if (_settings == null || prefab == null) return;
             // V3's broker pool left the instance at the prefab's own pose (the line is in world space).
             var go = Spawn(KindBeam, prefab, prefab.transform.position, prefab.transform.rotation, null, out var pooled);
             if (go == null) return;
@@ -430,7 +454,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 if (prep.Beam == null) prep.Beam = go.AddComponent<LongNineBeamVisual>();
             }
             prep.Beam.Configure(origin, direction, range, halfWidth);
-            AddTimed(go, pooled, _settings.laserBeamDuration);
+            AddTimed(go, pooled, _settings.laserBeamDuration * WeaponVisualTuning.Lifetime(prefab));
         }
 
         /// <summary>
@@ -439,7 +463,9 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// </summary>
         public void SideSalvo(string weaponId, Vector3 shipPosition, Vector3 sideDirection)
         {
-            var prefab = ResolveMuzzlePrefab(weaponId);
+            _firedWeapon = weaponId;
+            _firedFrame = Time.frameCount;
+            var prefab = Pick(weaponId, WeaponVisualSlot.Muzzle, ResolveMuzzlePrefab(weaponId)); // Hackathon: the weapon's muzzle prefab
             if (prefab == null) return;
             sideDirection.y = 0f;
             if (sideDirection.sqrMagnitude < 0.0001f) return;
@@ -457,8 +483,11 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>V3 OnMineDropped: the barrel model, physics stripped, until the keg blows. -1 without a model.</summary>
         public int MineDropped(Vector3 position)
         {
-            if (_settings == null || _settings.mineBarrelPrefab == null) return -1;
-            var go = Spawn(KindKeg, _settings.mineBarrelPrefab, position, Quaternion.identity, _settings.mineBarrelScale, out var pooled);
+            if (_settings == null) return -1;
+            var weapon = Visuals != null ? Equipped(ConfigEnums.WeaponBehavior.Mine) : null; // Hackathon: the keg weapon's keg prefab
+            var prefab = Pick(weapon, WeaponVisualSlot.Mine, _settings.mineBarrelPrefab);
+            if (prefab == null) return -1;
+            var go = Spawn(KindKeg, prefab, position, Quaternion.identity, _settings.mineBarrelScale, out var pooled);
             if (go == null) return -1;
             var prep = Prepare(go);
             if (!prep.Done)
@@ -466,7 +495,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 StripPhysics(go);
                 prep.Done = true;
             }
-            return Track(new View { Go = go, Pooled = pooled });
+            return Track(new View { Go = go, Pooled = pooled, WeaponId = weapon });
         }
 
         public void MineRemoved(int handle) => ReleaseHandle(handle);
@@ -518,10 +547,14 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         /// <summary>V3 OnMineExploded: the powder keg blast (only its impact, ring and smoke children), else a burst.</summary>
-        public void Explosion(Vector3 position, float radius)
+        public void Explosion(Vector3 position, float radius) => ExplosionFor(Visuals != null ? KegAt(position) : null, position, radius);
+
+        /// <summary>The keg blast of <paramref name="weaponId"/> (its blast prefab; Hackathon), else the shared one.</summary>
+        void ExplosionFor(string weaponId, Vector3 position, float radius)
         {
             if (_settings == null) return;
             var prefab = _settings.powderKegExplosionPrefab != null ? _settings.powderKegExplosionPrefab : _settings.weaponExplosionPrefab;
+            prefab = Pick(weaponId, WeaponVisualSlot.Blast, prefab);
             if (prefab == null) return;
 
             var scaleMult = 1f;
@@ -529,22 +562,25 @@ namespace RoguePirates.V4.Presentation.Weapons
                 scaleMult = binding.impactScaleMult;
             var scale = Mathf.Max(1.15f, _settings.powderKegExplosionScale * 2.35f * scaleMult * Mathf.Clamp(radius / 2.8f, 0.9f, 1.35f));
             var burstPos = position + Vector3.up * 0.45f;
-            if (PlayFilteredExplosion(prefab, burstPos, scale, 1.5f)) return;
+            if (PlayFilteredExplosion(prefab, burstPos, scale, 1.5f * WeaponVisualTuning.Lifetime(prefab))) return;
             PlayBurst(prefab, burstPos, Quaternion.identity, scale * 0.65f, 1.35f);
         }
 
         /// <summary>V3 OnLightningStrike: the strike prefab on the water, sized by the strike radius, for 1.15 s.</summary>
         public void LightningStrike(Vector3 position, float radius)
         {
-            if (StrikeIsDoubloons()) { CoinBurst(position, radius); return; }
-            if (_settings == null || _settings.lightningStrikePrefab == null) return;
+            if (StrikeIsDoubloons()) { CoinBurst(_aimedWeapon, position, radius); return; }
+            // Hackathon: the strike prefab of the strike weapon that aimed this frame (else the equipped one).
+            var weapon = Visuals != null ? AimedOrEquipped(ConfigEnums.WeaponBehavior.AreaStrike, c => c.visual.placeholderLook != WeaponPlaceholderLook.Doubloons) : null;
+            var prefab = Pick(weapon, WeaponVisualSlot.Strike, _settings != null ? _settings.lightningStrikePrefab : null);
+            if (_settings == null || prefab == null) return;
             var strikePos = position;
             strikePos.y = 0.05f;
             var scale = _settings.lightningStrikeScale * Mathf.Clamp(radius / 3.5f, 0.85f, 1.35f);
-            var go = Spawn(KindLightning, _settings.lightningStrikePrefab, strikePos, Quaternion.identity, scale, out var pooled);
+            var go = Spawn(KindLightning, prefab, strikePos, Quaternion.identity, scale, out var pooled);
             if (go == null) return;
             Restart(Prepare(go).Particles);
-            AddTimed(go, pooled, 1.15f);
+            AddTimed(go, pooled, 1.15f * WeaponVisualTuning.Lifetime(prefab));
         }
 
         /// <summary>
@@ -579,7 +615,18 @@ namespace RoguePirates.V4.Presentation.Weapons
         public void TimedRing(Vector3 position, float radius, float seconds)
         {
             TryLob(position, seconds); // Hackathon art pass: the aimed weapon's lob model (the ink pot), landing with the shell
-            if (HazardRings != null) HazardRings.ShowTimedRing(position, radius, seconds);
+            // Hackathon (13 Oct): whose ring: the predicted-area weapon that aimed this frame (a shell), else the shell that
+            // landed here (its whirlpool or ink slick opening); none for an item's blast ring (the shared ring).
+            string weapon = null;
+            if (Visuals != null)
+            {
+                // A shell landed here this frame: this ring is its whirlpool or slick (opened right after the impact).
+                var opening = LandedHere(position) && (weapon = ShellAt(position)) != null;
+                if (!opening && _aimedFrame == Time.frameCount && ConfigOf(_aimedWeapon)?.behavior == ConfigEnums.WeaponBehavior.PredictedArea) weapon = _aimedWeapon;
+                MarkShell(position, weapon);
+                if (opening) ShowWhirlpool(weapon, position, radius, seconds);
+            }
+            if (HazardRings != null) HazardRings.ShowTimedRing(position, radius, seconds, Pick(weapon, WeaponVisualSlot.LandingRing, null));
         }
 
         /// <summary>
@@ -590,6 +637,10 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             if (_settings == null) return;
             var burstPrefab = _settings.mortarExplosionPrefab != null ? _settings.mortarExplosionPrefab : _settings.weaponExplosionPrefab;
+            // Hackathon: the impact prefab of the shell that landed here (else the equipped shell weapon's).
+            NoteLanding(position);
+            if (Visuals != null)
+                burstPrefab = Pick(ShellAt(position) ?? Equipped(ConfigEnums.WeaponBehavior.PredictedArea, c => !c.visual.pulseImpact), WeaponVisualSlot.Impact, burstPrefab);
             if (burstPrefab == null)
             {
                 Explosion(position, radius);
@@ -626,36 +677,52 @@ namespace RoguePirates.V4.Presentation.Weapons
             public Vector3 Center;
             public float Radius, Left, Total, Width, StartFraction;
             public Color Color;
+            public View View;
+            public LineRenderer Line;
         }
 
         const int PulseSegments = 48;
         const float PulseHeight = 0.2f;
         static readonly Color AuraPulseColor = new Color(1f, 0.82f, 0.3f, 0.95f);
         readonly List<Pulse> _pulses = new List<Pulse>();
-        readonly List<LineRenderer> _pulseLines = new List<LineRenderer>();
+        GameObject _pulseTemplate;
         Material _pulseMaterial;
         public int PulseCount => _pulses.Count;
 
         /// <summary>An aura pulse without its weapon: a gold ring.</summary>
-        public void AuraPulse(Vector3 center, float radius) => AddPulse(center, radius, AuraPulseColor, 0.5f, 0.3f, 0.45f);
+        public void AuraPulse(Vector3 center, float radius) => AddPulse(center, radius, AuraPulseColor, 0.5f, 0.3f, 0.45f, null);
 
         public void WeaponPulse(string weaponId, Vector3 center, float radius)
         {
-            WeaponConfig config = null;
-            var slots = _weapons != null ? _weapons.Slots : null;
-            if (slots != null)
-                for (var i = 0; i < slots.Count; i++)
-                    if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
+            var config = ConfigOf(weaponId);
             var color = config != null ? config.aimOverlayColor : AuraPulseColor;
             color.a = 0.95f;
-            AddPulse(center, radius, color, 0.6f, 0.15f, 0.5f);
-            AddPulse(center, radius * 0.8f, new Color(color.r, color.g, color.b, 0.6f), 0.75f, 0.05f, 0.3f);
+            // Hackathon (13 Oct): the weapon's pulse ring prefab (its tuning: width, colour, sweep time); its aura prefab
+            // follows the ship at this radius (WeaponVfxPresenter.Visuals.cs).
+            var prefab = Pick(weaponId, WeaponVisualSlot.PulseRing, null);
+            NoteAura(weaponId, radius);
+            NoteLanding(center); // an ink shell landing (its slick opens next)
+            AddPulse(center, radius, color, 0.6f, 0.15f, 0.5f, prefab);
+            AddPulse(center, radius * 0.8f, new Color(color.r, color.g, color.b, 0.6f), 0.75f, 0.05f, 0.3f, prefab);
         }
 
-        void AddPulse(Vector3 center, float radius, Color color, float seconds, float startFraction, float width)
+        void AddPulse(Vector3 center, float radius, Color color, float seconds, float startFraction, float width, GameObject prefab)
         {
             if (radius <= 0.05f) return;
-            _pulses.Add(new Pulse { Center = center, Radius = radius, Left = seconds, Total = seconds, Width = width, StartFraction = startFraction, Color = color });
+            var go = Spawn(KindPulse, prefab != null ? prefab : PulseTemplate(), Vector3.zero, Quaternion.identity, null, out var pooled);
+            if (go == null) return;
+            var line = go.GetComponent<LineRenderer>();
+            if (line == null) { Recycle(go, pooled); return; }
+            line.useWorldSpace = true;
+            line.loop = true;
+            line.positionCount = PulseSegments;
+            seconds *= WeaponVisualTuning.Lifetime(prefab);
+            _pulses.Add(new Pulse
+            {
+                Center = center + Vector3.up * WeaponVisualTuning.Height(prefab), Radius = radius, Left = seconds, Total = seconds,
+                Width = width * WeaponVisualTuning.Width(prefab), StartFraction = startFraction, Color = WeaponVisualTuning.Colour(prefab, color),
+                View = new View { Go = go, Pooled = pooled }, Line = line,
+            });
         }
 
         void TickPulses(float dt)
@@ -664,17 +731,13 @@ namespace RoguePirates.V4.Presentation.Weapons
             {
                 var p = _pulses[i];
                 p.Left -= dt;
-                if (p.Left <= 0f) { _pulses.RemoveAt(i); continue; }
+                if (p.Left <= 0f || p.Line == null) { ReleaseView(p.View); _pulses.RemoveAt(i); continue; }
                 _pulses[i] = p;
             }
-            while (_pulseLines.Count < _pulses.Count) _pulseLines.Add(CreatePulseLine(_pulseLines.Count));
-            for (var i = 0; i < _pulseLines.Count; i++)
+            for (var i = 0; i < _pulses.Count; i++)
             {
-                var line = _pulseLines[i];
-                var visible = i < _pulses.Count;
-                if (line.gameObject.activeSelf != visible) line.gameObject.SetActive(visible);
-                if (!visible) continue;
                 var p = _pulses[i];
+                var line = p.Line;
                 var t = 1f - p.Left / p.Total;                 // 0 → 1
                 var eased = 1f - (1f - t) * (1f - t);          // fast out, slow at the edge
                 var r = p.Radius * Mathf.Lerp(p.StartFraction, 1f, eased);
@@ -685,25 +748,33 @@ namespace RoguePirates.V4.Presentation.Weapons
                 for (var s = 0; s < PulseSegments; s++)
                 {
                     var a = s * Mathf.PI * 2f / PulseSegments;
-                    line.SetPosition(s, new Vector3(p.Center.x + Mathf.Cos(a) * r, PulseHeight, p.Center.z + Mathf.Sin(a) * r));
+                    line.SetPosition(s, new Vector3(p.Center.x + Mathf.Cos(a) * r, PulseHeight + p.Center.y, p.Center.z + Mathf.Sin(a) * r));
                 }
             }
         }
 
-        LineRenderer CreatePulseLine(int index)
+        /// <summary>The code-built pulse line (a weapon without a pulse ring prefab), kept inactive as a pool template.</summary>
+        GameObject PulseTemplate()
         {
+            if (_pulseTemplate != null) return _pulseTemplate;
             if (_pulseMaterial == null) _pulseMaterial = new Material(Shader.Find("Sprites/Default")) { name = "WeaponPulse", hideFlags = HideFlags.DontSave };
-            var go = new GameObject("WeaponPulse" + index);
-            go.transform.SetParent(transform, false);
-            var line = go.AddComponent<LineRenderer>();
+            _pulseTemplate = new GameObject("WeaponPulse");
+            _pulseTemplate.transform.SetParent(_pools != null && _pools.Staging != null ? _pools.Staging : transform, false);
+            var line = _pulseTemplate.AddComponent<LineRenderer>();
+            ConfigurePulseLine(line);
+            line.sharedMaterial = _pulseMaterial;
+            _pulseTemplate.SetActive(false);
+            return _pulseTemplate;
+        }
+
+        /// <summary>The code-built pulse line's settings (the weapon pulse ring prefabs are built with these, HackathonWeaponPrefabs).</summary>
+        public static void ConfigurePulseLine(LineRenderer line)
+        {
             line.useWorldSpace = true;
             line.loop = true;
             line.positionCount = PulseSegments;
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;
-            line.sharedMaterial = _pulseMaterial;
-            go.SetActive(false);
-            return line;
         }
 
         /// <summary>V3 OnBurningOilDropped: the burning trail prefab sized by the patch radius, for 1.6 s.</summary>
@@ -715,16 +786,20 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         /// <summary>V3 JuiceVfxBroker.PlayWaterSplash: the splash prefab at y 0.35 for 0.55 s, merged with a recent nearby one.</summary>
-        public void WaterSplash(Vector3 position)
+        public void WaterSplash(Vector3 position) => WaterSplashFor(SplashWeapon(position), position);
+
+        /// <summary>The splash of <paramref name="weaponId"/> (its splash prefab; Hackathon), else the shared one.</summary>
+        void WaterSplashFor(string weaponId, Vector3 position)
         {
-            if (_settings == null || _settings.waterImpactSplashPrefab == null) return;
+            var prefab = Pick(weaponId, WeaponVisualSlot.WaterSplash, _settings != null ? _settings.waterImpactSplashPrefab : null);
+            if (_settings == null || prefab == null) return;
             if (Time.time - _lastSplashTime < SplashMergeSeconds
                 && (position - _lastSplashPos).sqrMagnitude < SplashMergeRadius * SplashMergeRadius)
                 return;
             _lastSplashTime = Time.time;
             _lastSplashPos = position;
             position.y = 0.35f;
-            PlayBurst(_settings.waterImpactSplashPrefab, position, Quaternion.identity, _settings.waterImpactSplashScale, 0.55f);
+            PlayBurst(prefab, position, Quaternion.identity, _settings.waterImpactSplashScale, 0.55f);
             SplashesPlayed++;
         }
 
@@ -732,7 +807,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         public void PlayExplosion(Vector3 position, float blastRadius)
         {
             position.y = 0f;
-            Explosion(position, blastRadius);
+            ExplosionFor(null, position, blastRadius); // the enemies' blasts keep the shared keg blast
         }
 
         readonly Dictionary<string, string> _summonKinds = new Dictionary<string, string>();
@@ -753,6 +828,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             // Playtest (3 Oct, owner): a cannon asset standing in for a summon (the parrots' cannonball, the monkeys'
             // cannon barrel) is drawn as the weapon's coloured placeholder instead.
             var model = config != null ? WeaponPlaceholderModels.Summon(config.visual.placeholderLook, config.visual.summonModel, _pools != null ? _pools.Staging : null, _settings) : null;
+            if (model != null) model = Pick(weaponId, WeaponVisualSlot.Summon, model); // Hackathon: the weapon's summon prefab
             if (model == null) return SkiffSpawned(position, forward);
             forward.y = 0f;
             if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
@@ -826,8 +902,13 @@ namespace RoguePirates.V4.Presentation.Weapons
             _sinking.Clear();
             foreach (var c in _coins) ReleaseView(c.View);
             _coins.Clear();
+            foreach (var p in _pulses) ReleaseView(p.View);
             _pulses.Clear();
-            foreach (var line in _pulseLines) if (line != null) line.gameObject.SetActive(false);
+            foreach (var w in _whirls) ReleaseView(w.View);
+            _whirls.Clear();
+            foreach (var a in _auras.Values) ReleaseView(a);
+            _auras.Clear();
+            _auraRadius.Clear();
             ReleaseBlades(0);
             foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
             _orbitModels.Clear();
@@ -839,6 +920,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             Clear();
             if (_pulseMaterial != null) Destroy(_pulseMaterial);
+            if (_pulseTemplate != null) Kill(_pulseTemplate);
             if (_linkMaterial != null) Destroy(_linkMaterial); // Hackathon art pass: the chain links' instancing copy
         }
 
@@ -873,7 +955,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (_bladePositions.Count == 0) return;
 
             ReleaseBlades(_bladePositions.Count);
-            while (_blades.Count < _bladePositions.Count) _blades.Add(CreateBlade(_bladePositions[_blades.Count]));
+            var bladePrefab = Pick(slot.Config.weaponId, WeaponVisualSlot.Orbit, _settings != null ? _settings.cutlassPrefab : null); // Hackathon
+            while (_blades.Count < _bladePositions.Count) _blades.Add(CreateBlade(bladePrefab, _bladePositions[_blades.Count]));
 
             var rotation = Quaternion.LookRotation(Heading(), Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
             for (var i = 0; i < _blades.Count; i++)
@@ -960,6 +1043,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 if (slot == null || slot.Config == null || slot.Config.behavior != ConfigEnums.WeaponBehavior.Orbit) continue;
                 var model = WeaponPlaceholderModels.Orbit(slot.Config.visual.placeholderLook, slot.Config.visual.orbitModel, _pools != null ? _pools.Staging : null, _settings); // Playtest (3 Oct, owner)
                 if (model == null) continue;
+                model = Pick(slot.Config.weaponId, WeaponVisualSlot.Orbit, model); // Hackathon: the weapon's orbit prefab
                 var hits = _weapons.OrbitHitsOf(slot);
                 if (hits == null || hits.Count == 0) continue; // paused: they stay where they are
                 if (!_orbitModels.TryGetValue(slot, out var views)) _orbitModels[slot] = views = new List<View>();
@@ -972,7 +1056,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     if (!prep.Done) { StripPhysics(go); prep.Done = true; }
                     views.Add(new View { Go = go, Pooled = pooled, Particles = Array.Empty<ParticleSystem>() });
                 }
-                var spin = Quaternion.Euler(0f, Time.time * 540f, 0f);
+                var spin = Quaternion.Euler(0f, Time.time * 540f * WeaponVisualTuning.Spin(model), 0f);
                 for (var i = 0; i < views.Count && i < hits.Count; i++)
                     if (views[i].Go != null) views[i].Go.transform.SetPositionAndRotation(hits[i].Position, spin);
             }
@@ -990,10 +1074,9 @@ namespace RoguePirates.V4.Presentation.Weapons
             return _lastForward;
         }
 
-        View CreateBlade(Vector3 position)
+        View CreateBlade(GameObject prefab, Vector3 position)
         {
-            var prefab = _settings != null ? _settings.cutlassPrefab : null;
-            if (prefab != null)
+            if (prefab != null && _settings != null)
             {
                 var go = Spawn(KindCutlass, prefab, position, Quaternion.identity, _settings.cutlassScale, out var pooled);
                 if (go != null)
@@ -1085,6 +1168,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         bool PlayGunChildBurst(GameObject gunPrefab, Vector3 position, Quaternion rotation, float scale, float lifetime)
         {
             if (gunPrefab == null || gunPrefab.transform.Find(GunSmokeChild) == null) return false;
+            lifetime *= WeaponVisualTuning.Lifetime(gunPrefab);
             var go = Spawn(KindMuzzle, gunPrefab, position, rotation, scale, out var pooled);
             if (go == null) return false;
             var prep = Prepare(go);
@@ -1107,6 +1191,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>V3 JuiceVfxBroker.Play (VfxPool.Play): the prefab, every particle system cleared and replayed.</summary>
         void PlayBurst(GameObject prefab, Vector3 position, Quaternion rotation, float scale, float lifetime)
         {
+            position.y += WeaponVisualTuning.Height(prefab);
+            lifetime *= WeaponVisualTuning.Lifetime(prefab);
             var go = Spawn(KindBurst, prefab, position, rotation, scale, out var pooled);
             if (go == null) return;
             var particles = Prepare(go).Particles;
@@ -1163,25 +1249,29 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             if (_pools == null || _settings == null) return;
             var s = _settings;
+            // Hackathon (13 Oct): with the weapon prefab catalog, each weapon prewarms its own copies (PrewarmModels), so
+            // the shared prefabs only the weapons used are registered here without a prewarm (still there for a weapon
+            // with an empty slot). The keg blast and the splash stay prewarmed: the enemies' blasts and shots use them.
+            var shared = Visuals != null ? 0 : 1;
             if (s.weaponVfxBindings != null)
                 foreach (var b in s.weaponVfxBindings)
-                    if (b != null) RegisterMuzzle(b.muzzleVfxPrefab);
-            RegisterMuzzle(s.cannonMuzzleVfxPrefab);
-            RegisterMuzzle(s.shootingVfxPrefab);
+                    if (b != null) RegisterMuzzle(b.muzzleVfxPrefab, PrewarmMuzzle * shared);
+            RegisterMuzzle(s.cannonMuzzleVfxPrefab, PrewarmMuzzle * shared);
+            RegisterMuzzle(s.shootingVfxPrefab, PrewarmMuzzle * shared);
 
             var kegBlast = s.powderKegExplosionPrefab != null ? s.powderKegExplosionPrefab : s.weaponExplosionPrefab;
             if (kegBlast != null) EnsurePool(HasNamedExplosionChild(kegBlast.transform) ? KindBlast : KindBurst, kegBlast, PrewarmBlast);
             var mortarBurst = s.mortarExplosionPrefab != null ? s.mortarExplosionPrefab : s.weaponExplosionPrefab;
-            if (mortarBurst != null) EnsurePool(KindBurst, mortarBurst, PrewarmMortarBurst);
-            if (s.lightningStrikePrefab != null) EnsurePool(KindLightning, s.lightningStrikePrefab, PrewarmLightning);
-            if (s.laserBeamPrefab != null) EnsurePool(KindBeam, s.laserBeamPrefab, PrewarmBeam);
+            if (mortarBurst != null) EnsurePool(KindBurst, mortarBurst, PrewarmMortarBurst * shared);
+            if (s.lightningStrikePrefab != null) EnsurePool(KindLightning, s.lightningStrikePrefab, PrewarmLightning * shared);
+            if (s.laserBeamPrefab != null) EnsurePool(KindBeam, s.laserBeamPrefab, PrewarmBeam * shared);
             var telegraph = s.mortarTelegraphPrefab != null ? s.mortarTelegraphPrefab : s.lightningStrikePrefab;
             var reticle = telegraph != null ? telegraph.transform.Find(ReticleChild) : null;
             if (reticle != null) EnsurePool(KindReticle, reticle.gameObject, PrewarmReticle);
             if (s.burningTrailPrefab != null) EnsurePool(KindBurst, s.burningTrailPrefab, PrewarmBurst);
             if (s.waterImpactSplashPrefab != null) EnsurePool(KindBurst, s.waterImpactSplashPrefab, PrewarmSplash);
-            if (s.mineBarrelPrefab != null) EnsurePool(KindKeg, s.mineBarrelPrefab, PrewarmKeg);
-            if (s.cutlassPrefab != null) EnsurePool(KindCutlass, s.cutlassPrefab, PrewarmCutlass);
+            if (s.mineBarrelPrefab != null) EnsurePool(KindKeg, s.mineBarrelPrefab, PrewarmKeg * shared);
+            if (s.cutlassPrefab != null) EnsurePool(KindCutlass, s.cutlassPrefab, PrewarmCutlass * shared);
             if (_skiffModel != null) EnsurePool(KindSkiff, _skiffModel, PrewarmSkiff);
         }
 
@@ -1197,24 +1287,28 @@ namespace RoguePirates.V4.Presentation.Weapons
                 if (w?.visual == null) continue;
                 var staging = _pools.Staging;
                 var orbitModel = WeaponPlaceholderModels.Orbit(w.visual.placeholderLook, w.visual.orbitModel, staging, _settings); // Playtest (3 Oct, owner)
+                if (orbitModel != null) orbitModel = Pick(w.weaponId, WeaponVisualSlot.Orbit, orbitModel); // Hackathon: the weapon's orbit prefab
                 if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && orbitModel != null)
                 {
                     var need = 2 * Mathf.Max(1, w.orbit.baseBlades) * Mathf.Max(1, w.orbit.beamSegments) + 2;
                     orbit[orbitModel] = orbit.TryGetValue(orbitModel, out var n) ? Mathf.Max(n, need) : need;
                 }
                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
-                    EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging, _settings), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
-                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _, out _), CoinsPerStrike * 8); // Hackathon: a chain of strikes
-                if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace) PrewarmMaces(Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
+                    EnsurePool(SummonKind(w.weaponId), Pick(w.weaponId, WeaponVisualSlot.Summon, WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging, _settings)), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
+                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, CoinModel(out _, out _, w.weaponId), CoinsPerStrike * 8); // Hackathon: a chain of strikes
+                if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace) PrewarmMaces(w.weaponId, Mathf.Max(1, w.mace.maxPerAttack) + 2); // Hackathon (12 Oct)
                 PrewarmLob(w.weaponId); // Hackathon art pass: a lob model (the ink pot) is pooled before the run
+                PrewarmVisuals(w); // Hackathon (13 Oct): the weapon's own prefabs (WeaponVfxPresenter.Visuals.cs)
+                if (w.behavior == ConfigEnums.WeaponBehavior.Aura || w.visual.pulseImpact)
+                    EnsurePool(KindPulse, Pick(w.weaponId, WeaponVisualSlot.PulseRing, null) ?? PulseTemplate(), w.visual.pulseImpact ? PrewarmSlickPulse : PrewarmWeaponPulse);
             }
             foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
         }
 
-        void RegisterMuzzle(GameObject prefab)
+        void RegisterMuzzle(GameObject prefab, int prewarm)
         {
             if (prefab == null) return;
-            EnsurePool(prefab.transform.Find(GunSmokeChild) != null ? KindMuzzle : KindBurst, prefab, PrewarmMuzzle);
+            EnsurePool(prefab.transform.Find(GunSmokeChild) != null ? KindMuzzle : KindBurst, prefab, prewarm);
         }
 
         /// <summary>The pool key for a (kind, prefab); registered on first use (and prewarmed when asked).</summary>
@@ -1250,7 +1344,8 @@ namespace RoguePirates.V4.Presentation.Weapons
                 go = Instantiate(prefab, position, rotation, LooseRoot);
                 go.SetActive(true);
             }
-            if (scale.HasValue) go.transform.localScale = Vector3.one * scale.Value;
+            // Hackathon (13 Oct): the prefab's tuning scales what the code sets (1 without one).
+            if (scale.HasValue) go.transform.localScale = Vector3.one * (scale.Value * WeaponVisualTuning.Scale(prefab));
             return go;
         }
 
