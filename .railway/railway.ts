@@ -33,6 +33,31 @@ export default defineRailway(() => {
       SOLANA_RPC_URL: preserve(),
       SOLANA_CLUSTER: preserve(),
       SIWS_DOMAIN: preserve(),
+      // Every other variable the API reads (13 Oct hotfix: an apply must never delete one the owner set by hand).
+      // ApiSettings.From, RewardService, WagerService, DailyRaceService and IslandService read these; unset ones keep
+      // their code defaults (server/README.md lists them).
+      PUBLIC_API_URL: preserve(),
+      RATE_LIMIT_PER_MINUTE: preserve(),
+      SWEEP_SECONDS: preserve(),
+      ARENA_TICK_MS: preserve(),
+      MATCH_SERVER_URL: preserve(),
+      RUNLOG_RETENTION_DAYS: preserve(),
+      RUNLOG_RETENTION_SWEEP_HOURS: preserve(),
+      WAGER_MAX_LAMPORTS: preserve(),
+      WEEKLY_REWARDS_AUTO: preserve(),
+      WEEKLY_REWARDS_INTERVAL_MINUTES: preserve(),
+      WEEKLY_REWARD_CHECKED_ONLY: preserve(),
+      WEEKLY_REWARD_SOL: preserve(),
+      WEEKLY_REWARD_MAP: preserve(),
+      DAILY_RACE_MAP: preserve(),
+      DAILY_RACE_SALT: preserve(),
+      DAILY_RACE_TARGET_KILLS: preserve(),
+      ALLOW_MAINNET: preserve(),
+      ADMIN_PAYOUT_MAX_LAMPORTS: preserve(),
+      RUM_RUN_CAP: preserve(),
+      RUM_RUN_HALF: preserve(),
+      RUM_DAY_CAP: preserve(),
+      RUM_DAY_HALF: preserve(),
       // Match server tests (D26) add RP_MATCH_TICKET_SECRET, VOYAGE_SERVER_URL and VOYAGE_MATCH_ID here with preserve()
       // before setting them, and remove them again after the session (M9b's were removed on 11 Oct).
     },

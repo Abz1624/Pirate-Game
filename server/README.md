@@ -52,7 +52,11 @@ dotnet test server/RoguePirates.Api.Tests
 | `ADMIN_KEY` | unset | Hackathon: owner key for `/api/admin/*` (header `X-Admin-Key`). Unset: 503 `admin_off`. |
 | `WAGER_MAX_LAMPORTS` | `500000000` | Hackathon: the 1v1 stake cap (0.5 SOL); the minimum is 0.001 SOL. |
 | `WEEKLY_REWARD_SOL` | `0.5,0.3,0.2` | Hackathon: weekly kills board rewards in SOL, 1st place first (at most 10 places). |
-| `WEEKLY_REWARD_CHECKED_ONLY` | `false` | Hackathon: `true` = only runs that passed the run checks win weekly rewards. |
+| `WEEKLY_REWARD_CHECKED_ONLY` | `true` | Hackathon: only runs that passed the server's run checks win weekly SOL (13 Oct hotfix; was `false`). `false` pays on client-reported totals, which a modified client can fake. |
+| `ALLOW_MAINNET` | `false` | 13 Oct hotfix: a `SOLANA_RPC_URL` or `SOLANA_CLUSTER` containing `mainnet` keeps the treasury off (`503 treasury_off`, an error in the log) unless this is `true`. |
+| `ADMIN_PAYOUT_MAX_LAMPORTS` | `1000000000` | 13 Oct hotfix: the largest owner payout (`POST /api/admin/payouts`), 1 SOL. |
+| `RUM_RUN_CAP`, `RUM_RUN_HALF` | `40`, `20` | 13 Oct hotfix: voyage RUM per run goes through the soft cap `cap * (1 - 0.5^(raw / half))` (raw = kills / 10), never more than raw: 105 kills -> 10, 300 -> 25, any amount -> at most 39-40. |
+| `RUM_DAY_CAP`, `RUM_DAY_HALF` | `150`, `75` | 13 Oct hotfix: the same curve over a player's capped runs of one UTC day; a run credits what it adds to the day's total, so a day never credits more than 150 RUM from voyages (an island store makes 120+ RUM an hour). |
 | `WEEKLY_REWARD_MAP` | `saltwind` | Hackathon: the board the automatic weekly payout pays. |
 | `WEEKLY_REWARDS_AUTO` | `true` | Hackathon: `false` turns off the background job that pays the previous week. |
 | `WEEKLY_REWARDS_INTERVAL_MINUTES` | `60` | Hackathon: how often that job runs (first run one interval after startup). |
@@ -375,12 +379,42 @@ is credited once: the same player, purpose and `refId` again returns the stored 
 any other reuse is `409 signature_used`. Errors: `409 tx_not_confirmed` (retry in a few seconds), `400 tx_failed`,
 `wrong_sender`, `wrong_recipient`, `amount_too_low`, `memo_mismatch`, `invalid_signature`, `invalid_purpose`,
 `wallet_required`; `503 treasury_off`. `purpose`: 1-32 of `a-z 0-9 _`.
+**Reserved purposes (13 Oct hotfix):** `wager*`, `raid*`, `market*`, `island*`, `buy*`, `refund*`, `payout*` answer
+`400 purpose_reserved`: those deposits are recorded only by their own endpoints (`POST /api/wagers/{lobbyId}/deposit`,
+`POST /api/market/{id}/buy`), which check amount, memo, wallet and seat. (Before, a 1-lamport transfer registered here
+as `{"purpose":"wager","refId":<wagerId>,"minLamports":1}` was then accepted as a full stake; same for market buys.)
+Wager and market endpoints also re-check a stored deposit against the current state under their lock (player and
+wallet, purpose and refId, memo, at least the current stake or price, not used or refunded before).
 
 `GET /api/deposits/mine`, `GET /api/payouts/mine` (auth) -> the last 50 (`{"deposits":[...]}` / `{"payouts":[{"payoutId","wallet","lamports","sol","reason","refId","status","signature","error","explorerUrl","createdAt","sentAt"}]}`).
-Payout `status`: `pending`, `sent`, `failed`, `unconfirmed` (sent but not confirmed within 45 s).
+Deposit `status`: `verified`, `consumed` (used by a seat or a purchase), `refunding` (a refund was decided: it is never
+attached again), `refunded`.
 
-Owner tools (header `X-Admin-Key: <ADMIN_KEY>`): `POST /api/admin/payouts` `{"wallet","lamports","reason"}` -> payout
-view; `POST /api/admin/airdrop` `{"wallet":null,"lamports":1000000000}` (devnet faucet; default the treasury).
+**Payouts (13 Oct hotfix).** Payout `status`: `pending` (recorded; in flight once it has a `signature`), `sent`
+(confirmed on chain), `unconfirmed` (sent or maybe sent, result unknown), `failed` (proven not to have moved SOL: never
+sent, rejected by the node's preflight, failed on chain, or expired). How a payout is sent:
+1. The row is inserted first. A unique index on `(Reason, RefId)` over the rows that are not `failed`
+   (`IX_Payouts_Reason_RefId_Live`, migration `AddPayoutSafety`) allows one live payout per obligation (wager win, one
+   deposit's refund, one weekly place, one market sale): a concurrent or repeated pay gets the existing row back.
+2. The transaction is signed and its `signature` and `LastValidBlockHeight` are saved **before** it is sent.
+3. Only a preflight rejection (`-32002`/`-32003`: not forwarded) marks it `failed`. Any other send error (timeout,
+   HTTP error, unreadable answer) and any error or timeout (45 s) while polling leaves it `unconfirmed`; no lock is held
+   while polling.
+4. The reconciler (`LedgerService.ReconcileAsync`, every `SWEEP_SECONDS` on the wager sweep timer) resolves `pending`
+   and `unconfirmed` payouts older than 3 minutes by signature: confirmed -> `sent`; failed on chain -> `failed`;
+   unknown **after** the chain passed its `LastValidBlockHeight` -> `failed` (it can never land). A `pending` row with
+   no signature was never sent -> `failed`. Only `failed` payouts are retried (once a minute, at most 10 times).
+5. The migration turns pending payouts from before the hotfix that have no signature into `unconfirmed` (the old code
+   saved the signature only after confirming, so they may have been sent): **check them on the explorer by hand**; the
+   reconciler leaves them alone. It also marks any existing duplicate live payout of one obligation (a past double
+   payment) with `RefId` `<refId>#dup<id>` so the index can be built; the oldest keeps the key.
+
+RPC errors reach clients as `502 solana_rpc_error` with a generic message; the node's raw answer is only logged.
+
+Owner tools (header `X-Admin-Key: <ADMIN_KEY>`): `POST /api/admin/payouts` `{"wallet","lamports","reason"}` with an
+`Idempotency-Key: <1-64 chars>` header (required, `400 idempotency_key_required`; the same key returns the first
+payout and never pays twice) and at most `ADMIN_PAYOUT_MAX_LAMPORTS` (`400 amount_too_high`) -> payout view;
+`POST /api/admin/airdrop` `{"wallet":null,"lamports":1000000000}` (devnet faucet; default the treasury).
 
 ### Hackathon: 1v1 SOL wagers (devnet)
 
@@ -401,11 +435,15 @@ Code: `Hackathon/WagerService.cs`, `Endpoints/WagerEndpoints.cs`. Both players n
    without a second refund. (Replaces the old `not_in_lobby`, `already_deposited`, `already_started` and
    `wager_closed` errors here, which left the SOL in the treasury.)
 3. **Start.** The match starts only when both seats are ready **and** the stake is funded (the second deposit or the
-   last "ready" starts it, as before). Against the practice bot / AI captain (`POST /api/lobbies/{id}/bot`) only the
-   host deposits; the house matches the stake.
+   last "ready" starts it, as before). **Bot matches are free play (13 Oct hotfix):** a bot match is decided by the
+   host's client, so the house no longer matches stakes. `POST /api/lobbies/{id}/bot` on a lobby with an open stake,
+   and `POST /api/wagers/{lobbyId}` with a stake on a lobby that seats the bot, answer `409 bot_stakes_off`; a staked
+   lobby never starts against the bot. (The game client's Vs Captain Marrow stake chips should offer only "No stake".)
 4. **Result.** When the match is decided (relay referee: sunk, time, forfeit; or the two reports) the winner is paid
-   `potLamports` = 2x stake from the treasury. Draw, disputed or abandoned match: every deposit is refunded. Vs the
-   house: a host win pays 2x, a loss keeps the stake (`result:"house_won"`). A guest leaving before the start gets
+   `potLamports` = 2x stake from the treasury. Draw, disputed or abandoned match: every deposit is refunded. A vs-house
+   wager staked before the hotfix is refunded whatever the result (`house_won` only appears on older rows). A deposit
+   is checked again when it is attached (at least the **current** stake, the lobby's memo, your wallet), and a deposit
+   with a refund decided is never attached again (`409 deposit_refunded`). A guest leaving before the start gets
    their deposit back (the wager returns to `awaiting_deposits`); a lobby closed or expired before the start refunds
    everything. Settlement runs right after the match ends and every `SWEEP_SECONDS`; failed payouts (e.g. an empty
    treasury) are retried each minute, up to 10 times, never paid twice.
@@ -435,13 +473,16 @@ pass now -> `{"wagers":N}`.
 
 Code: `Hackathon/RewardService.cs`. The top places of a week's kills board (map `saltwind`) win devnet SOL
 (`WEEKLY_REWARD_SOL`, default 0.5 / 0.3 / 0.2). Only wallet profiles are eligible: the places go to the best wallet
-players in board order (a guest above them is skipped); `WEEKLY_REWARD_CHECKED_ONLY=true` also needs a checked run.
-A week is recorded once (`WeeklyRewards`) and each reward is paid once; failed payouts are retried. A background job
+players in board order (a guest above them is skipped); since 13 Oct only runs that passed the run checks count
+(`WEEKLY_REWARD_CHECKED_ONLY`, default `true`). A week is recorded once (`WeeklyRewards`) and each place is paid once:
+the payout key is `(week, map, rank)` (`wr:<yyyyMMdd>:<map>:<rank>`), so rows deleted and recorded again never pay a
+place twice (payouts keyed by row id before the hotfix are still counted). Failed payouts are retried. A background job
 pays the previous week (hourly, `WEEKLY_REWARDS_AUTO`).
 
 `POST /api/admin/rewards/weekly` (X-Admin-Key) `{"weekStart":"2026-10-05","dryRun":false,"mapId":null}` (all optional;
-default the previous week; any date is snapped to its Monday; the current week can be paid for the demo, a future one
-is `400 future_week`) -> the rewards view; `dryRun:true` shows the winners without writing or paying.
+default the previous week; any date is snapped to its Monday) -> the rewards view; `dryRun:true` shows the winners
+without writing or paying. A real run pays only a week that has **ended** (`409 week_not_ended` for the current week,
+13 Oct hotfix); a future week is `400 future_week`.
 
 `GET /api/rewards/weekly?weekStart=&mapId=` (public; default the previous week) ->
 `{"weekStart","weekEnd","mapId","dryRun","alreadyRecorded","checkedOnly","table":[{"rank","lamports","sol"}],
@@ -480,7 +521,8 @@ guests). Errors are `{"error","message"}` as everywhere. Optional env `PUBLIC_AP
 **Economy** (V5 D19(1) as changed by D24): an island brews RUM into its own storage; **60% goes to the vault** (never
 raidable), 40% is **exposed**. A won raid takes **25% of the exposed RUM** (12.5% on a partial win) and gives the island
 a **4-hour shield**; attacking never ends your own shield. Raid fee **25 RUM**. An island is raidable by one attacker at a time for up to 20 minutes. Voyages: `POST /api/runs` adds
-`kills / 10` RUM (rounded down) for wallet players and returns `rumEarned`.
+`kills / 10` RUM (rounded down) for wallet players and returns `rumEarned`, soft-capped per run and per UTC day since 13 Oct
+(`RUM_RUN_CAP`/`RUM_RUN_HALF`, `RUM_DAY_CAP`/`RUM_DAY_HALF`; kills are client-reported).
 
 | Building (`kind`) | Levels | Upgrade cost (RUM) to level 1/2/3/4/5 | Effect |
 |---|---|---|---|
@@ -614,6 +656,12 @@ guardian `displayName`, `arrivesAtSecond`; those extra fields are ignored on PUT
    `status:"sold"` when all is done; `status:"paid"` with `error` when a step failed: `POST /api/market/{id}/complete`
    (buyer or seller) finishes it (re-sending the same buy also works). Errors: `409 listing_not_active` (do not pay),
    `400 own_listing`, deposit errors (`amount_too_low`, `memo_mismatch`, `tx_not_confirmed`, ...).
+   **13 Oct hotfix:** the payment (memo `buy:<listingId>`, any amount) is verified and recorded first, then checked
+   against the listing as it is now under the market lock. A payment that cannot buy it (listing sold or cancelled
+   meanwhile, too little, not used before) is **refunded in full** (payout reason `market_refund`, refId
+   `dep:<depositId>`) and the error message says so; paying more than the price buys the island and refunds the
+   difference (`market_refund`, `over:<depositId>`). The sweep (every `SWEEP_SECONDS`) retries those refunds and
+   refunds a payment recorded but never used after 2 minutes.
 4. `POST /api/market/{id}/cancel` (seller, `active` only) returns the NFT -> `cancelled`; on failure `cancelling` with
    `error` (call cancel again).
 
@@ -635,15 +683,15 @@ it deletes, in one transaction:
 - closed (`sold` / `cancelled`) market listings they sold or bought, or of a released island.
 
 With `clearWeeklyRewards:true` it also deletes every `WeeklyRewards` row of `weekStart` (any date, snapped to its Monday;
-default the current week). The `Payout` rows stay as history. A deleted week is no longer "recorded", so it can be paid
-again: by the hourly job once it is the previous week, or by `POST /api/admin/rewards/weekly`; anyone still in the top
-places is then paid again (the old payouts are not counted). Players, sessions, deposits, wagers and payouts are never
-deleted, and RUM balances are not reset.
+default the current week). **13 Oct hotfix:** a week with any reward payout sent or in flight is refused
+(`409 rewards_paid`, nothing deleted; the dry run reports `weeklyRewards.paidPayouts`), since deleting a paid week let
+it be recorded and paid again. A week with no payout can be cleared and is then paid once it has ended. Players,
+sessions, deposits, wagers and payouts are never deleted, and RUM balances are not reset.
 
 -> `{"dryRun","wallets":[{"wallet","found","playerId","name"}],"deleted":{"runs","runLogs","runVerdicts","weeklyBests",
 "dailyRaceEntries","raids","islands","islandBuildings","marketListings","weeklyRewards"},"releasedIslands":[{"id","name",
 "slot","nftMint"}],"skippedIslands":[{"id","name","slot","reason":"listing_open","listingStatus"}],
-"weeklyRewards":null | {"weekStart","rows","payoutsKept"},"notes":[...]}`.
+"weeklyRewards":null | {"weekStart","rows","payoutsKept","paidPayouts"},"notes":[...]}`.
 
 ## 1v1 match protocol (relay)
 

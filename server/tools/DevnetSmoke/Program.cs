@@ -145,7 +145,7 @@ sealed class Smoke
         await Step("3. Raid: A raids B's island with a 0.01 SOL wager, won -> loot, shield, 2x payout", RaidAsync);
         await Step("4. Market: B lists island NFT, A buys; A lists and cancels", MarketAsync);
         await Step("5. 1v1 wager vs the house: stake, deposit, funded, close lobby -> refund", WagerAsync);
-        await Step("6. Weekly kill rewards: dry run, real run (current week), public view", WeeklyAsync);
+        await Step("6. Weekly kill rewards: dry run, current week refused, real run (previous week), public view", WeeklyAsync);
         await Step("7. Daily island race: race, entry, board", RaceAsync);
         await Step("8. Final balances", FinalAsync);
     }
@@ -254,10 +254,10 @@ sealed class Smoke
         Expect(col, 200, "A collect");
         Note($"A collected {col.Body!["collected"]} RUM (store {col.Body["fromStore"]}, vault {col.Body["fromVault"]}); balance {col.Body["rum"]}");
 
-        // RUM from voyages: kills / 10 for wallet players (A 4000 kills -> 400 RUM; B 1500 -> 150)
+        // RUM from voyages: kills / 10 for wallet players, soft-capped since 13 Oct (at most RUM_RUN_CAP, default 40, per run)
         var ra = await Api("POST", "/api/runs", new { kills = 4000, runSeconds = 900, level = 40, captain = "smoke", mapId = "saltwind", clientVersion = "devnet-smoke" }, _a.Token);
         Expect(ra, 200, "A run");
-        Check(ra.Body!["rumEarned"]?.GetValue<long>() == 400, $"A voyage 4000 kills accepted, rumEarned {ra.Body["rumEarned"]}");
+        Check(ra.Body!["rumEarned"]?.GetValue<long>() is > 0 and <= 40, $"A voyage 4000 kills accepted, rumEarned {ra.Body["rumEarned"]} (capped)");
         var rb = await Api("POST", "/api/runs", new { kills = 1500, runSeconds = 600, level = 25, captain = "smoke", mapId = "saltwind", clientVersion = "devnet-smoke" }, _b.Token);
         Expect(rb, 200, "B run");
         Note($"B voyage 1500 kills accepted, rumEarned {rb.Body!["rumEarned"]}");
@@ -268,7 +268,7 @@ sealed class Smoke
         var affordable = aIsland["buildings"]!.AsArray()
             .Where(b => b!["nextCost"] is JsonValue v && v.GetValue<long>() <= rum - 25)
             .OrderBy(b => b!["nextCost"]!.GetValue<long>()).FirstOrDefault();
-        if (affordable == null) { Check(false, $"no building affordable with {rum} RUM (keeping 25 for the raid fee)"); }
+        if (affordable == null) Note($"no building affordable with {rum} RUM (keeping 25 for the raid fee; voyage RUM is capped since 13 Oct)");
         else
         {
             var kind = affordable["kind"]!.GetValue<string>();
@@ -394,17 +394,18 @@ sealed class Smoke
         var lobbyId = lob.Body!["lobbyId"]!.GetValue<string>();
         var memo = lob.Body["wager"]?["memo"]?.GetValue<string>();
         Check(memo == "wager:" + lobbyId && lob.Body["wager"]?["stakeLamports"]?.GetValue<long>() == stake, $"lobby {lobbyId} staked 0.01 SOL, memo {memo}");
+        // 13 Oct hotfix: bot matches are free play (the house no longer matches stakes)
         var bot = await Api("POST", $"/api/lobbies/{lobbyId}/bot", token: _a.Token);
-        Expect(bot, 200, "add bot");
-        Check(bot.Body!["wager"]?["vsHouse"]?.GetValue<bool>() == true, "practice bot seated; the house matches the stake");
+        Expect(bot, 409, "add bot to a staked lobby is refused");
+        Check(bot.Body?["error"]?.GetValue<string>() == "bot_stakes_off", $"add bot: {bot.Body?["error"]}");
 
         var dep = await SendSolAsync(_a.Key, _treasury, stake, memo!);
         Tx("A wager stake 0.01 SOL (memo wager:<lobbyId>)", dep);
         var d = await ApiRetry("POST", $"/api/wagers/{lobbyId}/deposit", new { signature = dep }, _a.Token);
         Expect(d, 200, "wager deposit");
         var w = await Api("GET", $"/api/wagers/{lobbyId}");
-        Check(w.Body?["status"]?.GetValue<string>() == "funded" && w.Body?["funded"]?.GetValue<bool>() == true,
-            $"wager status {w.Body?["status"]}, funded {w.Body?["funded"]}, pot {w.Body?["potLamports"]}");
+        Check(w.Body?["host"]?["deposited"]?.GetValue<bool>() == true && w.Body?["funded"]?.GetValue<bool>() == false,
+            $"host deposited, waiting for an opponent: status {w.Body?["status"]}, funded {w.Body?["funded"]}");
 
         // the relay match needs a game client; close the lobby before the start instead -> full refund
         var aBefore = await BalanceAsync(_a.Wallet);
@@ -440,11 +441,17 @@ sealed class Smoke
         var winners = dry.Body!["winners"]!.AsArray();
         Note($"week {week}: alreadyRecorded {dry.Body["alreadyRecorded"]}, {winners.Count} winners (dry run)");
         foreach (var x in winners) Note($"  #{x!["rank"]} {x["name"]} {x["walletShort"]} {x["kills"]} kills -> {x["sol"]} SOL");
-        Check(winners.Any(x => x!["wallet"]?.GetValue<string>() == _a.Wallet), "A is among the dry-run winners");
-        if (_skipWeeklyPay) { Note("real run skipped (--skip-weekly-pay)"); return; }
+        // since 13 Oct only server-checked runs earn SOL (WEEKLY_REWARD_CHECKED_ONLY defaults to true); the smoke runs send no log
+        Note(winners.Any(x => x!["wallet"]?.GetValue<string>() == _a.Wallet) ? "A is among the dry-run winners" : "A is not a winner (its runs are not server-checked)");
+        // 13 Oct hotfix: a week is paid only after it has ended, so the current week's real run is refused
+        var current = await Api("POST", "/api/admin/rewards/weekly", new { weekStart = week, dryRun = false }, admin: true);
+        Expect(current, 409, "real run of the current week is refused");
+        Check(current.Body?["error"]?.GetValue<string>() == "week_not_ended", $"current week: {current.Body?["error"]}");
+        if (_skipWeeklyPay) { Note("previous-week real run skipped (--skip-weekly-pay)"); return; }
+        week = monday.AddDays(-7).ToString("yyyy-MM-dd");
 
         var real = await Api("POST", "/api/admin/rewards/weekly", new { weekStart = week, dryRun = false }, admin: true);
-        Expect(real, 200, "real run");
+        Expect(real, 200, "real run (previous week)");
         foreach (var x in real.Body!["winners"]!.AsArray())
         {
             var p = x!["payout"];
@@ -454,8 +461,9 @@ sealed class Smoke
         var pub = await Api("GET", $"/api/rewards/weekly?weekStart={week}");
         Expect(pub, 200, "public rewards");
         var ws = pub.Body!["winners"]!.AsArray();
-        Check(pub.Body["alreadyRecorded"]?.GetValue<bool>() == true, "week recorded");
-        Check(ws.Count > 0 && ws.All(x => x!["payout"]?["status"]?.GetValue<string>() == "sent"), $"all {ws.Count} reward payouts sent");
+        if (ws.Count == 0) Note("previous week: no eligible (server-checked) winners");
+        else Check(pub.Body["alreadyRecorded"]?.GetValue<bool>() == true, "week recorded");
+        Check(ws.All(x => x!["payout"]?["status"]?.GetValue<string>() == "sent"), $"all {ws.Count} reward payouts sent");
         var aw = ws.FirstOrDefault(x => x!["wallet"]?.GetValue<string>() == _a.Wallet)?["payout"]?["signature"]?.GetValue<string>();
         if (aw != null) Check(await TxTransfersAsync(aw, _treasury, _a.Wallet) > 0, "on chain: A's reward transfer confirmed");
         var again = await Api("POST", "/api/admin/rewards/weekly", new { weekStart = week, dryRun = false }, admin: true);
