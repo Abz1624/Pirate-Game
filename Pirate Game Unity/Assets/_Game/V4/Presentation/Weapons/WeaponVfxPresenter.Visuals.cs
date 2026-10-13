@@ -72,27 +72,27 @@ namespace RoguePirates.V4.Presentation.Weapons
 
         // Where each predicted-area shell lands and whose it is (the landing ring is drawn with the aim; the impact, the
         // splash and the whirlpool come later at the same spot). A fixed ring of marks: no allocation while playing.
-        const int ShellMarks = 64;
-        readonly Vector3[] _shellAt = new Vector3[ShellMarks];
-        readonly string[] _shellWeapon = new string[ShellMarks];
+        const int ShellSlots = 64;
+        readonly Vector3[] _shellAt = new Vector3[ShellSlots];
+        readonly string[] _shellWeapon = new string[ShellSlots];
         int _nextShell;
 
         void MarkShell(Vector3 at, string weaponId)
         {
             if (weaponId == null) return;
-            for (var i = 0; i < ShellMarks; i++)
+            for (var i = 0; i < ShellSlots; i++)
                 if (_shellWeapon[i] == weaponId && FlatNear(_shellAt[i], at, 0.05f)) return;
             _shellAt[_nextShell] = at;
             _shellWeapon[_nextShell] = weaponId;
-            _nextShell = (_nextShell + 1) % ShellMarks;
+            _nextShell = (_nextShell + 1) % ShellSlots;
         }
 
         string ShellAt(Vector3 at)
         {
             // Newest first: a spot reused by a later shell is that shell's.
-            for (var k = 1; k <= ShellMarks; k++)
+            for (var k = 1; k <= ShellSlots; k++)
             {
-                var i = (_nextShell - k + ShellMarks) % ShellMarks;
+                var i = (_nextShell - k + ShellSlots) % ShellSlots;
                 if (_shellWeapon[i] != null && FlatNear(_shellAt[i], at, 0.25f)) return _shellWeapon[i];
             }
             return null;
