@@ -71,7 +71,12 @@ public sealed class M9hSwitchTests
         Assert.False(ApiSettings.Flag(" 0 ", true));
         Assert.True(ApiSettings.Flag("TRUE", false));
         Assert.True(ApiSettings.Flag("1", false));
-        Assert.True(ApiSettings.Flag("off", true)); // a typo keeps the default (on)
+        Assert.False(ApiSettings.Flag("off", true));
+        Assert.False(ApiSettings.Flag("No", true));
+        Assert.True(ApiSettings.Flag("of", true)); // a typo keeps the default (on), and startup logs it
+        Assert.True(ApiSettings.IsUnrecognisedFlag("of"));
+        Assert.False(ApiSettings.IsUnrecognisedFlag("off"));
+        Assert.False(ApiSettings.IsUnrecognisedFlag(null));
     }
 
     // ------------------------------------------------------------ wager deposits refused after the transfer (item 1)
@@ -141,6 +146,29 @@ public sealed class M9hSwitchTests
         var elsewhere = Deposit(rpc.Inner, a.Key, b.Key, Stake, "wager:" + lobbyId);
         await AssertError(await a.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = elsewhere }), HttpStatusCode.BadRequest, "wrong_recipient");
         Assert.Empty(Payouts(host));
+    }
+
+    [Fact]
+    public async Task WagerDeposit_ATransferFromBeforeTheWager_IsRefusedUnrecorded_NotRefunded()
+    {
+        var (host, rpc, treasury) = NewHost();
+        using var _h = host;
+        var a = await SignInAsync(host);
+        var lobbyId = (await Ok(await a.Http.PostAsJsonAsync("/api/lobbies", new { stakeLamports = Stake }))).GetProperty("lobbyId").GetGuid();
+        // an old top-up from the same wallet, an hour before the wager existed
+        var old = HackathonTests.RandomSignature();
+        rpc.Inner.Transactions[old] = new RoguePirates.Api.Solana.ChainTransaction(old, 50, false, new[] { a.Key },
+            new[] { new RoguePirates.Api.Solana.SolTransfer(a.Key, treasury.PublicKey.Key, 2 * Stake) }, Array.Empty<string>(),
+            host.Clock.UtcNow.AddHours(-1));
+        await AssertError(await a.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = old }), HttpStatusCode.BadRequest, "tx_too_old");
+        Assert.Empty(Payouts(host));
+        // one made after it (with a block time) is taken as before
+        var fresh = HackathonTests.RandomSignature();
+        rpc.Inner.Transactions[fresh] = new RoguePirates.Api.Solana.ChainTransaction(fresh, 60, false, new[] { a.Key },
+            new[] { new RoguePirates.Api.Solana.SolTransfer(a.Key, treasury.PublicKey.Key, Stake) }, new[] { "wager:" + lobbyId },
+            host.Clock.UtcNow.AddSeconds(5));
+        var state = await Ok(await a.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = fresh }));
+        Assert.True(state.GetProperty("wager").GetProperty("host").GetProperty("deposited").GetBoolean());
     }
 
     // ------------------------------------------------------------ WAGERS_HUMAN_ENABLED

@@ -192,7 +192,9 @@ public sealed class M9hTreasuryTests
         Assert.Single(w.Rpc.Sent);
 
         // the chain passed its last valid block height without it: provably never landing, a new mint is safe
-        w.Rpc.BlockHeight = w.Rpc.LastValidBlockHeight + 1;
+        w.Rpc.BlockHeight = w.Rpc.LastValidBlockHeight + 1; // just past it: inside the safety margin, still in flight
+        await AssertError(await a.Http.PostAsync($"/api/islands/{id}/mint", null), HttpStatusCode.Conflict, "mint_in_flight");
+        w.Rpc.BlockHeight = w.Rpc.LastValidBlockHeight + IslandService.MintExpiryMarginBlocks + 1;
         var retried = await Ok(await a.Http.PostAsync($"/api/islands/{id}/mint", null));
         Assert.Equal("minted", retried.GetProperty("nft").GetProperty("status").GetString());
         Assert.NotEqual(first, retried.GetProperty("nft").GetProperty("mint").GetString());

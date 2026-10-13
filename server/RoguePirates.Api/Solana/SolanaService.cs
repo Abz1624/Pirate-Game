@@ -127,7 +127,7 @@ public sealed class SolanaService
     /// matches when one is expected. Whether the signature was already used is the caller's check (the deposits table).
     /// </summary>
     public async Task<VerifiedTransfer> VerifyTransferToTreasuryAsync(string signature, string sender, long minLamports,
-        string? expectedMemo = null, CancellationToken ct = default)
+        string? expectedMemo = null, CancellationToken ct = default, DateTime? notBefore = null)
     {
         var treasury = Treasury.PublicKey.Key;
         if (!IsValidSignature(signature)) throw new ApiException(400, "invalid_signature", "Not a transaction signature.");
@@ -136,6 +136,10 @@ public sealed class SolanaService
             throw new ApiException(409, "tx_not_confirmed", "The transaction is not confirmed yet (or unknown on " + Cluster + "). Retry in a few seconds.");
         if (tx.Failed) throw new ApiException(400, "tx_failed", "The transaction failed on chain.");
         if (!tx.Signers.Contains(sender)) throw new ApiException(400, "wrong_sender", "The transaction was not signed by your wallet.");
+        // V5 M9h (review): a transfer older than what it pays for (an old top-up or payment) is not taken, so it cannot be
+        // recorded and refunded through a later wager
+        if (notBefore != null && tx.BlockTime != null && tx.BlockTime < notBefore)
+            throw new ApiException(400, "tx_too_old", "That transfer was made before this stake existed; send a new one.");
         var toTreasury = tx.Transfers.Where(t => t.Destination == treasury).ToList();
         if (toTreasury.Count == 0) throw new ApiException(400, "wrong_recipient", "The transaction sends nothing to the treasury.");
         var fromSender = toTreasury.Where(t => t.Source == sender).Sum(t => t.Lamports);

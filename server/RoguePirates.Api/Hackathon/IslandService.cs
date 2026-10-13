@@ -207,6 +207,9 @@ public sealed class IslandService
     /// <summary>V5 M9h: a pending mint attempt younger than this is left to the request that sent it (the sweep skips it).</summary>
     public static readonly TimeSpan MintSweepAfter = TimeSpan.FromMinutes(2);
 
+    /// <summary>Blocks past a mint's last valid block height before it counts as never landing (about a minute).</summary>
+    public const long MintExpiryMarginBlocks = 150;
+
     DateTime DayStart => DateTime.SpecifyKind(_clock.UtcNow.Date, DateTimeKind.Utc);
 
     /// <summary>Island NFT mints sent today (UTC), landed or in flight: the daily mint budget counts these.</summary>
@@ -394,7 +397,9 @@ public sealed class IslandService
                 var (status, height) = await _sol.SignatureStatusAsync(island.MintSig);
                 if (status is "confirmed" or "finalized") { MarkMinted(island); return false; }
                 if (status == "failed") { ClearPendingMint(island, "tx_failed: the mint failed on chain; nothing was created."); return false; }
-                if (status == null && !mintExists && island.MintLastValidBlockHeight is { } last && height > last)
+                // (review) a margin of MintExpiryMarginBlocks past the deadline, so one lagging RPC node behind a load
+                // balancer cannot make a still-landable mint look expired
+                if (status == null && !mintExists && island.MintLastValidBlockHeight is { } last && height > last + MintExpiryMarginBlocks)
                 {
                     // re-read after the height: a mint that appeared meanwhile wins
                     if ((await _sol.MintAccountsAsync(island.PendingMint!)).mint) { MarkMinted(island); return false; }

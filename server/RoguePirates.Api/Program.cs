@@ -80,21 +80,21 @@ builder.Services.AddRateLimiter(o =>
     {
         var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         if (HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsHead(ctx.Request.Method) || HttpMethods.IsOptions(ctx.Request.Method))
-        {
-            if (!HttpMethods.IsOptions(ctx.Request.Method) && RpcReads.Is(ctx.Request.Path))
-            {
-                var rpcLimit = ctx.RequestServices.GetRequiredService<ApiSettings>().RpcReadRateLimitPerMinute;
-                return RateLimitPartition.GetFixedWindowLimiter("rpc:" + ip, _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = rpcLimit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
-                });
-            }
             return RateLimitPartition.GetNoLimiter("read");
-        }
         var limit = ctx.RequestServices.GetRequiredService<ApiSettings>().RateLimitPerMinute;
         return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
+        });
+    });
+    // V5 M9h: the RPC reads carry this policy on their endpoint (so /api/wallet/balance/ cannot skip it). Partitioned by the
+    // bearer token's hash when one is sent, else by the client IP (which depends on Railway's X-Forwarded-For, see README).
+    o.AddPolicy(RpcReads.Policy, ctx =>
+    {
+        var rpcLimit = ctx.RequestServices.GetRequiredService<ApiSettings>().RpcReadRateLimitPerMinute;
+        return RateLimitPartition.GetFixedWindowLimiter(RpcReads.PartitionKey(ctx), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = rpcLimit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
         });
     });
     o.OnRejected = async (context, ct) =>
@@ -128,6 +128,11 @@ using (var scope = app.Services.CreateScope())
     DatabaseMigrator.Migrate(db, app.Logger);
     if (!settings.UsePostgres) db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
     app.Logger.LogInformation("Rogue Pirates API using {Db}", settings.DbKind);
+    // V5 M9h (review): a switch set to something unreadable keeps its default (on); say so loudly
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    foreach (var name in ApiSettings.SwitchVariables)
+        if (ApiSettings.IsUnrecognisedFlag(config[name]))
+            app.Logger.LogError("{Name} is not true/false (1/0, on/off, yes/no); it keeps its default (on)", name);
 }
 
 app.UseForwardedHeaders();
@@ -184,8 +189,16 @@ app.Run();
 
 public partial class Program { }
 
-/// <summary>V5 M9h: GET endpoints that make a Solana RPC call per request (rate limited per IP).</summary>
-static class RpcReads
+/// <summary>V5 M9h: the rate limit policy of GET endpoints that make a Solana RPC call per request.</summary>
+public static class RpcReads
 {
-    public static bool Is(PathString path) => path.Equals("/api/wallet/balance", StringComparison.OrdinalIgnoreCase);
+    public const string Policy = "rpc-reads";
+
+    public static string PartitionKey(HttpContext ctx)
+    {
+        var auth = ctx.Request.Headers.Authorization.ToString();
+        if (auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) && auth.Length is > 7 and <= 160)
+            return "rpc:t:" + Tokens.Hash(auth[7..].Trim());
+        return "rpc:ip:" + (ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+    }
 }

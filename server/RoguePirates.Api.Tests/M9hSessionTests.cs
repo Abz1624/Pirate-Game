@@ -66,6 +66,26 @@ public sealed class M9hSessionTests
     }
 
     [Fact]
+    public async Task LoweringTheLifetime_AlsoShortensSessionsAlreadyIssued()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"rp-m9h-lifetime-{Guid.NewGuid():N}.db");
+        string token;
+        DateTime now;
+        using (var first = new ApiHost(new() { ["SQLITE_PATH"] = path, ["SESSION_LIFETIME_DAYS"] = "30" }))
+        {
+            token = await SignInAsync(first, new Account());
+            now = first.Clock.UtcNow;
+        }
+        var second = new ApiHost(new() { ["SQLITE_PATH"] = path, ["SESSION_LIFETIME_DAYS"] = "2" });
+        second.Clock.UtcNow = now.AddDays(3);
+        Assert.Equal(HttpStatusCode.Unauthorized, await MeAsync(second, token)); // issued for 30 days, now limited to 2
+        second.Dispose();
+        using (var mine = new Microsoft.Data.Sqlite.SqliteConnection(new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder { DataSource = path, Pooling = true }.ToString()))
+            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(mine);
+        foreach (var f in new[] { path, path + "-wal", path + "-shm" }) try { File.Delete(f); } catch { /* best effort */ }
+    }
+
+    [Fact]
     public async Task SessionsFromBeforeM9h_ExpireThirtyDaysAfterCreation_AndThePurgeDeletesThem()
     {
         using var host = new ApiHost();
@@ -73,7 +93,7 @@ public sealed class M9hSessionTests
         using (var scope = host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<GameDb>();
-            await db.PlayerSessions.ExecuteUpdateAsync(u => u.SetProperty(s => s.ExpiresAt, (DateTime?)null)
+            await db.PlayerSessions.ExecuteUpdateAsync(u => u.SetProperty(s => s.ExpiresAt, (DateTime?)null).SetProperty(s => s.LastUsedAt, (DateTime?)null)
                 .SetProperty(s => s.CreatedAt, host.Clock.UtcNow.AddDays(-40)));
         }
         Assert.Equal(HttpStatusCode.Unauthorized, await MeAsync(host, token));

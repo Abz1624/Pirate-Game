@@ -58,7 +58,7 @@ public sealed class RewardService
 
     /// <summary>Only runs that passed the server's run checks earn SOL (13 Oct hotfix: default true; WEEKLY_REWARD_CHECKED_ONLY=false
     /// pays on client-reported totals, which a modified client can fake).</summary>
-    public bool CheckedOnly => !(bool.TryParse(_config["WEEKLY_REWARD_CHECKED_ONLY"], out var b) && !b);
+    public bool CheckedOnly => ApiSettings.Flag(_config["WEEKLY_REWARD_CHECKED_ONLY"], true);
 
     /// <summary>The payout key of a reward: (week, map, rank) (13 Oct hotfix), so a week's rows deleted and recorded again
     /// can never pay the same place twice.</summary>
@@ -252,7 +252,7 @@ public sealed class WeeklyRewardJob : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (bool.TryParse(_config["WEEKLY_REWARDS_AUTO"], out var on) && !on) return;
+        if (!ApiSettings.Flag(_config["WEEKLY_REWARDS_AUTO"], true)) return;
         var minutes = int.TryParse(_config["WEEKLY_REWARDS_INTERVAL_MINUTES"], out var m) && m > 0 ? m : 60;
         using var timer = new PeriodicTimer(TimeSpan.FromMinutes(minutes));
         while (await timer.WaitForNextTickAsync(stoppingToken))

@@ -26,8 +26,13 @@ public sealed class M9hReadLimitTests
         var limited = await anon.GetAsync($"/api/wallet/balance?wallet={wallet}");
         Assert.Equal((HttpStatusCode)429, limited.StatusCode);
         Assert.Equal("rate_limited", (await limited.ReadJson()).GetProperty("error").GetString());
+        // a trailing slash reaches the same endpoint and the same limit
+        Assert.Equal((HttpStatusCode)429, (await anon.GetAsync($"/api/wallet/balance/?wallet={wallet}")).StatusCode);
         for (var i = 0; i < 10; i++)
             Assert.Equal(HttpStatusCode.OK, (await anon.GetAsync("/api/islands")).StatusCode);
+        // a signed-in caller has its own bucket (keyed by its token), not the IP's
+        var signedIn = await SignInAsync(host);
+        Assert.Equal(HttpStatusCode.OK, (await signedIn.Http.GetAsync("/api/wallet/balance")).StatusCode);
     }
 
     [Fact]

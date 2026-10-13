@@ -135,14 +135,25 @@ public sealed class ApiSettings
         RpcReadRateLimitPerMinute = Positive(c["RPC_READ_RATE_LIMIT_PER_MINUTE"], 30),
     };
 
-    /// <summary>true/false (any case) or 1/0; anything else (unset, empty, a typo) keeps the default.</summary>
+    /// <summary>true/false (any case), 1/0, on/off, yes/no; anything else (unset, empty, a typo) keeps the default
+    /// (<see cref="IsUnrecognisedFlag"/> lets startup log it).</summary>
     public static bool Flag(string? v, bool fallback)
     {
         if (string.IsNullOrWhiteSpace(v)) return fallback;
-        v = v.Trim();
-        if (bool.TryParse(v, out var b)) return b;
-        return v == "1" ? true : v == "0" ? false : fallback;
+        switch (v.Trim().ToLowerInvariant())
+        {
+            case "true": case "1": case "on": case "yes": return true;
+            case "false": case "0": case "off": case "no": return false;
+            default: return fallback;
+        }
     }
+
+    public static bool IsUnrecognisedFlag(string? v) =>
+        !string.IsNullOrWhiteSpace(v) && Flag(v, true) && !Flag(v, false);
+
+    /// <summary>The switch variables (V5 M9h), for the startup check of their values.</summary>
+    public static readonly string[] SwitchVariables =
+        { "WAGERS_HUMAN_ENABLED", "RAID_LOOT_ENABLED", "ISLAND_SALE_CARRIES_RUM", "DAILY_RACE_FIXED_SALT", "WEEKLY_REWARD_CHECKED_ONLY", "WEEKLY_REWARDS_AUTO" };
 
     static int Positive(string? v, int fallback) => int.TryParse(v, out var n) && n > 0 ? n : fallback;
 

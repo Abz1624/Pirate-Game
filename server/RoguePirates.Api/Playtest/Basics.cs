@@ -149,7 +149,13 @@ public sealed class PlayerAuth
     public TimeSpan SessionLifetime => TimeSpan.FromDays(_settings.SessionLifetimeDays);
 
     /// <summary>When a session stops working (sessions from before M9h have no ExpiresAt: CreatedAt + the lifetime).</summary>
-    public static DateTime ExpiryOf(PlayerSession s, TimeSpan lifetime) => s.ExpiresAt ?? s.CreatedAt + lifetime;
+    public static DateTime ExpiryOf(PlayerSession s, TimeSpan lifetime)
+    {
+        // the earlier of the stored expiry and last use + the current lifetime, so lowering SESSION_LIFETIME_DAYS also
+        // shortens sessions already issued
+        var byUse = (s.LastUsedAt ?? s.CreatedAt) + lifetime;
+        return s.ExpiresAt is { } stored && stored < byUse ? stored : byUse;
+    }
 
     public async Task<Player?> FromTokenAsync(string? token)
     {

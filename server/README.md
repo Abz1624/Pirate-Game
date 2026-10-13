@@ -62,7 +62,7 @@ dotnet test server/RoguePirates.Api.Tests
 | `WEEKLY_REWARDS_AUTO` | `true` | Hackathon: `false` turns off the background job that pays the previous week. |
 | `WEEKLY_REWARDS_INTERVAL_MINUTES` | `60` | Hackathon: how often that job runs (first run one interval after startup). |
 | `DAILY_RACE_SALT` | fixed default | Hackathon: salt for the daily race seed (HMAC-SHA256 of the UTC date). |
-| `DAILY_RACE_FIXED_SALT` | `true` | V5 M9h switch (kept on by the owner, H2): with `DAILY_RACE_SALT` unset the seed uses the public default salt in the code, so future seeds can be computed. `false`: a secret salt derived from the treasury key (one-way HMAC; random per process without a key). |
+| `DAILY_RACE_FIXED_SALT` | `true` | V5 M9h switch (switch values: true/false, 1/0, on/off, yes/no; anything else keeps the default and logs an error at startup) (kept on by the owner, H2): with `DAILY_RACE_SALT` unset the seed uses the public default salt in the code, so future seeds can be computed. `false`: a secret salt derived from the treasury key (one-way HMAC; random per process without a key). |
 | `WAGERS_HUMAN_ENABLED` | `true` | V5 M9h switch (kept on): SOL stakes between human players. `false`: new stakes and new deposits answer `409 wagers_off` (a transfer already sent is recorded and refunded); open wagers still settle. |
 | `RAID_LOOT_ENABLED` | `true` | V5 M9h switch (kept on): a won raid takes RUM. `false`: raids still win, shield and count, but loot 0 (`loot.enabled:false`). |
 | `ISLAND_SALE_CARRIES_RUM` | `true` | V5 M9h switch (kept on): a market sale hands the island over as it is. `false` (I26.2): the island's store and vault RUM go to the seller's balance and its buildings go back to their start levels when it changes hands. |
@@ -389,7 +389,8 @@ New wallet profiles are named `Captain XXXX` (first 4 characters of the wallet) 
 
 `GET /api/wallet/balance` (auth; or `?wallet=<address>` without auth) -> `200 {"wallet","lamports","sol","cluster"}`;
 `400 wallet_required` for a guest profile. V5 M9h: at most `RPC_READ_RATE_LIMIT_PER_MINUTE` (30) per client IP per
-minute (`429 rate_limited`).
+minute (`429 rate_limited`), counted per bearer token when one is sent, else per client IP. The client IP is the
+last `X-Forwarded-For` hop; if Railway's edge ever puts its own address there, unauthenticated callers share one bucket.
 
 `GET /api/treasury` (public) -> `200 {"enabled":true,"address","lamports","sol","cluster","floatLamports","low","readAt"}`
 (`enabled:false` and nulls without a treasury key). V5 M9h: the balance is read from the chain at most every 30 s
@@ -596,12 +597,14 @@ Island NFT to your wallet (name `Rogue Island: <name>`, symbol `RPISL`, uri = th
 or the mint fails, the island is still created with `nft.status:"pending"` and `nft.error`.
 **V5 M9h treasury bounds:** each wallet claims **one free island ever** (`409 island_claim_used` once it claimed one, even
 after selling it; profiles that owned or sold an island before M9h count as having claimed); at most `MINT_DAILY_BUDGET`
-(20) mints a UTC day (`429 mint_budget`, nothing claimed).
+(20) mints a UTC day (`429 mint_budget`, nothing claimed; claims racing at the limit can still be claimed and wait for the next day's mint).
+A wager deposit must be a transfer made after the wager was created (`400 tx_too_old`, nothing recorded), so an older
+transfer to the treasury is never refunded through a wager.
 `POST /api/islands/{id}/mint` (owner) retries -> island view; `502 mint_failed`, `409 already_minted`, `503 treasury_off`,
 `429 mint_budget`, `409 mint_in_flight`.
 **No double mint (V5 M9h):** the mint's address (`nft.pendingMint`), signature and last valid block height are stored
 **before** the transaction is sent. A retry first checks that attempt on chain: the mint and its metadata exist, or the
-signature confirmed: minted (no new transaction); failed on chain, or the chain passed its last valid block height and the
+signature confirmed: minted (no new transaction); failed on chain, or the chain is 150 blocks past its last valid block height and the
 mint account does not exist: cleared, and only then a new mint (a new address) is sent; otherwise `409 mint_in_flight`.
 A send or confirmation whose result is unknown leaves the attempt pending; the sweep (every `SWEEP_SECONDS`) resolves
 pending attempts older than 2 minutes the same way (it never sends a mint).

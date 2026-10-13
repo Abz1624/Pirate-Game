@@ -84,7 +84,7 @@ public sealed partial class LedgerService
     /// memo, wallet and status against the current state under their own lock before using it.
     /// </summary>
     public async Task<(SolanaDeposit deposit, bool already)> VerifyDepositAsync(Player player, string? signature, string? purpose,
-        string? refId = null, long minLamports = 1, string? expectedMemo = null, CancellationToken ct = default)
+        string? refId = null, long minLamports = 1, string? expectedMemo = null, CancellationToken ct = default, DateTime? notBefore = null)
     {
         if (player.WalletAddress == null)
             throw new ApiException(400, "wallet_required", "Sign in with a wallet first (POST /api/auth/wallet/verify).");
@@ -98,7 +98,7 @@ public sealed partial class LedgerService
         var existing = await _db.SolanaDeposits.FirstOrDefaultAsync(d => d.Signature == signature, ct);
         if (existing != null) return Reuse(existing, player, purpose, refId);
 
-        var verified = await _sol.VerifyTransferToTreasuryAsync(signature, player.WalletAddress, Math.Max(1, minLamports), expectedMemo, ct);
+        var verified = await _sol.VerifyTransferToTreasuryAsync(signature, player.WalletAddress, Math.Max(1, minLamports), expectedMemo, ct, notBefore);
 
         await Lock.WaitAsync(ct);
         try

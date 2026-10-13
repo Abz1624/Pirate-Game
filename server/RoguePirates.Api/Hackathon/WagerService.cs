@@ -218,7 +218,10 @@ public sealed class WagerService
         // chain check outside the lobby lock. V5 M9h: any amount and any memo, so a transfer from the player's wallet to the
         // treasury that cannot pay the stake (too little, another memo or none) is recorded too and refunded below, once
         // (it used to fail with amount_too_low / memo_mismatch and leave the SOL in the treasury).
-        var (deposit, _) = await _ledger.VerifyDepositAsync(player, signature, DepositPurpose, w.Id.ToString(), 1, null);
+        // (review) only a transfer made after the wager existed (2 minutes' clock tolerance): an older transfer to the
+        // treasury (a top-up, a payment for something else) is refused unrecorded, never refunded through a wager
+        var (deposit, _) = await _ledger.VerifyDepositAsync(player, signature, DepositPurpose, w.Id.ToString(), 1, null,
+            notBefore: w.CreatedAt - TimeSpan.FromMinutes(2));
 
         string? refuse = null;
         object? state = null;
@@ -611,6 +614,19 @@ public sealed class WagerSweeper : BackgroundService
         }
     }
 
+    static async Task StepAsync(IServiceScopeFactory scopes, ILogger log, string name, Func<IServiceProvider, Task> step)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            await step(scope.ServiceProvider);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogWarning(ex, "{Step} failed", name);
+        }
+    }
+
     /// <summary>One sweep: payouts reconciled by signature first (13 Oct hotfix), then wagers, then market refunds.</summary>
     public static async Task PassAsync(IServiceScopeFactory scopes, ILogger log)
     {
@@ -641,21 +657,16 @@ public sealed class WagerSweeper : BackgroundService
         {
             log.LogWarning(ex, "Market refund sweep failed");
         }
-        try
+        // V5 M9h: pending Island NFT mints resolved on chain (never re-sent), the treasury's low-float alarm, and raids past
+        // their timeout stored as abandoned (reads no longer write them); each step on its own so one failure skips no other
+        await StepAsync(scopes, log, "Mint reconcile", sp => sp.GetRequiredService<IslandService>().ReconcileMintsAsync());
+        await StepAsync(scopes, log, "Treasury check", sp => sp.GetRequiredService<TreasuryMonitor>().BalanceAsync());
+        await StepAsync(scopes, log, "Raid expiry", async sp =>
         {
-            // V5 M9h: pending Island NFT mints resolved on chain (never re-sent), and the treasury's low-float alarm
-            using var scope = scopes.CreateScope();
-            await scope.ServiceProvider.GetRequiredService<IslandService>().ReconcileMintsAsync();
-            await scope.ServiceProvider.GetRequiredService<TreasuryMonitor>().BalanceAsync();
-            // raids past their timeout are stored as abandoned here too (reads no longer write them)
             await IslandLocks.Economy.WaitAsync();
-            try { await scope.ServiceProvider.GetRequiredService<RaidService>().ExpireStaleAsync(); }
+            try { await sp.GetRequiredService<RaidService>().ExpireStaleAsync(); }
             finally { IslandLocks.Economy.Release(); }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            log.LogWarning(ex, "Mint reconcile, treasury check or raid expiry failed");
-        }
+        });
         try
         {
             // V5 M9h: expired sessions are deleted

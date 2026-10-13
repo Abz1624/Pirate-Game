@@ -53,7 +53,7 @@ public static class HackathonEndpoints
             }
             var lamports = await sol.GetBalanceAsync(address.Trim());
             return Results.Ok(new { wallet = address.Trim(), lamports, sol = lamports / (double)SolanaService.LamportsPerSol, cluster = sol.Cluster });
-        });
+        }).RequireRateLimiting(RpcReads.Policy);
 
         // V5 M9h: the balance is read from the chain at most every 30 s (TreasuryMonitor), and reports the low-float alarm
         app.MapGet("/api/treasury", async (SolanaService sol, TreasuryMonitor monitor) =>
@@ -74,8 +74,8 @@ public static class HackathonEndpoints
             raidLootEnabled = settings.RaidLootEnabled,
             islandSaleCarriesRum = settings.IslandSaleCarriesRum,
             dailyRaceFixedSalt = settings.DailyRaceFixedSalt,
-            weeklyRewardCheckedOnly = !(bool.TryParse(config["WEEKLY_REWARD_CHECKED_ONLY"], out var co) && !co), // as RewardService reads it
-            weeklyRewardsAuto = !(bool.TryParse(config["WEEKLY_REWARDS_AUTO"], out var au) && !au),
+            weeklyRewardCheckedOnly = ApiSettings.Flag(config["WEEKLY_REWARD_CHECKED_ONLY"], true),
+            weeklyRewardsAuto = ApiSettings.Flag(config["WEEKLY_REWARDS_AUTO"], true),
             botStakes = false,
             raidStakes = false,
             mintDailyBudget = settings.MintDailyBudget,
@@ -147,6 +147,7 @@ public static class HackathonEndpoints
                 lowSince = monitor.LowSince,
                 mintsToday = await islands.MintsTodayAsync(), mintDailyBudget = settings.MintDailyBudget,
                 pendingMints = await db.Islands.AsNoTracking().CountAsync(i => i.PendingMint != null),
+                islandsNotMinted = await db.Islands.AsNoTracking().CountAsync(i => i.NftStatus != IslandService.NftMinted),
                 payoutsNotSent = open,
                 topUpRule = TreasuryMonitor.TopUpRule,
             });
