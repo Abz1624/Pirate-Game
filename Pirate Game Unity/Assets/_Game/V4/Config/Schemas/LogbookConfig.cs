@@ -19,12 +19,16 @@ namespace RoguePirates.V4.Config
         public int maxLevel = 10;
         [Tooltip("Offered in Saltwind (V3 V3LogbookCatalog.AllIds).")] public bool inSaltwindPool = true;
         [Tooltip("Order in V3's database (offer picks walk the Logbooks in this order).")] public int databaseOrder;
+        [Tooltip("Hackathon (13 Oct, owner): the Chaos Logbook. Each rank's card rolls (on the run's Loot stream) one of the Logbooks in randomStatFrom and shows it; taking it adds that Logbook's per-rank stat. stat and perLevelAdditive are not used.")]
+        public bool randomStat;
+        [Tooltip("The Logbooks a random-stat rank can roll (their stat and per-rank value).")] public string[] randomStatFrom = System.Array.Empty<string>();
 
         public override void Validate(ConfigValidationReport report)
         {
             if (string.IsNullOrWhiteSpace(logbookId)) report.Error(this, nameof(logbookId), "missing id");
             if (stat != -1) report.StatId(this, nameof(stat), stat);
             if (maxLevel < 1) report.Error(this, nameof(maxLevel), "must be at least 1");
+            if (randomStat && (randomStatFrom == null || randomStatFrom.Length == 0)) report.Error(this, nameof(randomStatFrom), "a random-stat Logbook needs Logbooks to roll from");
         }
     }
 }

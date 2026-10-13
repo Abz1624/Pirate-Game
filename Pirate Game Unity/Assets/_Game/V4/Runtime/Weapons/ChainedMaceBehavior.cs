@@ -19,6 +19,8 @@ namespace RoguePirates.V4.Weapons
         public Vector3 AimOffset;
         public bool Returning;
         public float OutSeconds;
+        /// <summary>Seconds it has been reeled in (a boosting ship can outrun it: it snaps home after <see cref="ChainedMaceBehavior.MaxReturnSeconds"/>).</summary>
+        public float ReturnSeconds;
         public float BaseDamage, DamageBonus, ProcCoefficient, HitRadius, Knockback, OutSpeed, ReturnSpeed, Height, MaxOutSeconds;
         /// <summary>Unit ids this throw has hit (each enemy once a throw).</summary>
         public readonly List<int> HitUnits = new List<int>(8);
@@ -39,7 +41,21 @@ namespace RoguePirates.V4.Weapons
         readonly List<int> _targets = new List<int>(4);
         readonly Stack<ChainedMace> _free = new Stack<ChainedMace>();
 
-        public ChainedMaceBehavior(WeaponCombat c) : base(c) { }
+        /// <summary>13 Oct (review): maces made up front, 4 (the most one attack throws) for each of 6 weapon slots, so none
+        /// is created mid-run.</summary>
+        public const int PrewarmPerSlot = 4, PrewarmSlots = 6;
+
+        /// <summary>13 Oct (review): a mace reeled in for longer than this snaps home (a boosting ship, 34 m/s, outruns the
+        /// 28 m/s reel and would block the next throw for as long as it boosts).</summary>
+        public static float MaxReturnSeconds(ChainedMace mace) => Mathf.Max(0.5f, mace.MaxOutSeconds * 1.5f);
+
+        public ChainedMaceBehavior(WeaponCombat c) : base(c)
+        {
+            for (var i = 0; i < PrewarmPerSlot * PrewarmSlots; i++) _free.Push(new ChainedMace());
+        }
+
+        /// <summary>Maces ready for the next throws (tests).</summary>
+        public int FreeCount => _free.Count;
 
         /// <summary>Maces one attack of this slot throws (1 at rank 1, up to the cap).</summary>
         public static int MacesPerAttack(WeaponSlot w)
@@ -64,7 +80,7 @@ namespace RoguePirates.V4.Weapons
             var def = w.Config;
             if (!C.Targeting.TryResolveTarget(def, out var first, out var aim)) return WeaponFireOutcome.NoTarget;
             var count = MacesPerAttack(w);
-            PickTargets(first, def.range, count);
+            PickTargets(first, def.range * w.SizeMult * C.Mods.Size, count); // 13 Oct (review): the range the Size cards scale, as the ball
             C.NotifyAimed(w, aim, first);
             var m = def.mace;
             var origin = C.Ship.Position;
@@ -89,6 +105,7 @@ namespace RoguePirates.V4.Weapons
                 mace.TargetPoint.y = m.height;
                 mace.Returning = false;
                 mace.OutSeconds = 0f;
+                mace.ReturnSeconds = 0f;
                 mace.BaseDamage = def.baseDamage * m.damageMultiplier;
                 mace.DamageBonus = Stats.LevelMult(w);
                 mace.ProcCoefficient = def.procCoefficient;
@@ -160,9 +177,10 @@ namespace RoguePirates.V4.Weapons
                 }
                 else
                 {
+                    mace.ReturnSeconds += dt;
                     mace.Position = Vector3.MoveTowards(mace.Position, home, mace.ReturnSpeed * dt);
                     HitTouching(mace);
-                    if (WeaponCombat.HorizontalDistance(mace.Position, home) <= 0.6f) Recycle(i);
+                    if (WeaponCombat.HorizontalDistance(mace.Position, home) <= 0.6f || mace.ReturnSeconds >= MaxReturnSeconds(mace)) Recycle(i);
                 }
             }
         }
@@ -187,6 +205,12 @@ namespace RoguePirates.V4.Weapons
                     C.Effects?.WaterSplash(mace.Position);
                 }
             }
+        }
+
+        /// <summary>13 Oct (review): every mace in flight back to the free stack (the run clears what is in the air).</summary>
+        public void RecycleAll()
+        {
+            for (var i = C.Maces.Count - 1; i >= 0; i--) Recycle(i);
         }
 
         void Recycle(int index)

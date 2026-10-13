@@ -722,7 +722,6 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Boss_NeverLeashed_AndMovesContinuously_WhenKitedAndAMinibossArrives()
         {
-            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             using var profilePort = new RoguePirates.V4.Ports.StageProfilePort(config);
             StageBalanceProfileContext.BeginRun(profilePort.Profile);

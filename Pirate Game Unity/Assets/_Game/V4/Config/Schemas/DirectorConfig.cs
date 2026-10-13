@@ -76,7 +76,7 @@ namespace RoguePirates.V4.Config
 
         [Header("Coverage (offense per behaviour: how much of the field a hit reaches)")]
         [Tooltip("Weight per weapon behaviour (ConfigEnums.WeaponBehavior order). Area and orbit weapons hit more enemies per shot.")]
-        public float[] behaviorCoverage = { 1f, 1.6f, 1.8f, 1.5f, 1.2f, 1.4f, 1.6f, 1.3f, 1.5f, 1f }; // Projectile, Fan, Orbit, ConeStream, Trail, Mine, AreaStrike, Aura, PredictedArea, Summon
+        public float[] behaviorCoverage = { 1f, 1.6f, 1.8f, 1.5f, 1.2f, 1.4f, 1.6f, 1.3f, 1.5f, 1f, 1.2f }; // Projectile, Fan, Orbit, ConeStream, Trail, Mine, AreaStrike, Aura, PredictedArea, Summon, ChainedMace (13 Oct: a line out and back)
 
         // ---- M11 levers (Adaptive mode only; each can be switched off). "Above" = how far Pressure is from 1 toward the
         // top of the band (0 at 1 or below, 1 at pressureMax): strong builds only; weak builds only get the lower rate.

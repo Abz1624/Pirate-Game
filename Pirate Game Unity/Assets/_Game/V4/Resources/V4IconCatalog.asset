@@ -146,6 +146,14 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: b2d83c218e9cf2f44ac36a5e3647fd24, type: 3}
   - id: captains_last_rum
     sprite: {fileID: 21300000, guid: ea824fe6cbc6331459e429afdb54b4b3, type: 3}
+  - id: devils_match
+    sprite: {fileID: 21300000, guid: b511f80a82afb724b9ac8b336cc423d1, type: 3}
+  - id: hammerhead_helm
+    sprite: {fileID: 21300000, guid: bd8145f4bd329eb4190428af6e33c582, type: 3}
+  - id: queen_annes_fuse
+    sprite: {fileID: 21300000, guid: 39ee5f68d37e1dd4aba6f05c821e03fe, type: 3}
+  - id: storm_in_a_bottle
+    sprite: {fileID: 21300000, guid: 135c0bf819d0a2448ac71bf143683920, type: 3}
   logbooks:
   - id: admiral
     sprite: {fileID: 21300000, guid: e851ae039bdda2147aee1c97d112d9cf, type: 3}
@@ -177,3 +185,5 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 930303b7ac8596e47b3acf69bc32a79e, type: 3}
   - id: tidecaller
     sprite: {fileID: 21300000, guid: 1ce9407fff2dda84eba5b442c3d5ceee, type: 3}
+  - id: chaos
+    sprite: {fileID: 21300000, guid: 36843fa5e5007024cb8df7f088a231f1, type: 3}

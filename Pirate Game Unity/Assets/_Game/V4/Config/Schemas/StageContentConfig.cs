@@ -79,6 +79,8 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(7, "read when the run starts")] public float explosiveBarrelFuseSeconds = 1.2f;
         [AppliesFrom(7, "read when the run starts")] public float explosiveBarrelRadius = 4f;
         [AppliesFrom(7, "read when the run starts")] public int explosiveBarrelDamage = 20;
+        [Tooltip("13 Oct (owner): point-of-interest types switched off (POIType names, e.g. TrialBuoy for the Signal Buoy). Each is still placed, so every other POI keeps its seeded position, then dropped from the layout so it never spawns; its definition stays. Was a code list (StagePoiPlacer.DisabledTypes, hackathon).")]
+        [AppliesFrom(7, "read when the run starts")] public string[] disabledPoiTypes = System.Array.Empty<string>();
 
         [Header("Chests")]
         [Tooltip("First chest price.")] public int chestBasePrice = 20;

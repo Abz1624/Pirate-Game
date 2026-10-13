@@ -28,6 +28,9 @@ namespace RoguePirates.V4.Progression
         public int CurrentLevel, NextLevel;
         public bool IsWeapon, IsNew;
         public UpgradeLine[] Lines;
+        /// <summary>Hackathon (13 Oct, owner): a Chaos Logbook card's rolled Logbook (its stat and per-rank value), shown on
+        /// the card and applied when taken; null for every other card.</summary>
+        public string RolledFrom;
         public bool IsEmpty => Id == null;
         /// <summary>V3's offer key (duplicate cards compare it).</summary>
         public string Key => Kind == OfferKind.WeaponEvolution ? $"{Kind}:{Id}:{EvolutionId}" : $"{Kind}:{Id}";
@@ -221,7 +224,7 @@ namespace RoguePirates.V4.Progression
             if (newWeapon != null) result.Add(BuildNewWeaponOffer(newWeapon));
 
             var logbook = PickLogbook(rng, state, levelsEmpty: true, newOnly: false);
-            if (logbook != null) result.Add(BuildLogbookOffer(logbook, 0, RollRarity(rng, luck)));
+            if (logbook != null) result.Add(BuildLogbookOffer(logbook, 0, RollRarity(rng, luck), rng));
         }
 
         // ---- One card (V3 RollOffer, fill-state branch) ---------------------------------------------------------------
@@ -317,7 +320,7 @@ namespace RoguePirates.V4.Progression
         {
             var lb = PickLogbook(rng, state, levelsEmpty: false, newOnly);
             if (lb == null) return default;
-            var offer = BuildLogbookOffer(lb, state.LogbookLevel(lb.logbookId), RollRarity(rng, luck));
+            var offer = BuildLogbookOffer(lb, state.LogbookLevel(lb.logbookId), RollRarity(rng, luck), rng);
             return usedKeys.Contains(offer.Key) ? default : offer;
         }
 
@@ -538,11 +541,31 @@ namespace RoguePirates.V4.Progression
             IsWeapon = true, IsNew = true, Lines = Array.Empty<UpgradeLine>(),
         };
 
-        static Offer BuildLogbookOffer(LogbookConfig def, int currentLevel, int rarity) => new Offer
+        Offer BuildLogbookOffer(LogbookConfig def, int currentLevel, int rarity, IOfferRandom rng) => new Offer
         {
             Kind = OfferKind.Logbook, Id = def.logbookId, Rarity = rarity, CurrentLevel = currentLevel, NextLevel = currentLevel + 1,
             IsWeapon = false, IsNew = currentLevel <= 0, Lines = Array.Empty<UpgradeLine>(),
+            RolledFrom = def.randomStat ? RollRandomStat(def, rng)?.logbookId : null, // one Loot draw, only for Chaos
         };
+
+        /// <summary>
+        /// Hackathon (13 Oct, owner): the Chaos Logbook's roll. One Loot draw picks one of its <c>randomStatFrom</c> Logbooks
+        /// that exists and raises a stat (in the listed order, so the same draw always gives the same Logbook); null when
+        /// none does (no draw then).
+        /// </summary>
+        public LogbookConfig RollRandomStat(LogbookConfig chaos, IOfferRandom rng)
+        {
+            if (chaos == null || !chaos.randomStat || chaos.randomStatFrom == null || rng == null) return null;
+            var candidates = new List<LogbookConfig>();
+            foreach (var id in chaos.randomStatFrom)
+            {
+                var lb = _logbooks().FirstOrDefault(l => l != null && l.logbookId == id);
+                if (lb != null && !lb.randomStat && lb.stat >= 0 && lb != chaos && !candidates.Contains(lb)) candidates.Add(lb);
+            }
+            if (candidates.Count == 0) return null;
+            var index = Mathf.Min(candidates.Count - 1, Mathf.FloorToInt(rng.LootFloat() * candidates.Count));
+            return candidates[index];
+        }
 
         UpgradeLine[] RollUpgradePackage(WeaponConfig def, int rarity, IOfferRandom rng)
         {

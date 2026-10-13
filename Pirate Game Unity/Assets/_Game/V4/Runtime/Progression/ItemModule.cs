@@ -95,6 +95,8 @@ namespace RoguePirates.V4.Progression
             _frenzyBonus = 0f;
             _pulseTimer = 0f;
             _surroundStacks = 0f;
+            _chainEvents = 0;
+            _burstCooldown = 0f;
         }
 
         /// <summary>V3 TryAddItem: another stack (uncapped) and its stat changes; always succeeds.</summary>
@@ -134,6 +136,7 @@ namespace RoguePirates.V4.Progression
             _turnBuffTimer = Mathf.Max(0f, _turnBuffTimer - dt);
             _nearMissBuffTimer = Mathf.Max(0f, _nearMissBuffTimer - dt);
             _frenzyTimer = Mathf.Max(0f, _frenzyTimer - dt);
+            _burstCooldown = Mathf.Max(0f, _burstCooldown - dt); // Hackathon: Storm in a Bottle
             TrackHeadingAndMovement();
             TickPulse(dt);
             TickSurrounded(dt);
@@ -207,6 +210,69 @@ namespace RoguePirates.V4.Progression
             var e = Effect(ItemEffectKind.ChestPriceAndRarity, out var id);
             return e == null ? 1f : Mathf.Min(e.cap, 1f + e.threshold * Mathf.Max(1, StackCount(id)));
         }
+
+        // ---- Hackathon (13 Oct, owner): the Art Guide's designed items (D33) ----------------------------------------------
+
+        /// <summary>Storm in a Bottle: the strikes are due (item id, strikes, seconds they are spread over, range, damage, radius).</summary>
+        public event Action<string, int, float, float, float, float> LightningBurstRequested;
+        int _chainEvents;
+        float _burstCooldown;
+
+        /// <summary>Devil's Match: the chance a weapon hit sets the enemy burning (0 without the item), the blast a burning
+        /// enemy's death sets off and the item's id (its ledger id). One chance whatever the copies (the guide gives no
+        /// stacking).</summary>
+        public float IgniteChance(out float blastDamage, out float blastRadius, out string itemId)
+        {
+            var e = Effect(ItemEffectKind.IgniteOnHit, out itemId);
+            blastDamage = e != null ? e.threshold : 0f;
+            blastRadius = e != null ? e.radius : 0f;
+            return e != null ? Mathf.Clamp01(e.value) : 0f;
+        }
+
+        /// <summary>Hammerhead Helm: knockback the ship receives × this (1 - value per copy, at most cap off).</summary>
+        public float ReceivedKnockbackMultiplier()
+        {
+            var e = Effect(ItemEffectKind.ReceivedKnockback, out var id);
+            return e == null ? 1f : 1f - Mathf.Clamp01(Mathf.Min(e.cap, e.value * Mathf.Max(1, StackCount(id))));
+        }
+
+        /// <summary>Hammerhead Helm: the ram (damage, the speed it needs, seconds between rams on one enemy, the item id).</summary>
+        public bool RamDamage(out float damage, out float minSpeed, out float interval, out string itemId)
+        {
+            var e = Effect(ItemEffectKind.RamDamage, out itemId);
+            damage = e != null ? e.value : 0f;
+            minSpeed = e != null ? e.threshold : 0f;
+            interval = e != null ? Mathf.Max(0.05f, e.seconds) : 0f;
+            return e != null && damage > 0f;
+        }
+
+        /// <summary>Queen Anne's Fuse: the generations of secondary blasts a keg blast sets off (one per copy, at most cap; 0
+        /// without the item), their share of the keg's damage, their reach past the blast's edge and their delay.</summary>
+        public int KegChainGenerations(out float damageShare, out float reach, out float delay, out string itemId)
+        {
+            var e = Effect(ItemEffectKind.KegChainBlast, out itemId);
+            damageShare = e != null ? e.value : 0f;
+            reach = e != null ? e.threshold : 0f;
+            delay = e != null ? e.seconds : 0f;
+            return e == null ? 0 : Mathf.Min(Mathf.Max(1, Mathf.RoundToInt(e.cap)), Mathf.Max(1, StackCount(itemId)));
+        }
+
+        /// <summary>Storm in a Bottle: one chain-lightning hit (Lightning Mast, Tempest Mast). Every threshold hits, once the
+        /// cooldown is over, the burst is requested.</summary>
+        public void NotifyLightningChainEvent()
+        {
+            var e = Effect(ItemEffectKind.LightningBurst, out var id);
+            if (e == null) return;
+            _chainEvents++;
+            if (_chainEvents < Mathf.Max(1f, e.threshold) || _burstCooldown > 0f) return;
+            _chainEvents = 0;
+            _burstCooldown = e.seconds;
+            LightningBurstRequested?.Invoke(id, Mathf.Max(1, e.count), e.spreadSeconds, e.cap, e.value, e.radius);
+        }
+
+        /// <summary>Storm in a Bottle: chain hits counted toward the next burst, and the cooldown left (HUD and tests).</summary>
+        public int LightningChainEvents => _chainEvents;
+        public float LightningBurstCooldown => _burstCooldown;
 
         /// <summary>V5 M5 Black Spot: elite kill gold and XP × this.</summary>
         public float EliteRewardMultiplier()

@@ -263,6 +263,8 @@ namespace RoguePirates.V4.Foundation.Player
         }
         Vector3 _knockback;
         float _knockbackDecay;
+        /// <summary>Hackathon (13 Oct, owner): knockback the ship receives (its island bounce) x this (Hammerhead Helm); null = x 1.</summary>
+        public System.Func<float> ReceivedKnockbackMultiplier;
         /// <summary>Impacts that bounced the ship this run (tests and the playable check).</summary>
         public int IslandImpactCount { get; private set; }
         /// <summary>Impacts that cost hull this run.</summary>
@@ -281,6 +283,7 @@ namespace RoguePirates.V4.Foundation.Player
             _nextIslandImpactAt = IslandCooldownEnd(s.Cooldown);
             // The resolver already took the inward speed out; push back off the shore (a fading push, see FixedUpdate).
             var push = inwardSpeed * s.Restitution + s.PushSpeed;
+            if (ReceivedKnockbackMultiplier != null) push *= Mathf.Clamp01(ReceivedKnockbackMultiplier());
             _knockback = normal * push;
             _knockbackDecay = push / Mathf.Max(0.05f, s.BounceSeconds);
             IslandImpactCount++;

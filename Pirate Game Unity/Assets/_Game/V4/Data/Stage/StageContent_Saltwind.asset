@@ -106,6 +106,8 @@ MonoBehaviour:
   explosiveBarrelFuseSeconds: 1.2
   explosiveBarrelRadius: 4
   explosiveBarrelDamage: 20
+  disabledPoiTypes:
+  - TrialBuoy
   chestBasePrice: 20
   chestPriceGrowth: 1.35
   chestPriceIncrementBase: 45

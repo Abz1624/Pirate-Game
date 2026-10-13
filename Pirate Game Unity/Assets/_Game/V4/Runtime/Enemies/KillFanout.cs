@@ -32,6 +32,10 @@ namespace RoguePirates.V4.Enemies
         public Func<string, int> WeaponKillGold;
         /// <summary>V5 M5: elite kill gold and XP × this (Black Spot); boss gold × this (the Plunderer Logbook).</summary>
         public Func<float> EliteRewardMultiplier, BossGoldMultiplier;
+        /// <summary>Hackathon (13 Oct, owner): Devil's Match. The unit is burning as it dies (by unit id; it is still in its
+        /// slot), and what its death sets off (the blast, at its position; the build decides whether an item asks for it).</summary>
+        public Func<int, bool> IsBurning;
+        public Action<Vector3> BurningDeath;
         float _xpCarry, _goldCarry;
 
         static int Carry(float value, ref float carry)
@@ -74,6 +78,7 @@ namespace RoguePirates.V4.Enemies
             if (e.isBoss) BossKilled?.Invoke();
             ItemKill?.Invoke();
             if (!string.IsNullOrEmpty(e.lastHitWeaponId)) WeaponKill?.Invoke(e.lastHitWeaponId);
+            if (BurningDeath != null && IsBurning != null && IsBurning(e.id)) BurningDeath(e.position);
         }
 
         /// <summary>V3 SaltwindStageEconomyLogic.ResolveKillGoldDrop: ordinary kills drop gold on a Director-stream roll,

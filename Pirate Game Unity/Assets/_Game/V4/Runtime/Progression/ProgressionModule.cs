@@ -163,6 +163,7 @@ namespace RoguePirates.V4.Progression
             var c = C;
             _state.Clear();
             _evolutions.Clear();
+            _chaosRolls.Clear();
             _completedLevelUps = 0;
             _offers.ResetForRun();
             _state.Weapons.Add(startingWeapon);
@@ -388,9 +389,22 @@ namespace RoguePirates.V4.Progression
             var def = _logbook(offer.Id);
             if (def == null) return;
             var mult = C.rarityMultipliers[offer.Rarity];
-            _stats.Add("logbook:" + def.logbookId, def.stat, def.perLevelAdditive * mult, def.perLevelMultiplicative);
-            if (def.stat == (int)StatId.Hull) _ship?.SyncMaxHull(def.perLevelAdditive * mult);
+            // Hackathon (13 Oct, owner): a Chaos rank adds the stat its card rolled (a rank without a card, PvP or the console,
+            // rolls now on the same Loot stream); the source stays the Chaos Logbook's.
+            var stat = def;
+            if (def.randomStat)
+            {
+                stat = !string.IsNullOrEmpty(offer.RolledFrom) ? _logbook(offer.RolledFrom) : _offers.RollRandomStat(def, _rng);
+                if (stat == null || stat.randomStat) return;
+                _chaosRolls.Add(stat.logbookId);
+            }
+            _stats.Add("logbook:" + def.logbookId, stat.stat, stat.perLevelAdditive * mult, stat.perLevelMultiplicative);
+            if (stat.stat == (int)StatId.Hull) _ship?.SyncMaxHull(stat.perLevelAdditive * mult);
         }
+
+        readonly List<string> _chaosRolls = new List<string>();
+        /// <summary>Hackathon: the Logbooks the Chaos ranks rolled this run, in order (tests, telemetry).</summary>
+        public IReadOnlyList<string> ChaosRolls => _chaosRolls;
 
         // ---- Playtest (3 Oct, owner): the 1v1 build --------------------------------------------------------------------------
 

@@ -56,5 +56,10 @@ namespace RoguePirates.V4.Progression
         public float ExplosionDamageMultiplier => _items.ExplosionDamageMultiplier();
         public void ExplosionResolved() => _items.NotifyExplosionResolved();
         public int ExtraLightningJumps => _items.ExtraLightningJumps();
+        // Hackathon (13 Oct, owner): Devil's Match, Queen Anne's Fuse, Hammerhead Helm, Storm in a Bottle.
+        public float IgniteChance(out float blastDamage, out float blastRadius, out string ledgerId) => _items.IgniteChance(out blastDamage, out blastRadius, out ledgerId);
+        public int KegChainGenerations(out float damageShare, out float reach, out float delay, out string ledgerId) => _items.KegChainGenerations(out damageShare, out reach, out delay, out ledgerId);
+        public bool RamDamage(out float damage, out float minSpeed, out float interval, out string ledgerId) => _items.RamDamage(out damage, out minSpeed, out interval, out ledgerId);
+        public void LightningChainEvent() => _items.NotifyLightningChainEvent();
     }
 }

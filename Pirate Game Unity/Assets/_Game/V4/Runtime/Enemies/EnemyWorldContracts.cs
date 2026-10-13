@@ -147,8 +147,9 @@ namespace RoguePirates.V4.Enemies
         public bool IsElite(int i) => _sim.Agents[i].isElite;
         public bool IsBoss(int i) => _sim.Agents[i].isBoss;
         /// <summary>V5 M8z (7 Oct, D21, Q32): elite damage (the Admiral Logbook) applies to elites, the boss and minibosses
-        /// (the definition's flags).</summary>
-        public bool IsEliteDamageTarget(int i) => _sim.Agents[i].isElite || _sim.Agents[i].isBoss || DefinitionIsBoss(_sim.Agents[i].definitionIndex) || DefinitionIsMiniboss(_sim.Agents[i].definitionIndex);
+        /// (the definition's flags). 13 Oct (owner): Big Game Hunter also counts the 1v1 rival captain (the remote unit),
+        /// the PvP equivalent of a boss; it did nothing in a match before.</summary>
+        public bool IsEliteDamageTarget(int i) => _sim.Agents[i].isElite || _sim.Agents[i].isBoss || _sim.Agents[i].remote || DefinitionIsBoss(_sim.Agents[i].definitionIndex) || DefinitionIsMiniboss(_sim.Agents[i].definitionIndex);
         public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false) => _sim.TryGetNearest(from, range, out index, preferElite);
         public int UnitId(int i) => _sim.Agents[i].id;
         public float HpFraction(int i) => _sim.Agents[i].maxHp > 0f ? _sim.Agents[i].hp / _sim.Agents[i].maxHp : 1f;

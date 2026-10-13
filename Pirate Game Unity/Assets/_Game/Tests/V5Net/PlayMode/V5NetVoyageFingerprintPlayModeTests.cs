@@ -140,7 +140,8 @@ namespace RoguePirates.V5.Net.Tests
                 "Case (c): solo server voyage, seed 8282, shipped playtest switches, ambient waves and scripted phases as the game,\n" +
                 "damage on, no cards; headless server run at 30 Hz with an in-process NetClient sailing a constant input (steer 0.35,\n" +
                 "throttle 1) over loopback WebSockets; the run a Driven session (M9c S1): one server tick a frame, each two world steps\n" +
-                "of 1/60 s then the ship's input; held (not stepped) until the client's first two inputs; until 180 s or the sinking.");
+                "of 1/60 s then the ship's input; held (not stepped) until the client's first two inputs; the ship cannot sink after 60 s\n" +
+                "(13 Oct: it sank before minute 2, so the golden covered only one minute); until 180 s.");
             fp.Line("seed", 8282);
             fp.Line("heldAt", held);
             fp.Enemies("hold", game);
@@ -152,8 +153,11 @@ namespace RoguePirates.V5.Net.Tests
             var deadline = Time.realtimeSinceStartup + 900f;
             var clock = System.Diagnostics.Stopwatch.StartNew();
             ServerTick.Invoke(_server, null); // the first tick (the session starts: the ship's first step), then one tick a frame
+            var shielded = false;
             while (!run.IsRunEnded && samples.Count > 0 && Time.realtimeSinceStartup < deadline)
             {
+                // 13 Oct (review): damage on for the first minute, then the ship cannot sink, so the voyage covers minutes 2 and 3.
+                if (!shielded && run.ElapsedSeconds >= 60f) { Scenario.Current.Ship.Damage.SetPlaytestInvulnerable(true); shielded = true; fp.Line("invulnerableFrom", VoyageFingerprint.F(run.ElapsedSeconds)); }
                 var left = MinFrameSeconds - clock.Elapsed.TotalSeconds;
                 if (left > 0) System.Threading.Thread.Sleep((int)System.Math.Ceiling(left * 1000.0));
                 yield return null;
@@ -162,7 +166,8 @@ namespace RoguePirates.V5.Net.Tests
                 if (run.ElapsedSeconds >= samples.Peek()) fp.Enemies(samples.Dequeue().ToString("0"), game);
             }
             var sank = run.IsRunEnded;
-            Assert.IsTrue(sank || samples.Count == 0, "the voyage reached 180 s or sank");
+            Assert.IsFalse(sank, "afloat: the ship cannot sink after 60 s");
+            Assert.AreEqual(0, samples.Count, "the voyage reached 180 s");
             var m = _server.Metrics;
             Debug.Log($"[V5 M9c S0] server voyage: guessed inputs {m.GuessedInputs}, catch-up skips {m.CatchUpSteps}, late inputs {m.LateInputs}, " +
                       $"server ticks {_server.ServerTick}, steps applied {_server.StepsApplied}, client lead trims {_client.LeadTrims}");

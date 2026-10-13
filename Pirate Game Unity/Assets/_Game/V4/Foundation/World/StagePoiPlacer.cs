@@ -52,14 +52,23 @@ namespace RoguePirates.V4.Foundation.World
 
         /// <summary>
         /// Hackathon (owner, 13 Oct): the Signal Buoy is disabled for now. It is still placed (so every other POI keeps
-        /// its seeded position) and then dropped from the layout, so it never spawns. Its definition stays.
+        /// its seeded position) and then dropped from the layout, so it never spawns. Its definition stays. Since 13 Oct
+        /// (review) the list is config (StageContentConfig.disabledPoiTypes, through the active stage profile); none
+        /// without a profile.
         /// </summary>
-        public static readonly POIType[] DisabledTypes = { POIType.TrialBuoy };
+        public static POIType[] DisabledTypes =>
+            StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Authoring != null && StageBalanceProfileContext.Authoring.disabledPoiTypes != null
+                ? StageBalanceProfileContext.Authoring.disabledPoiTypes
+                : System.Array.Empty<POIType>();
+
+        public static bool IsDisabled(POIType type) => System.Array.IndexOf(DisabledTypes, type) >= 0;
 
         public static void RemoveDisabledPois(StageLayout layout)
         {
             if (layout?.pois == null) return;
-            layout.pois.RemoveAll(p => System.Array.IndexOf(DisabledTypes, p.type) >= 0);
+            var disabled = DisabledTypes;
+            if (disabled.Length == 0) return;
+            layout.pois.RemoveAll(p => System.Array.IndexOf(disabled, p.type) >= 0);
         }
 
         static void TryPlaceFirstChest(

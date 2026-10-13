@@ -76,14 +76,15 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void TheModelsData_IsTheExportOfTheseConfigs()
         {
-            // A stale data.json is inconclusive, not a failure: re-export from the Editor (RoguePirates ▸ V5 ▸ Balance: export
-            // the Monte Carlo data) after a balance change, before the model is run.
+            // 13 Oct (review): a stale data.json is a failure (it was inconclusive, so a config change could ship with the
+            // server's run checks built on old numbers): re-export from the Editor (RoguePirates ▸ V5 ▸ Balance: export the
+            // Monte Carlo data) after a balance change, then regenerate the run-check rules.
             using var rt = new ConfigSetRuntime(Set);
             var path = Path.Combine(MonteCarloExport.ModelFolder, "data.json");
             Assert.IsTrue(File.Exists(path), "plan/playtest/montecarlo/data.json");
             var text = File.ReadAllText(path);
             StringAssert.Contains("\"source\": \"unity\"", text, "data.json is the Editor export (not the YAML fallback)");
-            if (!text.Contains(rt.Hash)) Assert.Inconclusive("data.json was exported from other config values: re-export it (RoguePirates > V5 > Balance: export the Monte Carlo data).");
+            if (!text.Contains(rt.Hash)) Assert.Fail("data.json was exported from other config values: re-export it (RoguePirates > V5 > Balance: export the Monte Carlo data).");
         }
     }
 }

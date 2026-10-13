@@ -528,6 +528,7 @@ namespace RoguePirates.V4.Presentation.Online
         static string ShortLine(WeaponConfig w) => Plain(!string.IsNullOrEmpty(w.behaviorLine) ? w.behaviorLine : w.description);
 
         static string ShortLine(LogbookConfig l) =>
+            l.randomStat ? "A random Logbook stat per rank" : // Hackathon (13 Oct): Chaos
             l.stat < 0 ? "No effect" : StatDisplay.FormatLogbookBonus((StatId)l.stat, l.perLevelAdditive) + " per rank";
 
         static string Detail(WeaponConfig w)
@@ -544,7 +545,8 @@ namespace RoguePirates.V4.Presentation.Online
 
         static string Detail(LogbookConfig l)
         {
-            var body = l.stat < 0 ? "Does nothing in this build."
+            var body = l.randomStat ? "Each rank adds the stat of a random Logbook, rolled when the rank is gained, up to " + l.maxLevel + " ranks." // Hackathon: Chaos
+                : l.stat < 0 ? "Does nothing in this build."
                 : StatDisplay.FormatLogbookBonus((StatId)l.stat, l.perLevelAdditive) + (l.stat == (int)StatId.Hull ? " (also heals)" : string.Empty)
                   + " for each rank, up to " + l.maxLevel + " ranks.";
             return "<color=#ffd166><b>" + Name(l) + "</b></color>  <color=#9aa4ad>Logbook</color>\n" + body;

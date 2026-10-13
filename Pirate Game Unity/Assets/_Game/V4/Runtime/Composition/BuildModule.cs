@@ -92,6 +92,8 @@ namespace RoguePirates.V4.Composition
             Items.FireAllWeapons += () => _bellPending = true;
             Items.PulseRequested += (id, damage, radius, telegraph) => Weapons?.ItemPulse(id, damage, radius, telegraph); // V5 M5 Leviathan Heart
             Items.CheatedDeath += id => Toasts?.Show($"{ItemConfig(id)?.displayName ?? id}: back from the brink!", 3f);
+            // Hackathon (13 Oct, owner): Storm in a Bottle.
+            Items.LightningBurstRequested += (id, strikes, spread, range, damage, radius) => Weapons?.ItemLightningBurst(id, strikes, spread, range, damage, radius);
             Captain.ActiveUsed += OnActiveUsed;
             Captain.HoldWithoutTarget = () => Experiment?.captainActiveHoldsWithoutTarget ?? false;
             Captain.HasWeaponTarget = AnyEnemyInWeaponRange;
@@ -294,6 +296,13 @@ namespace RoguePirates.V4.Composition
         public void RollPowerup(Vector3 position, bool isBoss, bool isElite) => Powerups.TryRollOnKill(position, isBoss, isElite);
         public void NotifyItemKill() => Items.NotifyKill();
 
+        /// <summary>Hackathon (13 Oct, owner): Devil's Match. A burning enemy died: with the item, it explodes.</summary>
+        public void BurningDeath(Vector3 position)
+        {
+            if (Items.IgniteChance(out var damage, out var radius, out var id) <= 0f) return;
+            Weapons?.ItemBlast(id, position, damage, radius, 0f);
+        }
+
         /// <summary>
         /// Before each weapon tick: Captain's Bell. V3 fired from NotifyKill after every kill subscriber had run; V4
         /// fires on the next weapon tick so the burst's kills do not nest inside the outer kill (as since M5).
@@ -357,6 +366,7 @@ namespace RoguePirates.V4.Composition
                 ship.Damage.Damaged += OnShipDamaged;
                 ship.Damage.PreventDeath = Items.TryCheatDeath; // V5 M5 Captain's Last Rum
             }
+            if (ship != null) ship.ReceivedKnockbackMultiplier = Items.ReceivedKnockbackMultiplier; // Hackathon: Hammerhead Helm
         }
 
         void OnShipDamaged(float amount, bool crit) => Items.NotifyPlayerTookDamage();
@@ -369,6 +379,7 @@ namespace RoguePirates.V4.Composition
                 ship.Damage.Damaged -= OnShipDamaged;
                 ship.Damage.PreventDeath = null;
             }
+            if (ship != null) ship.ReceivedKnockbackMultiplier = null;
             Pickups.ClearAll();
         }
 

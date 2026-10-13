@@ -73,6 +73,8 @@ namespace RoguePirates.V4.Foundation.Balance
         public float explosiveBarrelRadius = 4f;
         public int explosiveBarrelDamage = 20;
         public int explosiveBarrelCount = 2;
+        [Tooltip("13 Oct: POI types placed then dropped from the layout (StageContentConfig.disabledPoiTypes).")]
+        public RoguePirates.V4.Foundation.Core.POIType[] disabledPoiTypes = System.Array.Empty<RoguePirates.V4.Foundation.Core.POIType>();
 
         [Header("Progression")]
         public int weaponSlotCap = 6;

@@ -108,6 +108,8 @@ namespace RoguePirates.V4.Composition
             s.SpecialBehaviors = new EnemySpecialBehaviors(s);
             Services = s;
             Contracts = new EnemyWorldContracts(Simulation, Statuses);
+            // Hackathon (13 Oct): Devil's Match reads the dying unit's burn (its slot is freed after the kill fan-out).
+            KillTargets.IsBurning = unitId => Simulation.TryGetAgentByUnitId(unitId, out var slot) && Statuses.BurnStacks(slot) > 0f;
             Hellfire = new HellfirePatches(Simulation, Statuses, HellfireEnvironment);
             DifficultyCurveConfig curve = null; // cached: edits change the run's copy in place
             Simulation.Curve = () => curve ??= _config?.Single<DifficultyCurveConfig>(); // M10

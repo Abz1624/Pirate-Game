@@ -85,6 +85,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 {
                     var logbook = config?.All<LogbookConfig>().FirstOrDefault(l => l.logbookId == o.Id);
                     var mult = progression != null && o.Rarity >= 0 && o.Rarity < progression.rarityMultipliers.Length ? progression.rarityMultipliers[o.Rarity] : 1f;
+                    if (logbook != null && logbook.randomStat) return ChaosCard(o, logbook, config, views, mult);
                     var line = logbook != null && StatResolver.IsStat(logbook.stat) ? StatDisplay.FormatLogbookBonus((StatId)logbook.stat, logbook.perLevelAdditive * mult) : string.Empty;
                     if (logbook != null && logbook.stat == (int)StatId.Hull) line += " (also heals)";
                     var card = Plain(o, o.CurrentLevel > 0 ? "Logbook Upgrade" : "New Logbook", config);
@@ -107,6 +108,30 @@ namespace RoguePirates.V4.Presentation.Hud
                 }
                 default: return Plain(o, string.Empty, config);
             }
+        }
+
+        /// <summary>
+        /// Hackathon (13 Oct, owner): the Chaos Logbook's card shows the stat it rolled before it is taken ("Chaos: +10%
+        /// Damage"), then that stat from its current value to the next.
+        /// </summary>
+        public static LevelOffer ChaosCard(Offer o, LogbookConfig chaos, ConfigSetRuntime config, RoguePirates.V4.Views.IRunViews views, float mult)
+        {
+            var rolled = string.IsNullOrEmpty(o.RolledFrom) ? null : config?.All<LogbookConfig>().FirstOrDefault(l => l.logbookId == o.RolledFrom);
+            var card = Plain(o, o.CurrentLevel > 0 ? "Logbook Upgrade" : "New Logbook", config);
+            card.title = string.IsNullOrEmpty(chaos.displayName) ? chaos.logbookId : chaos.displayName;
+            var title = card.title;
+            if (rolled != null && StatResolver.IsStat(rolled.stat))
+            {
+                var bonus = rolled.perLevelAdditive * mult;
+                var line = $"{title}: {StatDisplay.FormatLogbookBonus((StatId)rolled.stat, bonus)}";
+                if (rolled.stat == (int)StatId.Hull) line += " (also heals)";
+                var numbers = CardStatLines.Logbook(rolled, bonus, views);
+                card.effectLines = numbers != null ? new[] { line }.Concat(numbers).ToArray() : new[] { line };
+            }
+            else card.effectLines = new[] { $"{title}: a random Logbook stat" };
+            card.description = string.Join("\n", card.effectLines);
+            card.upgradeLines = Array.Empty<WeaponUpgradeLine>();
+            return card;
         }
 
         static WeaponConfig Weapon(ConfigSetRuntime config, string id) => config?.All<WeaponConfig>().FirstOrDefault(w => w.weaponId == id);

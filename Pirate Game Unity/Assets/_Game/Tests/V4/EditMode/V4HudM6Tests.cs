@@ -109,6 +109,8 @@ namespace RoguePirates.V4.Tests
             "smugglers_ledger", "spare_planks", "storm_conch", "swivel_mount", "whale_oil_barrel",
             // Owner's mapping (13 Oct): "chain shott" is the Chain Locker, the Kraken Ink Sac is the Cuttlefish Bone.
             "chain_locker", "cuttlefish_bone",
+            // 13 Oct (owner, after the hackathon): the four designed items (Art Guide D33) with their Unmapped icons.
+            "devils_match", "hammerhead_helm", "queen_annes_fuse", "storm_in_a_bottle",
         };
 
         /// <summary>Hackathon (13 Oct): the Logbooks with the art team's icons; the rest show their name.</summary>
@@ -118,6 +120,8 @@ namespace RoguePirates.V4.Tests
             "oversized_shot", "plunderer", "powder_drill", "quartermasters_ledger", "scavengers_net", "tidecaller",
             // Owner's mapping (13 Oct): Big Game Hunter (was Admiral) and Echo Arsenal (was Extra Hands).
             "admiral", "extra_hands",
+            // 13 Oct (owner, after the hackathon): the Chaos Logbook (Art Guide D33).
+            "chaos",
         };
 
         [Test]
@@ -129,7 +133,7 @@ namespace RoguePirates.V4.Tests
             var catalog = IconCatalog.Load();
             Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset");
             Assert.AreEqual(19, ArtWeapons.Length);
-            Assert.AreEqual(46, ArtItems.Length);
+            Assert.AreEqual(50, ArtItems.Length);
             var weapons = AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" })
                 .Select(g => AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(g))).ToList();
             var items = AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" })
@@ -209,7 +213,8 @@ namespace RoguePirates.V4.Tests
             }
             // 13 Oct, owner's mapping: + siren_bell, mortar (the newer icon replaces New_items' mortar(1)) and squid_ink_pots
             // (the Kraken Ink Sac icon for now); + chain_locker, cuttlefish_bone; + admiral, extra_hands.
-            Assert.AreEqual(10 + 27 + 15, files, "10 weapon icons (9 more are New_items'), 27 items, 15 Logbooks");
+            // 13 Oct (owner, after the hackathon): + devils_match, hammerhead_helm, queen_annes_fuse, storm_in_a_bottle; + chaos.
+            Assert.AreEqual(10 + 31 + 16, files, "10 weapon icons (9 more are New_items'), 31 items, 16 Logbooks");
             Assert.IsNull(catalog.Item("cursed_chest_key"), "the Cursed Chest Key is not the Skeleton Key: no icon (owner, 13 Oct)");
             Assert.IsTrue(catalog.Weapon("mortar") != null && AssetDatabase.GetAssetPath(catalog.Weapon("mortar")) == IconFolder + "/Weapons/mortar.png",
                 "the newer Mortar icon replaces mortar(1)");

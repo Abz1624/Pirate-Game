@@ -73,6 +73,8 @@ MonoBehaviour:
     rumCost: 240
   - contentId: plunderer
     rumCost: 240
+  - contentId: chaos
+    rumCost: 220
   itemUnlocks:
   - contentId: spare_planks
     rumCost: 120
@@ -102,6 +104,14 @@ MonoBehaviour:
     rumCost: 300
   - contentId: captains_last_rum
     rumCost: 300
+  - contentId: hammerhead_helm
+    rumCost: 140
+  - contentId: devils_match
+    rumCost: 240
+  - contentId: queen_annes_fuse
+    rumCost: 240
+  - contentId: storm_in_a_bottle
+    rumCost: 240
   contentIdAliases:
   - fromId: ramming_prow
     toId: squid_ink_pots

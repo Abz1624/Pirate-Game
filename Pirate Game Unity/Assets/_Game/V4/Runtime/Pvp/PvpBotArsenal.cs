@@ -95,10 +95,11 @@ namespace RoguePirates.V4.Pvp
         readonly Dictionary<string, LogbookConfig> _logbookConfigs;
 
         /// <summary>A weapon the bot can carry: switched on, and drawn through the effects stream and the projectile views
-        /// (orbit blades are drawn from the player's own weapons only).</summary>
+        /// (orbit blades are drawn from the player's own weapons only; so are chained maces, so a bot Anchor Flail would hit
+        /// with nothing drawn: left out too, 13 Oct review).</summary>
         public static bool Usable(WeaponConfig c) =>
             c != null && RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(c.weaponId)
-            && c.behavior != ConfigEnums.WeaponBehavior.Orbit;
+            && c.behavior != ConfigEnums.WeaponBehavior.Orbit && c.behavior != ConfigEnums.WeaponBehavior.ChainedMace;
 
         static void Pick(IReadOnlyList<string> wanted, string[] fallback, Func<string, bool> known, List<string> into)
         {
@@ -170,13 +171,24 @@ namespace RoguePirates.V4.Pvp
 
         void RaiseLogbook(string id)
         {
-            if (!_logbookConfigs.TryGetValue(id, out var def)) return;
+            if (!_logbookConfigs.TryGetValue(id, out var book)) return;
             var rarity = _progression != null && _progression.rarityMultipliers != null && _progression.rarityMultipliers.Length > 0 ? _progression.rarityMultipliers[0] : 1f;
-            _stats.AddModifier(new StatModifier((StatId)def.stat, def.perLevelAdditive * rarity, def.perLevelMultiplicative));
             _logbookLevels[id] = LogbookLevel(id) + 1;
+            var def = book.randomStat ? RollRandomStat(book) : book; // Hackathon (13 Oct): a Chaos rank rolls its stat
+            if (def == null || def.stat < 0 || def.stat > (int)StatId.MoveSpeed) return;
+            _stats.AddModifier(new StatModifier((StatId)def.stat, def.perLevelAdditive * rarity, def.perLevelMultiplicative));
             if (def.stat != (int)StatId.Hull || def.perLevelAdditive <= 0f) return;
             HullGained += def.perLevelAdditive * rarity;
             HullAdded?.Invoke(def.perLevelAdditive * rarity);
+        }
+
+        /// <summary>Hackathon (13 Oct): the Chaos Logbook's rank, one of its listed Logbooks on the bot's own stream.</summary>
+        LogbookConfig RollRandomStat(LogbookConfig chaos)
+        {
+            var candidates = new List<LogbookConfig>();
+            foreach (var from in chaos.randomStatFrom ?? Array.Empty<string>())
+                if (_logbookConfigs.TryGetValue(from, out var l) && !l.randomStat && l.stat >= 0 && !candidates.Contains(l)) candidates.Add(l);
+            return candidates.Count == 0 ? null : candidates[Mathf.Min(candidates.Count - 1, (int)(_rng.NextDouble() * candidates.Count))];
         }
 
         /// <summary>Hull its Hull Logbooks added so far (the starting ranks are in it before the match hooks HullAdded).</summary>
@@ -196,6 +208,9 @@ namespace RoguePirates.V4.Pvp
         public float Hp(int index) => 1f;
         public bool IsElite(int index) => false;
         public bool IsBoss(int index) => false;
+        /// <summary>13 Oct (owner): the player's ship is the bot's rival captain, which Big Game Hunter (the admiral Logbook
+        /// in the bot's default draft) counts like a boss; it did nothing before.</summary>
+        public bool IsEliteDamageTarget(int index) => index == 0 && TargetAlive;
 
         public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false)
         {

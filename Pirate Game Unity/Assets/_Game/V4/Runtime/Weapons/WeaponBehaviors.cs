@@ -830,6 +830,7 @@ namespace RoguePirates.V4.Weapons
     public sealed class MineBehavior : WeaponBehavior
     {
         public MineBehavior(WeaponCombat c) : base(c) { }
+        readonly HashSet<int> _blastHits = new HashSet<int>(); // Hackathon: the enemies a keg blast hit (Queen Anne's Fuse)
         public override bool NeedsTarget => false;
 
         public override WeaponFireOutcome Fire(WeaponSlot w)
@@ -921,11 +922,14 @@ namespace RoguePirates.V4.Weapons
             var id = keg.Source?.Id;
             var blastRadius = Mathf.Max(keg.BlastRadius, keg.TriggerRadius) * C.Mods.PowderKegBlastRadiusMultiplier;
             var explosion = C.Mods.ExplosionDamageMultiplier; // R-40 (1 unless the item effects are on)
+            var generations = C.Mods.KegChainGenerations(out var share, out var reach, out var delay, out var fuseId); // Hackathon: Queen Anne's Fuse
+            if (generations > 0) _blastHits.Clear();
             C.Hooks.BeginDamageResolution();
             for (var ai = 0; ai < C.Enemies.Capacity; ai++)
             {
                 if (!C.Enemies.IsActive(ai)) continue;
                 if (!Touches(keg.Position, blastRadius, ai, keg.EliteReach)) continue;
+                if (generations > 0) _blastHits.Add(ai);
                 var dmg = C.Calculator.RollAmount(keg.BaseDamage * keg.BlastDamageMultiplier, keg.DamageBonus, C.Enemies.IsEliteDamageTarget(ai), 0f,
                     keg.ProcCoefficient, id, WeaponDamageKind.TriggeredItem) * explosion;
                 if (C.Hooks.TryRegisterProcEvent()) C.DamageAndRecord(ai, id, dmg, false, id);
@@ -937,6 +941,9 @@ namespace RoguePirates.V4.Weapons
 
             C.Effects?.Explosion(keg.Position, blastRadius);
             C.Mods.ExplosionResolved();
+            // Hackathon (13 Oct, owner): Queen Anne's Fuse sets off a smaller blast at the nearest enemy the keg missed.
+            if (generations > 0 && share > 0f)
+                C.QueueChainBlast(keg.Position, blastRadius, reach, delay, generations, keg.BaseDamage * keg.BlastDamageMultiplier * share, keg.DamageBonus, fuseId, _blastHits);
             if (keg.Source != null && keg.Source.EvolutionEffect == Effect.WakeKegs)
                 ChainNearbyKegs(keg.Position, keg.Source.Evolution.wakeKegs);
             if (keg.View >= 0) C.Effects?.MineRemoved(keg.View);
@@ -1084,6 +1091,7 @@ namespace RoguePirates.V4.Weapons
                 var dmg = C.Calculator.RollAmount(def.baseDamage * damageScale, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(current), 0f, def.procCoefficient, def.weaponId);
                 C.DamageAndRecord(current, def.weaponId, dmg, false);
                 C.Damage.ApplyStatus(current, WeaponStatus.Shock, a.shockSeconds * w.DurationMult);
+                C.Mods.LightningChainEvent(); // Hackathon: Storm in a Bottle counts chain hits
                 damageScale *= a.chainFalloff;
 
                 var next = -1;

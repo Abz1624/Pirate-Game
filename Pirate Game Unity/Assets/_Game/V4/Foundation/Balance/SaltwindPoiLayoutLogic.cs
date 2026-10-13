@@ -28,6 +28,15 @@ namespace RoguePirates.V4.Foundation.Balance
         public const float DefaultNavClearance = 3.15f;
         public const int SpecialPoiCount = 4;
 
+        /// <summary>The special POIs a layout keeps: the four, less the switched-off ones (StagePoiPlacer.DisabledTypes).</summary>
+        public static int ExpectedSpecialPoiCount()
+        {
+            var count = SpecialPoiCount;
+            foreach (var t in StagePoiPlacer.DisabledTypes)
+                if (t == POIType.GildedWreck || t == POIType.MerchantSkiff || t == POIType.TrialBuoy || t == POIType.CursedIdol) count--;
+            return count;
+        }
+
         public static float EstimateTravelSeconds(Vector3 from, Vector3 to, float cruiseSpeed)
         {
             cruiseSpeed = Mathf.Max(0.5f, cruiseSpeed);
@@ -128,8 +137,10 @@ namespace RoguePirates.V4.Foundation.Balance
 
             if (chests != options.SalvageChestCount)
                 return SaltwindPoiLayoutReport.Fail($"Expected {options.SalvageChestCount} chests, got {chests}.");
-            if (specials != SpecialPoiCount)
-                return SaltwindPoiLayoutReport.Fail($"Expected {SpecialPoiCount} special POIs, got {specials}.");
+            // 13 Oct (review): the switched-off special POIs (StageContentConfig.disabledPoiTypes) are placed, then dropped.
+            var expectedSpecials = ExpectedSpecialPoiCount();
+            if (specials != expectedSpecials)
+                return SaltwindPoiLayoutReport.Fail($"Expected {expectedSpecials} special POIs, got {specials}.");
             if (beacons < 1 && layout.bossBeacon == Vector3.zero)
                 return SaltwindPoiLayoutReport.Fail("Missing boss beacon anchor.");
 

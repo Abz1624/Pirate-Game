@@ -127,9 +127,20 @@ namespace RoguePirates.V4.Ports
             p.explosiveBarrelRadius = s.explosiveBarrelRadius;
             p.explosiveBarrelDamage = s.explosiveBarrelDamage;
             p.explosiveBarrelCount = s.explosiveBarrelCount;
+            p.disabledPoiTypes = ParsePoiTypes(s.disabledPoiTypes); // 13 Oct: the switched-off POIs are config
             p.chestBasePrice = s.chestBasePrice;
             p.chestPriceGrowth = s.chestPriceGrowth;
             p.chestPriceIncrementBase = s.chestPriceIncrementBase;
+        }
+
+        /// <summary>POIType names to types (unknown names are skipped; the content guard tests catch them).</summary>
+        public static POIType[] ParsePoiTypes(string[] names)
+        {
+            if (names == null || names.Length == 0) return System.Array.Empty<POIType>();
+            var list = new System.Collections.Generic.List<POIType>();
+            foreach (var n in names)
+                if (!string.IsNullOrWhiteSpace(n) && System.Enum.TryParse<POIType>(n.Trim(), out var t) && !list.Contains(t)) list.Add(t);
+            return list.ToArray();
         }
 
         /// <summary>The stage profile fields the timeline and difficulty configs own (and, with a stage config, StageContentConfig's).</summary>

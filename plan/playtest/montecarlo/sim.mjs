@@ -250,8 +250,10 @@ export function simulateRun(data, params) {
   // the session's next pick when it is possible, so the model's combat and XP constants are measured on the same build.
   let pickIndex = 0;
   const applyLogbook = (b, rarity) => {
-    const add = b.add * P.rarityMult[rarity];
     logbooks[b.id] = (logbooks[b.id] ?? 0) + 1;
+    // Hackathon (13 Oct): the Chaos Logbook adds a random listed Logbook's stat per rank (ProgressionModule.ApplyLogbook).
+    if (b.randomFrom) { const from = b.randomFrom.map(id => data.logbooks[id]).filter(x => x && !x.randomFrom && x.stat >= 0); if (!from.length) return; b = from[Math.floor(r() * from.length)]; }
+    const add = b.add * P.rarityMult[rarity];
     if (b.stat === S.Hull) { maxHull += add; hull += add; } else if (b.stat === S.MoveSpeed) statAdd(S.MoveSpeed, add / 6.2); else if (b.stat === S.PickupRadius) statAdd(S.PickupRadius, add / 6); else statAdd(b.stat, add);
   };
   const upgradeWeapon = (w, rarity) => {

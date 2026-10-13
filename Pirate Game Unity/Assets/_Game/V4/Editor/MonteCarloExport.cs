@@ -74,7 +74,7 @@ namespace RoguePirates.V4.Editor
             "Formation ranged", "Fast swarm", "Dive lunge", "Drift pulse", "Stationary turret", "Phase dash", "Tentacle zone", "Support buff" };
         static readonly string[] MoveNames = { "Default", "Direct chase", "Intercept", "Flank", "Orbit", "Keeps range", "Strafe", "Telegraphed charge", "Dive lunge", "Swarm", "Drift", "Stationary" };
         static readonly string[] AttackNames = { "Default", "Contact", "Single shot", "Burst volley", "Spread volley", "Charge", "Area denial", "Explodes", "None" };
-        static readonly string[] WeaponTypeNames = { "Projectile", "Fan", "Orbit", "Cone stream", "Trail", "Mine", "Area strike", "Aura", "Predicted area", "Summon" };
+        static readonly string[] WeaponTypeNames = { "Projectile", "Fan", "Orbit", "Cone stream", "Trail", "Mine", "Area strike", "Aura", "Predicted area", "Summon", "Chained mace" };
         static string Name(string[] names, int i) => i >= 0 && i < names.Length ? names[i] : i.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>The affix HP multiplier the enemy world applies at spawn (EnemySimulation.Spawn).</summary>
@@ -283,6 +283,8 @@ namespace RoguePirates.V4.Editor
             var logbooks = rt.All<LogbookConfig>().Where(l => !string.IsNullOrEmpty(l.logbookId)).OrderBy(l => l.logbookId, StringComparer.Ordinal).ToDictionary(l => l.logbookId, l => (object)new Dictionary<string, object>
             {
                 ["id"] = l.logbookId, ["name"] = l.displayName, ["stat"] = l.stat, ["add"] = l.perLevelAdditive, ["max"] = l.maxLevel, ["mult"] = l.perLevelMultiplicative, ["inPool"] = l.inSaltwindPool,
+                // Hackathon (13 Oct): the Chaos Logbook rolls one of these Logbooks' stats per rank (null for every other Logbook).
+                ["randomFrom"] = l.randomStat ? (l.randomStatFrom ?? Array.Empty<string>()).Cast<object>().ToList() : null,
             });
             var items = rt.All<ItemConfig>().Where(i => !string.IsNullOrEmpty(i.itemId)).OrderBy(i => i.itemId, StringComparer.Ordinal).ToDictionary(i => i.itemId, i => (object)new Dictionary<string, object>
             {

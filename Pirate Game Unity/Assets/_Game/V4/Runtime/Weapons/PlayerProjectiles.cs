@@ -33,6 +33,8 @@ namespace RoguePirates.V4.Weapons
     {
         /// <summary>V5 M5: a hit's damage after target-dependent item bonuses (Shark Tooth Necklace); null = unchanged.</summary>
         public System.Func<int, float, float> HitAdjust;
+        /// <summary>Hackathon (13 Oct): after a shot's hit (enemy slot, weapon id): Devil's Match may set it burning; null = nothing.</summary>
+        public System.Action<int, string> AfterHit;
         const float MinGameplayHitRadius = 0.32f;
         const float HitSlop = 0.16f;
         const float MaxVerticalHitSeparation = 4f;
@@ -174,6 +176,7 @@ namespace RoguePirates.V4.Weapons
                         // V5 M8z (8 Oct, close): a credited pellet (lane bursts, follow-ups) has no weapon id (its look is the
                         // plain shot's), so its hit and kill go to its ledger id, its weapon.
                         _damage.ApplyDamage(ei, amount, p.IsCrit, weaponId: p.WeaponId ?? p.Traits.LedgerId);
+                        AfterHit?.Invoke(ei, p.WeaponId ?? p.Traits.LedgerId);
                         if (p.Traits.TarOnHit)
                         {
                             var slow = _enemies.IsBoss(ei) ? p.Traits.TarSlowBoss : p.Traits.TarSlow;

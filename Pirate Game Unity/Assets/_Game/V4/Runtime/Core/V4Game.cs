@@ -240,6 +240,7 @@ namespace RoguePirates.V4
             _enemies.KillTargets.SpawnKillDrops = _build.SpawnKillDrops;
             _enemies.KillTargets.RollPowerup = _build.RollPowerup;
             _enemies.KillTargets.ItemKill = _build.NotifyItemKill;
+            _enemies.KillTargets.BurningDeath = _build.BurningDeath; // Hackathon: Devil's Match
             _enemies.Services.PlayerIncomingDamage = _build.IncomingDamageMultiplier;
             ship.IncomingDamage = _build.IncomingDamageMultiplier;
             damageSink.IncomingDamage = _build.IncomingDamageMultiplier;

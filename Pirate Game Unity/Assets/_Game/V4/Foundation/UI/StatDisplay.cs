@@ -27,7 +27,7 @@ namespace RoguePirates.V4.Foundation.UI
             StatId.Evasion => "Evasion",
             StatId.Shield => "Shield",
             StatId.Duration => "Duration",
-            StatId.EliteDamage => "Elite Damage",
+            StatId.EliteDamage => "Elite & Boss Damage", // Hackathon (13 Oct, owner): Big Game Hunter (the Admiral Logbook) names the bosses it already counts
             StatId.DoubloonGain => "Boss Loot", // V5 M5: the Plunderer Logbook raises boss gold
             _ => stat.ToString()
         };

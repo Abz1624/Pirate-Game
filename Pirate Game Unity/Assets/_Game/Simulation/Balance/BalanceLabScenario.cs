@@ -157,7 +157,7 @@ namespace RoguePirates.Simulation.Balance
         public int SalvageChestsOpened = 6;
         public int RepairWrecksUsed = 1;
         public int PowderCachesCleared = 1;
-        public int SignalBuoysCharged = 1;
+        public int SignalBuoysCharged; // 13 Oct (owner): the Signal Buoy is switched off in Saltwind (StageContentConfig.disabledPoiTypes), so the lab charges none (was 1, +10% damage)
         public int TreasureChartsUsed = 1;
         public float PoiDamageMultiplier = 1f;
         public float PoiHealingMultiplier = 1f;

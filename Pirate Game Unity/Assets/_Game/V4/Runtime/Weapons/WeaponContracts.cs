@@ -51,6 +51,8 @@ namespace RoguePirates.V4.Weapons
         Vector3 MovementForward { get; }
         /// <summary>A point in the ship's local space in world space (orbit blades circle the ship's transform).</summary>
         Vector3 TransformPoint(Vector3 local);
+        /// <summary>Hackathon: the hull's contact radius (Hammerhead Helm's ram; the enemies' contact uses the same).</summary>
+        float ContactRadius => 1.15f;
     }
 
     /// <summary>
@@ -85,6 +87,16 @@ namespace RoguePirates.V4.Weapons
         void ExplosionResolved();
         /// <summary>R-40: extra chain-lightning jumps (Stormglass); 0 unless the effect is on.</summary>
         int ExtraLightningJumps { get; }
+
+        // Hackathon (13 Oct, owner): the Art Guide's designed items; none of them without the item.
+        /// <summary>Devil's Match: the chance a weapon hit sets the enemy burning (0 = none) and its id (its own blasts never ignite).</summary>
+        float IgniteChance(out float blastDamage, out float blastRadius, out string ledgerId) { blastDamage = 0f; blastRadius = 0f; ledgerId = null; return 0f; }
+        /// <summary>Queen Anne's Fuse: secondary blast generations a keg blast sets off (0 = none).</summary>
+        int KegChainGenerations(out float damageShare, out float reach, out float delay, out string ledgerId) { damageShare = 0f; reach = 0f; delay = 0f; ledgerId = null; return 0; }
+        /// <summary>Hammerhead Helm: the ram (false = none).</summary>
+        bool RamDamage(out float damage, out float minSpeed, out float interval, out string ledgerId) { damage = 0f; minSpeed = 0f; interval = 0f; ledgerId = null; return false; }
+        /// <summary>Storm in a Bottle: a chain-lightning hit landed.</summary>
+        void LightningChainEvent() { }
     }
 
     /// <summary>The combat stream of the run's random numbers (crit rolls, boarding sides).</summary>

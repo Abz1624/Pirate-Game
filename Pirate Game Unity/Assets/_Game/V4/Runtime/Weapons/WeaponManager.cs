@@ -27,6 +27,10 @@ namespace RoguePirates.V4.Weapons
         IReadOnlyList<ChainedMace> Maces => System.Array.Empty<ChainedMace>();
         /// <summary>V5 M5 Leviathan Heart: a telegraphed blast on the densest crowd within 20 m.</summary>
         void ItemPulse(string ledgerId, float damage, float radius, float telegraphSeconds) { }
+        /// <summary>Hackathon (Devil's Match): a blast at a point after a delay (no crit, no item procs).</summary>
+        void ItemBlast(string ledgerId, Vector3 at, float damage, float radius, float delay) { }
+        /// <summary>Hackathon (Storm in a Bottle): strikes spread over some seconds at enemies within range of the ship.</summary>
+        void ItemLightningBurst(string ledgerId, int strikes, float spreadSeconds, float range, float damage, float radius) { }
     }
 
     /// <summary>
@@ -72,6 +76,7 @@ namespace RoguePirates.V4.Weapons
             _summon = new SummonBehavior(combat);
             _mace = new ChainedMaceBehavior(combat);
             if (combat.Projectiles != null) combat.Projectiles.HitAdjust = combat.Healthy; // V5 M5
+            if (combat.Projectiles != null) combat.Projectiles.AfterHit = combat.AfterWeaponHit; // Hackathon: Devil's Match
             _behaviors = new Dictionary<Behavior, WeaponBehavior>
             {
                 [Behavior.Projectile] = _projectile,
@@ -111,6 +116,7 @@ namespace RoguePirates.V4.Weapons
             if (_c.Hooks.AutoFireDisabled) return;
             SyncLoadout();
             TickWeapons(dt);
+            TickRam(dt); // Hackathon: Hammerhead Helm
             _orbit.TickHits(_slots, dt);
             MirrorLoadout();
         }
@@ -232,6 +238,93 @@ namespace RoguePirates.V4.Weapons
             });
         }
 
+        /// <summary>Hackathon (Devil's Match): a burning enemy's death explodes (resolved on the weapon tick, so a blast's
+        /// kills never nest inside the kill that set it off).</summary>
+        public void ItemBlast(string ledgerId, Vector3 at, float damage, float radius, float delay)
+        {
+            if (damage <= 0f || radius <= 0f) return;
+            _c.Strikes.Add(new DelayedStrike
+            {
+                Active = true, Position = at, Timer = Mathf.Max(0f, delay), Radius = radius, BaseDamage = damage, DamageBonus = 1f,
+                ProcCoefficient = 0f, WeaponId = ledgerId, NoCrit = true,
+            });
+        }
+
+        /// <summary>Hackathon (Storm in a Bottle): <paramref name="strikes"/> lightning strikes spread evenly over
+        /// <paramref name="spreadSeconds"/>, each aimed when it lands at a different enemy within <paramref name="range"/> of
+        /// the ship (nearest first).</summary>
+        public void ItemLightningBurst(string ledgerId, int strikes, float spreadSeconds, float range, float damage, float radius)
+        {
+            if (strikes <= 0 || damage <= 0f || range <= 0f) return;
+            for (var i = 0; i < strikes; i++)
+                _c.Strikes.Add(new DelayedStrike
+                {
+                    Active = true, Timer = strikes > 1 ? spreadSeconds * i / (strikes - 1) : 0f, Radius = Mathf.Max(0.5f, radius), BaseDamage = damage,
+                    DamageBonus = 1f, ProcCoefficient = 0f, WeaponId = ledgerId, NoCrit = true, Lightning = true, SeekRange = range, SeekIndex = i,
+                });
+        }
+
+        // ---- Hackathon (13 Oct, owner): Hammerhead Helm's ram ------------------------------------------------------------
+
+        readonly Dictionary<int, float> _ramReady = new Dictionary<int, float>();
+        readonly List<int> _ramExpired = new List<int>();
+        float _ramClock;
+
+        /// <summary>Sailing faster than the item's speed into an enemy below full hull rams it: item damage, once every
+        /// interval per enemy (by unit id). The enemy must touch the hull and lie ahead of the ship's motion.</summary>
+        void TickRam(float dt)
+        {
+            _ramClock += dt;
+            if (!_c.Mods.RamDamage(out var damage, out var minSpeed, out var interval, out var id)) return;
+            if (_c.Enemies == null || !_c.Enemies.Exists) return;
+            var v = _c.Ship.Velocity;
+            v.y = 0f;
+            var speed = v.magnitude;
+            if (speed <= minSpeed) return;
+            var heading = v / speed;
+            var p = _c.Ship.Position;
+            var hull = _c.Ship.ContactRadius;
+            if (_ramReady.Count > 256)
+            {
+                _ramExpired.Clear();
+                foreach (var kv in _ramReady) if (kv.Value <= _ramClock) _ramExpired.Add(kv.Key);
+                foreach (var k in _ramExpired) _ramReady.Remove(k);
+            }
+            for (var i = 0; i < _c.Enemies.Capacity; i++)
+            {
+                if (!_c.Enemies.IsActive(i) || _c.Enemies.HpFraction(i) >= 1f) continue;
+                var to = _c.Enemies.Position(i) - p;
+                to.y = 0f;
+                var reach = hull + _c.Enemies.Radius(i);
+                if (to.sqrMagnitude > reach * reach || Vector3.Dot(to, heading) <= 0f) continue;
+                var unit = _c.Enemies.UnitId(i);
+                if (_ramReady.TryGetValue(unit, out var ready) && ready > _ramClock) continue;
+                _ramReady[unit] = _ramClock + interval;
+                var dmg = _c.Calculator.RollAmount(damage, 1f, _c.Enemies.IsEliteDamageTarget(i), 0f, 0f, id, WeaponDamageKind.TriggeredItem);
+                _c.DamageAndRecord(i, id, dmg, false, id);
+                _c.Effects?.AreaImpact(p + heading * hull, 0.8f); // the bow spark
+            }
+        }
+
+        readonly HashSet<int> _strikeHits = new HashSet<int>();
+        readonly List<int> _seekScratch = new List<int>();
+
+        /// <summary>Hackathon (Storm in a Bottle): the <paramref name="index"/>-th nearest enemy within range of the ship (wraps).</summary>
+        int SeekTarget(float range, int index)
+        {
+            _seekScratch.Clear();
+            var p = _c.Ship.Position;
+            for (var i = 0; i < _c.Enemies.Capacity; i++)
+                if (_c.Enemies.IsActive(i) && WeaponCombat.WithinHorizontalRadius(p, _c.Enemies.Position(i), range)) _seekScratch.Add(i);
+            if (_seekScratch.Count == 0) return -1;
+            _seekScratch.Sort((a, b) =>
+            {
+                var c = WeaponCombat.HorizontalDistance(p, _c.Enemies.Position(a)).CompareTo(WeaponCombat.HorizontalDistance(p, _c.Enemies.Position(b)));
+                return c != 0 ? c : a.CompareTo(b);
+            });
+            return _seekScratch[index % _seekScratch.Count];
+        }
+
         /// <summary>V3 TickDelayedStrikes: mortar shells and Tempest markers, one list.</summary>
         void TickDelayedStrikes(float dt)
         {
@@ -244,6 +337,14 @@ namespace RoguePirates.V4.Weapons
                 strike.Timer -= dt;
                 if (strike.Timer > 0f) { list[i] = strike; continue; }
 
+                if (strike.SeekRange > 0f)
+                {
+                    // Hackathon (Storm in a Bottle): aimed as it lands; with no enemy in range it fizzles.
+                    var target = SeekTarget(strike.SeekRange, strike.SeekIndex);
+                    if (target < 0) { list.RemoveAt(i); continue; }
+                    strike.Position = _c.Enemies.Position(target);
+                }
+                _strikeHits.Clear();
                 var hits = 0;
                 var explosion = strike.AreaShell && !strike.PulseImpact ? _c.Mods.ExplosionDamageMultiplier : 1f;
                 for (var ai = 0; ai < _c.Enemies.Capacity; ai++)
@@ -257,8 +358,10 @@ namespace RoguePirates.V4.Weapons
                     else if (Vector3.Distance(position, strike.Position) > strike.Radius)
                         continue;
                     hits++;
+                    _strikeHits.Add(ai);
                     // V5 M8z (7 Oct, D21, Q32): elite damage (Admiral) on elites, the boss and minibosses; the ledger keeps elites.
-                    var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, _c.Enemies.IsEliteDamageTarget(ai), 0f, strike.ProcCoefficient, strike.WeaponId);
+                    var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, _c.Enemies.IsEliteDamageTarget(ai), 0f, strike.ProcCoefficient, strike.WeaponId,
+                        strike.NoCrit ? WeaponDamageKind.TriggeredItem : WeaponDamageKind.DirectWeapon); // Hackathon: item strikes draw nothing
                     if (strike.AreaShell && explosion != 1f) dmg = new DamageRoll(dmg.Amount * explosion, dmg.IsCrit); // R-40: mortar shells explode
                     _c.ApplyWeaponDamage(ai, strike.WeaponId, dmg, _c.Enemies.IsElite(ai), _c.Enemies.IsBoss(ai));
                     if (strike.SlowFraction > 0f) _c.Damage.ApplySlow(ai, strike.SlowFraction, strike.SlowSeconds); // V5 M8z (D21): the ink pot's splash slows at once
@@ -273,8 +376,12 @@ namespace RoguePirates.V4.Weapons
                     _c.Effects?.WaterSplash(strike.Position);
                     if (strike.Whirlpool != null) OpenWhirlpool(strike);
                 }
+                else if (strike.Lightning)
+                    _c.Effects?.LightningStrike(new Vector3(strike.Position.x, 0f, strike.Position.z), strike.Radius); // Hackathon: Storm in a Bottle
                 else
                     _c.Effects?.Explosion(strike.Position, strike.Radius);
+                if (strike.ChainGenerations > 0) // Hackathon: Queen Anne's Fuse
+                    _c.QueueChainBlast(strike.Position, strike.Radius, strike.ChainReach, strike.ChainDelay, strike.ChainGenerations, strike.BaseDamage, strike.DamageBonus, strike.WeaponId, _strikeHits);
                 list.RemoveAt(i);
             }
         }
@@ -514,7 +621,9 @@ namespace RoguePirates.V4.Weapons
         /// <summary>effects = false at teardown: nothing may be created while the scene closes.</summary>
         public void ClearInFlight(bool effects)
         {
+            _mace.RecycleAll(); // 13 Oct (review): the maces go back to the free stack, not to the garbage collector
             _c.ClearInFlight();
+            _ramReady.Clear(); // Hackathon: Hammerhead Helm
             _c.Projectiles?.ClearAll(effects);
             _orbit.ClearHits();
         }

@@ -166,6 +166,18 @@ namespace RoguePirates.V4.Weapons
                 var hitsPerSecond = Mathf.Min(1f / interval, passes * Mathf.Max(1f, inContact / interval));
                 return hitsPerSecond * interval;
             }
+            if (w.behavior == ConfigEnums.WeaponBehavior.ChainedMace)
+            {
+                // 13 Oct (review): a throw cannot repeat until its maces are back, so a cooldown shorter than the round trip
+                // (out to an enemy at 60% of the range and reeled back, or the turn-back time) fires less often. The maces'
+                // path hits on other enemies are the behaviour's coverage (DirectorConfig.behaviorCoverage[10]), not hits per
+                // target here (one hit per target a throw).
+                var m = w.mace;
+                var reach = Mathf.Max(0.5f, w.range * 0.6f);
+                var outSeconds = Mathf.Min(reach / Mathf.Max(0.1f, m.outSpeed), Mathf.Max(0.1f, m.maxOutSeconds));
+                var roundTrip = outSeconds + outSeconds * m.outSpeed / Mathf.Max(0.1f, m.returnSpeed);
+                return Mathf.Min(1f, Mathf.Max(0.05f, w.baseCooldown) / Mathf.Max(0.05f, roundTrip));
+            }
             return 1f;
         }
 
@@ -200,6 +212,16 @@ namespace RoguePirates.V4.Weapons
         public float SlowFraction, SlowSeconds, DurationMult;
         /// <summary>V5 M8z (D21): lands as a ring in its weapon's colour, not an explosion (WeaponEffectsVisual.pulseImpact).</summary>
         public bool PulseImpact;
+        /// <summary>Hackathon (13 Oct): an item's strike rolls no crit (no combat draw) and may be drawn as lightning.</summary>
+        public bool NoCrit, Lightning;
+        /// <summary>Hackathon (Storm in a Bottle): aimed when it lands at the <see cref="SeekIndex"/>-th nearest enemy within
+        /// this range of the ship (0 = lands where it was placed); with none in range it fizzles.</summary>
+        public float SeekRange;
+        public int SeekIndex;
+        /// <summary>Hackathon (Queen Anne's Fuse): blasts it sets off in turn at the nearest enemy it missed within
+        /// <see cref="ChainReach"/> m of its edge, <see cref="ChainDelay"/> s later, with the same damage.</summary>
+        public int ChainGenerations;
+        public float ChainReach, ChainDelay;
     }
 
     /// <summary>V5 M8z (7 Oct, Q20): a weapon's firing to repeat after <see cref="Timer"/> seconds, <see cref="Left"/> more times.</summary>
@@ -293,6 +315,20 @@ namespace RoguePirates.V4.Weapons
             dmg = new DamageRoll(Healthy(enemyIndex, dmg.Amount), dmg.IsCrit);
             Hooks.RecordHit(weaponId, dmg.Amount, dmg.IsCrit, isElite, isBoss);
             Damage.ApplyDamage(enemyIndex, dmg.Amount, dmg.IsCrit, weaponId: weaponId);
+            AfterWeaponHit(enemyIndex, weaponId);
+        }
+
+        /// <summary>
+        /// Hackathon (13 Oct, owner): Devil's Match. After a weapon hit on an enemy that survived it, a roll on the combat
+        /// stream (only while the item is carried, so runs without it draw as before) may set it burning. The item's own
+        /// blasts never ignite.
+        /// </summary>
+        public void AfterWeaponHit(int enemyIndex, string weaponId)
+        {
+            if (Mods == null || Random == null || Enemies == null) return;
+            var chance = Mods.IgniteChance(out _, out _, out var itemId);
+            if (chance <= 0f || weaponId == itemId || !Enemies.IsActive(enemyIndex)) return;
+            if (Random.CombatFloat() < chance) Damage.ApplyStatus(enemyIndex, WeaponStatus.Burn, 1f);
         }
 
         /// <summary>
@@ -306,6 +342,7 @@ namespace RoguePirates.V4.Weapons
             amount = Healthy(index, amount);
             if (ledgerId != null) Hooks.RecordHit(ledgerId, amount, isCrit, Enemies.IsElite(index), Enemies.IsBoss(index));
             Damage.ApplyDamage(index, amount, isCrit, weaponId: weaponId ?? ledgerId); // V5 M8z (8 Oct, close)
+            AfterWeaponHit(index, weaponId ?? ledgerId); // Hackathon: Devil's Match
         }
 
         /// <summary>V5 M5 Shark Tooth Necklace: more damage to an enemy still above the threshold share of its hull (read
@@ -315,6 +352,30 @@ namespace RoguePirates.V4.Weapons
             var threshold = 1f;
             var mult = Mods != null ? Mods.HealthyTargetDamageMultiplier(out threshold) : 1f;
             return mult != 1f && Enemies.HpFraction(index) > threshold ? amount * mult : amount;
+        }
+
+        /// <summary>Hackathon (Queen Anne's Fuse): the next blast of a chain, at the nearest enemy the last blast missed
+        /// within <paramref name="reach"/> m of its edge (none: the chain ends), with the same damage.</summary>
+        public void QueueChainBlast(Vector3 center, float radius, float reach, float delay, int generationsLeft, float damage, float damageBonus,
+            string ledgerId, HashSet<int> hit)
+        {
+            if (generationsLeft <= 0 || Enemies == null) return;
+            var best = -1;
+            var bestDist = radius + reach;
+            for (var i = 0; i < Enemies.Capacity; i++)
+            {
+                if (!Enemies.IsActive(i) || (hit != null && hit.Contains(i))) continue;
+                var d = WeaponCombat.HorizontalDistance(center, Enemies.Position(i));
+                if (d > bestDist) continue;
+                bestDist = d;
+                best = i;
+            }
+            if (best < 0) return;
+            Strikes.Add(new DelayedStrike
+            {
+                Active = true, Position = Enemies.Position(best), Timer = Mathf.Max(0f, delay), Radius = radius, BaseDamage = damage, DamageBonus = damageBonus,
+                ProcCoefficient = 0f, WeaponId = ledgerId, NoCrit = true, ChainGenerations = generationsLeft - 1, ChainReach = reach, ChainDelay = delay,
+            });
         }
 
         /// <summary>The aim overlay (V3 NotifyFire).</summary>
