@@ -1,0 +1,490 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1e325eabf9457e44950fe62c3708090, type: 3}
+  m_Name: V4WeaponVisuals
+  m_EditorClassIdentifier: RoguePirates.V4.Presentation::RoguePirates.V4.Presentation.Weapons.WeaponVisualCatalog
+  weapons:
+  - weaponId: anchor_flail
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 7895481926307381624, guid: 93b7e7cfb7537b64a8b7c9e55b0ee427, type: 3}
+    critHit: {fileID: 5955802223912409888, guid: e3e7ca2413cf61a418f1267123de98a2, type: 3}
+    waterSplash: {fileID: 1812562511058478689, guid: e87b030f1a02051428328b25545d5f34, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 5609562238873273972, guid: 2d95dfba1975f1a4dabd1c3af51f4d2e, type: 3}
+    chainLink: {fileID: 8594084615823952448, guid: 1558f1597f1d88c4ca2e9f25ec149bd3, type: 3}
+    chain: {fileID: 1043742270846956506, guid: 4e15265a0a77a5247bd916203b96dd51, type: 3}
+  - weaponId: broadside_battery
+    projectile: {fileID: 1092257917548176828, guid: e08852e838e091340907f93bb814a32f, type: 3}
+    muzzle: {fileID: 234665006317329703, guid: 85da179365ba639489ba3a81aa5f4a25, type: 3}
+    beam: {fileID: 0}
+    hit: {fileID: 8751539734228214360, guid: c84502104eca0a34784f622d03995724, type: 3}
+    critHit: {fileID: 0}
+    waterSplash: {fileID: 5665403573436656826, guid: b758dee508a25fe46bf6e30a86068cbc, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: chainshot
+    projectile: {fileID: 2038154413703711272, guid: 92a6bf8dc22eb224e90b9aad1b4fae58, type: 3}
+    muzzle: {fileID: 3890520196440970042, guid: cc5a2e0bd8b129a439f8b550498a91c2, type: 3}
+    beam: {fileID: 0}
+    hit: {fileID: 894792352374036351, guid: e179f61e5cf730445ba9e4f933b70013, type: 3}
+    critHit: {fileID: 0}
+    waterSplash: {fileID: 8088961168718725951, guid: 2334b9c734f38824a9a8ca6d547ab999, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: cursed_doubloons
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 3428040558477472120, guid: d9da2bf8e42a5bd4685e48204f8ad471, type: 3}
+    critHit: {fileID: 4583808272341300145, guid: 80c3a9729b9b3c1458dae3163de6eed6, type: 3}
+    waterSplash: {fileID: 8148602644766687688, guid: 5ad5a24550f8a364eaa31feb4e46991a, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 7623867194734737101, guid: 61cf273d44771e74e963f2817a2cd6de, type: 3}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: deck_cannons
+    projectile: {fileID: 7100483496597300018, guid: 3c187f9e8f409b14aa9a5f69333f5f26, type: 3}
+    muzzle: {fileID: 4538477879533406555, guid: bf4cd5bd79823ad49bf56c2e2c17167f, type: 3}
+    beam: {fileID: 0}
+    hit: {fileID: 9053260986908084045, guid: 13b144851dacb1f428abeb6737947711, type: 3}
+    critHit: {fileID: 0}
+    waterSplash: {fileID: 8028517527487241431, guid: cd54ad3217e8f7343a017bdef5de1639, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: flamethrower
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 1635451049247509738, guid: c4c1f88616a14a8469faebac6f7b3a45, type: 3}
+    critHit: {fileID: 6462963437584596836, guid: 8e67420ed6eae9a4190eff0a504653f7, type: 3}
+    waterSplash: {fileID: 0}
+    orbit: {fileID: 0}
+    stream: {fileID: 940142833702144682, guid: 3859b3314d33cd548943667ac80fc23d, type: 3}
+    patchRing: {fileID: 8685043670208421797, guid: bae988b83ad095f41918c84f7cf04115, type: 3}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: flying_cutlasses
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 8387611792130301935, guid: 8e738e77e8b5280438b0e515d05dad3f, type: 3}
+    critHit: {fileID: 6294575158430337998, guid: 39dabe102bf4cb948961db29a69f6399, type: 3}
+    waterSplash: {fileID: 0}
+    orbit: {fileID: 6586686972298215154, guid: 9607f3b049759bd4ea5508e21c9d7df0, type: 3}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: harpoon_gun
+    projectile: {fileID: 8469256477258565167, guid: 9a6787b1ebcd146488162ee7f0e7fa8e, type: 3}
+    muzzle: {fileID: 2879787467939502904, guid: 6ca46055641d5af4785e346e3fe41747, type: 3}
+    beam: {fileID: 0}
+    hit: {fileID: 2095588247542152699, guid: 7e80a803eb7fa694193e2c43a8a2e1af, type: 3}
+    critHit: {fileID: 3666149046386846583, guid: a416e38a177942b489bf840762cd874c, type: 3}
+    waterSplash: {fileID: 422710056803647373, guid: 2fdf91ff7ecdf2a48bb605dd5e53fc0c, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: lighthouse_lantern
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 7204509137118858006, guid: 8ada81fd4b134af44a981e3596cef8a5, type: 3}
+    critHit: {fileID: 6539125979966261583, guid: 3c168b27a930c6e4fb2082d10df896aa, type: 3}
+    waterSplash: {fileID: 0}
+    orbit: {fileID: 1310950343652180647, guid: 0a903966b520e384296498f416f5c022, type: 3}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: lightning_mast
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 1529397057365082926, guid: ccc38c5207ac82e46ad7843d42ea37f1, type: 3}
+    critHit: {fileID: 7841109140085783952, guid: 4ceaa73d63a7cc448b5e6e4c8c00f251, type: 3}
+    waterSplash: {fileID: 0}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 2278891324411109780, guid: 8ed8dbf1c05a879469249721e4678672, type: 3}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: long_nine
+    projectile: {fileID: 739330161497396266, guid: ca07f3d953000564b8ed19531658d7c8, type: 3}
+    muzzle: {fileID: 5589324291340484305, guid: 6b3a99ede9273254a8c2c9e17b2039c5, type: 3}
+    beam: {fileID: 2839997903437145904, guid: 41d49c3f98730ea48a321c5c94c0c6e8, type: 3}
+    hit: {fileID: 3424897772015215650, guid: 3ed014571a064f240b912b6f6460c4e4, type: 3}
+    critHit: {fileID: 3903868618135358627, guid: 263ab6074c77e544cb947a90e864360a, type: 3}
+    waterSplash: {fileID: 8557450475099550709, guid: 14e9c1c3249191b47be4c57664f3b087, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: maelstrom_charge
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 4370701766702054803, guid: 35f0b788866e0424a9c1cdb636069db3, type: 3}
+    critHit: {fileID: 4491999046474208585, guid: 1a63253c6069f0d4db5435cf32725bce, type: 3}
+    waterSplash: {fileID: 1443599612066032320, guid: 95cc543c1f1deba419669902c734c197, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 717450438694454708, guid: 07f9554d2f0a8c74e8390092010405eb, type: 3}
+    impact: {fileID: 1898736107724585627, guid: f7bd10741525eb949b06e942442f024a, type: 3}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 1178031043703651913, guid: 3ba32c900bc6f3a47990c952513f7140, type: 3}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: monkey_gunners
+    projectile: {fileID: 6267294470652465384, guid: 21421acbc95b889468b223c450db383f, type: 3}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 3344438398719312571, guid: bd7df2b2d554ebc4c9045138f12e8596, type: 3}
+    critHit: {fileID: 5763504848613399735, guid: ec3dc1621674a804fbd2a29aff76d777, type: 3}
+    waterSplash: {fileID: 6882353815948534585, guid: 6257ccdf55ef7c64e9ff635ef50eca17, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 3821555890628833054, guid: 4f38138966683e74281ecf0cfc71d706, type: 3}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: mortar
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 8125344343017967711, guid: 3ec33cd2d3c8f364394d99af5b3a0dec, type: 3}
+    critHit: {fileID: 6384153650488373096, guid: 2c87d7d5f39793c45b7a600bd7b81686, type: 3}
+    waterSplash: {fileID: 7976142481607280563, guid: f6fac020ca6655943b8854bc442ed474, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 4196277064162028771, guid: 464cc5694892e64448a3b7b4a4f6b7d7, type: 3}
+    impact: {fileID: 8814956915797809371, guid: b006717c0fa7dbc439625ece299cd5ad, type: 3}
+    lob: {fileID: 5137259577290284612, guid: b295f4f957d815d49a9ee0c52f550f02, type: 3}
+    launch: {fileID: 263083488655321689, guid: 1538d36a83944d349b2642e0c132ed56, type: 3}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: parrot_squadron
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 937270787627493694, guid: 3604cf401a290124db271ea2ee839bcd, type: 3}
+    critHit: {fileID: 6922477923162892966, guid: fbda31a742cc3f944b259b021d41a307, type: 3}
+    waterSplash: {fileID: 4568206944080293231, guid: 27fdb40a71fae424b98cc9803cbe4e4e, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 9023266894373019228, guid: b7325d5ef73bec941a25016d66c65358, type: 3}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: powder_kegs
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 4440138087473353474, guid: 8628a5de3ea25624eb9229b6caa76f3e, type: 3}
+    critHit: {fileID: 0}
+    waterSplash: {fileID: 0}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 979751942855484555, guid: fc3bcbdbff5f5b947a2a02a5c43e94de, type: 3}
+    blast: {fileID: 4700144879502499586, guid: a093379bbd68fe2429ea1771cf9d0413, type: 3}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: siren_bell
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 3583587065802611446, guid: 6c9aae7121331974980866c675518656, type: 3}
+    critHit: {fileID: 8258747514727517202, guid: 30f207adf87e4d441ba52c092367c493, type: 3}
+    waterSplash: {fileID: 0}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 919893590133255388, guid: 0158939a7053e7a4d8ecb08431c8c3d4, type: 3}
+    aura: {fileID: 2264961588829282694, guid: 9a74350daf962b34e9468c8695cd33a0, type: 3}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: squid_ink_pots
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    beam: {fileID: 0}
+    hit: {fileID: 3836129757184402747, guid: 18817fbdd6ba1244e8fe3b73f1d70409, type: 3}
+    critHit: {fileID: 7807608716654932095, guid: e0435d0fd46ab46489a5b8735742ff25, type: 3}
+    waterSplash: {fileID: 7077277493425832784, guid: 3edd09abebdd5e74d9cc94acbf8d554e, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 6018377954896785543, guid: 2ba6e31bed17acb4ea4482c8b4e65d1b, type: 3}
+    aura: {fileID: 0}
+    landingRing: {fileID: 521039719253250334, guid: 8ec69bc1ee407134ba2e140e45943b61, type: 3}
+    impact: {fileID: 0}
+    lob: {fileID: 8833407143056594248, guid: dd4c3c47108227348b64f79d46a53510, type: 3}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
+  - weaponId: swivel_guns
+    projectile: {fileID: 3974640454317595101, guid: 5bd912f0cb4ea2343bc462fbb9fed43a, type: 3}
+    muzzle: {fileID: 2159519642654081248, guid: 52a8bc0f592444e459874d28d038cd99, type: 3}
+    beam: {fileID: 0}
+    hit: {fileID: 6722378591226253165, guid: f78f11e977d2dd44e953f056db8f2520, type: 3}
+    critHit: {fileID: 0}
+    waterSplash: {fileID: 5994357356919093088, guid: b83c4a7177952624cbc2a061fed6c12e, type: 3}
+    orbit: {fileID: 0}
+    stream: {fileID: 0}
+    patchRing: {fileID: 0}
+    mine: {fileID: 0}
+    blast: {fileID: 0}
+    strike: {fileID: 0}
+    coin: {fileID: 0}
+    pulseRing: {fileID: 0}
+    aura: {fileID: 0}
+    landingRing: {fileID: 0}
+    impact: {fileID: 0}
+    lob: {fileID: 0}
+    launch: {fileID: 0}
+    whirlpool: {fileID: 0}
+    summon: {fileID: 0}
+    mace: {fileID: 0}
+    chainLink: {fileID: 0}
+    chain: {fileID: 0}
