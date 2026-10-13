@@ -299,5 +299,30 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(before + 1, bot.Loadout.Sum(w => w.Level) + bot.LogbookIds.Sum(bot.LogbookLevel), "a level-up raises one pick");
             bot.Dispose();
         }
+
+        /// <summary>
+        /// V5 M9i (13 Oct review: the bot's chained maces were not drawn): the weapon presenter draws chained maces and orbit
+        /// blades from the player's own weapons only, so the bot never carries them (the simplest correct option: drawing a
+        /// second arsenal's maces would need a second mace view set for one weapon). Every other behaviour is drawn through
+        /// the effects stream and the projectile views, which the bot's arsenal feeds.
+        /// </summary>
+        [Test]
+        public void PvpBot_NeverCarriesAWeaponItsViewsCannotDraw()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var all = config.All<WeaponConfig>().ToList();
+            var flail = all.Single(w => w.weaponId == "anchor_flail");
+            var cutlasses = all.Single(w => w.weaponId == "flying_cutlasses");
+            Assert.AreEqual(ConfigEnums.WeaponBehavior.ChainedMace, flail.behavior);
+            Assert.AreEqual(ConfigEnums.WeaponBehavior.Orbit, cutlasses.behavior);
+            Assert.IsFalse(PvpBotArsenal.Usable(flail), "chained maces are drawn from the player's weapons only");
+            Assert.IsFalse(PvpBotArsenal.Usable(cutlasses), "orbit blades are drawn from the player's weapons only");
+
+            var bot = new PvpBotArsenal(config, 7, new[] { "anchor_flail", "flying_cutlasses", "deck_cannons" }, null, new Fx(), null);
+            CollectionAssert.AreEqual(new[] { "deck_cannons" }, bot.WeaponIds, "a draft naming them keeps only the drawable weapons");
+            foreach (var w in all.Where(PvpBotArsenal.Usable))
+                Assert.IsTrue(w.behavior != ConfigEnums.WeaponBehavior.ChainedMace && w.behavior != ConfigEnums.WeaponBehavior.Orbit, w.weaponId);
+            bot.Dispose();
+        }
     }
 }
