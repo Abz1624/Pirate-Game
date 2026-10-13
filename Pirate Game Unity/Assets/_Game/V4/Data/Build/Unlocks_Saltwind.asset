@@ -98,3 +98,8 @@ MonoBehaviour:
   firstConquestWeaponId: swivel_guns
   startingWeaponRule: 1
   captainLockRule: 1
+  disabledWeaponIds:
+  - flamethrower
+  - lighthouse_lantern
+  - squid_ink_pots
+  - siren_bell
