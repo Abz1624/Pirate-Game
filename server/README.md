@@ -38,7 +38,8 @@ dotnet test server/RoguePirates.Api.Tests
 | `ALLOWED_ORIGINS` | `https://www.roguepirates.fun,https://roguepirates.fun,http://localhost:*,http://127.0.0.1:*` | Comma-separated CORS and WebSocket origins. `scheme://host:*` allows any port. |
 | `MATCH_SERVER_URL` | empty | Match server address returned in the lobby when a match starts. Empty: this API relays and referees the match (`hostMode: "relay"`). |
 | `PLAY_URL` | `https://www.roguepirates.fun/play/` | Base of invite links (`?join=CODE` is appended). |
-| `RATE_LIMIT_PER_MINUTE` | `60` | Writes (POST/PUT/PATCH) allowed per client IP per minute. Reads and WebSockets are not limited. |
+| `RATE_LIMIT_PER_MINUTE` | `60` | Writes (POST/PUT/PATCH) allowed per client IP per minute. Reads and WebSockets are not limited, except the RPC reads below. |
+| `RPC_READ_RATE_LIMIT_PER_MINUTE` | `30` | V5 M9h: `GET /api/wallet/balance` calls per client IP per minute (each is a Solana RPC call; `429 rate_limited` over it). |
 | `SWEEP_SECONDS` | `30` | How often idle lobbies expire and single-report matches are decided in the background (both also happen on read). |
 | `ARENA_TICK_MS` | `100` | How often the 1v1 relay advances its clock (countdown, barrels, end on time, disconnect forfeits). |
 | `RP_MATCH_TICKET_SECRET` | unset | V5 M9b: the join ticket secret shared with the Netcode match server (32+ characters). Unset: `POST /api/lobbies/voyage/ticket` answers 503. Never logged. |
@@ -61,6 +62,13 @@ dotnet test server/RoguePirates.Api.Tests
 | `WEEKLY_REWARDS_AUTO` | `true` | Hackathon: `false` turns off the background job that pays the previous week. |
 | `WEEKLY_REWARDS_INTERVAL_MINUTES` | `60` | Hackathon: how often that job runs (first run one interval after startup). |
 | `DAILY_RACE_SALT` | fixed default | Hackathon: salt for the daily race seed (HMAC-SHA256 of the UTC date). |
+| `DAILY_RACE_FIXED_SALT` | `true` | V5 M9h switch (kept on by the owner, H2): with `DAILY_RACE_SALT` unset the seed uses the public default salt in the code, so future seeds can be computed. `false`: a secret salt derived from the treasury key (one-way HMAC; random per process without a key). |
+| `WAGERS_HUMAN_ENABLED` | `true` | V5 M9h switch (kept on): SOL stakes between human players. `false`: new stakes and new deposits answer `409 wagers_off` (a transfer already sent is recorded and refunded); open wagers still settle. |
+| `RAID_LOOT_ENABLED` | `true` | V5 M9h switch (kept on): a won raid takes RUM. `false`: raids still win, shield and count, but loot 0 (`loot.enabled:false`). |
+| `ISLAND_SALE_CARRIES_RUM` | `true` | V5 M9h switch (kept on): a market sale hands the island over as it is. `false` (I26.2): the island's store and vault RUM go to the seller's balance and its buildings go back to their start levels when it changes hands. |
+| `SESSION_LIFETIME_DAYS` | `30` | V5 M9h: wallet sessions expire this long after their last use (sliding). |
+| `MINT_DAILY_BUDGET` | `20` | V5 M9h: Island NFT mints the treasury pays per UTC day (each about 0.018 SOL); over it claims and mint retries answer `429 mint_budget`. `0` stops mints. |
+| `TREASURY_MIN_LAMPORTS` | `2000000000` | V5 M9h: the treasury float (2 SOL). Below it `/api/treasury` reports `low:true` and an error `TREASURY LOW` is logged (when it goes low, then hourly). |
 | `DAILY_RACE_MAP` | `saltwind` | Hackathon: the daily race map. |
 | `DAILY_RACE_TARGET_KILLS` | `100` | Hackathon: kills to reach in the daily race. |
 
@@ -363,7 +371,15 @@ Lamports are integers (1 SOL = 1,000,000,000). Solana RPC failures answer `502 s
 `POST /api/auth/wallet/verify` `{"wallet","signature":"<base58 64 bytes>","message","name":null}` (optional bearer of a
 guest profile: the wallet is linked to that profile) -> `200`
 `{"playerId","token","name","tag","wallet","email","isNew"}` (the same `token` use as `POST /api/profiles`: send it as
-`Authorization: Bearer`). Each sign-in issues its own session; earlier sessions stay valid. Errors: `401`
+`Authorization: Bearer`). Each sign-in issues its own session; earlier sessions stay valid until they expire.
+**Sessions (V5 M9h):** a wallet session expires `SESSION_LIFETIME_DAYS` (30) days after its last use (each use moves the
+expiry, written at most once an hour; sessions from before M9h count from their creation); an expired token is `401
+unauthorized`, sign in again. Linking a wallet to a guest profile (a bearer sent with the verify) rotates the guest token:
+the old guest token stops working and the profile is reached through the returned wallet session. A guest profile's own
+token does not expire (a guest has no other way back in). Expired sessions are deleted by the sweep.
+`POST /api/auth/sessions/revoke-all` (auth) signs out everywhere -> `{"playerId","revokedSessions","guestTokenRotated","token","signedOut"}`:
+every wallet session of the profile, the caller's included, is deleted (`signedOut:true`; sign in with the wallet again);
+a guest profile instead gets a new token in `token` (shown once) and the old one stops working. Errors: `401`
 `unknown_nonce`, `nonce_used`, `nonce_expired`, `bad_signature`; `400 invalid_message`, `invalid_request`.
 New wallet profiles are named `Captain XXXX` (first 4 characters of the wallet) unless a valid `name` is sent.
 
@@ -372,10 +388,17 @@ New wallet profiles are named `Captain XXXX` (first 4 characters of the wallet) 
 `GET /api/profiles/me` now also returns `wallet`, `email` and `rum`.
 
 `GET /api/wallet/balance` (auth; or `?wallet=<address>` without auth) -> `200 {"wallet","lamports","sol","cluster"}`;
-`400 wallet_required` for a guest profile.
+`400 wallet_required` for a guest profile. V5 M9h: at most `RPC_READ_RATE_LIMIT_PER_MINUTE` (30) per client IP per
+minute (`429 rate_limited`).
 
-`GET /api/treasury` (public) -> `200 {"enabled":true,"address","lamports","sol","cluster"}` (`enabled:false` and nulls
-without a treasury key).
+`GET /api/treasury` (public) -> `200 {"enabled":true,"address","lamports","sol","cluster","floatLamports","low","readAt"}`
+(`enabled:false` and nulls without a treasury key). V5 M9h: the balance is read from the chain at most every 30 s
+(`readAt`); `low` is true below `TREASURY_MIN_LAMPORTS`.
+
+`GET /api/switches` (public, V5 M9h) -> the live-API switches as this server runs them:
+`{"wagersHumanEnabled","raidLootEnabled","islandSaleCarriesRum","dailyRaceFixedSalt","weeklyRewardCheckedOnly","weeklyRewardsAuto","botStakes":false,"raidStakes":false,"mintDailyBudget","sessionLifetimeDays"}`.
+The owner kept every switch on (H2, 13 Oct: "don't switch off anything for now"); each one is a variable (table above), so
+flipping one is a Railway variable change and a restart, no code change.
 
 `POST /api/deposits/verify` (auth, wallet profile) `{"signature","purpose":"generic","refId":null,"minLamports":1,"memo":null}`
 -> `200 {"depositId","signature","wallet","purpose","refId","lamports","sol","memo","status":"verified","slot","createdAt","alreadyVerified"}`.
@@ -417,7 +440,17 @@ sent, rejected by the node's preflight, failed on chain, or expired). How a payo
 
 RPC errors reach clients as `502 solana_rpc_error` with a generic message; the node's raw answer is only logged.
 
-Owner tools (header `X-Admin-Key: <ADMIN_KEY>`): `POST /api/admin/payouts` `{"wallet","lamports","reason"}` with an
+Owner tools (header `X-Admin-Key: <ADMIN_KEY>`):
+- `GET /api/admin/treasury` (V5 M9h) -> a fresh balance, `floatLamports`, `low`, `lowSince`, `mintsToday`,
+  `mintDailyBudget`, `pendingMints`, `payoutsNotSent` (count and lamports per status) and `topUpRule`.
+- `GET /api/admin/report?since=2026-10-12` (V5 M9h; default 12 Oct 2026) -> every payout since that date (with explorer
+  links), every Island NFT mint (claimed, sent, minted, pending or failed, with the owner's wallet), and totals:
+  `payoutTotals` per reason and status, `payoutsSentLamports`, `mintsMinted`, `depositTotals` per purpose and status.
+- **Treasury top-up rule** (C9h.2, until M11 splits the keys): keep the treasury at or above `TREASURY_MIN_LAMPORTS`
+  (2 SOL); when `/api/treasury` reports `low` (or the logs show `TREASURY LOW`), the owner tops it up to at least twice the
+  float the same day (`POST /api/admin/airdrop` on devnet, or a transfer from the owner's wallet).
+
+`POST /api/admin/payouts` `{"wallet","lamports","reason"}` with an
 `Idempotency-Key: <1-64 chars>` header (required, `400 idempotency_key_required`; the same key returns the first
 payout and never pays twice) and at most `ADMIN_PAYOUT_MAX_LAMPORTS` (`400 amount_too_high`) -> payout view;
 `POST /api/admin/airdrop` `{"wallet":null,"lamports":1000000000}` (devnet faucet; default the treasury).
@@ -434,6 +467,12 @@ Code: `Hackathon/WagerService.cs`, `Endpoints/WagerEndpoints.cs`. Both players n
    the memo `wager.memo` (`wager:<lobbyId>`), then `POST /api/wagers/{lobbyId}/deposit` `{"signature":"<base58>"}`
    -> lobby JSON. Same checks and errors as `/api/deposits/verify` (`409 tx_not_confirmed`: retry in a few seconds;
    `memo_mismatch`, `amount_too_low`, ...) plus `404 no_wager`. The same signature again is idempotent.
+   **V5 M9h:** a transfer from your wallet to the treasury that cannot pay the stake (less than the stake, another memo
+   or none) is no longer left in the treasury with `400 amount_too_low` / `memo_mismatch`: it is recorded and refunded
+   once (payout `wager_refund`, refId `dep:<depositId>`), and the call answers `409 deposit_refunded` with the reason
+   and "Your deposit is being refunded to your wallet" (or "was refunded"). A transfer not signed by your wallet
+   (`wrong_sender`) or not to the treasury (`wrong_recipient`) is still refused without a record (nothing of yours to
+   return). With `WAGERS_HUMAN_ENABLED=false` every new deposit is refunded this way.
    Since 12 Oct a valid transfer is always verified and recorded **before** the seat and wager checks: when the seat
    is no longer valid (not seated or left, the wager closed or cancelled, the match started, or this seat already paid
    with another transfer) the transfer is refunded once (one payout per deposit) and the call returns
@@ -500,7 +539,9 @@ without writing or paying. A real run pays only a week that has **ended** (`409 
 ### Hackathon: daily island race
 
 Code: `Hackathon/DailyRaceService.cs`. One race per UTC day: everyone plays the same seed on the same map and races to
-`targetKills` (100) kills; fastest time wins. The seed is HMAC-SHA256(`DAILY_RACE_SALT`, `yyyy-MM-dd`).
+`targetKills` (100) kills; fastest time wins. The seed is HMAC-SHA256(`DAILY_RACE_SALT`, `yyyy-MM-dd`); unset, the public
+default salt while `DAILY_RACE_FIXED_SALT` is true (the owner kept it on), else a secret salt (V5 M9h). A day's seed is
+stored with its race, so a restart never changes it.
 
 `GET /api/race/daily` (optional auth) -> `{"race":{"raceId","date":"2026-10-12","seed","mapId","targetKills","goal",
 "opensAt","closesAt","serverNow"},"entries":N,"me":null | {"rank","timeSeconds","timeMs","attempts","verdict","submittedAt"}}`.
@@ -553,9 +594,20 @@ and `label:"No raids yet"` with none. The record belongs to the island (it survi
 already_has_island`; buying more on the market is allowed); a random free slot of the 24 (`409 world_full`). Mints the
 Island NFT to your wallet (name `Rogue Island: <name>`, symbol `RPISL`, uri = the metadata URL). If the treasury is off
 or the mint fails, the island is still created with `nft.status:"pending"` and `nft.error`.
-`POST /api/islands/{id}/mint` (owner) retries -> island view; `502 mint_failed`, `409 already_minted`, `503 treasury_off`.
+**V5 M9h treasury bounds:** each wallet claims **one free island ever** (`409 island_claim_used` once it claimed one, even
+after selling it; profiles that owned or sold an island before M9h count as having claimed); at most `MINT_DAILY_BUDGET`
+(20) mints a UTC day (`429 mint_budget`, nothing claimed).
+`POST /api/islands/{id}/mint` (owner) retries -> island view; `502 mint_failed`, `409 already_minted`, `503 treasury_off`,
+`429 mint_budget`, `409 mint_in_flight`.
+**No double mint (V5 M9h):** the mint's address (`nft.pendingMint`), signature and last valid block height are stored
+**before** the transaction is sent. A retry first checks that attempt on chain: the mint and its metadata exist, or the
+signature confirmed: minted (no new transaction); failed on chain, or the chain passed its last valid block height and the
+mint account does not exist: cleared, and only then a new mint (a new address) is sent; otherwise `409 mint_in_flight`.
+A send or confirmation whose result is unknown leaves the attempt pending; the sweep (every `SWEEP_SECONDS`) resolves
+pending attempts older than 2 minutes the same way (it never sends a mint).
 
-`GET /api/islands/mine` (auth) -> `{"rum":<balance>,"islands":[view]}`.
+`GET /api/islands/mine` (auth) -> `{"rum":<balance>,"islands":[view]}`. Island reads (this, `GET /api/islands/{id}`,
+the world map) show the RUM accrued up to now but write nothing and take no lock (V5 M9h); every write accrues first.
 `GET /api/islands` (auth optional, sets `isMine`) -> `{"mapWidth":1000,"mapHeight":1000,"slots":[{"slot","name","region","x","y","islandId|null"}],"freeSlots","islands":[view]}`.
 `GET /api/islands/{id}` -> island view. `GET /api/islands/{id}/metadata.json` -> Metaplex JSON
 `{"name","symbol","description","image","external_url","attributes":[{"trait_type","value"}],"properties":{"category","files"}}`.
@@ -595,6 +647,9 @@ Errors: `409 raid_expired` (marked `abandoned`), `409 raid_finished`, `400 inval
 `400 invalid_result` (`guardianSunk` with `minuteReached` before the guardian's minute), `403 not_your_raid`.
 `runLog` is accepted and not checked yet. `GET /api/raids/mine` rows also carry `guardianMinute`, `minuteReached`, `guardianSunk`.
 
+`RAID_LOOT_ENABLED=false` (V5 M9h switch, on by default): a won or partial raid loots 0 RUM; the start JSON's `loot` has
+`enabled:false` and zero `ifWon`/`ifPartial`. The shield and the defence record are unchanged.
+
 `POST /api/raids/{id}/wager` (the old raid stake deposit) -> `410 raid_stakes_off`. Raids staked before stakes were
 switched off still settle as before, so no deposit is lost: their `wager` is
 `{"wagerId","stakeLamports","status":"awaiting_deposits|funded|settled|cancelled","memo":"raid:<raidId>","treasury","payoutIfWon","depositSignature","payout"}`;
@@ -602,7 +657,8 @@ a full win pays **2x** (`raid_win`), a partial win refunds the stake (`raid_refu
 unfunded one is cancelled at the result. If the payout fails the wager stays `funded` with `payout.status:"failed"`:
 `POST /api/raids/{id}/settle` retries (never pays twice). New raids always have `wager: null`.
 
-`GET /api/raids/mine` -> `{"attacks":[row],"defences":[row]}`, row
+`GET /api/raids/mine` -> `{"attacks":[row],"defences":[row]}` (a started raid past its 20 minutes shows `abandoned`; the
+sweep stores it), row
 `{"raidId","islandId","islandName","attacker":{"playerId","name","wallet"},"defender":{...},"result","rumLooted","seconds","startedAt","finishedAt","wager"}`.
 
 **Island defence designs** (migration `AddIslandDefence`; code `Hackathon/DefenceService.cs`, numbers in
@@ -670,6 +726,9 @@ guardian `displayName`, `arrivesAtSecond`; those extra fields are ignored on PUT
    refunds a payment recorded but never used after 2 minutes.
 4. `POST /api/market/{id}/cancel` (seller, `active` only) returns the NFT -> `cancelled`; on failure `cancelling` with
    `error` (call cancel again).
+5. `ISLAND_SALE_CARRIES_RUM` (V5 M9h switch, on by default: the island changes hands as it is). `false` (I26.2): when the
+   island moves to the buyer its store and vault RUM are credited to the seller and its buildings go back to their start
+   levels (in one transaction, once).
 
 ### Hackathon: demo reset (owner tool)
 
@@ -794,6 +853,11 @@ barrels, the clock and the end; bot matches are recorded but unrated. A rematch 
 Results are client-reported (no server authority yet, see V5 plan D6 and M13b/M18/M22): the run sanity checks and the
 two-report agreement only stop obvious mistakes and casual cheating. The 1v1 relay referees the shared parts (clock,
 barrels and their distance check, the end, the tallies), but each client still simulates its own ship: positions, hp
-and hits are client-reported within the caps above, so a modified client can still lie about them. Nothing here moves
-value; leaderboard prizes,
-RUM rewards and wagers need the authoritative match server first.
+and hits are client-reported within the caps above, so a modified client can still lie about them.
+
+**Value moves on devnet (since the hackathon, 12 Oct).** Devnet SOL is paid from the treasury on client-reported results:
+1v1 wagers between humans (relay-decided sinkings), weekly prizes (checked runs only), market sales; RUM moves on raids
+and island sales. The owner kept every flow on (H2, 13 Oct); each has a switch (`/api/switches`). One key is treasury,
+escrow, payout signer and mint authority until M11 splits it: the bounds are one free island claim per wallet, the daily
+mint budget, the treasury float with its alarm, idempotent payouts and the owner's report. Mainnet stays off
+(`ALLOW_MAINNET`) until the authoritative match server (M13b) and the legal review (D8).
