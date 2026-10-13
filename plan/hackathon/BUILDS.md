@@ -12,6 +12,15 @@ table is still the 16:05 one from `fad370cf`).
 other starting weapons, baseDamage 20 -> 12.1, config 8ea655e3; run checks v8 deployed for it, which also accept the
 21:05 build's config 841839 and the 15:51 build's 83779c). Same profile and method; WebGL only.
 
+**APK rebuild, 13 Oct 11:35-11:41** at `e7f6a121` (UI polish and Seeker pass: hub Close and the 1v1 draft's Ready were
+under the panel's click blocker, fixed; 1v1 hub selects a mode and a stake, then Start hosts; Islands region names clear
+of markers; wallet panel and 1v1 lobby sized to content; Defence status ink on parchment; touch HUD says READY / USE
+instead of SHIFT / SPACE / E; draft names shrink to fit; compact opponent weapon chips; switched-off weapons out of the
+collection counts; the owner's zoomed-out app icon). Same batch method; Succeeded, 194.9 MB (204,403,709 bytes), 326 s;
+installed on the Seeker (`adb install -r`, app data kept). An intermediate build at 11:19-11:27 (195.2 MB) was installed
+and checked on the Seeker (Collection Close works, draft Ready works and starts the match vs Captain Marrow, no
+flamethrower / siren bell / squid ink pots in the draft). Font, TMP, URP and graphics settings churn reverted.
+
 **APK rebuild, 13 Oct 06:07-06:13** (storm edge warning instead of the red walls, Signal Buoy off, faster Cursed
 Doubloons coins with the gold barrel coin, Defence designer redrawn after the owner's reference). Same batch method;
 Succeeded, 191.6 MB, 350 s; installed on the Seeker.
