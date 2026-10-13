@@ -101,6 +101,9 @@ namespace RoguePirates.V4.Presentation
                 InstallToasts(views); // first: the results screen and the interaction prompt are layered around it
                 InstallFeedback(game, views);
                 InstallHud(views, game.Events);
+                // Hackathon (13 Oct, owner): a 1v1 is online and real time, so the pause button opens the match menu there
+                // (Resume, Leave match) and the game keeps running.
+                if (PauseMenu != null) PauseMenu.MatchMode = game.IsPvp;
                 InstallWeaponEffects(game, views);
                 InstallWorld(game, views);
                 InstallLevelUp(game, views);
@@ -402,8 +405,8 @@ namespace RoguePirates.V4.Presentation
                 }
                 // V5 M7: touch boost and the pause button.
                 TouchControls = RoguePirates.V4.Presentation.Hud.TouchControlsPresenter.Create(authored.transform, CaptainAbilityButton);
-                // Playtest (3 Oct, owner): no on-screen pause button (Esc and the back button still pause).
-                if (SaltWindHud != null && TouchControls.Pause != null) TouchControls.Pause.gameObject.SetActive(false);
+                // Playtest (3 Oct, owner) hid the on-screen pause button; Hackathon (13 Oct, owner) brings it back in the kit
+                // style, below the captain's panel (it opens the pause menu, or the match menu in a 1v1).
             }
 
             if (runCanvas == null) return;

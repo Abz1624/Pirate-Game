@@ -12,7 +12,7 @@ namespace RoguePirates.V4.Presentation.Hud
     /// </summary>
     public sealed class TouchControlsPresenter : MonoBehaviour
     {
-        public const float BoostSize = 160f, PauseSize = 96f, Margin = 48f, Gap = 24f;
+        public const float BoostSize = 160f, PauseSize = 120f, Margin = 48f, Gap = 24f;
 
         static readonly Vector3[] Corners = new Vector3[4];
         RectTransform _boost, _pause;
@@ -48,10 +48,83 @@ namespace RoguePirates.V4.Presentation.Hud
             _boostGroup = _boost.gameObject.AddComponent<CanvasGroup>();
             _pause = Round("PauseButton", root, PauseSize, null, "II");
             _pause.gameObject.AddComponent<TouchActionButton>().action = TouchAction.Pause;
-            _pause.anchorMin = _pause.anchorMax = new Vector2(0.5f, 1f);
-            _pause.pivot = new Vector2(0.5f, 1f);
-            _pause.anchoredPosition = new Vector2(-360f, -24f);
+            _pause.anchorMin = _pause.anchorMax = new Vector2(0f, 1f);
+            _pause.pivot = new Vector2(0f, 1f);
+            _pause.anchoredPosition = new Vector2(Margin, -200f);
+            KitPause(_pause);
+            // Above the stick's touch zone (the left half) and the raid / race HUD canvases, so a tap always reaches it.
+            var c = _pause.gameObject.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder = PauseSortingOrder;
+            _pause.gameObject.AddComponent<GraphicRaycaster>();
         }
+
+        /// <summary>Hackathon (13 Oct, owner): the pause button's canvas order (over the stick zone and the raid / race HUD).</summary>
+        public const int PauseSortingOrder = 600;
+
+        /// <summary>
+        /// Hackathon (13 Oct, owner: "a pause button so that players can pause or exit the match"): the kit's pause button
+        /// art (Pause_2), else the kit's gold square with two ink bars; without the kit the old dark round "II" stays.
+        /// </summary>
+        static void KitPause(RectTransform pause)
+        {
+            var image = pause.GetComponent<Image>();
+            var art = RoguePirates.V4.Presentation.Menu.MenuKit.S("Pause_2");
+            var square = art == null ? RoguePirates.V4.Presentation.Menu.MenuKit.S("Btn_Square_Gold") : null;
+            if (art == null && square == null) return;
+            var label = pause.Find("Label");
+            if (label != null) label.gameObject.SetActive(false);
+            image.sprite = art != null ? art : square;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            if (art != null) return;
+            for (var i = 0; i < 2; i++)
+            {
+                var bar = new GameObject(i == 0 ? "BarLeft" : "BarRight", typeof(RectTransform), typeof(Image));
+                bar.transform.SetParent(pause, false);
+                var rt = (RectTransform)bar.transform;
+                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.sizeDelta = new Vector2(PauseSize * 0.12f, PauseSize * 0.42f);
+                rt.anchoredPosition = new Vector2((i == 0 ? -1f : 1f) * PauseSize * 0.12f, 0f);
+                var img = bar.GetComponent<Image>();
+                img.color = RoguePirates.V4.Presentation.Menu.MenuKit.Ink;
+                img.raycastTarget = false;
+            }
+        }
+
+        /// <summary>The pause button just below the captain's panel (top left, clear of the coins, timer and minimap on the
+        /// right and the raid / race / 1v1 strip in the middle); without the panel, the top-left corner inside the safe area.</summary>
+        void PlacePause()
+        {
+            if (_playerPanel == null && Time.unscaledTime >= _nextPanelLook)
+            {
+                _nextPanelLook = Time.unscaledTime + 1f;
+                var canvas = GetComponentInParent<Canvas>();
+                var top = canvas != null ? canvas.rootCanvas.transform : transform.parent;
+                foreach (var t in top.GetComponentsInChildren<RectTransform>(true))
+                    if (t.name == "PlayerPanel") { _playerPanel = t; break; }
+            }
+            var parent = (RectTransform)_pause.parent;
+            if (_playerPanel != null && _playerPanel.gameObject.activeInHierarchy)
+            {
+                _playerPanel.GetWorldCorners(Corners);
+                var bottomLeft = (Vector2)parent.InverseTransformPoint(Corners[0]);
+                var pivotOffset = new Vector2((0.5f - parent.pivot.x) * parent.rect.width, (0.5f - parent.pivot.y) * parent.rect.height);
+                if (_pause.anchorMin != new Vector2(0.5f, 0.5f)) _pause.anchorMin = _pause.anchorMax = new Vector2(0.5f, 0.5f);
+                var pos = bottomLeft - pivotOffset + new Vector2(0f, -Gap);
+                if ((_pause.anchoredPosition - pos).sqrMagnitude > 0.25f) _pause.anchoredPosition = pos;
+                return;
+            }
+            if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
+            var scale = _canvas != null && _canvas.scaleFactor > 0f ? _canvas.scaleFactor : 1f;
+            var safe = Screen.safeArea;
+            if (_pause.anchorMin != new Vector2(0f, 1f)) _pause.anchorMin = _pause.anchorMax = new Vector2(0f, 1f);
+            _pause.anchoredPosition = new Vector2(Margin + Mathf.Max(0f, safe.xMin) / scale, -(200f + Mathf.Max(0f, Screen.height - safe.yMax) / scale));
+        }
+
+        RectTransform _playerPanel;
+        float _nextPanelLook;
 
         static RectTransform Round(string name, RectTransform parent, float size, Sprite sprite, string text)
         {
@@ -81,6 +154,14 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void LateUpdate()
         {
+            if (_pause != null)
+            {
+                // Hidden once the run or match is over (the results screen has its own way back).
+                var run = RoguePirates.V4.Foundation.Core.RunManager.Instance;
+                var pauseShown = run == null || !run.IsRunEnded;
+                if (_pause.gameObject.activeSelf != pauseShown) _pause.gameObject.SetActive(pauseShown);
+                if (pauseShown) PlacePause();
+            }
             var show = VirtualJoystick.TouchControlsWanted;
             if (BoostShown != show)
             {
