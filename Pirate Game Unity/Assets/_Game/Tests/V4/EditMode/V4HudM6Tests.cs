@@ -230,16 +230,19 @@ namespace RoguePirates.V4.Tests
             }
         }
 
-        /// <summary>Hackathon (13 Oct, owner): content with no icon is taken out of every offer pool (kept, not deleted).</summary>
-        internal static readonly string[] DisabledForMissingIcon = { "cursed_chest_key" };
+        /// <summary>
+        /// 13 Oct (owner, after the hackathon): content whose icon is still being drawn stays in the pools and shows its
+        /// name in place of the icon (it was taken out of every pool for the hackathon). Every other offered item has an icon.
+        /// </summary>
+        internal static readonly string[] IconPending = { "cursed_chest_key" };
 
         /// <summary>
-        /// Hackathon (13 Oct, owner: "disable items, icons, or weapons that have missing icons"): everything the game still
-        /// offers (level-up weapons and Logbooks, chest and level-up items, the Rum shop, PvP drafts and the PvP bot's
-        /// default draft) has an icon; the content without one is out of every pool. The owner's renames are in.
+        /// Everything the game offers (level-up weapons and Logbooks, chest and level-up items, the Rum shop, PvP drafts
+        /// and the PvP bot's default draft) has an icon, or is listed as icon-pending and shows its name. Since 13 Oct
+        /// (owner) nothing leaves a pool for a missing icon. The owner's renames are in.
         /// </summary>
         [Test]
-        public void OfferedContent_AllHasAnIcon_AndContentWithoutOneIsOutOfThePools()
+        public void OfferedContent_AllHasAnIcon_OrIsListedIconPendingAndShowsItsName()
         {
             var catalog = IconCatalog.Load();
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset"));
@@ -248,8 +251,13 @@ namespace RoguePirates.V4.Tests
             foreach (var i in config.All<ItemConfig>())
             {
                 var offered = i.inChestPool || i.inLevelUpPool;
-                Assert.AreEqual(offered, catalog.Item(i.itemId) != null, i.itemId + (offered ? " is offered, so it needs an icon" : " has an icon, so it should be offered"));
-                Assert.AreEqual(!offered, DisabledForMissingIcon.Contains(i.itemId), i.itemId + ": DisabledForMissingIcon lists exactly the items out of the pools");
+                Assert.IsTrue(offered, i.itemId + " is in a pool (nothing is switched off for a missing icon)");
+                if (IconPending.Contains(i.itemId))
+                {
+                    Assert.IsNull(catalog.Item(i.itemId), i.itemId + " is listed icon-pending but has an icon now: take it off the list");
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(i.displayName), i.itemId + " shows its name until its icon exists");
+                }
+                else Assert.IsNotNull(catalog.Item(i.itemId), i.itemId + " is offered, so it needs an icon (or an IconPending entry)");
                 Assert.AreEqual(offered, RoguePirates.V5.Meta.LocalMetaServices.InAPool(config, i.itemId), i.itemId + ": the Rum shop sells only pooled items");
             }
             foreach (var id in Pvp.PvpBotArsenal.DefaultWeapons) Assert.IsNotNull(catalog.Weapon(id), "PvP bot draft: " + id);

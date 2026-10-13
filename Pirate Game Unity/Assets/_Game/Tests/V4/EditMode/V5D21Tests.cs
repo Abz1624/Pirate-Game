@@ -317,8 +317,7 @@ namespace RoguePirates.V4.Tests
             CollectionAssert.AreEquivalent(new[] { ConfigEnums.UpgradeAxis.Duration, ConfigEnums.UpgradeAxis.Slow, ConfigEnums.UpgradeAxis.Size, ConfigEnums.UpgradeAxis.Cooldown }, axes,
                 "duration, slow strength, area, cooldown");
             CollectionAssert.AreEqual(new[] { 4, 8, 12 }, w.milestones.Select(m => m.level), "rank 4/8/12 milestones (Q20)");
-            // Owner disabled them 13 Oct (hackathon): out of the Saltwind weapon pools, so no longer a free starter (was D18).
-            Assert.IsFalse(config.Single<UnlockConfig>().starterWeaponIds.Contains(InkPots), "out of the pools (owner, 13 Oct)");
+            Assert.IsTrue(config.Single<UnlockConfig>().starterWeaponIds.Contains(InkPots), "a free starter (D18)");
             Assert.IsFalse(string.IsNullOrWhiteSpace(w.displayName), "its name shows on the card");
         }
 

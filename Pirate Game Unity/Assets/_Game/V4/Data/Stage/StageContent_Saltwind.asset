@@ -51,6 +51,7 @@ MonoBehaviour:
     starterWeaponIds:
     - broadside_battery
     - deck_cannons
+    - flamethrower
     - flying_cutlasses
     - harpoon_gun
     - lightning_mast
@@ -60,14 +61,19 @@ MonoBehaviour:
     - swivel_guns
     - anchor_flail
     - chainshot
+    - siren_bell
+    - squid_ink_pots
     - parrot_squadron
     - monkey_gunners
     - maelstrom_charge
+    - lighthouse_lantern
     - cursed_doubloons
     bossEnemyId: barnacle_king
     weaponUnlocks:
     - contentId: lightning_mast
       marksCost: 60
+    - contentId: flamethrower
+      marksCost: 80
     - contentId: mortar
       marksCost: 100
     - contentId: harpoon_gun
@@ -76,12 +82,18 @@ MonoBehaviour:
       marksCost: 120
     - contentId: chainshot
       marksCost: 130
+    - contentId: siren_bell
+      marksCost: 150
+    - contentId: squid_ink_pots
+      marksCost: 160
     - contentId: parrot_squadron
       marksCost: 170
     - contentId: monkey_gunners
       marksCost: 180
     - contentId: maelstrom_charge
       marksCost: 190
+    - contentId: lighthouse_lantern
+      marksCost: 200
     - contentId: cursed_doubloons
       marksCost: 220
     captainUnlocks:
