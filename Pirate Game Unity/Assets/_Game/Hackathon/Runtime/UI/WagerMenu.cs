@@ -39,6 +39,9 @@ namespace RoguePirates.Hackathon.UI
         TextMeshProUGUI _hubMessage, _lobbyMessage;
         string _hubSet, _lobbySet;
         readonly Button[] _stakeButtons = new Button[4];
+        readonly Button[] _modeButtons = new Button[3];
+        int _modeIndex;
+        Button _start;
         int _stakeIndex;
         bool _busy;
 
@@ -136,12 +139,13 @@ namespace RoguePirates.Hackathon.UI
             var root = Reframe(_hub, "PvP (1v1)", out _, out var head);
             KitButton(TopRight(head, "Close", 34f, 22f, 230f, 84f), "Close", "Icon_Close", () => _pvp.CloseAll(), "Btn_Gold", 32f, 36f);
 
-            // The three ways to play.
+            // The three ways to play. 13 Oct (owner): a card only selects the mode and a chip only selects the stake; the
+            // Start button below hosts with both (a tap on a card used to host at once with whatever stake was lit).
             const float pad = 40f, gap = 16f;
             var modes = Strip(root, "Modes", pad, 148f, pad, 116f);
-            ModeCard(PvpKit.Cols(modes, "HostPublic", 0f, 1f / 3f, 0f, gap * 0.66f), "Host Public", "Create a lobby for anyone", "Icon_Swords", "Btn_Gold", () => HostMatch(true));
-            ModeCard(PvpKit.Cols(modes, "HostPrivate", 1f / 3f, 2f / 3f, gap * 0.33f, gap * 0.33f), "Host Private", "Create a lobby with a code", "Icon_Lock", "Btn_Parchment", () => HostMatch(false));
-            ModeCard(PvpKit.Cols(modes, "VsCaptain", 2f / 3f, 1f, gap * 0.66f, 0f), "Vs " + HackathonRules.CaptainName, "Fight the legendary pirate", "Icon_Skull_Crossbones", "Btn_Parchment", ChallengeCaptain);
+            _modeButtons[0] = ModeCard(PvpKit.Cols(modes, "HostPublic", 0f, 1f / 3f, 0f, gap * 0.66f), "Host Public", "A lobby anyone can join", "Icon_Swords", "Btn_Gold", () => PickMode(0));
+            _modeButtons[1] = ModeCard(PvpKit.Cols(modes, "HostPrivate", 1f / 3f, 2f / 3f, gap * 0.33f, gap * 0.33f), "Host Private", "A lobby joined with a code", "Icon_Lock", "Btn_Parchment", () => PickMode(1));
+            _modeButtons[2] = ModeCard(PvpKit.Cols(modes, "VsCaptain", 2f / 3f, 1f, gap * 0.66f, 0f), "Vs " + HackathonRules.CaptainName, "Fight the legendary pirate", "Icon_Skull_Crossbones", "Btn_Parchment", () => PickMode(2));
 
             // Stake picker.
             var stake = Strip(root, "HackathonStake", pad, 280f, pad, 92f);
@@ -156,8 +160,11 @@ namespace RoguePirates.Hackathon.UI
                 _stakeButtons[i] = KitButton(rt, HackathonRules.StakeLabel(HackathonRules.Stakes[i]), null, () => PickStake(index), "Btn_Parchment", 28f);
             }
 
+            // Start: the picked mode with the picked stake.
+            _start = KitButton(Strip(root, "Start", pad, 384f, pad, 92f), "Host public lobby", "Icon_Check", StartPicked, "Btn_Gold", 36f, 44f);
+
             // Join with a code.
-            var join = Strip(root, "Join", pad, 386f, pad, 92f);
+            var join = Strip(root, "Join", pad, 490f, pad, 92f);
             Paint(join, "Panel_Inset", 2f);
             RowIcon(join, "Chest_2", 18f, 70f);
             var field = Strip(join, "Field", 104f, 12f, 420f, 68f);
@@ -167,7 +174,7 @@ namespace RoguePirates.Hackathon.UI
             KitButton(TopRight(join, "JoinCode", 14f, 10f, 390f, 72f), "Join with code", "Icon_Link", () => _pvp.JoinCode(_codeInput.text), "Btn_Gold", 30f, 38f);
 
             // Public lobbies.
-            var lobbies = Fill(root, "PublicLobbies", pad, 84f, pad, 494f);
+            var lobbies = Fill(root, "PublicLobbies", pad, 84f, pad, 598f);
             Paint(lobbies, "Panel_Inset", 2f);
             Icon(lobbies, "Icon_Group", 22f, 12f, 50f);
             Label(Strip(lobbies, "Title", 88f, 10f, 300f, 54f), "Public lobbies", 34f, Ink, TextAlignmentOptions.MidlineLeft, true, 22f);
@@ -187,15 +194,38 @@ namespace RoguePirates.Hackathon.UI
             _hubExplorer.gameObject.SetActive(false);
 
             PickStake(0);
+            PickMode(0);
         }
 
-        static void ModeCard(RectTransform rt, string title, string sub, string icon, string style, Action click)
+        /// <summary>Selects a way to play (highlight only); Start hosts it.</summary>
+        public void PickMode(int index)
+        {
+            _modeIndex = Mathf.Clamp(index, 0, _modeButtons.Length - 1);
+            for (var i = 0; i < _modeButtons.Length; i++) SetStyle(_modeButtons[i], i == _modeIndex ? "Btn_Gold" : "Btn_Parchment");
+            UpdateStart();
+        }
+
+        void UpdateStart()
+        {
+            if (_start == null) return;
+            var what = _modeIndex == 0 ? "Host public lobby" : _modeIndex == 1 ? "Host private lobby" : "Challenge " + HackathonRules.CaptainName;
+            PvpKit.SetLabel(_start, what + "   (" + HackathonRules.StakeLabel(Stake) + ")");
+        }
+
+        void StartPicked()
+        {
+            if (_modeIndex == 2) ChallengeCaptain();
+            else HostMatch(_modeIndex == 0);
+        }
+
+        static Button ModeCard(RectTransform rt, string title, string sub, string icon, string style, Action click)
         {
             var b = KitButton(rt, null, null, click, style);
             RowIcon(rt, icon, 26f, 76f);
             Label(Strip(rt, "Title", 118f, 14f, 14f, 50f), title, 36f, Ink, TextAlignmentOptions.BottomLeft, true, 22f);
             Label(Strip(rt, "Sub", 118f, 64f, 14f, 36f), sub, 23f, InkDim, TextAlignmentOptions.TopLeft, false, 15f);
             b.name = title;
+            return b;
         }
 
         public void PickStake(int index)
@@ -207,6 +237,7 @@ namespace RoguePirates.Hackathon.UI
                 if (b == null) continue;
                 SetStyle(b, i == _stakeIndex ? "Btn_Gold" : "Btn_Parchment");
             }
+            UpdateStart();
             if (_hubMessage != null && _hub.gameObject.activeInHierarchy)
                 HubMessage(Stake > 0
                     ? $"Stake {HackathonRules.Sol(Stake)} each, the winner gets {HackathonRules.Sol(Stake * 2)}. Vs {HackathonRules.CaptainName} the house matches it."

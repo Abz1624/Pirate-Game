@@ -584,8 +584,13 @@ namespace RoguePirates.V4.Presentation.Online
             }
             var left = icon != null ? 76f : 12f;
             var text = OnlineUi.TextAt(go.transform, "Name", label, 22, TextAlignmentOptions.BottomLeft, OnlineUi.TextColor, new Vector2(0f, 0.56f), Vector2.one);
-            text.margin = new Vector4(left, 0f, 40f, 0f);
+            text.margin = new Vector4(left, 0f, 30f, 0f);
             text.fontStyle = FontStyles.Bold;
+            // Hackathon UI (13 Oct, Seeker): long names ("Broadside Battery", "Flying Cutlasses") shrink to fit instead of "...".
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.enableAutoSizing = true;
+            text.fontSizeMin = 14f;
+            text.fontSizeMax = 22f;
             var desc = OnlineUi.TextAt(go.transform, "Line", line ?? string.Empty, 17, TextAlignmentOptions.TopLeft, OnlineUi.Dim, Vector2.zero, new Vector2(1f, 0.54f));
             desc.margin = new Vector4(left, 0f, 34f, 4f); // Hackathon UI: clear of the pick number
             desc.textWrappingMode = TextWrappingModes.Normal;

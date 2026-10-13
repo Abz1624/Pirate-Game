@@ -172,9 +172,11 @@ namespace RoguePirates.V4.Presentation.Pvp
                 image.preserveAspect = true;
                 image.raycastTarget = false;
                 var le = img.GetComponent<LayoutElement>();
-                le.preferredWidth = le.preferredHeight = 28f;
+                le.preferredWidth = le.preferredHeight = 32f;
             }
-            var text = OnlineUi.Text(chip, "Name", $"{name} <color=#ffd166>{level}</color>", 20, TextAlignmentOptions.Center, Color.white);
+            // Hackathon UI (13 Oct, Seeker): six named chips did not fit the half-width row ("Dec...", "Sw..."); with an
+            // icon the chip shows the icon and level only.
+            var text = OnlineUi.Text(chip, "Name", icon != null ? $"<color=#ffd166>{level}</color>" : $"{name} <color=#ffd166>{level}</color>", icon != null ? 24 : 20, TextAlignmentOptions.Center, Color.white);
             if (MenuKit.Font != null) text.font = MenuKit.Font;
             text.textWrappingMode = TextWrappingModes.NoWrap;
             text.raycastTarget = false;

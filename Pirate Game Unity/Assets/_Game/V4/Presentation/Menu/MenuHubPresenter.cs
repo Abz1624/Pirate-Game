@@ -372,7 +372,7 @@ namespace RoguePirates.V4.Presentation.Menu
             Open(Screen.Profile, "Profile", false);
             ClearRows();
             Row("Your collection", Text, "Open", ShowCollection);
-            Row($"{_meta.DisplayName} (guest, this device)", Text);
+            Row("Voyage records on this device", Text); // Hackathon UI: not "guest" (a wallet captain reads this too)
             Row($"RUM: {_meta.Balance}", Text);
             var records = new RoguePirates.V4.Difficulty.PlayerPrefsRunRecordStore().Records;
             Row($"Runs recorded: {records.Count}", Text);
