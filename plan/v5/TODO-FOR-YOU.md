@@ -9,8 +9,8 @@
       J4 raid limits, built and off (`RAID_PAIR_LIMIT_PER_DAY`, `RAID_RECORD_ONE_PER_DAY`);
       J5 confirm the narrow exception to D19(2)/(8), and that a stake decided by client reports (a room lost on a
       restart) is refunded, even for an honest winner.
-- [ ] **M9j check** on a desktop build made after `1a791034`: one raid (the history shows the raid's log verdict) and one
-      daily race (the board shows the time check). The early-guardian refusal is covered by the server tests (no live raid
+- [ ] **M9j check** on a desktop build made after `1a791034`: one raid and one daily race, then read the verdicts from
+      the API (`/api/raids/mine` `logVerdict`, `/api/race/daily/board` `raceCheck`); the game does not show them yet. The early-guardian refusal is covered by the server tests (no live raid
       was run: it needs a wallet, an island and RUM).
 - [ ] Note: the live check left a test entry "M9jCheck" (120 s, flagged `too_fast`, not checked) on the 20 Oct race
       board; there is no delete endpoint, it drops off with the day (the race pays nothing).

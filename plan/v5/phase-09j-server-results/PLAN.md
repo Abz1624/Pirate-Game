@@ -24,7 +24,7 @@ costs about **$0.007 per hour** (0.11 vCPU, 0.22 GB, 14 MB out; `phase-09b-netco
 
 | # | Option | Stops | Does not stop | CPU / Railway $ per 1,000 | Dev time | Latency / UX |
 |---|---|---|---|---|---|---|
-| L0 | **Server-side bounds on the report**: the server's own clock (elapsed since a server-recorded start), seeds it issued, per-pair rate limits, settlement only from a server decision | instant or impossible claims (a guardian sunk before it arrives, a race time shorter than the time since its start), replays, farming one defender, a lost room settling on one client report | a patient cheater who waits the real time and then lies | ~0 (a few DB reads) / **$0.00** | 0.5-1 day | none; a refused claim answers 400 at once |
+| L0 | **Server-side bounds on the report**: the server's own clock (elapsed since a server-recorded start), seeds it issued, per-pair rate limits, settlement only from a server decision | instant or impossible claims (a guardian sunk before it arrives, a race time longer than the time since its start), replays, farming one defender, a lost room settling on one client report | a patient cheater who waits the real time and then lies | ~0 (a few DB reads) / **$0.00** | 0.5-1 day | none; a refused claim answers 400 at once |
 | L1 | **Run-log checks per mode** (the M9a/v9 structure and rate rules; mode-specific rules for raids and races) | edited totals, logs that disagree with the claim (boss defeated before its arrival, kills per minute beyond the bounds, a race log that reached the target earlier or later than claimed) | a consistent forgery inside the bounds (M9a's tests show one passes when tuned to the margin) | < 1 ms a run / **< $0.01** | 1-2 days (client sends the log for raids and races) | none; verdict stored with the result |
 | L2 | **Relay referee state** for 1v1: the server tracks each ship's hull from the hits it accepted (the client's own PvP hit window: x0.06, 0.5 s pooling, 5% cap), heals from the barrels it awarded, and decides the end | an "immortal" client that ignores hits, a self-reported hull deciding the time-out tie-break, a room lost on restart paying a stake | a cheater who reports a larger max hull than its build has (the ceiling is an assumption until it is derived from config data); a hacked client dealing more damage than its build can (the DPS budget is 1.5x the *worst* legit build, about 8x a typical one); armour, max hull and regeneration live on the client, so the hull is an **estimate** | ~0 (per hit message) / **$0.00** | 1 day | none in shadow; enforced, a wrong estimate could sink an honest ship |
 | L3 | **Deterministic replay** of a run on a headless server (all value runs, or sampled, or only prize runs) | any forged voyage, if the replay is exact | nothing more than L4 for single-player runs; useless for live PvP | about 27,000 ticks at 1-2 ms = 30-60 s CPU + 3 s start + 0.25 GB for a minute per 15-min run: **about $0.3-0.5 per 1,000 runs**; prize runs only (3 a week): ~$0 | 2-4 weeks **and a research risk**: the S0 fingerprint is byte-exact on one platform only; WebGL (wasm) vs Linux x64 float results and PhysX Rigidbodies are not shown to match, and the log keeps 2,000 sampled inputs, not every tick's input and card choice (log grows to roughly 40-80 KB). D6/Q29 chose plausibility checks because exact replay needed Photon Quantum | value pending until the replay ends (minutes, queued) |
@@ -140,7 +140,7 @@ once a build sends them).
 | I9j.1-I9j.6 server | done | `server/`, `server-tests-m9j.trx` (288/290, 2 devnet skips) |
 | I9j.7 client | done, compiled in the Editor | `Assets/_Game/Hackathon`, `editmode-m9j.json` (841/841) |
 | D9j.1 docs, deploy, live checks | done 20 Oct (`cf59109b`, `1a791034`) | `server/README.md`; live: `/health` ok (postgres); `/api/switches` relayHullEnforce false, relayHullMargin 0.25, raidPairLimitPerDay 0, raidRecordOnePerDay false; a race start then an entry 2 s later: `raceCheck` too_fast (the test entry "M9jCheck" stays on the 20 Oct board, unchecked; no value). The raid timing is covered by the suite (a live raid needs a wallet, an island and RUM; not run) |
-| Code review of the diff | pending | section 8 |
+| Code review of the diff | done: no blockers, 5 majors, 7 minors (section 8); fixed and redeployed | `live-check-2026-10-20.md`, `server-tests-m9j.trx` (289/291) |
 
 ## 7. Plan review (v5-reviewer, 20 Oct)
 
@@ -160,3 +160,25 @@ once a build sends them).
 | 12 | Minor | The race start is also interim | Listed |
 | 13 | Minor | The old `ReportRaid` now fails late guardians | Noted in I9j.3 |
 | 14 | Minor | Code written before the review | Recorded; defaults left reversible (#1) |
+
+## 8. Code review (v5-reviewer, 20 Oct, `41561be9..db6856cc`)
+
+No blockers. The reviewer found no way an honest client's raid result is refused (the client's guardian time is the
+server's own `arrivesAtSecond`, run time never runs ahead of the wall clock, the 5 s slack covers the clamp), no path
+that pays a client-decided match, an additive-only migration and no outcome change in shadow mode except the tie-break.
+
+| # | Severity | Finding | Outcome |
+|---|---|---|---|
+| 1 | Major | A result without a run log gets no verdict, so a cheater leaves it out | Fixed: a raid win or partial without a log is `no_log`; a race entry without one `verdict:no_log`; test |
+| 2 | Major | A report posted before any socket reached the relay could decide a staked match by timeout (and now void it by refund) | Fixed: while the room exists, a staked match's reports are kept for the record only; test (early report, then the relay's winner is paid) |
+| 3 | Major | The honest raid-log test accepted any verdict; boundary tests copy the client's formulas; no client test for the log wait; no live raid | The honest test now requires none of the raid checks to flag; the copied formulas stay (the client's live inside a MonoBehaviour) and are pinned by the definitions in section 3; no live raid (needs a wallet, island and RUM on the live database: `live-check-2026-10-20.md`) |
+| 4 | Major | The game shows none of the verdicts the owner check names | The owner check reads them from the API (`/api/raids/mine`, `/api/race/daily/board`, `/api/matches/{id}`); in-game display left to M15/M22 screens |
+| 5 | Major | Evidence thin | `live-check-2026-10-20.md`; the trx re-run after the fixes |
+| 6 | Minor | `ScoreLog` had no catch-all | Fixed: `check_failed` stored, the result kept |
+| 7 | Minor | The tie-break still uses the reported (clamped) max hull; pooled hits at the end | Comment corrected; kept |
+| 8 | Minor | `too_fast` catches a time longer than the time since the start, not shorter | Wording fixed (L0) |
+| 9 | Minor | A hull test could not fail | Removed |
+| 10 | Minor | `RaidHud.Report` had no try/catch | Fixed |
+| 11 | Minor | The record switch loads every finished raid of the listed islands | Kept (off by default; SQL grouping when J4 turns it on) |
+| 12 | Minor | `/start` has no own rate limit; older entries now show unchecked | The API-wide rate limit applies; README notes the board change |
+

@@ -913,15 +913,18 @@ hull estimate the relay keeps until M22 retires it and a race start M13b's serve
 Automated check: the server suite green, including honest passes (raid timing at its boundaries with the client's
 formulas, a race with a late start, an honest 1v1 exchange never sunk even enforced); live: an instant guardian claim
 refused, the switches read back, a race start recorded.
-Owner check: one raid and one daily race on the desktop build (the history shows the raid's verdict, the board the
-race's); one unstaked 1v1 to read the hull verdict on the end card's data.
+Owner check: one raid and one daily race on a desktop build after `1a791034`, then read the verdicts from the API
+(`/api/raids/mine` `logVerdict`, `/api/race/daily/board` `raceCheck`); one unstaked 1v1, then `/api/matches/{id}`
+(`hullCheck`). Showing them in game is left to M15's and M22's screens.
 Cost: no new Railway service; no measurable usage change ($0).
 
 **Status (rev 20, 20 Oct).** Plan reviewed by v5-reviewer (2 blockers, 6 majors, 6 minors, all adopted: raid limits off
 by default, hull sinking shadow only and tied to D23(b), definitions and honest-pass tests; phase `PLAN.md` section 7).
 Step 1 done and deployed (`cf59109b` server, `1a791034` client; migration `AddServerResultChecks`, new columns and a table
 only): I9j.1-I9j.7 as above; server 288/290 (2 devnet skips), EditMode 841/841; live `/health`, the switches read back
-and a race start checked. Left: the review of the code diff, the owner's J1-J5 and the owner check.
+and a race start checked. Code review (v5-reviewer): no blockers, 5 majors, 7 minors; fixed and redeployed the same day
+(a `no_log` verdict, reports cannot pre-empt the relay on a staked match, a catch-all on the log check, wording; phase
+`PLAN.md` section 8); server 289/291. Left: the owner's J1-J5 and the owner check.
 
 #### M9c — Multi-ship runtime and the go/no-go
 
