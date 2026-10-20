@@ -181,7 +181,8 @@ public sealed class DailyRaceService
             throw new ApiException(422, "implausible_time", $"timeSeconds must be {minSeconds:0.#}..{MaxRaceSeconds}.");
         var timeMs = (int)Math.Round(req.TimeSeconds * 1000);
 
-        var verdict = Score(player, req, race, now);
+        // V5 M9j (review): an entry without a log is a shadow signal too
+        var verdict = Score(player, req, race, now) ?? RaidChecks.NoLog;
 
         await GameLocks.Runs.WaitAsync();
         try

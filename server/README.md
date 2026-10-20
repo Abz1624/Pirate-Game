@@ -564,7 +564,8 @@ it) is scored by the run checks in shadow mode: `verdict` is `pass`, `flagged`, 
 or null without a log; it never refuses the entry. V5 M9j: `raceCheck` (shadow, stored with the best entry and shown on
 the board) is `ok`, `no_start` (no `/start` for this race), `too_fast` (the time is over 30 s longer than the server's
 time since the latest start) or `time_mismatch` (the log reached the target in another minute than `timeSeconds`);
-`serverSeconds` is the time since the start. `checked` is true only for a `pass` with `ok`. The game sends the closed
+`serverSeconds` is the time since the start. `checked` is true only for a `pass` with `ok` (so entries from before
+M9j and from older clients show unchecked); an entry without a log has `verdict:"no_log"`. The game sends the closed
 run log and its own kills and level (`kills` may be a little over the target). Errors: `400 seed_mismatch`, `400 target_not_reached`,
 `422 implausible_time` (under 10 s for 100 kills or over 7200 s), `400 race_not_open`, `409 race_closed`, `400 invalid_date`.
 
@@ -666,7 +667,8 @@ too_early`); `minuteReached` may not be beyond `seconds` (minute m starts at (m 
 slack; `400 invalid_minute`). V5 M9j, shadow: `runLog` (the raid voyage's run log, as `POST /api/runs`; at most 96 KB
 of body) is checked for structure, the raid's seed, its time against `seconds` (10 s), a sunk guardian defeated in the
 log not before its arrival, then the run-check rates: `logVerdict` is `pass`, `flagged`, `outdated_client`,
-`log_rejected`, `seed_mismatch`, `time_mismatch`, `no_boss_defeated` or `boss_before_arrival` (null without a log), with
+`log_rejected`, `seed_mismatch`, `time_mismatch`, `no_boss_defeated`, `boss_before_arrival`, `check_failed`, or `no_log`
+for a win or partial sent without one (null for a loss without a log), with
 `logReason`; it never refuses the result and the loot still moves. `GET /api/raids/mine` rows also carry
 `guardianMinute`, `minuteReached`, `guardianSunk`, `logVerdict`, `checked`.
 
@@ -864,7 +866,8 @@ Unknown types get `reject` `unknown_type`; any match message without a running r
 The server then writes the Match record (`decidedBy: "server_<reason>"`) and Elo (K 32; draws 0.5 each; bot matches
 unrated), moves the lobby to `finished` and broadcasts `match_end`. V5 M9j: a SOL wager settles only on such a server
 decision; a match decided by the clients' reports (`agreement` or `timeout`: its room was lost on a restart, or no socket
-ever reached the relay) refunds both stakes.
+ever reached the relay) refunds both stakes. While the room exists, a staked match's `POST /api/matches/{id}/result`
+reports are kept for the record only, so a report cannot decide it before the relay does.
 
 ### Bot matches
 

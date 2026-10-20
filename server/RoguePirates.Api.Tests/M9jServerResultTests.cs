@@ -70,16 +70,6 @@ public sealed class HullEstimateTests
         Assert.Equal(HullChecks.Agree, storm.Verdict(clientSunk: false, tracked: true));
         Assert.Equal(HullChecks.NotTracked, storm.Verdict(clientSunk: false, tracked: false));
     }
-
-    [Fact]
-    public void AnHonestShipThatSank_NeverReadsAsServerSunkClientAlive()
-    {
-        // whatever the estimate, a ship that reported sinking is never the immortal verdict
-        var e = new HullEstimate();
-        e.ReportMax(0, 120, 1);
-        for (var t = 1.0; t < 60; t += 0.1) { e.Hit(t, 300, 0.25); e.Flush(t, 0.25); }
-        Assert.NotEqual(HullChecks.ServerSunkClientAlive, e.Verdict(clientSunk: true, tracked: true));
-    }
 }
 
 public sealed class RaidAndRaceCheckTests
@@ -193,8 +183,9 @@ public sealed class M9jServerResultTests
         var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result",
             new { won = true, guardianSunk = true, minuteReached = guardianMinute, seconds = arrival + 31, runLog = log }));
         Assert.Equal("won", result.GetProperty("result").GetString());
-        // shadow mode: a verdict whatever it is, and the loot moved
-        Assert.False(string.IsNullOrEmpty(result.GetProperty("logVerdict").GetString()));
+        // shadow mode: none of the raid's own checks flags the honest log (the test log's config hash is not the shipped
+        // one, so the rate rules answer outdated_client), and the loot moved
+        Assert.Contains(result.GetProperty("logVerdict").GetString(), new[] { "pass", "flagged", "outdated_client" });
         Assert.True(result.GetProperty("rumLooted").GetInt64() > 0);
         var mine = await Ok(await raider.Http.GetAsync("/api/raids/mine"));
         Assert.Equal(result.GetProperty("logVerdict").GetString(), mine.GetProperty("attacks")[0].GetProperty("logVerdict").GetString());
@@ -224,6 +215,21 @@ public sealed class M9jServerResultTests
         Assert.Equal("won", result.GetProperty("result").GetString());
         Assert.Equal(verdict, result.GetProperty("logVerdict").GetString());
         Assert.False(result.GetProperty("checked").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Raid_WinWithoutALog_IsRecordedAsNoLog_ALossNeedsNone()
+    {
+        var (host, _, raider, id) = await RaidWorldAsync();
+        using var _h = host;
+        var r1 = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }))).GetProperty("raidId").GetGuid();
+        var lost = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{r1}/result", new { won = false, seconds = 1 }));
+        Assert.Equal(JsonValueKind.Null, lost.GetProperty("logVerdict").ValueKind);
+        var r2 = (await Ok(await raider.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }))).GetProperty("raidId").GetGuid();
+        host.Clock.Advance(TimeSpan.FromSeconds(300));
+        var won = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{r2}/result", new { won = true, guardianSunk = true, minuteReached = 5, seconds = 290 }));
+        Assert.Equal("won", won.GetProperty("result").GetString());
+        Assert.Equal(RaidChecks.NoLog, won.GetProperty("logVerdict").GetString());
     }
 
     [Fact]

@@ -17,6 +17,8 @@ public static class RaidChecks
     public const int SlackSeconds = 5;
     /// <summary>The largest gap between the log's run time and the reported seconds before the log's verdict is time_mismatch.</summary>
     public const double LogSecondsTolerance = 10;
+    /// <summary>The verdict of a won or partial raid sent without a run log (shadow mode).</summary>
+    public const string NoLog = "no_log";
 
     /// <summary>When the guardian arrives, in run seconds: the start of its one-minute window, (minute - 1) x 60 (the game's
     /// <c>RaidHud.GuardianSeconds</c>).</summary>

@@ -116,8 +116,11 @@ public sealed class MatchService
                 StatsJson = statsJson, SubmittedAt = now,
             });
 
+            // V5 M9j (review): a staked match with a live room is the relay's to decide, even before a socket connected
+            // (a report sent first would otherwise decide it by timeout and void the stake)
+            var stakedRoom = _relay.HasRoom(matchId) && await _db.Wagers.AnyAsync(w => w.LobbyId == match.LobbyId);
             if (match.Status is MatchStates.Pending or MatchStates.AwaitingOpponent
-                && (_relay.IsRelayed(matchId) || PracticeBot.Is(match.GuestPlayerId)))
+                && (_relay.IsRelayed(matchId) || PracticeBot.Is(match.GuestPlayerId) || stakedRoom))
             {
                 // the server referees this match: the report is kept for the record and decides nothing
                 await _db.SaveChangesAsync();

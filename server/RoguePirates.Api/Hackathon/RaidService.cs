@@ -238,7 +238,19 @@ public sealed class RaidService
                 throw refused;
             }
             // V5 M9j: the raid's run log, scored in shadow mode (never a reason to refuse; loot still moves, D24/D31)
-            if (RaidChecks.ScoreLog(runLog, raid, seconds, outcome == Raid.Won, guardianMinute, player, _checks, now) is { } scored)
+            (string verdict, string? reason)? check;
+            try
+            {
+                check = RaidChecks.ScoreLog(runLog, raid, seconds, outcome == Raid.Won, guardianMinute, player, _checks, now);
+            }
+            catch (Exception ex) // shadow mode: a checker fault never costs the raider the result
+            {
+                _log.LogError(ex, "Raid {Id} log check failed (shadow mode, result kept)", raid.Id);
+                check = ("check_failed", ex.GetType().Name);
+            }
+            // review (20 Oct): a win or partial without a log is a shadow signal too (a cheater would simply leave it out)
+            check ??= outcome != Raid.Lost ? (RaidChecks.NoLog, null) : null;
+            if (check is { } scored)
             {
                 raid.LogVerdict = RaidChecks.Clip(scored.verdict, 24);
                 raid.LogReason = RaidChecks.Clip(scored.reason, 256);

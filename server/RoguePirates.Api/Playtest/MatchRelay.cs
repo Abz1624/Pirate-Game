@@ -182,6 +182,9 @@ public sealed class MatchRelay
     /// <summary>The old two-report result flow is replaced for matches the server referees.</summary>
     public bool IsRelayed(Guid matchId) => _rooms.Values.Any(r => r.MatchId == matchId && r.Relayed);
 
+    /// <summary>V5 M9j (review): a room exists for the match (relayed yet or not).</summary>
+    public bool HasRoom(Guid matchId) => _rooms.Values.Any(r => r.MatchId == matchId);
+
     /// <summary>A refereed match whose result is not in yet.</summary>
     public bool IsLive(Guid lobbyId) => Get(lobbyId) is { } r && r.Relayed && !r.Ended;
 
@@ -540,7 +543,8 @@ public sealed class MatchRelay
 
     /// <summary>V5 M8z (6 Oct, owner): DamageDealt counts only damage the server accepted (in the draft, in range, under
     /// the level's damage cap), so a client's claims cannot win on time. V5 M9j (20 Oct): with equal damage the server's
-    /// hull estimate decides (never the hull a client reports), else a draw.</summary>
+    /// hull estimate decides (never the hull a client reports; the estimate's max hull is still the seat's report, clamped
+    /// at its server level, and hits pooled in the last half second are not landed), else a draw.</summary>
     static RelayEnd EndOnTime(MatchRoom room, DateTime now)
     {
         RelaySeat a = room.Seats[0], b = room.Seats[1];
