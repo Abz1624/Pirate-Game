@@ -84,5 +84,34 @@ namespace RoguePirates.Hackathon.Tests
             Assert.AreEqual(0.5, rewards.table[0].sol, 1e-9);
             Assert.AreEqual("SIG", rewards.winners[0].payout.signature);
         }
+
+        [Test]
+        public void WithRunLog_AddsTheLogAsRawJson_OrLeavesTheBody()
+        {
+            // V5 M9j: the raid result and the race entry carry the run's own log for the server's checks
+            var body = JsonUtility.ToJson(new ConquestResultRequest { won = true, guardianSunk = true, minuteReached = 5, seconds = 301 });
+            var log = "{\"format\":\"rp-runlog\",\"v\":1,\"minutes\":[{\"m\":0}]}";
+            var withLog = HackathonRules.WithRunLog(body, "runLog", log);
+            Assert.AreEqual(body.Substring(0, body.Length - 1) + ",\"runLog\":" + log + "}", withLog);
+            var back = JsonUtility.FromJson<ConquestResultRequest>(withLog);
+            Assert.IsTrue(back.guardianSunk);
+            Assert.AreEqual(301, back.seconds);
+            Assert.AreEqual(body, HackathonRules.WithRunLog(body, "runLog", null));
+            Assert.AreEqual(body, HackathonRules.WithRunLog(body, "runLog", "not json"));
+            Assert.AreEqual("{\"log\":{}}", HackathonRules.WithRunLog("{}", "log", "{}"));
+
+            var entry = JsonUtility.ToJson(new RaceEntryRequest { date = "2026-10-20", seed = 7, timeSeconds = 140.3, kills = 101, level = 5 });
+            var withEntryLog = HackathonRules.WithRunLog(entry, "log", log);
+            Assert.IsTrue(withEntryLog.EndsWith(",\"log\":" + log + "}"));
+            Assert.AreEqual(101, JsonUtility.FromJson<RaceEntryRequest>(withEntryLog).kills);
+        }
+
+        [Test]
+        public void RaceEntryResponse_ReadsTheRaceCheck()
+        {
+            var r = JsonUtility.FromJson<RaceEntryResponse>("{\"accepted\":true,\"verdict\":\"pass\",\"raceCheck\":\"too_fast\",\"checked\":false}");
+            Assert.AreEqual("too_fast", r.raceCheck);
+            Assert.IsFalse(r.@checked);
+        }
     }
 }

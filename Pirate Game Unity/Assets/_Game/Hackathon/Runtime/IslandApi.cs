@@ -102,9 +102,12 @@ namespace RoguePirates.Hackathon
         }
 
         /// <summary>Hackathon (12 Oct): a conquest raid's result (the server decides won / partial / lost).</summary>
-        public static async Task<(RaidResult result, string error)> ReportConquest(string raidId, bool guardianSunk, int minuteReached, int seconds)
+        /// <param name="runLogJson">V5 M9j: the raid voyage's closed run log (the server scores it in shadow mode); null: none.</param>
+        public static async Task<(RaidResult result, string error)> ReportConquest(string raidId, bool guardianSunk, int minuteReached, int seconds,
+            string runLogJson = null)
         {
-            var body = new ConquestResultRequest { won = guardianSunk, guardianSunk = guardianSunk, minuteReached = Mathf.Clamp(minuteReached, 0, 16), seconds = Mathf.Clamp(seconds, 1, 1020) };
+            var request = new ConquestResultRequest { won = guardianSunk, guardianSunk = guardianSunk, minuteReached = Mathf.Clamp(minuteReached, 0, 16), seconds = Mathf.Clamp(seconds, 1, 1020) };
+            var body = new RawJsonBody(HackathonRules.WithRunLog(JsonUtility.ToJson(request), "runLog", runLogJson));
             for (var attempt = 0; attempt < 3; attempt++)
             {
                 var r = await Client.Post<RaidResult>("/api/raids/" + raidId + "/result", body, Token);

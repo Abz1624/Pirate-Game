@@ -340,10 +340,10 @@ namespace RoguePirates.Hackathon.UI
                 return;
             }
             _resultText.text = reason + "\nSending the result...";
-            Report(won, minute, reason);
+            Report(won, minute, reason, true);
         }
 
-        async void Report(bool guardianSunk, int minuteReached, string reason)
+        async void Report(bool guardianSunk, int minuteReached, string reason, bool waitForLog)
         {
             if (_reported) return;
             _reported = true;
@@ -351,7 +351,11 @@ namespace RoguePirates.Hackathon.UI
             // The server allows no more seconds than have passed since the start.
             var wall = Time.realtimeSinceStartup - _wallStart;
             var seconds = (int)Math.Max(1, Math.Min(Math.Ceiling(_raidSeconds), Math.Floor(wall) - 1));
-            var (result, error) = await IslandApi.ReportConquest(raid.raidId, guardianSunk, minuteReached, seconds);
+            // V5 M9j: the raid's run log goes with the result (the server checks it in shadow mode); it closes with the
+            // voyage's end, a frame or so after the goal (not waited for when the HUD is being destroyed)
+            var recorder = _game != null ? _game.RunLog : null;
+            var closed = waitForLog ? await RunLogWait.Closed(recorder) : recorder?.Closed;
+            var (result, error) = await IslandApi.ReportConquest(raid.raidId, guardianSunk, minuteReached, seconds, closed?.Json);
             var line = error != null ? $"{raid.islandName}: the result was not accepted ({error})" : Summary(raid, result);
             LastRaid = result;
             LastResult = line;
@@ -376,7 +380,7 @@ namespace RoguePirates.Hackathon.UI
             if (_raid != null && !_raid.practice && !_reported && _lastMinute > 0)
             {
                 _ended = true;
-                Report(false, MinuteReached(false), "You left the raid.");
+                Report(false, MinuteReached(false), "You left the raid.", false);
             }
         }
     }

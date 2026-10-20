@@ -23,6 +23,22 @@ namespace RoguePirates.Hackathon
 
         public static string StakeLabel(long lamports) => lamports <= 0 ? "No stake" : Sol(lamports);
 
+        /// <summary>
+        /// V5 M9j: a request body (a JsonUtility object) with the run's own log JSON added under <paramref name="field"/>,
+        /// so the server can check the result against it (raids: "runLog", the daily race: "log"). No log, or one that is
+        /// not a JSON object, leaves the body as it is (the server then has no log to check: shadow mode).
+        /// </summary>
+        public static string WithRunLog(string bodyJson, string field, string runLogJson)
+        {
+            if (string.IsNullOrEmpty(bodyJson) || string.IsNullOrEmpty(field) || string.IsNullOrEmpty(runLogJson)) return bodyJson;
+            var log = runLogJson.Trim();
+            if (log.Length < 2 || log[0] != '{' || log[log.Length - 1] != '}') return bodyJson;
+            var body = bodyJson.TrimEnd();
+            if (body.Length < 2 || body[body.Length - 1] != '}') return bodyJson;
+            var inner = body.Substring(1, body.Length - 2).Trim();
+            return body.Substring(0, body.Length - 1) + (inner.Length > 0 ? "," : string.Empty) + "\"" + field + "\":" + log + "}";
+        }
+
         /// <summary>"1:58.4" (minutes, seconds and tenths).</summary>
         public static string RaceTime(double seconds)
         {

@@ -63,6 +63,15 @@ namespace RoguePirates.Hackathon
     public sealed class RaceEntryResponse
     {
         public bool accepted; public bool improved; public DailyRace race; public string verdict; public bool @checked; public RaceMine best;
+        /// <summary>V5 M9j: the race's timing check (ok, no_start, too_fast, time_mismatch; shadow mode).</summary>
+        public string raceCheck;
+    }
+
+    /// <summary>V5 M9j: POST /api/race/daily/start.</summary>
+    [Serializable]
+    public sealed class RaceStartResponse
+    {
+        public string startedAt; public int starts;
     }
 
     [Serializable]

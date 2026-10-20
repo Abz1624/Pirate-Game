@@ -1,0 +1,28 @@
+{
+ "date": "2026-10-20",
+ "mode": "EditMode",
+ "summary": {
+  "total": 841,
+  "passed": 841,
+  "failed": 0,
+  "skipped": 0,
+  "inconclusive": 0
+ },
+ "duration": 103.75,
+ "m9j": [
+  {
+   "FullName": "RoguePirates.Hackathon.Tests.HackathonRulesTests.RaceEntryResponse_ReadsTheRaceCheck",
+   "Status": "Passed",
+   "Duration": 0.0002683,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Hackathon.Tests.HackathonRulesTests.WithRunLog_AddsTheLogAsRawJson_OrLeavesTheBody",
+   "Status": "Passed",
+   "Duration": 0.0006073,
+   "Message": null,
+   "StackTrace": null
+  }
+ ]
+}

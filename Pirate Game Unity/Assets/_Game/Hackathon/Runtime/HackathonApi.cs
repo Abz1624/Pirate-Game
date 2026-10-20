@@ -192,10 +192,22 @@ namespace RoguePirates.Hackathon
             return r.Ok && r.Data != null ? (r.Data, null) : (null, Error("race board", r));
         }
 
-        public static async Task<(RaceEntryResponse data, string error)> SubmitRace(RaceEntryRequest entry)
+        /// <summary>V5 M9j: the server's start of a race attempt (the entry's time is checked against the time since it).
+        /// Best effort: a failure only leaves the entry unchecked (shadow mode).</summary>
+        public static async Task<string> StartRace(string date)
+        {
+            if (Token == null) return "not signed in";
+            var body = string.IsNullOrEmpty(date) ? "{}" : "{\"date\":\"" + date + "\"}";
+            var r = await Client.Post<RaceStartResponse>("/api/race/daily/start", new RawJsonBody(body), Token);
+            return r.Ok ? null : Error("race start", r);
+        }
+
+        /// <param name="logJson">V5 M9j: the race voyage's closed run log (checked by the server in shadow mode); null: none.</param>
+        public static async Task<(RaceEntryResponse data, string error)> SubmitRace(RaceEntryRequest entry, string logJson = null)
         {
             if (Token == null) return (null, "Sign in (Wallet button) to post race times.");
-            var r = await Client.Post<RaceEntryResponse>("/api/race/daily/entry", entry, Token);
+            var r = await Client.Post<RaceEntryResponse>("/api/race/daily/entry",
+                new RawJsonBody(HackathonRules.WithRunLog(JsonUtility.ToJson(entry), "log", logJson)), Token);
             return r.Ok && r.Data != null ? (r.Data, null) : (null, Error("race entry", r));
         }
 

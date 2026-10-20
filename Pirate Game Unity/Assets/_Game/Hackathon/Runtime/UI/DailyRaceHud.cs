@@ -57,6 +57,18 @@ namespace RoguePirates.Hackathon.UI
             hud._game = game;
             hud._race = race;
             hud.Build();
+            // V5 M9j: the server's start of this attempt (the entry's time is checked against the time since it)
+            StartOnServer(race.date);
+        }
+
+        static async void StartOnServer(string date)
+        {
+            try
+            {
+                var error = await HackathonApi.StartRace(date);
+                if (error != null) Debug.LogWarning("DailyRaceHud: the race start was not recorded (" + error + "); the time is posted unchecked.");
+            }
+            catch (Exception e) { Debug.LogWarning("DailyRaceHud: race start failed: " + e.Message); }
         }
 
         V4Game _game;
@@ -150,11 +162,13 @@ namespace RoguePirates.Hackathon.UI
             {
                 _finished = true;
                 _finishTime = Math.Round(time, 1);
-                Post(kills, log.Level != null ? log.Level() : 1);
+                var level = log.Level != null ? log.Level() : 1;
                 // The goal is reached: the voyage ends here with the race results.
                 // 13 Oct (review): through the run's command (its normal end path), not a write into the run.
                 if (_game.Context != null && _game.Context.TryGet<RoguePirates.V4.Views.IRunViews>(out var views) && views?.Commands != null)
                     _rumSettled = views.Commands.CompleteGoal("daily_race");
+                // V5 M9j: posted after the end, with the run log that end closes
+                Post(kills, level);
                 ShowResults();
             }
             _clock.text = _finished
@@ -170,11 +184,17 @@ namespace RoguePirates.Hackathon.UI
             _result.color = UiKit.InkGold;
             try
             {
+                // V5 M9j: the closed run log goes with the time; its own totals (the kills of the closing frame) keep the
+                // entry and the log consistent for the server's checks
+                var race = _race;
+                var finish = _finishTime;
+                var closed = await RunLogWait.Closed(_game != null ? _game.RunLog : null);
+                if (closed != null && closed.Kills >= kills) { kills = closed.Kills; level = closed.Level; }
                 var (data, error) = await HackathonApi.SubmitRace(new RaceEntryRequest
                 {
-                    date = _race.date, seed = _race.seed, timeSeconds = _finishTime, kills = kills, level = level,
+                    date = race.date, seed = race.seed, timeSeconds = finish, kills = kills, level = level,
                     clientVersion = Application.version,
-                });
+                }, closed?.Json);
                 if (this == null) return;
                 if (error != null)
                 {
