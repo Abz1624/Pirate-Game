@@ -134,6 +134,22 @@ public sealed class DailyRaceEntry
     public string? Verdict { get; set; }
     public int Attempts { get; set; }
     public DateTime SubmittedAt { get; set; }
+    // ---- AddServerResultChecks (V5 M9j) ----
+    /// <summary>The race's own timing check on the best entry (shadow mode): ok, no_start, too_fast, time_mismatch.</summary>
+    public string? RaceCheck { get; set; }
+    /// <summary>Seconds from the player's server start of this race to the best entry's submission (null: no start).</summary>
+    public double? ServerSeconds { get; set; }
+}
+
+/// <summary>V5 M9j: when a player last started a daily race attempt (POST /api/race/daily/start); one row per player and
+/// race, the latest start kept. The entry's time must fit in the time since it (shadow check).</summary>
+public sealed class DailyRaceStart
+{
+    public long Id { get; set; }
+    public long DailyRaceId { get; set; }
+    public Guid PlayerId { get; set; }
+    public DateTime StartedAt { get; set; }
+    public int Starts { get; set; }
 }
 
 /// <summary>A weekly kills leaderboard reward (devnet SOL) for one rank.</summary>
@@ -226,6 +242,11 @@ public sealed class Raid
     public int? MinuteReached { get; set; }
     /// <summary>Whether the attacker reported sinking the guardian.</summary>
     public bool? GuardianSunk { get; set; }
+    // ---- AddServerResultChecks (V5 M9j) ----
+    /// <summary>The run checks' verdict on the raid's run log (shadow mode: never a reason to refuse); null without a log.</summary>
+    public string? LogVerdict { get; set; }
+    /// <summary>Why a log was not a pass (a rule or structure code and its message), at most 256 characters.</summary>
+    public string? LogReason { get; set; }
 }
 
 /// <summary>An island NFT listed on the escrow marketplace.</summary>

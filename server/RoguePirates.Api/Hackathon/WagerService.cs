@@ -372,6 +372,10 @@ public sealed class WagerService
         if (wagerId is { } id && await ProcessPaymentsAsync(id) && changed) await PublishAsync(lobbyId);
     }
 
+    /// <summary>V5 M9j: the relay decided the match (sunk, time, forfeit, draw, anticheat, server_sunk), not the clients.</summary>
+    public static bool ServerDecided(Match match) =>
+        match.DecidedBy is { } by && by.StartsWith(MatchService.ServerDecisionPrefix, StringComparison.Ordinal);
+
     async Task DecideAsync(Wager w, Guid matchId)
     {
         var match = await _db.Matches.AsNoTracking().FirstOrDefaultAsync(m => m.Id == matchId);
@@ -384,6 +388,14 @@ public sealed class WagerService
             w.Status = Wager.Refunded;
             w.SettledAt = now;
             _log.LogInformation("Wager {WagerId} vs the house refunded (bot matches are free play)", w.Id);
+        }
+        else if (match.Status == MatchStates.Decided && !ServerDecided(match))
+        {
+            // V5 M9j (20 Oct): a stake settles only on the relay's own decision. A match decided by the clients' reports
+            // (agreement or a single report after 60 s: its room was lost, e.g. on a restart) is refunded
+            w.Status = Wager.Refunded;
+            w.SettledAt = now;
+            _log.LogWarning("Wager {WagerId} refunded: match {MatchId} was decided by client reports ({DecidedBy}), not by the server", w.Id, matchId, match.DecidedBy);
         }
         else if (match.Status == MatchStates.Decided && match.WinnerPlayerId is { } winner)
         {

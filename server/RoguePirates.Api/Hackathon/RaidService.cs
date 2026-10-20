@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using RoguePirates.Api.Data;
+using RoguePirates.Api.Plausibility;
 using RoguePirates.Api.Playtest;
 using RoguePirates.Api.Solana;
 
@@ -26,10 +28,12 @@ public sealed class RaidService
     readonly IClock _clock;
     readonly ApiSettings _settings;
     readonly ILogger<RaidService> _log;
+    readonly PlausibilityService _checks;
 
     public RaidService(GameDb db, IslandService islands, LedgerService ledger, SolanaService sol, IClock clock, ApiSettings settings,
-        ILogger<RaidService> log)
+        ILogger<RaidService> log, PlausibilityService checks)
     {
+        _checks = checks;
         _settings = settings;
         _db = db;
         _islands = islands;
@@ -83,6 +87,14 @@ public sealed class RaidService
                 throw new ApiException(409, "island_shielded", $"The island is shielded until {until:O}.");
             if (await _islands.IsListedAsync(islandId)) throw new ApiException(409, "island_listed", "The island is listed on the market and cannot be raided.");
             if (await _islands.RaidInProgressAsync(islandId)) throw new ApiException(409, "raid_in_progress", "Someone is raiding this island right now; try again in a few minutes.");
+            // V5 M9j: RAID_PAIR_LIMIT_PER_DAY (0 = off, the default until the owner answers J4)
+            if (_settings.RaidPairLimitPerDay > 0)
+            {
+                var since = now - TimeSpan.FromHours(24);
+                var recent = await _db.Raids.CountAsync(r => r.AttackerPlayerId == player.Id && r.IslandId == islandId && r.CreatedAt > since);
+                if (recent >= _settings.RaidPairLimitPerDay)
+                    throw new ApiException(429, "raid_pair_limit", $"You have raided this island {recent} times in the last 24 hours (at most {_settings.RaidPairLimitPerDay}); try another island.");
+            }
 
             await using var tx = await _db.Database.BeginTransactionAsync();
             // a new raid replaces the attacker's own unfinished one
@@ -191,7 +203,7 @@ public sealed class RaidService
     }
 
     public async Task<object> ResultAsync(Player player, Guid raidId, bool won, bool partial, int seconds,
-        bool? guardianSunk = null, int? minuteReached = null)
+        bool? guardianSunk = null, int? minuteReached = null, JsonElement? runLog = null)
     {
         IslandService.RequireWallet(player);
         Raid raid;
@@ -219,6 +231,20 @@ public sealed class RaidService
             if (guardianSunk == true && minuteReached is { } mr && mr < guardianMinute)
                 throw new ApiException(400, "invalid_result", $"The guardian arrives in minute {guardianMinute}; it cannot be sunk by minute {mr}.");
             var outcome = Outcome(won, partial, guardianSunk, minuteReached, guardianMinute);
+            // V5 M9j: enforced timing (the guardian must have arrived, by the reported time and by the server's clock)
+            if (RaidChecks.Timing(outcome, seconds, elapsed, minuteReached, guardianMinute) is { } refused)
+            {
+                _log.LogWarning("Raid {Id} result refused: {Code} {Reason}", raid.Id, refused.Code, refused.Message);
+                throw refused;
+            }
+            // V5 M9j: the raid's run log, scored in shadow mode (never a reason to refuse; loot still moves, D24/D31)
+            if (RaidChecks.ScoreLog(runLog, raid, seconds, outcome == Raid.Won, guardianMinute, player, _checks, now) is { } scored)
+            {
+                raid.LogVerdict = RaidChecks.Clip(scored.verdict, 24);
+                raid.LogReason = RaidChecks.Clip(scored.reason, 256);
+                if (scored.verdict != Verdicts.Pass)
+                    _log.LogWarning("Raid {Id} log verdict {Verdict} (shadow mode, result kept): {Reason}", raid.Id, scored.verdict, scored.reason);
+            }
 
             wager = raid.WagerId == null ? null : await _db.Wagers.FirstAsync(w => w.Id == raid.WagerId);
             await using var tx = await _db.Database.BeginTransactionAsync();
@@ -264,6 +290,7 @@ public sealed class RaidService
             raidId = raid.Id, result = raid.Result, rumLooted = raid.RumLooted, rum, seconds = raid.Seconds,
             guardianMinute = raid.GuardianMinute, minuteReached = raid.MinuteReached, guardianSunk = raid.GuardianSunk,
             defenderShieldUntil = island.ShieldUntil,
+            logVerdict = raid.LogVerdict, logReason = raid.LogReason, @checked = raid.LogVerdict == Verdicts.Pass,
             wager = WagerView(wager, raid.Id, payout),
         };
     }
@@ -344,6 +371,7 @@ public sealed class RaidService
             defender = new { playerId = r.DefenderPlayerId, name = players.GetValueOrDefault(r.DefenderPlayerId)?.Name, wallet = players.GetValueOrDefault(r.DefenderPlayerId)?.wallet },
             result = ResultOf(r), rumLooted = r.RumLooted, seconds = r.Seconds, startedAt = r.CreatedAt, finishedAt = r.FinishedAt,
             guardianMinute = r.GuardianMinute, minuteReached = r.MinuteReached, guardianSunk = r.GuardianSunk,
+            logVerdict = r.LogVerdict, @checked = r.LogVerdict == Verdicts.Pass,
             wager = r.WagerId is { } wid && wagers.TryGetValue(wid, out var w)
                 ? new { wagerId = w.Id, stakeLamports = w.StakeLamports, status = w.Status, payoutSignature = w.PayoutSig }
                 : null,

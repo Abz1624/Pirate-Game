@@ -80,6 +80,11 @@ public static class HackathonEndpoints
             raidStakes = false,
             mintDailyBudget = settings.MintDailyBudget,
             sessionLifetimeDays = settings.SessionLifetimeDays,
+            // V5 M9j: server-decided results
+            relayHullEnforce = settings.RelayHullEnforce,
+            relayHullMargin = settings.RelayHullMargin,
+            raidPairLimitPerDay = settings.RaidPairLimitPerDay,
+            raidRecordOnePerDay = settings.RaidRecordOnePerDay,
         }));
 
         // ---- deposits (generic; wagers, market and raids use the same check) ----

@@ -75,7 +75,8 @@ public static class IslandEndpoints
         });
 
         app.MapPost("/api/raids/{id:guid}/result", async (HttpContext ctx, Guid id, RaidResultRequest req, PlayerAuth auth, RaidService raids) =>
-            Results.Ok(await raids.ResultAsync(await auth.RequireAsync(ctx), id, req.Won, req.Partial ?? false, req.Seconds, req.GuardianSunk, req.MinuteReached)));
+            Results.Ok(await raids.ResultAsync(await auth.RequireAsync(ctx), id, req.Won, req.Partial ?? false, req.Seconds, req.GuardianSunk, req.MinuteReached, req.RunLog)))
+            .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(RunLogRules.MaxRequestBodyBytes)); // V5 M9j: with the run log
 
         app.MapPost("/api/raids/{id:guid}/settle", async (HttpContext ctx, Guid id, PlayerAuth auth, RaidService raids) =>
             Results.Ok(await raids.SettleAsync(await auth.RequireAsync(ctx), id)));

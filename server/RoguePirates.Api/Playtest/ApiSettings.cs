@@ -92,6 +92,22 @@ public sealed class ApiSettings
     /// one is a Solana RPC call).</summary>
     public int RpcReadRateLimitPerMinute { get; init; } = 30;
 
+    // ---- V5 M9j (20 Oct): server-decided results ----
+    /// <summary>RELAY_HULL_ENFORCE (default false, shadow): the 1v1 relay sinks a ship once its server hull estimate
+    /// (<see cref="HullEstimate"/>) is below -<see cref="RelayHullMargin"/> of max hull. Off: the estimate and its verdict
+    /// are only recorded (owner question J1).</summary>
+    public bool RelayHullEnforce { get; init; }
+    /// <summary>RELAY_HULL_MARGIN (default 0.25): how far below zero (a share of max hull) the estimate must fall before an
+    /// enforced server sinking; also where the shadow verdict says the server would have sunk the ship.</summary>
+    public double RelayHullMargin { get; init; } = HullEstimate.DefaultMargin;
+    /// <summary>RAID_PAIR_LIMIT_PER_DAY (default 0 = off until the owner answers J4; it is a new limit against D15, D19(1)
+    /// and D24): raids one attacker may start on one island in 24 hours.</summary>
+    public int RaidPairLimitPerDay { get; init; }
+    /// <summary>RAID_RECORD_ONE_PER_DAY (default false until the owner answers J4): an island's defence record counts one
+    /// entry per attacker and UTC day (a win if any raid of that day won, else defended), so one friend's repeated lost
+    /// raids cannot inflate it. Applies to past raids too (it is how the record is counted).</summary>
+    public bool RaidRecordOnePerDay { get; init; }
+
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
 
@@ -133,6 +149,11 @@ public sealed class ApiSettings
         MintDailyBudget = int.TryParse(c["MINT_DAILY_BUDGET"], out var mb) && mb >= 0 ? mb : 20,
         TreasuryMinLamports = long.TryParse(c["TREASURY_MIN_LAMPORTS"], out var tm) && tm >= 0 ? tm : 2_000_000_000,
         RpcReadRateLimitPerMinute = Positive(c["RPC_READ_RATE_LIMIT_PER_MINUTE"], 30),
+        RelayHullEnforce = Flag(c["RELAY_HULL_ENFORCE"], false),
+        RelayHullMargin = double.TryParse(c["RELAY_HULL_MARGIN"], System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out var hm) && hm is >= 0 and <= 5 ? hm : HullEstimate.DefaultMargin,
+        RaidPairLimitPerDay = int.TryParse(c["RAID_PAIR_LIMIT_PER_DAY"], out var rp) && rp >= 0 ? rp : 0,
+        RaidRecordOnePerDay = Flag(c["RAID_RECORD_ONE_PER_DAY"], false),
     };
 
     /// <summary>true/false (any case), 1/0, on/off, yes/no; anything else (unset, empty, a typo) keeps the default
@@ -153,7 +174,7 @@ public sealed class ApiSettings
 
     /// <summary>The switch variables (V5 M9h), for the startup check of their values.</summary>
     public static readonly string[] SwitchVariables =
-        { "WAGERS_HUMAN_ENABLED", "RAID_LOOT_ENABLED", "ISLAND_SALE_CARRIES_RUM", "DAILY_RACE_FIXED_SALT", "WEEKLY_REWARD_CHECKED_ONLY", "WEEKLY_REWARDS_AUTO" };
+        { "WAGERS_HUMAN_ENABLED", "RAID_LOOT_ENABLED", "ISLAND_SALE_CARRIES_RUM", "DAILY_RACE_FIXED_SALT", "WEEKLY_REWARD_CHECKED_ONLY", "WEEKLY_REWARDS_AUTO", "RELAY_HULL_ENFORCE", "RAID_RECORD_ONE_PER_DAY" };
 
     static int Positive(string? v, int fallback) => int.TryParse(v, out var n) && n > 0 ? n : fallback;
 

@@ -282,12 +282,13 @@ public sealed class IslandTests
         await AssertError(await third.Http.PostAsJsonAsync("/api/raids/start", new { islandId = id }), HttpStatusCode.Conflict, "raid_in_progress");
 
         await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 500 }), HttpStatusCode.BadRequest, "invalid_seconds");
-        host.Clock.Advance(TimeSpan.FromSeconds(90)); // the island is at its cap: nothing more accrues
-        var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 85 }));
+        host.Clock.Advance(TimeSpan.FromSeconds(310)); // the island is at its cap: nothing more accrues
+        // V5 M9j: a win needs the guardian (minute 5: 240 s) to have arrived
+        var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 300 }));
         Assert.Equal("won", result.GetProperty("result").GetString());
         Assert.Equal(48, result.GetProperty("rumLooted").GetInt64()); // 192 * 25%
         Assert.Equal(53, result.GetProperty("rum").GetInt64());
-        await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 85 }), HttpStatusCode.Conflict, "raid_finished");
+        await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 300 }), HttpStatusCode.Conflict, "raid_finished");
 
         var island = await Ok(await third.Http.GetAsync($"/api/islands/{id}"));
         Assert.True(island.GetProperty("shielded").GetBoolean());
@@ -329,13 +330,15 @@ public sealed class IslandTests
 
         // b partially wins against a: 12.5% of exposed, a is shielded
         var r2 = (await Ok(await b.Http.PostAsJsonAsync("/api/raids/start", new { islandId = ia }))).GetProperty("raidId").GetGuid();
-        var partial = await Ok(await b.Http.PostAsJsonAsync($"/api/raids/{r2}/result", new { won = true, partial = true, seconds = 1 }));
+        host.Clock.Advance(TimeSpan.FromSeconds(300));
+        var partial = await Ok(await b.Http.PostAsJsonAsync($"/api/raids/{r2}/result", new { won = true, partial = true, seconds = 290 }));
         Assert.Equal("partial", partial.GetProperty("result").GetString());
         Assert.Equal(24, partial.GetProperty("rumLooted").GetInt64()); // 192 * 12.5%
 
         // a is shielded; a attacking b does not end a's shield
         var r3 = (await Ok(await a.Http.PostAsJsonAsync("/api/raids/start", new { islandId = ib }))).GetProperty("raidId").GetGuid();
-        await Ok(await a.Http.PostAsJsonAsync($"/api/raids/{r3}/result", new { won = true, seconds = 1 }));
+        host.Clock.Advance(TimeSpan.FromSeconds(300));
+        await Ok(await a.Http.PostAsJsonAsync($"/api/raids/{r3}/result", new { won = true, seconds = 290 }));
         Assert.True((await Ok(await b.Http.GetAsync($"/api/islands/{ia}"))).GetProperty("shielded").GetBoolean());
     }
 
@@ -378,9 +381,9 @@ public sealed class IslandTests
         var sig = Deposit(rpc.Inner, raider.Key, treasury.PublicKey.Key, 10_000_000, $"raid:{raidId}");
         await AssertError(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/wager", new { signature = sig }), HttpStatusCode.Gone, "raid_stakes_off");
 
-        host.Clock.Advance(TimeSpan.FromSeconds(60));
+        host.Clock.Advance(TimeSpan.FromSeconds(300));
         var sentBefore = rpc.Inner.Sent.Count;
-        var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 60 }));
+        var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 290 }));
         Assert.Equal("won", result.GetProperty("result").GetString());
         Assert.Equal(JsonValueKind.Null, result.GetProperty("wager").ValueKind);
         Assert.Equal(sentBefore, rpc.Inner.Sent.Count); // no SOL moves on a raid
@@ -416,9 +419,9 @@ public sealed class IslandTests
         await EarnRumAsync(host, raider, 600);
         var raidId = await LegacyStakedRaidAsync(host, raider, id, 10_000_000);
 
-        host.Clock.Advance(TimeSpan.FromSeconds(60));
+        host.Clock.Advance(TimeSpan.FromSeconds(300));
         rpc.FailSends = true;
-        var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 60 }));
+        var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{raidId}/result", new { won = true, seconds = 290 }));
         Assert.Equal("funded", result.GetProperty("wager").GetProperty("status").GetString());
         Assert.Equal("failed", result.GetProperty("wager").GetProperty("payout").GetProperty("status").GetString());
         rpc.FailSends = false;

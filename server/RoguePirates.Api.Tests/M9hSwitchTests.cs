@@ -224,9 +224,9 @@ public sealed class M9hSwitchTests
         var loot = start.GetProperty("loot");
         Assert.Equal(lootOn, loot.GetProperty("enabled").GetBoolean());
         Assert.Equal(lootOn ? 48 : 0, loot.GetProperty("ifWon").GetInt64());
-        host.Clock.Advance(TimeSpan.FromSeconds(90));
+        host.Clock.Advance(TimeSpan.FromSeconds(310));
         var result = await Ok(await raider.Http.PostAsJsonAsync($"/api/raids/{start.GetProperty("raidId").GetGuid()}/result",
-            new { won = true, seconds = 85, guardianSunk = true, minuteReached = 6 }));
+            new { won = true, seconds = 300, guardianSunk = true, minuteReached = 6 }));
         Assert.Equal("won", result.GetProperty("result").GetString());
         Assert.Equal(lootOn ? 48 : 0, result.GetProperty("rumLooted").GetInt64());
         Assert.Equal(lootOn ? 53 : 5, result.GetProperty("rum").GetInt64());

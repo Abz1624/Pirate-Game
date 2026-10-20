@@ -60,8 +60,15 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RaceCheck")
+                        .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
                     b.Property<long?>("RunId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double?>("ServerSeconds")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("TEXT");
@@ -81,6 +88,32 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.HasIndex("DailyRaceId", "TimeMs");
 
                     b.ToTable("DailyRaceEntries");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.DailyRaceStart", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("DailyRaceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Starts")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DailyRaceId", "PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("DailyRaceStarts");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.Island", b =>
@@ -600,6 +633,14 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("IslandId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LogReason")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LogVerdict")
+                        .HasMaxLength(24)
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("MinuteReached")

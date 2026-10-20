@@ -221,7 +221,7 @@ public class HitRulesTests
 
 public class RelayTests : IDisposable
 {
-    readonly ApiHost _api = new();
+    ApiHost _api = new(); // V5 M9j: a test may swap it for a host with other settings
     public void Dispose() => _api.Dispose();
 
     MatchRelay Relay => _api.Services.GetRequiredService<MatchRelay>();
@@ -437,7 +437,7 @@ public class RelayTests : IDisposable
     }
 
     [Fact]
-    public async Task Time_EqualDamage_HpShareDecides_ElseDraw()
+    public async Task Time_EqualDamage_ServerHullEstimateDecides_NeverTheReportedHull_ElseDraw()
     {
         var d = await StartDuel();
         using var h = d.H;
@@ -446,14 +446,20 @@ public class RelayTests : IDisposable
         await Place(d, (-5, 0), (5, 0));
         await h.Send(Hit(30));
         await g.Send(Hit(30, "gw1"));
-        await h.Send(State(-45, 0, hp: 50, maxHp: 200)); // 25 %
-        await g.Send(State(45, 0, hp: 30, maxHp: 100));  // 30 %
+        // V5 M9j: the reported hull says the guest (30 % against 25 %); the server's estimate of the same accepted damage
+        // on the larger hull says the host: the estimate decides
+        await h.Send(State(-45, 0, hp: 50, maxHp: 200));
+        await g.Send(State(45, 0, hp: 30, maxHp: 100));
         await h.Sync();
         await g.Sync();
         await At(d, 300);
         var end = await h.Next("match_end");
         Assert.Equal("time", end.GetProperty("reason").GetString());
-        Assert.Equal(d.Guest.Id, end.GetProperty("winnerPlayerId").GetGuid());
+        Assert.Equal(d.Host.Id, end.GetProperty("winnerPlayerId").GetGuid());
+        var hostStats = end.GetProperty("stats").GetProperty(d.Host.Id.ToString());
+        var guestStats = end.GetProperty("stats").GetProperty(d.Guest.Id.ToString());
+        Assert.True(hostStats.GetProperty("serverHull").GetDouble() > guestStats.GetProperty("serverHull").GetDouble());
+        Assert.Equal(HullChecks.Agree, hostStats.GetProperty("hullCheck").GetString());
 
         var draw = await StartDuel();
         using var dh = draw.H;
@@ -466,6 +472,87 @@ public class RelayTests : IDisposable
         Assert.Equal("decided", view.GetProperty("status").GetString());
         Assert.Equal(0, view.GetProperty("players")[0].GetProperty("ratingChange").GetInt32());
         Assert.Equal(0, (await GetJson(draw.Host, "/api/profiles/me")).GetProperty("losses").GetInt32());
+    }
+
+    /// <summary>V5 M9j: the host hits the guest every half second for 20 s; the guest never reports sinking (an
+    /// "immortal" client).</summary>
+    async Task<(Duel d, List<JsonElement> hostSaw)> ImmortalGuestAsync()
+    {
+        var seen = new List<JsonElement>();
+        var d = await StartDuel();
+        await At(d, 0.5);
+        await Place(d, (-5, 0), (5, 0));
+        await d.G.Send(State(5, 0, hp: 100, maxHp: 100));
+        await d.G.Sync();
+        for (var t = 1.0; t <= 20; t += 0.5)
+        {
+            await At(d, t);
+            await d.H.Send(Hit(200)); // 200 x 0.06 x 0.5 = 6, capped at 5 % of 100: 5 a landing, 10 a second
+            seen.AddRange(await d.H.Sync());
+        }
+        return (d, seen);
+    }
+
+    [Fact]
+    public async Task HullEstimate_ImmortalClient_Shadow_MatchGoesOn_VerdictRecorded()
+    {
+        var (d, _) = await ImmortalGuestAsync();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 300);
+        var end = await h.Next("match_end");
+        Assert.Equal("time", end.GetProperty("reason").GetString());
+        var guest = end.GetProperty("stats").GetProperty(d.Guest.Id.ToString());
+        Assert.Equal(HullChecks.ServerSunkClientAlive, guest.GetProperty("hullCheck").GetString());
+        Assert.True(guest.GetProperty("serverMinHull").GetDouble() < -HullEstimate.DefaultMargin);
+        Assert.Equal(100, guest.GetProperty("finalHp").GetDouble()); // what the client said, kept for the record
+        var host = end.GetProperty("stats").GetProperty(d.Host.Id.ToString());
+        Assert.Equal(HullChecks.Agree, host.GetProperty("hullCheck").GetString());
+        var view = await (await _api.Anon().GetAsync($"/api/matches/{d.MatchId}")).ReadJson();
+        Assert.Equal(HullChecks.ServerSunkClientAlive, view.GetProperty("players")[1].GetProperty("stats").GetProperty("hullCheck").GetString());
+    }
+
+    [Fact]
+    public async Task HullEstimate_ImmortalClient_Enforced_IsSunkByTheServer()
+    {
+        _api.Dispose();
+        _api = new ApiHost(new() { ["RELAY_HULL_ENFORCE"] = "true" });
+        var (d, seen) = await ImmortalGuestAsync();
+        using var h = d.H;
+        using var g = d.G;
+        var end = seen.FirstOrDefault(m => m.GetProperty("t").GetString() == "match_end") is { ValueKind: JsonValueKind.Object } e ? e : await h.Next("match_end");
+        Assert.Equal(HullChecks.ServerSunk, end.GetProperty("reason").GetString());
+        Assert.Equal(d.Host.Id, end.GetProperty("winnerPlayerId").GetGuid());
+        Assert.Equal(HullChecks.ServerSunk, end.GetProperty("stats").GetProperty(d.Guest.Id.ToString()).GetProperty("hullCheck").GetString());
+        var view = await (await _api.Anon().GetAsync($"/api/matches/{d.MatchId}")).ReadJson();
+        Assert.Equal("server_server_sunk", view.GetProperty("decidedBy").GetString());
+    }
+
+    [Fact]
+    public async Task HullEstimate_HonestExchange_NeverSinksAnyone_EvenEnforced()
+    {
+        _api.Dispose();
+        _api = new ApiHost(new() { ["RELAY_HULL_ENFORCE"] = "true" });
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 0.5);
+        await Place(d, (-5, 0), (5, 0));
+        // six level 1 weapons trade about 70 raw a second for 40 s (the playtest's measured rate), in 0.1 s batches
+        for (var t = 1.0; t <= 41; t += 0.1)
+        {
+            await At(d, t);
+            await h.Send(Hit(7));
+            await g.Send(Hit(7, "gw1"));
+            if (Math.Abs(t - Math.Round(t)) < 0.05) { await h.Sync(); await g.Sync(); }
+        }
+        await h.Sync();
+        await g.Sync();
+        await At(d, 300);
+        var end = await h.Next("match_end");
+        Assert.Equal("draw", end.GetProperty("reason").GetString());
+        foreach (var p in new[] { d.Host.Id, d.Guest.Id })
+            Assert.Equal(HullChecks.Agree, end.GetProperty("stats").GetProperty(p.ToString()).GetProperty("hullCheck").GetString());
     }
 
     [Fact]

@@ -69,8 +69,15 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("RaceCheck")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
                     b.Property<long?>("RunId")
                         .HasColumnType("bigint");
+
+                    b.Property<double?>("ServerSeconds")
+                        .HasColumnType("double precision");
 
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("timestamp with time zone");
@@ -90,6 +97,34 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.HasIndex("DailyRaceId", "TimeMs");
 
                     b.ToTable("DailyRaceEntries");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.DailyRaceStart", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DailyRaceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Starts")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DailyRaceId", "PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("DailyRaceStarts");
                 });
 
             modelBuilder.Entity("RoguePirates.Api.Data.Island", b =>
@@ -618,6 +653,14 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
 
                     b.Property<Guid>("IslandId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("LogReason")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("LogVerdict")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
 
                     b.Property<int?>("MinuteReached")
                         .HasColumnType("integer");

@@ -47,7 +47,15 @@ public sealed class RelaySeat
     public DateTime? AwaySince;
     public bool AnnouncedAway;
     public DraftDto? Draft;
+    /// <summary>V5 M9j: the server's own estimate of this ship's hull (from the hits it accepted and the barrels it
+    /// awarded); the time-out tie-break reads it, never <see cref="Hp"/>.</summary>
+    public readonly HullEstimate HullEst = new();
+    /// <summary>V5 M9j: the server sank this ship from its estimate (RELAY_HULL_ENFORCE).</summary>
+    public bool ServerSunk;
+    /// <summary>V5 M9j: the shadow warning for this seat was logged.</summary>
+    public bool HullWarned;
 
+    /// <summary>The client's own reported hull share (shown, never used to decide a result since V5 M9j).</summary>
     public double HpShare => Hp is { } hp && MaxHp is { } max && max > 0 ? Math.Clamp(hp / max, 0, 1) : 1;
 }
 
@@ -111,11 +119,13 @@ public sealed class MatchRelay
     readonly LobbyBroadcaster _broadcaster;
     readonly IServiceScopeFactory _scopes;
     readonly ILogger<MatchRelay> _log;
+    readonly ApiSettings _settings;
 
     public static readonly TimeSpan UnrelayedRoomLifetime = TimeSpan.FromMinutes(10);
 
-    public MatchRelay(IClock clock, LobbyBroadcaster broadcaster, IServiceScopeFactory scopes, ILogger<MatchRelay> log)
+    public MatchRelay(IClock clock, LobbyBroadcaster broadcaster, IServiceScopeFactory scopes, ILogger<MatchRelay> log, ApiSettings settings)
     {
+        _settings = settings;
         _clock = clock;
         _broadcaster = broadcaster;
         _scopes = scopes;
@@ -328,6 +338,7 @@ public sealed class MatchRelay
         var actor = room.Seats[asBot ? 1 : senderSeat];
         var opponent = room.Seats[1 - actor.Index];
         var started = now >= room.StartAt;
+        var matchT = (now - room.StartAt).TotalSeconds;
 
         if (room.Ended)
         {
@@ -365,7 +376,11 @@ public sealed class MatchRelay
                 actor.Yaw = Num(root, "yaw", out var yaw) ? yaw : actor.Yaw;
                 var vx = Num(root, "vx", out var v1) ? v1 : 0;
                 var vz = Num(root, "vz", out var v2) ? v2 : 0;
-                if (Num(root, "maxHp", out var maxHp) && maxHp > 0) actor.MaxHp = maxHp;
+                if (Num(root, "maxHp", out var maxHp) && maxHp > 0)
+                {
+                    actor.MaxHp = maxHp;
+                    actor.HullEst.ReportMax(matchT, maxHp, actor.ServerLevel); // V5 M9j: clamped at the server's level
+                }
                 if (Num(root, "hp", out var hp)) actor.Hp = Math.Max(0, hp);
                 if (Num(root, "level", out var level)) actor.Level = Math.Clamp((int)level, 1, RunService.MaxLevel);
                 var alive = !(root.TryGetProperty("alive", out var al) && al.ValueKind == JsonValueKind.False);
@@ -419,10 +434,12 @@ public sealed class MatchRelay
 
                 actor.DamageDealt += accepted;
                 opponent.DamageTaken += accepted;
+                // V5 M9j: the victim's hull as the server counts it (the client's PvP hit window, an assumed armour)
+                opponent.HullEst.Hit(matchT, accepted, _settings.RelayHullMargin);
                 // the victim's client applies the hit; a bot victim is simulated by the host
                 var recipient = opponent.IsBot ? room.HostId : opponent.PlayerId;
                 outs.Add(new Out(recipient, J(new { t = "hit", dmg = accepted, weaponId, from = actor.PlayerId, to = opponent.PlayerId, st = ArenaRules.Ms(now) })));
-                return null;
+                return HullCheck(room, now);
             }
             case "pickup":
             {
@@ -438,6 +455,7 @@ public sealed class MatchRelay
                 barrel.TakenBy = actor.PlayerId;
                 actor.BarrelsTaken++;
                 if (barrel.Kind == "xp") actor.XpBarrels++;
+                else if (barrel.Kind == "health") actor.HullEst.Heal(matchT, ArenaRules.HealthBarrelHealFraction); // V5 M9j
                 outs.Add(new Out(null, J(new { t = "barrel_taken", id = barrel.Id, kind = barrel.Kind, by = actor.PlayerId, st = ArenaRules.Ms(now) })));
                 return null;
             }
@@ -505,25 +523,58 @@ public sealed class MatchRelay
         foreach (var s in room.Seats)
         {
             var key = s.PlayerId.ToString();
+            // V5 M9j: the server's hull estimate and its verdict against the client's own end, on every match
+            var serverHull = Math.Round(s.HullEst.Share, 4);
+            var hullCheck = s.ServerSunk ? HullChecks.ServerSunk : s.HullEst.Verdict(!s.Alive, !s.IsBot);
             stats[key] = new PlayerMatchStats((long)Math.Round(s.DamageDealt), (long)Math.Round(s.DamageTaken), null, s.Level,
-                s.Draft?.Weapons, s.Draft?.Logbooks, s.BarrelsTaken, s.Hp);
+                s.Draft?.Weapons, s.Draft?.Logbooks, s.BarrelsTaken, s.Hp, serverHull, hullCheck);
             view[key] = new
             {
                 damageDealt = s.DamageDealt, damageTaken = s.DamageTaken, level = s.Level, barrelsTaken = s.BarrelsTaken,
                 finalHp = s.Hp, maxHp = s.MaxHp, bot = s.IsBot,
+                serverHull, serverMinHull = Math.Round(s.HullEst.MinShare, 4), hullCheck,
             };
         }
         return new RelayEnd(winner, reason, rated, duration, stats, view);
     }
 
     /// <summary>V5 M8z (6 Oct, owner): DamageDealt counts only damage the server accepted (in the draft, in range, under
-    /// the level's damage cap), so a client's claims cannot win on time.</summary>
+    /// the level's damage cap), so a client's claims cannot win on time. V5 M9j (20 Oct): with equal damage the server's
+    /// hull estimate decides (never the hull a client reports), else a draw.</summary>
     static RelayEnd EndOnTime(MatchRoom room, DateTime now)
     {
         RelaySeat a = room.Seats[0], b = room.Seats[1];
         if (Math.Abs(a.DamageDealt - b.DamageDealt) > 1e-9) return End(room, a.DamageDealt > b.DamageDealt ? 0 : 1, "time", now);
-        if (Math.Abs(a.HpShare - b.HpShare) > 1e-9) return End(room, a.HpShare > b.HpShare ? 0 : 1, "time", now);
+        double sa = a.HullEst.Share, sb = b.HullEst.Share;
+        if (Math.Abs(sa - sb) > 1e-9) return End(room, sa > sb ? 0 : 1, "time", now);
         return End(room, null, "draw", now);
+    }
+
+    /// <summary>
+    /// V5 M9j: a seat whose server hull estimate fell below -RELAY_HULL_MARGIN. Shadow (default): logged once, the match
+    /// goes on and the verdict is recorded at its end. Enforced (RELAY_HULL_ENFORCE=true, human matches only): the server
+    /// sinks it (reason "server_sunk"). Caller holds the room lock.
+    /// </summary>
+    RelayEnd? HullCheck(MatchRoom room, DateTime now)
+    {
+        if (room.Ended || now < room.StartAt) return null;
+        foreach (var s in room.Seats)
+        {
+            if (s.IsBot || !s.Alive || s.HullEst.BelowMarginAt is not { } at) continue;
+            var enforce = _settings.RelayHullEnforce && !room.GuestIsBot;
+            if (!s.HullWarned)
+            {
+                s.HullWarned = true;
+                _log.LogWarning("Hull check: player {PlayerId} in match {MatchId} is past the server's hull estimate (share {Share:0.00} at {At:0.0} s) and still afloat ({Mode})",
+                    s.PlayerId, room.MatchId, s.HullEst.Share, at, enforce ? "enforced: sunk" : "shadow");
+            }
+            if (!enforce) continue;
+            s.ServerSunk = true;
+            s.Alive = false;
+            s.Hp = 0;
+            return End(room, 1 - s.Index, HullChecks.ServerSunk, now);
+        }
+        return null;
     }
 
     /// <summary>Forfeits the player's seat (they left the lobby during a refereed match).</summary>
@@ -630,8 +681,18 @@ public sealed class MatchRelay
                     else if (gone.Length == 1) end = End(room, 1 - gone[0].Index, "forfeit", now);
                     else
                     {
-                        SpawnAndExpireBarrels(room, now, outs);
-                        if (now >= room.EndAt) end = EndOnTime(room, now);
+                        // V5 M9j: pooled hits land once their window is over; then the shadow/enforced hull check
+                        if (now >= room.StartAt)
+                        {
+                            var t = (now - room.StartAt).TotalSeconds;
+                            foreach (var s in room.Seats) s.HullEst.Flush(t, _settings.RelayHullMargin);
+                            end = HullCheck(room, now);
+                        }
+                        if (end == null)
+                        {
+                            SpawnAndExpireBarrels(room, now, outs);
+                            if (now >= room.EndAt) end = EndOnTime(room, now);
+                        }
                     }
                 }
                 else if (now >= room.EndAt + UnrelayedRoomLifetime)

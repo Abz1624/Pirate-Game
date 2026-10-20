@@ -16,6 +16,9 @@ namespace RoguePirates.Api.Hackathon;
 public sealed record DailyRaceEntryRequest(string? Date, int Seed, double TimeSeconds, int Kills, int? Level = null,
     string? ClientVersion = null, JsonElement? Log = null);
 
+/// <param name="Date">The race date (yyyy-MM-dd, UTC) the attempt is on; default today.</param>
+public sealed record DailyRaceStartRequest(string? Date);
+
 /// <summary>
 /// Hackathon: the daily async race. One course per UTC day: everyone plays the same seed on the same map and races to
 /// <see cref="TargetKills"/> kills; the fastest time wins. The seed is derived from the date and a salt (DAILY_RACE_SALT,
@@ -127,7 +130,37 @@ public sealed class DailyRaceService
         var better = await _db.DailyRaceEntries.CountAsync(e => e.DailyRaceId == race.Id
             && (e.TimeMs < mine.TimeMs || (e.TimeMs == mine.TimeMs && e.SubmittedAt < mine.SubmittedAt)
                 || (e.TimeMs == mine.TimeMs && e.SubmittedAt == mine.SubmittedAt && e.Id < mine.Id)));
-        return new { rank = better + 1, timeSeconds = mine.TimeMs / 1000.0, timeMs = mine.TimeMs, attempts = mine.Attempts, verdict = mine.Verdict, submittedAt = mine.SubmittedAt };
+        return new { rank = better + 1, timeSeconds = mine.TimeMs / 1000.0, timeMs = mine.TimeMs, attempts = mine.Attempts, verdict = mine.Verdict,
+            raceCheck = mine.RaceCheck, @checked = Checked(mine.Verdict, mine.RaceCheck), submittedAt = mine.SubmittedAt };
+    }
+
+    /// <summary>
+    /// V5 M9j: POST /api/race/daily/start: the server's start of an attempt (one row per player and race, the latest start
+    /// kept). The entry's time is checked against the time since it (<see cref="RaceChecks"/>, shadow mode).
+    /// </summary>
+    public async Task<object> StartAsync(Player player, string? rawDate)
+    {
+        var date = ParseDate(rawDate);
+        var now = _clock.UtcNow;
+        if (date > Today) throw new ApiException(400, "race_not_open", "That race has not opened yet.");
+        if (date < Today && now > date.AddDays(1) + LateGrace)
+            throw new ApiException(409, "race_closed", $"The race of {Day(date)} is closed.");
+        var race = await RaceAsync(date);
+        await GameLocks.Runs.WaitAsync();
+        try
+        {
+            var start = await _db.DailyRaceStarts.FirstOrDefaultAsync(s => s.DailyRaceId == race.Id && s.PlayerId == player.Id);
+            if (start == null)
+            {
+                start = new DailyRaceStart { DailyRaceId = race.Id, PlayerId = player.Id };
+                _db.DailyRaceStarts.Add(start);
+            }
+            start.StartedAt = now;
+            start.Starts++;
+            await _db.SaveChangesAsync();
+            return new { race = RaceView(race), startedAt = now, starts = start.Starts };
+        }
+        finally { GameLocks.Runs.Release(); }
     }
 
     public async Task<object> SubmitAsync(Player player, DailyRaceEntryRequest req)
@@ -153,6 +186,15 @@ public sealed class DailyRaceService
         await GameLocks.Runs.WaitAsync();
         try
         {
+            // V5 M9j: the race's own timing check against the server's start of this race's attempt (shadow mode)
+            var startedAt = await _db.DailyRaceStarts.AsNoTracking().Where(s => s.DailyRaceId == race.Id && s.PlayerId == player.Id)
+                .Select(s => (DateTime?)s.StartedAt).FirstOrDefaultAsync();
+            double? serverSeconds = startedAt is { } st ? Math.Round((now - st).TotalSeconds, 1) : null;
+            var raceCheck = RaceChecks.Check(req.TimeSeconds, serverSeconds, target, req.Log);
+            if (raceCheck != RaceChecks.Ok)
+                _log.LogWarning("Daily race entry of player {PlayerId}: {Check} (time {Time:0.0} s, {Server} s since the start; shadow mode, entry kept)",
+                    player.Id, raceCheck, req.TimeSeconds, serverSeconds?.ToString("0.0") ?? "no start");
+
             var entry = await _db.DailyRaceEntries.FirstOrDefaultAsync(e => e.DailyRaceId == race.Id && e.PlayerId == player.Id);
             var improved = entry == null || timeMs < entry.TimeMs;
             if (entry == null)
@@ -166,16 +208,22 @@ public sealed class DailyRaceService
                 entry.TimeMs = timeMs;
                 entry.Verdict = verdict;
                 entry.SubmittedAt = now;
+                entry.RaceCheck = raceCheck;
+                entry.ServerSeconds = serverSeconds;
             }
             await _db.SaveChangesAsync();
             return new
             {
-                accepted = true, improved, race = RaceView(race), verdict, @checked = verdict == Verdicts.Pass,
+                accepted = true, improved, race = RaceView(race), verdict, raceCheck, serverSeconds,
+                @checked = Checked(verdict, raceCheck),
                 best = await MeAsync(race, player),
             };
         }
         finally { GameLocks.Runs.Release(); }
     }
+
+    /// <summary>V5 M9j: "checked" on the board: the run checks passed the log and the race's timing check held.</summary>
+    public static bool Checked(string? verdict, string? raceCheck) => verdict == Verdicts.Pass && raceCheck == RaceChecks.Ok;
 
     /// <summary>The run checks' verdict on the log (shadow mode), or null without a log.</summary>
     string? Score(Player player, DailyRaceEntryRequest req, DailyRace race, DateTime now)
@@ -212,7 +260,7 @@ public sealed class DailyRaceService
                           join p in _db.Players.AsNoTracking() on e.PlayerId equals p.Id
                           where e.DailyRaceId == race.Id
                           orderby e.TimeMs, e.SubmittedAt, e.Id
-                          select new { e.PlayerId, p.Name, p.WalletAddress, e.TimeMs, e.Attempts, e.Verdict, e.SubmittedAt })
+                          select new { e.PlayerId, p.Name, p.WalletAddress, e.TimeMs, e.Attempts, e.Verdict, e.RaceCheck, e.SubmittedAt })
             .Take(take).ToListAsync();
         var total = await _db.DailyRaceEntries.CountAsync(e => e.DailyRaceId == race.Id);
         return new
@@ -223,7 +271,7 @@ public sealed class DailyRaceService
                 rank = i + 1, playerId = r.PlayerId, name = r.Name, tag = PlayerTags.For(r.PlayerId),
                 wallet = r.WalletAddress == null ? null : PayoutOnce.Short(r.WalletAddress),
                 timeSeconds = r.TimeMs / 1000.0, timeMs = r.TimeMs, attempts = r.Attempts, verdict = r.Verdict,
-                @checked = r.Verdict == Verdicts.Pass, submittedAt = r.SubmittedAt,
+                raceCheck = r.RaceCheck, @checked = Checked(r.Verdict, r.RaceCheck), submittedAt = r.SubmittedAt,
             }),
             me = me == null ? null : await MeAsync(race, me),
         };

@@ -30,6 +30,10 @@ public static class WagerEndpoints
         app.MapGet("/api/race/daily", async (HttpContext ctx, PlayerAuth auth, DailyRaceService race) =>
             Results.Ok(await race.TodayAsync(await auth.TryGetAsync(ctx))));
 
+        // V5 M9j: a race attempt's server start (the entry's time is checked against the time since it, shadow mode)
+        app.MapPost("/api/race/daily/start", async (HttpContext ctx, DailyRaceStartRequest? req, PlayerAuth auth, DailyRaceService race) =>
+            Results.Ok(await race.StartAsync(await auth.RequireAsync(ctx), req?.Date)));
+
         app.MapPost("/api/race/daily/entry", async (HttpContext ctx, DailyRaceEntryRequest req, PlayerAuth auth, DailyRaceService race) =>
             Results.Ok(await race.SubmitAsync(await auth.RequireAsync(ctx), req)))
             .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(RunLogRules.MaxRequestBodyBytes));

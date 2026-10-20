@@ -129,6 +129,18 @@ public sealed class IslandService
     public async Task<Dictionary<Guid, (int defended, int raids)>> DefenceRecordsAsync(ICollection<Guid> islandIds)
     {
         if (islandIds.Count == 0) return new();
+        if (_settings.RaidRecordOnePerDay)
+        {
+            // V5 M9j (RAID_RECORD_ONE_PER_DAY): one entry per attacker, island and UTC day: a win if any raid of that day
+            // won (or partly won), else defended
+            var raids = await _db.Raids.AsNoTracking().Where(r => islandIds.Contains(r.IslandId) && r.Result != Raid.Started)
+                .Select(r => new { r.IslandId, r.AttackerPlayerId, r.CreatedAt, r.Result }).ToListAsync();
+            return raids.GroupBy(r => r.IslandId).ToDictionary(g => g.Key, g =>
+            {
+                var days = g.GroupBy(r => (r.AttackerPlayerId, r.CreatedAt.Date)).ToList();
+                return (days.Count(d => d.All(r => IslandRules.Defended(r.Result))), days.Count);
+            });
+        }
         var rows = await _db.Raids.AsNoTracking().Where(r => islandIds.Contains(r.IslandId) && r.Result != Raid.Started)
             .GroupBy(r => new { r.IslandId, r.Result }).Select(g => new { g.Key.IslandId, g.Key.Result, Count = g.Count() }).ToListAsync();
         return rows.GroupBy(r => r.IslandId).ToDictionary(g => g.Key,

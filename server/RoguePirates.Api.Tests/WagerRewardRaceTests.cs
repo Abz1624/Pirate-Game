@@ -169,6 +169,31 @@ public sealed class WagerRewardRaceTests
     }
 
     [Fact]
+    public async Task Wager_DecidedByClientReports_RoomLost_IsRefunded_NeverPaidOnAClientsWord()
+    {
+        // V5 M9j: no socket ever reached the relay (as after a restart lost the room), so the old two-report flow decides
+        // the match; the stake is refunded, the "winner" is not paid
+        using var w = NewWorld();
+        var host = await w.SignInAsync();
+        var guest = await w.SignInAsync();
+        var (lobbyId, _) = await StakedPairAsync(w, host, guest);
+        await Ok(await host.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = w.Transfer(host, Stake, "wager:" + lobbyId) }));
+        var started = await Ok(await guest.Http.PostAsJsonAsync($"/api/wagers/{lobbyId}/deposit", new { signature = w.Transfer(guest, Stake, "wager:" + lobbyId) }));
+        var matchId = started.GetProperty("match").GetProperty("matchId").GetGuid();
+        foreach (var p in new[] { host, guest })
+            await Ok(await p.Http.PostAsJsonAsync($"/api/matches/{matchId}/result", new { winnerPlayerId = host.Id, durationSeconds = 120 }));
+        var match = await Ok(await host.Http.GetAsync($"/api/matches/{matchId}"));
+        Assert.Equal("decided", match.GetProperty("status").GetString());
+        Assert.Equal("agreement", match.GetProperty("decidedBy").GetString());
+        await w.SettleAsync(lobbyId);
+
+        var view = await Ok(await host.Http.GetAsync($"/api/wagers/{lobbyId}"));
+        Assert.Equal("refunded", view.GetProperty("status").GetString());
+        Assert.DoesNotContain(w.Payouts(), p => p.Reason == WagerService.WinReason);
+        Assert.Equal(2, w.Payouts().Count(p => p.Reason == WagerService.RefundReason));
+    }
+
+    [Fact]
     public async Task Wager_Draw_RefundsBoth()
     {
         using var w = NewWorld();

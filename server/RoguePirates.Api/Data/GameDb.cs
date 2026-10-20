@@ -31,6 +31,7 @@ public abstract class GameDb : DbContext
     public DbSet<Wager> Wagers => Set<Wager>();
     public DbSet<DailyRace> DailyRaces => Set<DailyRace>();
     public DbSet<DailyRaceEntry> DailyRaceEntries => Set<DailyRaceEntry>();
+    public DbSet<DailyRaceStart> DailyRaceStarts => Set<DailyRaceStart>();
     public DbSet<WeeklyReward> WeeklyRewards => Set<WeeklyReward>();
     public DbSet<Island> Islands => Set<Island>();
     public DbSet<IslandBuilding> IslandBuildings => Set<IslandBuilding>();
@@ -216,6 +217,14 @@ public abstract class GameDb : DbContext
             e.Property(x => x.MintError).HasMaxLength(256);
         });
         b.Entity<Raid>(e => e.HasIndex(x => x.DefenderPlayerId));
+        // ---- AddServerResultChecks (V5 M9j) ----
+        b.Entity<Raid>(e =>
+        {
+            e.Property(x => x.LogVerdict).HasMaxLength(24);
+            e.Property(x => x.LogReason).HasMaxLength(256);
+        });
+        b.Entity<DailyRaceEntry>(e => e.Property(x => x.RaceCheck).HasMaxLength(24));
+        b.Entity<DailyRaceStart>(e => e.HasIndex(x => new { x.DailyRaceId, x.PlayerId }).IsUnique());
         b.Entity<MarketListing>(e => e.Property(x => x.Error).HasMaxLength(256));
 
         // Every timestamp is UTC. SQLite hands DateTimes back with Kind=Unspecified and Npgsql refuses

@@ -69,6 +69,10 @@ dotnet test server/RoguePirates.Api.Tests
 | `SESSION_LIFETIME_DAYS` | `30` | V5 M9h: wallet sessions expire this long after their last use (sliding). |
 | `MINT_DAILY_BUDGET` | `20` | V5 M9h: Island NFT mints the treasury pays per UTC day (each about 0.018 SOL); over it claims and mint retries answer `429 mint_budget`. `0` stops mints. |
 | `TREASURY_MIN_LAMPORTS` | `2000000000` | V5 M9h: the treasury float (2 SOL). Below it `/api/treasury` reports `low:true` and an error `TREASURY LOW` is logged (when it goes low, then hourly). |
+| `RELAY_HULL_ENFORCE` | `false` | V5 M9j switch: the 1v1 relay sinks a human seat whose server hull estimate falls below `-RELAY_HULL_MARGIN` (end reason `server_sunk`). Off (shadow): the estimate and its `hullCheck` verdict are only recorded. Owner question J1: not before a false-positive budget test and a dispute path (D23(b)). |
+| `RELAY_HULL_MARGIN` | `0.25` | V5 M9j: how far below zero (a share of max hull) the estimate must fall for the `server_sunk_client_alive` verdict (and an enforced sinking). |
+| `RAID_PAIR_LIMIT_PER_DAY` | `0` (off) | V5 M9j: raids one attacker may start on one island in 24 hours (`429 raid_pair_limit`, no fee charged). Off until the owner answers J4 (a new limit against D15, D19(1), D24). |
+| `RAID_RECORD_ONE_PER_DAY` | `false` | V5 M9j switch: an island's defence record counts one entry per attacker and UTC day (a win if any raid of that day won, else defended). Recounts past raids too. Owner question J4. |
 | `DAILY_RACE_MAP` | `saltwind` | Hackathon: the daily race map. |
 | `DAILY_RACE_TARGET_KILLS` | `100` | Hackathon: kills to reach in the daily race. |
 
@@ -548,12 +552,20 @@ stored with its race, so a restart never changes it.
 "opensAt","closesAt","serverNow"},"entries":N,"me":null | {"rank","timeSeconds","timeMs","attempts","verdict","submittedAt"}}`.
 Start the run with `race.seed` on `race.mapId`; stop the clock at `targetKills` kills.
 
+`POST /api/race/daily/start` (auth, V5 M9j) `{"date":"2026-10-12"}` (`date` optional, default today; yesterday's race
+during the 30-minute grace) -> `{"race":{...},"startedAt","starts"}`: the server's start of an attempt, one row per player
+and race (the latest start kept). Post it when the race voyage begins. Errors: `400 race_not_open`, `409 race_closed`.
+
 `POST /api/race/daily/entry` (auth) `{"date":"2026-10-12","seed":123,"timeSeconds":118.4,"kills":100,"level":12,"clientVersion":null,"log":null}`
 -> `{"accepted":true,"improved","race":{...},"verdict","checked","best":{"rank","timeSeconds","timeMs","attempts","verdict","submittedAt"}}`.
 One best time per player and day (a slower time only counts an attempt). `date` defaults to today; yesterday's race
 takes entries for 30 minutes after midnight. `log` (optional, the same run log as `POST /api/runs`; send `level` with
 it) is scored by the run checks in shadow mode: `verdict` is `pass`, `flagged`, `log_rejected`, `seed_mismatch`, ...
-or null without a log; it never refuses the entry. Errors: `400 seed_mismatch`, `400 target_not_reached`,
+or null without a log; it never refuses the entry. V5 M9j: `raceCheck` (shadow, stored with the best entry and shown on
+the board) is `ok`, `no_start` (no `/start` for this race), `too_fast` (the time is over 30 s longer than the server's
+time since the latest start) or `time_mismatch` (the log reached the target in another minute than `timeSeconds`);
+`serverSeconds` is the time since the start. `checked` is true only for a `pass` with `ok`. The game sends the closed
+run log and its own kills and level (`kills` may be a little over the target). Errors: `400 seed_mismatch`, `400 target_not_reached`,
 `422 implausible_time` (under 10 s for 100 kills or over 7200 s), `400 race_not_open`, `409 race_closed`, `400 invalid_date`.
 
 `GET /api/race/daily/board?date=&limit=50` (optional auth) -> `{"race":{...},"total","entries":[{"rank","playerId","name",
@@ -642,13 +654,21 @@ is no result to report. Allowed while the island is listed or shielded. Errors: 
 `POST /api/raids/{id}/result` `{"won":true,"guardianSunk":true,"minuteReached":9,"seconds":520,"runLog":null}` (within
 **20 minutes** of the start; `seconds` 1..1020 (the 16-minute fight + 60 s grace) and not more than the time since the
 start; `minuteReached` 0..16, the last one-minute window reached) ->
-`{"raidId","result":"won|partial|lost","rumLooted","rum","seconds","guardianMinute","minuteReached","guardianSunk","defenderShieldUntil","wager"}`.
+`{"raidId","result":"won|partial|lost","rumLooted","rum","seconds","guardianMinute","minuteReached","guardianSunk","defenderShieldUntil","logVerdict","logReason","checked","wager"}`.
 The attacker must **conquer** the island: **won** = `guardianSunk:true`; **partial** = reached the guardian's minute
 (`minuteReached >= guardianMinute`, the minute in the design the raid started with) without sinking it; **lost**
 otherwise. Older clients that send neither `guardianSunk` nor `minuteReached` keep the old rule (`won`, `partial` flags).
 Errors: `409 raid_expired` (marked `abandoned`), `409 raid_finished`, `400 invalid_seconds`, `400 invalid_minute`,
 `400 invalid_result` (`guardianSunk` with `minuteReached` before the guardian's minute), `403 not_your_raid`.
-`runLog` is accepted and not checked yet. `GET /api/raids/mine` rows also carry `guardianMinute`, `minuteReached`, `guardianSunk`.
+V5 M9j, enforced: a won or partial result (the old `won`/`partial` flags too) needs the guardian to have arrived, at
+(guardianMinute - 1) x 60 s: both `seconds` and the server's time since the start must reach it, less 5 s (`400
+too_early`); `minuteReached` may not be beyond `seconds` (minute m starts at (m - 1) x 60 s, 16 needs 960 s; 5 s
+slack; `400 invalid_minute`). V5 M9j, shadow: `runLog` (the raid voyage's run log, as `POST /api/runs`; at most 96 KB
+of body) is checked for structure, the raid's seed, its time against `seconds` (10 s), a sunk guardian defeated in the
+log not before its arrival, then the run-check rates: `logVerdict` is `pass`, `flagged`, `outdated_client`,
+`log_rejected`, `seed_mismatch`, `time_mismatch`, `no_boss_defeated` or `boss_before_arrival` (null without a log), with
+`logReason`; it never refuses the result and the loot still moves. `GET /api/raids/mine` rows also carry
+`guardianMinute`, `minuteReached`, `guardianSunk`, `logVerdict`, `checked`.
 
 `RAID_LOOT_ENABLED=false` (V5 M9h switch, on by default): a won or partial raid loots 0 RUM; the start JSON's `loot` has
 `enabled:false` and zero `ifWon`/`ifPartial`. The shield and the defence record are unchanged.
@@ -828,13 +848,23 @@ Unknown types get `reject` `unknown_type`; any match message without a running r
 ### How the match ends
 
 1. **Sunk**: a ship reports `alive: false` (or `dead`) after the countdown: it loses.
-2. **Time**: at 5:00 the higher damage dealt (server tally of accepted hits) wins; equal damage: the higher remaining hp
-   share (last reported `hp / maxHp`; no report = full) wins; still equal: `draw`.
+2. **Time**: at 5:00 the higher damage dealt (server tally of accepted hits) wins; equal damage: the higher hull share in
+   the **server's estimate** (V5 M9j; never the reported `hp`) wins; still equal: `draw`.
+   **Server hull estimate** (V5 M9j, `HullEstimate.cs`): per seat, the hits the server accepted landed with the
+   client's PvP rules (x0.06, an assumed armour of x0.5, at most 5% of max hull a landing, 0.5 s pooling), max hull from
+   the seat's reports clamped to 250 + 50 per server level, +20% per health barrel awarded, 0.2% of max hull a second of
+   regeneration between events. `match_end` stats (and the stored match stats) carry `serverHull`, `serverMinHull` and
+   `hullCheck`: `agree`, `server_sunk_client_alive` (the estimate went past `-RELAY_HULL_MARGIN` and the ship never
+   reported sinking; logged as a warning), `client_sunk_first`, `not_tracked` (the bot) or `server_sunk`. With
+   `RELAY_HULL_ENFORCE=true` a human match ends `server_sunk` at that point (shadow by default: the estimate cannot see
+   every heal, armour or max hull a build has).
 3. **Forfeit**: `leave`, `PUT status left`, or no open socket for more than 20 s (a `presence` message announces the
    deadline). Both players away: abandoned (no winner, unrated).
 
 The server then writes the Match record (`decidedBy: "server_<reason>"`) and Elo (K 32; draws 0.5 each; bot matches
-unrated), moves the lobby to `finished` and broadcasts `match_end`.
+unrated), moves the lobby to `finished` and broadcasts `match_end`. V5 M9j: a SOL wager settles only on such a server
+decision; a match decided by the clients' reports (`agreement` or `timeout`: its room was lost on a restart, or no socket
+ever reached the relay) refunds both stakes.
 
 ### Bot matches
 
