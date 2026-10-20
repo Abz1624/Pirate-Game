@@ -1,4 +1,20 @@
-# Your TODOs — V5 (updated 14 Oct, plan rev 19)
+# Your TODOs — V5 (updated 20 Oct, plan rev 20)
+
+# Now (20 Oct): M9j, the server decides or checks results (plan rev 20)
+
+- [ ] **Answer J1-J5** (plan section 9; details `plan/v5/phase-09j-server-results/PLAN.md`):
+      J1 when (if ever) the server may sink a ship in wagered 1v1 from its hull estimate (shadow now);
+      J2 what happens to a raid or race whose run log fails its checks (shadow now: the loot still moves);
+      J3 the cost of the strongest step (server sessions on the M13b match server, about $1.5-1.9 per 1,000 sessions);
+      J4 raid limits, built and off (`RAID_PAIR_LIMIT_PER_DAY`, `RAID_RECORD_ONE_PER_DAY`);
+      J5 confirm the narrow exception to D19(2)/(8), and that a stake decided by client reports (a room lost on a
+      restart) is refunded, even for an honest winner.
+- [ ] **M9j check** on a desktop build made after `1a791034`: one raid (the history shows the raid's log verdict) and one
+      daily race (the board shows the time check). The early-guardian refusal is covered by the server tests (no live raid
+      was run: it needs a wallet, an island and RUM).
+- [ ] Note: the live check left a test entry "M9jCheck" (120 s, flagged `too_fast`, not checked) on the 20 Oct race
+      board; there is no delete endpoint, it drops off with the day (the race pays nothing).
+- [x] Migration `AddServerResultChecks` deployed 20 Oct: new nullable columns and a new table only (nothing overwritten).
 
 # Now (14 Oct): M9h server safety done and deployed (plan rev 19)
 

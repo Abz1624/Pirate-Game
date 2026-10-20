@@ -1,6 +1,6 @@
 {
- "updated": "14 Oct 2026",
- "statusLine": "Plan rev 19 (14 Oct): M9h's server safety work is done and deployed. Your H2 answer is recorded (D31: nothing switched off); each live value flow is now a switch that defaults on (GET /api/switches). Refused wager deposits are refunded, an Island NFT mint retry can no longer mint twice, wallet sessions expire after 30 days unused with a sign-out-everywhere call, and the treasury is bounded (one free island per wallet ever, 20 mints a day, a 2 SOL float with an alarm, a report of every payout and mint since 12 Oct). Next: M9h's gate (full Unity suites, the review, your check), then M9i, then M9c S1b. Your answers needed: H10, R1-R4, then the rest of H1-H14.",
+ "updated": "20 Oct 2026",
+ "statusLine": "Plan rev 20 (20 Oct): M9j added on your request (the server decides or checks results). Step 1 is deployed: impossible raid claims are refused (the guardian must have arrived, by the report and by the server's clock), stakes pay only on the relay's own decision, the time-out tie-break uses the server's hull estimate, and the 1v1 hull estimate, raid logs and race times get verdicts in shadow mode. Raid limits are built but off. Stronger steps stay with M13b, M15, M17, M18 and M22. Your answers needed: J1-J5, then H10, R1-R4, H1-H14.",
  "statusOk": false,
  "facts": [
   [
@@ -9,7 +9,7 @@
   ],
   [
    "Tests",
-   "Clean full run 13 Oct (e851dcd3): EditMode 835/835 · PlayMode 132/134 (2 probe skips) · server 227/229; M9h server 258/260 (2 devnet skips, 14 Oct)"
+   "M9j (20 Oct): server 288/290 (2 devnet skips) · EditMode 841/841; clean full run 13 Oct (e851dcd3): PlayMode 132/134 (2 probe skips)"
   ],
   [
    "Gate",
@@ -92,6 +92,10 @@
   "M9i": {
    "state": "building",
    "chip": "in progress · content back, run checks v9, prefabs, client findings (UI kit, bot maces, MWA sign-and-send); device checks, H10, art left"
+  },
+  "M9j": {
+   "state": "building",
+   "chip": "in progress · step 1 done and deployed (20 Oct): raid timing enforced, hull estimate and log checks in shadow, raid limits off; review of the diff, owner answers J1-J5 and the owner check left"
   },
   "M9c": {
    "state": "building",
@@ -622,10 +626,22 @@
    "when": "14 Oct",
    "commit": "b86d46ad",
    "what": "<strong>M9i client findings</strong>: one shared parchment UI kit (<code>HackSkin</code> and <code>UiKit</code> in a new assembly <code>RoguePirates.UI</code> below V4 Presentation and the hackathon; the seven copies and the reflection gone; every screen looks the same in 1920x1080 before/after screenshots, <code>plan/hackathon/screens/kit-*</code>; <code>424f3607</code>); the PvP bot keeps the chained mace and orbit blades out of its arsenal instead of drawing a second arsenal's maces (pinned by a test, <code>e4f9e842</code>); Mobile Wallet Adapter wallets that only offer <code>sign_and_send_transactions</code> now pay: the wallet signs and sends, its signature is saved at once, and when it may have sent without saying so you are told to check the wallet before paying again (<code>b86d46ad</code>). Suites: EditMode 839/839, PlayMode 132/134 (the two load probes skip as before)."
+  },
+  {
+   "when": "20 Oct",
+   "commit": "(plan rev 20)",
+   "what": "<strong>Plan rev 20: M9j added</strong> on your request to have the server decide or check game results. Design in <code>plan/v5/phase-09j-server-results/PLAN.md</code>: five options from server-side bounds (free) to server-run sessions (about $1.5-1.9 per 1,000 value sessions); recommended now: the cheap checks (raid timing against the guardian, raid pair limits, a relay hull estimate, stakes settled only on a server decision, run-log verdicts for raids and races); the rest stays with M13b, M15, M17, M18 and M22. Questions J1-J5."
+  },
+  {
+   "when": "20 Oct",
+   "commit": "cf59109b, 1a791034",
+   "what": "<strong>M9j step 1 deployed</strong>: raid wins and partials need the guardian's arrival by the reported time and the server's clock (400 too_early, invalid_minute; enforced); the raid's run log and the daily race time get verdicts in shadow mode (logVerdict, raceCheck; POST /api/race/daily/start); the 1v1 relay keeps a hull estimate per ship with a verdict on every match (shadow; RELAY_HULL_ENFORCE off) and uses it for the equal-damage tie-break; wagers pay only on a server decision (client-decided matches are refunded); raid limits built and off (RAID_PAIR_LIMIT_PER_DAY, RAID_RECORD_ONE_PER_DAY). Migration AddServerResultChecks (new columns and table only). Server 288/290, EditMode 841/841."
   }
  ],
  "todos": {
   "next": [
+   "<strong>M9j questions J1-J5</strong> (plan section 9): when (if ever) the server may sink a ship in wagered 1v1 from its hull estimate (J1), what happens to a raid or race whose log fails (J2), the cost of the strongest step (J3: server sessions about $1.5-1.9 per 1,000), raid limits (J4: built, off), and the narrow exception to D19(2)/(8) and refunds after a lost room (J5).",
+   "<strong>M9j check</strong>: one raid and one daily race on a desktop build made after <code>1a791034</code> (the raid history shows the log verdict, the race board the time check); note: a test entry \"M9jCheck\" (120 s, flagged too_fast) sits on the 20 Oct race board from the live check.",
    "<strong>Read the M9h server report</strong> (<code>plan/v5/phase-09h-safety/</code>): the switch states (all on, your H2 answer), every payout and mint since 12 Oct, the treasury float (22.6 SOL, float 2 SOL). To turn a flow off, set its variable to <code>false</code> on Railway (list in <code>server/README.md</code>).",
    "<strong>Two M9h review questions</strong>: (1) the session migration rotated wallet profiles' own token without a fresh backup and cannot be undone: approve after the fact, and should overwriting a column count as data-destroying (backup and your OK first) from now on? (2) Should the demo reset give a reset wallet its free island claim back?",
    "<strong>Answer H10</strong> (enemy damage x2: keep it or back to x1).",
@@ -1280,6 +1296,13 @@
    "check": "Bot maces (e4f9e842) and MWA sign-and-send (b86d46ad): HackathonGameplayFixTests.PvpBot_NeverCarriesAWeaponItsViewsCannotDraw, Web3RulesTests (SignOnlyUnsupported, ReadSignAndSend); full suites in the Editor at 16:9",
    "result": "EditMode 839/839 (835 + 4 new), PlayMode 132/134 (2 load probes skip without RP_PROBE_SECONDS), as at e851dcd3",
    "evidence": "Pirate Game Unity/Assets/_Game/Tests, Pirate Game Unity/Assets/_Game/Hackathon/Tests"
+  },
+  {
+   "date": "20 Oct",
+   "phase": "M9j",
+   "check": "Server suite (M9jServerResultTests, RelayTests hull tests, WagerRewardRaceTests refund) and EditMode (HackathonRulesTests.WithRunLog) after step 1; live after deploy: /health, /api/switches read back, race start recorded",
+   "result": "server 288/290 (2 devnet skips), EditMode 841/841; live: health ok (postgres), switches relayHullEnforce false, raidPairLimitPerDay 0, raidRecordOnePerDay false; a race start then an entry 2 s later answered raceCheck too_fast",
+   "evidence": "plan/v5/phase-09j-server-results/server-tests-m9j.trx, editmode-m9j.json, PLAN.md"
   }
  ],
  "phaseResults": {
@@ -2541,6 +2564,11 @@
   {
    "title": "M9h server safety review (14 Oct)",
    "summary": "<strong>No blockers, 5 majors, 8 minors.</strong> Majors: the session migration's token rotation went out without a fresh backup and cannot be undone (your call, below); no test evidence in the phase folder (added); any earlier transfer could be refunded through a wager (fixed: only transfers after the wager); the IP rate limit depends on Railway's X-Forwarded-For (now keyed by token when sent; a probe is open); a trailing slash skipped the balance limit (fixed). Minors fixed: switch typos logged, mint expiry margin, lifetime lowering, separate sweep steps, an admin count; kept with a reason: claims racing at the mint budget, demo reset and claims (your call), the lock test.",
+   "rows": []
+  },
+  {
+   "title": "M9j plan review (20 Oct)",
+   "summary": "<strong>2 blockers, 6 majors, 6 minors, all adopted.</strong> Blockers: the raid pair limit is a new rule against D15, D19(1) and D24 (now off by default, J4); an enforced server sinking had no false-positive test and the estimate cannot see every heal, hits during a dropped socket or the victim's frame timing (shadow only, enforcement tied to D23(b), J1). Majors: max hull clamp text, D19(2) cited, the honest winner refunded after a restart (J5), the guardian's arrival defined with boundary tests, the race start's slack and date, honest-pass tests. Details: phase PLAN.md section 7.",
    "rows": []
   }
  ]

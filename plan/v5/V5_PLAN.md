@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 19 (14 Oct): M9h's server safety work landed and is deployed: H2 answered (keep every value flow on, D31) with each one a switch defaulting on, refused wager deposits refunded, no double Island NFT mint, sessions that expire with revoke-all, treasury bounds (one claim per wallet ever, a daily mint budget, a float with an alarm, the owner's payouts-and-mints report) and rate-limited RPC reads; M9h's automated and owner checks remain. rev 18 (13 Oct): the deep review's fixes landed (server money hotfix, client money path, gameplay); everything the hackathon switched off is back (H8, H9 answered: D30) and M5c's content was done early; weapon visual prefabs; run checks v9; clean full suites at `e851dcd3`; M9h and M9i continue with what is left. rev 17 (13 Oct): the hackathon interlude folded in; M9h and M9i (hackathon carry-over) next, then M9c resumes at S1b; web3 phases re-scoped to harden the hackathon code; questions H1-H14. rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 20 (20 Oct): M9j added after M9i (owner request: the server decides or checks game results): cheap server checks now (raid timing against the guardian, raid pair limits, a relay hull estimate with the time-out tie-break and stake settlement taken from the server, run-log verdicts for raids and races), the rest stays with M13b, M15, M17, M18 and M22; questions J1-J5. rev 19 (14 Oct): M9h's server safety work landed and is deployed: H2 answered (keep every value flow on, D31) with each one a switch defaulting on, refused wager deposits refunded, no double Island NFT mint, sessions that expire with revoke-all, treasury bounds (one claim per wallet ever, a daily mint budget, a float with an alarm, the owner's payouts-and-mints report) and rate-limited RPC reads; M9h's automated and owner checks remain. rev 18 (13 Oct): the deep review's fixes landed (server money hotfix, client money path, gameplay); everything the hackathon switched off is back (H8, H9 answered: D30) and M5c's content was done early; weapon visual prefabs; run checks v9; clean full suites at `e851dcd3`; M9h and M9i continue with what is left. rev 17 (13 Oct): the hackathon interlude folded in; M9h and M9i (hackathon carry-over) next, then M9c resumes at S1b; web3 phases re-scoped to harden the hackathon code; questions H1-H14. rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -129,6 +129,7 @@ Every owner request (29 Sep 2026) and the phase(s) that deliver it. The reviewer
 | 33 | (1 Oct) j: occlusion culling | M3e (assessed, not applicable; the far clip and frustum culling instead; per-layer cull distances left for M7) |
 | 34 | (1 Oct) k: an enemy that looks the same always behaves the same | M3d |
 | 35 | (12-13 Oct, hackathon) the demo features kept in the game: wallet sign-in, islands and the defence designer, conquest and practice raids, the daily race, weekly SOL prizes, 1v1 SOL wagers, the island market, Captain Marrow, the parchment UI kit; the pending items in `plan/hackathon/RETRO.md` | M9h (safety, gate), M9i (run checks, fixes, art), M5c (paused content), then hardened in M10, M10b, M11, M13, M13b, M14-M18, M24, M26, M26b, M28 |
+| 36 | (20 Oct) the server decides or checks game results instead of trusting the game client (1v1, raids, the daily race, the weekly board) | M9j (cheap checks and verdicts now), then M13b, M15, M17, M18, M22 (server sessions and the server-run 1v1) |
 
 ---
 
@@ -855,8 +856,8 @@ known-good base.
   signature is still persisted) (`b86d46ad`). Suites: EditMode 839/839, PlayMode 132/134 (the two load probes skip without RP_PROBE_SECONDS), as at `e851dcd3` plus 4 new EditMode tests.
 
 Remaining in M9i:
-- The review's other findings: client-reported PvP hull, raid results and race times (server authority: M13b, M15,
-  M17, M22); NFT vs database ownership (M26); GET rate limits. The MWA sign-and-send path needs the device check below
+- The review's other findings: client-reported PvP hull, raid results and race times (cheap server checks and
+  verdicts in M9j; server authority: M13b, M15, M17, M22); NFT vs database ownership (M26); GET rate limits. The MWA sign-and-send path needs the device check below
   (a wallet without `sign_transactions`).
 - Device checks: deposit, buy, list, cancel and an app kill mid-transfer on desktop WebGL and Android MWA; shop taps on
   a phone; the pause menu, level-up cards and storm edge warning on a device (D9); menu side buttons at least 48 px.
@@ -868,6 +869,59 @@ Remaining in M9i:
 Automated check: suites green; run checks pass the owner's voyages on the new config; a scenario per fixed item; a
 desktop WebGL build.
 Owner playtest: one voyage, one daily race and one practice raid on the desktop build; Ember; the new art.
+
+#### M9j — Server-decided results: cheap checks now
+
+(Added in rev 20, 20 Oct, on the owner's request "make the server decide or verify game results instead of trusting
+the game client". Runs after M9i's server work and before M9c resumes at S1b; M9i's device and owner checks may run
+alongside it. Its own gate and commit `V5 M9j: server-decided results`. Design, costs and options:
+`plan/v5/phase-09j-server-results/PLAN.md`.)
+
+Goal: no value moves on a claim the server can cheaply prove impossible, and every client-reported result that still
+moves value carries a server verdict, without a new paid service. The final authority stays where the plan has it:
+raids on server sessions in M15 (M13b), the daily race server-timed in M13b and M17, prize runs as ranked server
+sessions in M18, the server-run 1v1 in M22; this phase builds nothing those phases replace except interim pieces: a
+hull estimate the relay keeps until M22 retires it and a race start M13b's server-timed race replaces. It narrows D19(8)
+("no further work on relay exploits") and, only if enforced, D19(2) (questions J1, J5).
+
+- I9j.1 Relay hull estimate: the server tracks each ship's hull from the hits it accepted, with the client's own PvP
+  hit window, max hull from the seat's reports (clamped), heals from the barrels it awarded and conservative armour and
+  regeneration allowances; a per-seat verdict on every match end (`agree`, `server_sunk_client_alive`,
+  `client_sunk_first`); with equal accepted damage at a time-out the server's estimate decides, never the reported hull
+  (enforced); the server sinking a ship is shadow (`RELAY_HULL_ENFORCE`, off) until a 0.1% false-positive budget test,
+  the seat's away time and a dispute path exist (D23(b), J1); what the estimate cannot see is listed in the phase plan.
+- I9j.2 A stake settles only on a server decision: a match decided by client reports (its room lost on a restart) is
+  refunded (enforced; an honest winner of such a match gets the stake back, not 2x: J5).
+- I9j.3 Raid timing: a win or partial needs the reported time and the server's elapsed time since the start to reach the
+  guardian's arrival, (minute - 1) x 60 s, less 5 s (old `won` flags included); `minuteReached` not beyond the reported
+  time (enforced: an honest client cannot fail it; boundary tests feed the client's own formulas).
+- I9j.4 Raid farming, built and **off** by default (new limits against D15, D19(1) and D24: J4):
+  `RAID_PAIR_LIMIT_PER_DAY` raids by one attacker on one island in 24 hours, and `RAID_RECORD_ONE_PER_DAY` (the defence
+  record counts one entry per attacker, island and UTC day, a win if any raid that day won). Linked-account signals do
+  not exist yet (D15).
+- I9j.5 Raid run log: the client sends the raid's run log; the server checks its structure, the raid's seed, its time
+  against the reported one, the boss defeated not before the guardian's arrival and the v9 rates; the verdict is stored
+  on the raid and shown (shadow: loot still moves, D24/D31, J2).
+- I9j.6 Daily race: a server start per player and race date (`POST /api/race/daily/start`); the entry's time checked
+  against the server's elapsed time (30 s slack for a late start) and against the run log's minute of reaching the
+  target (shadow; the race pays nothing).
+- I9j.7 Client (Hackathon assembly): the raid result and race entry send the closed run log; the race calls its start.
+- T9j.x Server tests for every check, on and off where a switch exists; EditMode tests for the new request bodies.
+- D9j.1 `server/README.md`; deployed with `server/deploy.ps1`; live checks (`/health`, a refused instant raid claim, a
+  race start, the switches) without real-value movement beyond devnet test amounts.
+
+Automated check: the server suite green, including honest passes (raid timing at its boundaries with the client's
+formulas, a race with a late start, an honest 1v1 exchange never sunk even enforced); live: an instant guardian claim
+refused, the switches read back, a race start recorded.
+Owner check: one raid and one daily race on the desktop build (the history shows the raid's verdict, the board the
+race's); one unstaked 1v1 to read the hull verdict on the end card's data.
+Cost: no new Railway service; no measurable usage change ($0).
+
+**Status (rev 20, 20 Oct).** Plan reviewed by v5-reviewer (2 blockers, 6 majors, 6 minors, all adopted: raid limits off
+by default, hull sinking shadow only and tied to D23(b), definitions and honest-pass tests; phase `PLAN.md` section 7).
+Step 1 done and deployed (`cf59109b` server, `1a791034` client; migration `AddServerResultChecks`, new columns and a table
+only): I9j.1-I9j.7 as above; server 288/290 (2 devnet skips), EditMode 841/841; live `/health`, the switches read back
+and a race start checked. Left: the review of the code diff, the owner's J1-J5 and the owner check.
 
 #### M9c — Multi-ship runtime and the go/no-go
 
@@ -1517,3 +1571,13 @@ Review questions (13 Oct, rev 18, from the deep review of the hackathon; the sug
 | R2 | NFT vs database ownership, and royalties: the game's records do not follow an Island NFT traded outside the game; the NFTs carry 0% royalties. | The database follows the chain (ownership sync in M26) and 5% royalties with Metaplex Core (M26) / the database stays the owner record and outside trades are not honoured / keep as built |
 | R3 | Legal review of wagers, house-matched stakes and treasury-paid prizes (D8). | Before any mainnet or real-value prize, per launch region; devnet only until then / now, before more web3 work |
 | R4 | A server-side treasury scan as a safety net: compare the treasury's on-chain transfers with the database (deposits, payouts, mints) and alert on anything unrecorded. (Rev 19: not built; M9h has the low-float alarm and the owner's report of every recorded payout, mint and deposit.) | Yes, a scheduled scan with an alert in M9h's treasury bounds / later, in M28 / no |
+
+Server-decided results (20 Oct, rev 20, M9j; the suggested option first; details in `plan/v5/phase-09j-server-results/PLAN.md`).
+
+| # | Question | Options (suggested first) |
+|---|---|---|
+| J1 | The server sinking a ship in wagered 1v1 from its hull estimate (armour, max hull, heals and regeneration are on the client, so it is an estimate; this narrows D19(2)). | Shadow; enforce for staked matches only after D23(b)'s false-positive budget test, the away-time rule, a dispute path and real matches without a `server_sunk_client_alive` on a pair you know is honest / never, wait for M22 |
+| J2 | A raid or race whose run log fails its checks. | Shadow (value moves, the flag shows; D24) until the raid rules have bounds from real raids, then hold the loot as pending / hold as pending now / refuse |
+| J3 | Cost of the strongest step. | Value sessions (raids, wagered 1v1, prize runs) on the M13b match server at about $1.5-1.9 per 1,000 sessions (with Serverless sleep and several sessions per process) / also a one-day replay spike for weekly prize runs (L3; 2-4 weeks if it works) / neither until M28 |
+| J4 | Raid limits (built, off; both go against D15 and D19(1)/D24's no daily loss cap): a pair limit and a defence record with one entry per attacker, island and UTC day (it recounts existing records, an NFT trait). | The record rule on, the pair limit off / both on (5 raids in 24 hours) / both off |
+| J5 | D19(8) and D19(2) stopped relay anti-cheat work until M22; M9j adds a hull estimate (shadow) and refunds stakes decided by client reports (an honest winner whose room was lost on a restart is refunded, not paid). | Confirm both / pay stakes where both clients named the same winner, refund single reports / revert |
