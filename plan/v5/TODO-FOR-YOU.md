@@ -1,5 +1,20 @@
 # Your TODOs — V5 (updated 20 Oct, plan rev 20)
 
+# Next playtest (when you ask for the next build: desktop WebGL + APK on the Seeker)
+
+One session covers everything waiting on a build made after `1a791034`:
+- [ ] **M9j:** one raid and one daily race, then read the verdicts from the API (`/api/raids/mine` `logVerdict`,
+      `/api/race/daily/board` `raceCheck`).
+- [ ] **Money paths on the Seeker (and once in desktop Chrome):** a 1v1 stake deposit (host and join), a market buy, an
+      island listing, a cancelled signing, and killing the app while the wallet app is open (the pending transfer must
+      resume, never pay twice). Also a wallet that only offers sign-and-send, if you have one.
+- [ ] **1v1:** the hub (pick mode and stake, then Start), Ready after the draft, the pause/Match menu and Leave.
+- [ ] **Screens on the phone:** shop tabs (Ledger is hidden; open it from the hub if needed), pause menu, level-up cards,
+      storm edge warning, Islands map, defence designer, captain name prompt.
+- [ ] **Content back on:** Flamethrower (Ember's start), Lighthouse Lantern, Squid Ink Pots, Siren Bell (Tidal Aura),
+      Cursed Chest Key, the four new items and the Chaos logbook card.
+- [ ] **Weapon prefabs:** tweak one weapon's prefab in the Editor and see it in game (`plan/hackathon/WEAPON-PREFABS.md`).
+
 # Now (20 Oct): M9j, the server decides or checks results (plan rev 20)
 
 - [ ] **Answer J1-J5** (plan section 9; details `plan/v5/phase-09j-server-results/PLAN.md`):
