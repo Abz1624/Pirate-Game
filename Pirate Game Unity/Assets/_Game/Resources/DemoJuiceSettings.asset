@@ -12,19 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f142fd00426a4943b384970062a3fe7, type: 3}
   m_Name: DemoJuiceSettings
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.DemoJuiceSettings
-  enemyHitPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
-  enemyKillPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
+  enemyHitPrefab: {fileID: 1220373461503330725, guid: 301164ed513474d1194fc03365704ab4, type: 3}
+  enemyKillPrefab: {fileID: 1220373461503330725, guid: 0e86d1a3a1c234ef9b4e67de76f6a2df, type: 3}
   eliteKillExplosionPrefab: {fileID: 1709254077376921, guid: 41b6455556b7f324aa6e146c7fd138c3, type: 3}
   bossKillExplosionPrefab: {fileID: 1709254077376921, guid: 41b6455556b7f324aa6e146c7fd138c3, type: 3}
-  critHitPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
+  critHitPrefab: {fileID: 1220373461503330725, guid: 301164ed513474d1194fc03365704ab4, type: 3}
   levelUpBurstPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
   waterImpactSplashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   damageHighlightPrefab: {fileID: 108369408499265073, guid: 2a77dae8a16f1438484981feaa46221d, type: 3}
-  enemyHitScale: 0.1
-  enemyKillScale: 0.2
+  enemyHitScale: 0.55
+  enemyKillScale: 1
   eliteKillExplosionScale: 0.35
   bossKillExplosionScale: 0.45
-  critHitScale: 0.15
+  critHitScale: 0.75
   levelUpBurstScale: 0
   waterImpactSplashScale: 0.85
   damageHighlightScale: 0.5
@@ -42,8 +42,8 @@ MonoBehaviour:
   laserBeamPrefab: {fileID: 7580329650404731219, guid: b0b0ba8e4a253484cab13605543c8a4f, type: 3}
   mortarTelegraphPrefab: {fileID: 4226950201948866840, guid: f82bea9f28c814bbdbadc45e0fdcf75b, type: 3}
   weaponExplosionPrefab: {fileID: 5021453304944166231, guid: 16ed1534d282a4181ad050d614c4d8a2, type: 3}
-  cannonImpactPrefab: {fileID: 5021453304944166231, guid: ef5eb902e84e07b47b07fabe204d36a1, type: 3}
-  cannonImpactScale: 0.22
+  cannonImpactPrefab: {fileID: 1220373461503330725, guid: 301164ed513474d1194fc03365704ab4, type: 3}
+  cannonImpactScale: 1
   cannonMuzzleVfxPrefab: {fileID: 1709254077376921, guid: 0e034d0fbfe6d4ac7b8b08201fc0a9fa, type: 3}
   powderKegExplosionPrefab: {fileID: 5021453304944166231, guid: ef5eb902e84e07b47b07fabe204d36a1, type: 3}
   mortarExplosionPrefab: {fileID: 5021453304944166231, guid: a70395ad4d0003a4aa01336fb1c4bc2b, type: 3}

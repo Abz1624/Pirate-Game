@@ -71,6 +71,7 @@ namespace RoguePirates.FeelIntegration
         void OnImpact(float impactSpeed)
         {
             if (ImpactFeedback == null || _ship == null) return;
+            FeelPriority.MarkHit();
             var t = Mathf.InverseLerp(SoftHitSpeed, HardHitSpeed, impactSpeed);
             ImpactFeedback.PlayFeedbacks(ContactPoint(), Mathf.Lerp(MinIntensity, 1f, t));
         }

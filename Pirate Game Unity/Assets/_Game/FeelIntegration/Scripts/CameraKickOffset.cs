@@ -17,11 +17,11 @@ namespace RoguePirates.FeelIntegration
     public sealed class CameraKickOffset : MonoBehaviour
     {
         [Tooltip("Most shake offset (m) however many kicks stack up.")]
-        public float MaxShake = 0.12f;
+        public float MaxShake = 0.4f;
         [Tooltip("Most recoil push (m).")]
         public float MaxRecoil = 0.2f;
         [Tooltip("Most camera roll (degrees).")]
-        public float MaxRoll = 1f;
+        public float MaxRoll = 2f;
         [Tooltip("Recoil spring: pushes per second and damping (0..1).")]
         public float RecoilFrequency = 5f;
         [Range(0.05f, 1f)] public float RecoilDamping = 0.55f;
@@ -30,12 +30,24 @@ namespace RoguePirates.FeelIntegration
         bool _sideways = true;
         float _roll, _rollDecay = 15f;
         Vector3 _recoil, _recoilVelocity;
+        float _dolly, _dollyVelocity, _dollyTarget;
+
+        [Tooltip("Motion dolly spring: how quickly the camera follows a speed-change pull-back / push-in (per second), and damping.")]
+        public float DollyFrequency = 1.1f;
+        [Range(0.1f, 1f)] public float DollyDamping = 0.75f;
+        [Tooltip("Most motion dolly (m) either way.")]
+        public float MaxDolly = 1.2f;
 
         Vector3 _appliedPosition, _finalPosition;
         Quaternion _appliedRotation = Quaternion.identity, _finalRotation;
         bool _applied;
 
-        public bool IsShaking => _shake > 0.0005f || _roll > 0.005f || _recoil.sqrMagnitude > 1e-6f || _recoilVelocity.sqrMagnitude > 1e-4f;
+        public bool IsShaking => _shake > 0.0005f || _roll > 0.005f || _recoil.sqrMagnitude > 1e-6f || _recoilVelocity.sqrMagnitude > 1e-4f
+            || Mathf.Abs(_dolly) > 0.001f || Mathf.Abs(_dollyVelocity) > 0.005f || Mathf.Abs(_dollyTarget) > 0.001f;
+
+        /// <summary>Continuous motion feel: ease the camera back (+) or in (-) along its view by about <paramref name="metres"/>.
+        /// Call every frame with the current target (0 = rest); a soft spring follows it.</summary>
+        public void SetMotionDolly(float metres) => _dollyTarget = Mathf.Clamp(metres, -MaxDolly, MaxDolly);
 
         /// <summary>Back-compatible kick (shake only).</summary>
         public void Kick(float amplitude, float duration, float frequency, bool sidewaysOnly = true) =>
@@ -80,9 +92,18 @@ namespace RoguePirates.FeelIntegration
             return r.sqrMagnitude > 1e-4f ? r.normalized : transform.right;
         }
 
-        void Update()
+        void Awake()
         {
-            // Take last frame's shake back off before FollowCamera works from the camera's transform.
+            // Physics and the run's ticks (which read the camera's child simulation view) run before this Update, so an
+            // early helper takes the shake off first; see CameraKickRestorer.
+            if (GetComponent<CameraKickRestorer>() == null) gameObject.AddComponent<CameraKickRestorer>();
+        }
+
+        void Update() => Restore();
+
+        /// <summary>Take last frame's shake back off (called early in FixedUpdate/Update by CameraKickRestorer).</summary>
+        internal void Restore()
+        {
             if (!_applied) return;
             if (transform.position == _finalPosition) transform.position -= _appliedPosition;
             if (transform.rotation == _finalRotation) transform.rotation *= Quaternion.Inverse(_appliedRotation);
@@ -91,7 +112,7 @@ namespace RoguePirates.FeelIntegration
 
         void LateUpdate()
         {
-            if (_applied) Update(); // nothing moved it since our last frame (e.g. the follow had no target)
+            if (_applied) Restore(); // nothing moved it since our last frame (e.g. the follow had no target)
             if (!IsShaking) return;
 
             var dt = Mathf.Min(Time.unscaledDeltaTime, 1f / 20f);
@@ -110,6 +131,16 @@ namespace RoguePirates.FeelIntegration
             if (_recoil.magnitude > MaxRecoil) _recoil = _recoil.normalized * MaxRecoil;
             if (_recoil.sqrMagnitude < 1e-6f && _recoilVelocity.sqrMagnitude < 1e-4f) _recoil = _recoilVelocity = Vector3.zero;
 
+            var dw = DollyFrequency * Mathf.PI * 2f;
+            for (var i = 0; i < 2; i++)
+            {
+                var h = dt * 0.5f;
+                _dollyVelocity += (-dw * dw * (_dolly - _dollyTarget) - 2f * DollyDamping * dw * _dollyVelocity) * h;
+                _dolly += _dollyVelocity * h;
+            }
+            _dolly = Mathf.Clamp(_dolly, -MaxDolly, MaxDolly);
+            if (Mathf.Abs(_dollyTarget) < 0.001f && Mathf.Abs(_dolly) < 0.001f && Mathf.Abs(_dollyVelocity) < 0.005f) _dolly = _dollyVelocity = 0f;
+
             var config = AppRoot.Instance != null ? AppRoot.Instance.Config : null;
             if (config != null && !config.ScreenShakeEnabled) return;
 
@@ -118,7 +149,7 @@ namespace RoguePirates.FeelIntegration
             var y = _sideways ? 0f : (Mathf.PerlinNoise(_seed + 37.1f, t) - 0.5f) * 2f;
             var r = (Mathf.PerlinNoise(_seed + 71.3f, t * 0.8f) - 0.5f) * 2f;
 
-            _appliedPosition = FlatRight() * (x * _shake) + transform.up * (y * _shake) + _recoil;
+            _appliedPosition = FlatRight() * (x * _shake) + transform.up * (y * _shake) + _recoil - transform.forward * _dolly;
             _appliedRotation = Quaternion.AngleAxis(r * _roll, Vector3.forward);
             transform.position += _appliedPosition;
             transform.rotation *= _appliedRotation;
@@ -129,9 +160,10 @@ namespace RoguePirates.FeelIntegration
 
         void OnDisable()
         {
-            if (_applied) Update();
+            if (_applied) Restore();
             _shake = _roll = 0f;
             _recoil = _recoilVelocity = Vector3.zero;
+            _dolly = _dollyVelocity = _dollyTarget = 0f;
         }
     }
 }

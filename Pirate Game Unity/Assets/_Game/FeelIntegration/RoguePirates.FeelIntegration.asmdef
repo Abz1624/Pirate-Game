@@ -4,6 +4,8 @@
     "references": [
         "RoguePirates.V4.Foundation",
         "RoguePirates.V4",
+        "RoguePirates.V4.Config",
+        "RoguePirates.V4.Presentation",
         "MoreMountains.Tools"
     ],
     "includePlatforms": [],
