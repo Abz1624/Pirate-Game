@@ -21,7 +21,7 @@ MonoBehaviour:
   waterImpactSplashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   damageHighlightPrefab: {fileID: 108369408499265073, guid: 2a77dae8a16f1438484981feaa46221d, type: 3}
   enemyHitScale: 0.55
-  enemyKillScale: 1
+  enemyKillScale: 1.25
   eliteKillExplosionScale: 0.35
   bossKillExplosionScale: 0.45
   critHitScale: 0.75

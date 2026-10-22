@@ -221,13 +221,13 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 6959194916566392111}
         DebugActive: 0
-        Amplitude: 0.25
+        Amplitude: 0.28
         Duration: 0.65
         Frequency: 18
         SidewaysOnly: 1
-        Recoil: 0
-        RecoilAmount: 0
-        RollDegrees: 1.5
+        Recoil: 1
+        RecoilAmount: 0.28
+        RollDegrees: 1.6
         TargetCamera: {fileID: 0}
 --- !u!1 &1377720077136708509
 GameObject:
@@ -239,6 +239,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9114974200270434570}
   - component: {fileID: 659882538261234111}
+  - component: {fileID: 1914527939171996288}
   m_Layer: 0
   m_Name: Feel_EnemyHit
   m_TagString: Untagged
@@ -287,7 +288,31 @@ MonoBehaviour:
   KillFeedback: {fileID: 3311144994390626400}
   EliteKillFeedback: {fileID: 483156648092599496}
   BossKillFeedback: {fileID: 6959194916566392111}
-  SmallKickInterval: 0.12
+  SmallKickInterval: 0.08
+  NearDistance: 7
+  FarDistance: 32
+  FarStrength: 0.25
+  StreakWindow: 1
+  StreakStep: 0.15
+  StreakMax: 1.7
+  ScreenFlash: {fileID: 1914527939171996288}
+  EliteFlash: 0.7
+  BossFlash: 1
+--- !u!114 &1914527939171996288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377720077136708509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c61d5ebd693c54e87808d1e3cf0055d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RoguePirates.FeelIntegration::RoguePirates.FeelIntegration.ScreenFlashFeel
+  FlashColor: {r: 1, g: 0.82, b: 0.55, a: 0.32}
+  Duration: 0.12
+  SortingOrder: 900
 --- !u!1 &1682399986425730655
 GameObject:
   m_ObjectHideFlags: 0
@@ -738,13 +763,13 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 3311144994390626400}
         DebugActive: 0
-        Amplitude: 0.04
+        Amplitude: 0.05
         Duration: 0.12
         Frequency: 36
         SidewaysOnly: 1
-        Recoil: 0
-        RecoilAmount: 0
-        RollDegrees: 0.2
+        Recoil: 1
+        RecoilAmount: 0.1
+        RollDegrees: 0.25
         TargetCamera: {fileID: 0}
 --- !u!1 &7675064921391637492
 GameObject:
@@ -967,11 +992,11 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 483156648092599496}
         DebugActive: 0
-        Amplitude: 0.07
+        Amplitude: 0.09
         Duration: 0.22
         Frequency: 28
         SidewaysOnly: 1
-        Recoil: 0
-        RecoilAmount: 0
-        RollDegrees: 0.5
+        Recoil: 1
+        RecoilAmount: 0.18
+        RollDegrees: 0.6
         TargetCamera: {fileID: 0}

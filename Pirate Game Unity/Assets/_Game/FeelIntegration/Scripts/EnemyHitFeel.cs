@@ -43,19 +43,42 @@ namespace RoguePirates.FeelIntegration
         [Tooltip("Played when a boss sinks.")]
         public MMF_Player BossKillFeedback;
         [Tooltip("Shortest time between two crit or normal-kill camera ticks (seconds). Elites and bosses always play.")]
-        public float SmallKickInterval = 0.12f;
+        public float SmallKickInterval = 0.08f;
+
+        [Header("Kill kick by distance")]
+        [Tooltip("Kills this close to the ship (m) kick at full strength...")]
+        public float NearDistance = 7f;
+        [Tooltip("...and this far away (m) at the minimum below.")]
+        public float FarDistance = 32f;
+        [Range(0f, 1f)] public float FarStrength = 0.25f;
+
+        [Header("Kill streaks")]
+        [Tooltip("Kills within this many seconds of each other build a streak.")]
+        public float StreakWindow = 1f;
+        [Tooltip("Extra strength per kill in the streak (0.15 = +15%).")]
+        public float StreakStep = 0.15f;
+        [Tooltip("Most a streak can multiply the kick by.")]
+        public float StreakMax = 1.7f;
+
+        [Header("Screen flash (elites and bosses)")]
+        [Tooltip("Flashes the screen on elite and boss kills. Defaults to the ScreenFlashFeel on this object.")]
+        public ScreenFlashFeel ScreenFlash;
+        [Range(0f, 1f)] public float EliteFlash = 0.7f;
+        [Range(0f, 1f)] public float BossFlash = 1f;
 
         V4Game _game;
         CombatEvents _events;
         V4PresentationRoot _presentation;
         EnemyPunchSystem _punch;
-        float _nextSmallKick, _nextSearch;
+        float _nextSmallKick, _nextSearch, _lastKill = -10f;
+        int _streak;
         int _frame, _squashesThisFrame;
 
         void Awake()
         {
             _punch = GetComponent<EnemyPunchSystem>();
             if (_punch == null) _punch = gameObject.AddComponent<EnemyPunchSystem>();
+            if (ScreenFlash == null) ScreenFlash = GetComponent<ScreenFlashFeel>();
             V4Game.RunStarted += OnRunStarted;
         }
 
@@ -121,15 +144,41 @@ namespace RoguePirates.FeelIntegration
                     var position = new Vector3(e.X, 0f, e.Y);
                     var boss = (e.B & 2) != 0;
                     var elite = (e.B & 1) != 0 && (e.B & 4) == 0; // the game's own elite test for kills
-                    if (boss) { if (BossKillFeedback != null) BossKillFeedback.PlayFeedbacks(position, 1f); }
-                    else if (elite) { if (EliteKillFeedback != null) EliteKillFeedback.PlayFeedbacks(position, 1f); }
+
+                    // Streak: kills close together build up the kick.
+                    _streak = now - _lastKill <= StreakWindow ? _streak + 1 : 0;
+                    _lastKill = now;
+                    var streak = Mathf.Min(StreakMax, 1f + _streak * StreakStep);
+                    // Distance: close kills hit hard, far ones are a nudge. (The Feel players push the camera away from the blast.)
+                    var near = DistanceStrength(position);
+                    var k = near * streak;
+
+                    if (boss)
+                    {
+                        if (BossKillFeedback != null) BossKillFeedback.PlayFeedbacks(position, Mathf.Max(0.6f, k));
+                        if (ScreenFlash != null) ScreenFlash.Flash(BossFlash);
+                    }
+                    else if (elite)
+                    {
+                        if (EliteKillFeedback != null) EliteKillFeedback.PlayFeedbacks(position, Mathf.Max(0.5f, k));
+                        if (ScreenFlash != null) ScreenFlash.Flash(EliteFlash * Mathf.Max(0.5f, near));
+                    }
                     else if (KillFeedback != null && now >= _nextSmallKick)
                     {
                         _nextSmallKick = now + SmallKickInterval;
-                        KillFeedback.PlayFeedbacks(position, 1f);
+                        KillFeedback.PlayFeedbacks(position, k);
                     }
                 }
             }
+        }
+
+        float DistanceStrength(Vector3 position)
+        {
+            var ship = _game != null && _game.Shell != null ? _game.Shell.Player : null;
+            if (ship == null) return 1f;
+            var d = position - ship.transform.position; d.y = 0f;
+            var t = Mathf.InverseLerp(NearDistance, FarDistance, d.magnitude);
+            return Mathf.Lerp(1f, FarStrength, t);
         }
 
         Transform NearestEnemyView(Vector3 position)
