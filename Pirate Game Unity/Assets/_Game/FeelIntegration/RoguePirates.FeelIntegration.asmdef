@@ -7,7 +7,8 @@
         "RoguePirates.V4.Config",
         "RoguePirates.V4.Presentation",
         "MoreMountains.Tools",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
